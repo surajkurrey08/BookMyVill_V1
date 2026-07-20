@@ -1,10 +1,11 @@
 .property-grid-section {
   background-color: var(--bg-color);
+  padding: 140px 5%;
 }
 
 .section-header {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 60px;
 }
 
 .section-subtitle {

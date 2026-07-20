@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import PropertyCard from '../PropertyCard/PropertyCard';
 import { properties } from '../../data/mockData';
 import './PropertyGrid.css';
 import './MapContainer.css';
@@ -21,6 +20,10 @@ const LOCATION_COORDINATES = {
 
 // Geocoding helper with local lookup + OpenStreetMap fallback
 const resolveCoordinates = async (property) => {
+  if (property.lat && (property.lon || property.lng)) {
+    return { ...property, lon: property.lon ?? property.lng };
+  }
+
   const loc = property.location;
   if (!loc) return { ...property, lat: 17.9258, lon: 73.6510 };
   
@@ -29,14 +32,12 @@ const resolveCoordinates = async (property) => {
     if (normalized.includes(key.toLowerCase())) {
       return {
         ...property,
-        // Add slight random offset to prevent exact overlapping of pins in the same destination
         lat: coords.lat + (Math.random() - 0.5) * 0.015,
         lon: coords.lon + (Math.random() - 0.5) * 0.015
       };
     }
   }
 
-  // Fallback to OSM Nominatim API
   try {
     const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(loc)}`);
     const data = await response.json();
@@ -51,7 +52,6 @@ const resolveCoordinates = async (property) => {
     console.error("Nominatim geocoding failed for location:", loc, err);
   }
 
-  // Final fallback to Mahabaleshwar area with offset
   return {
     ...property,
     lat: 17.9258 + (Math.random() - 0.5) * 0.04,
@@ -59,10 +59,17 @@ const resolveCoordinates = async (property) => {
   };
 };
 
-// Horizontal card for the split list view next to the map
-const SplitPropertyCard = ({ property }) => {
+// Horizontal card for the list view next to the map
+const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover, onLeave }) => {
   return (
-    <div className="split-grid-card">
+    <div 
+      id={`split-card-${property.id}`}
+      className={`split-grid-card ${isSelected ? 'selected-card' : ''} ${isHovered ? 'hovered-card' : ''}`}
+      onClick={() => onSelect(property)}
+      onMouseEnter={() => onHover(property.id)}
+      onMouseLeave={onLeave}
+      style={{ cursor: 'pointer' }}
+    >
       <div className="split-card-img-wrapper">
         <img src={property.image} alt={property.name} />
         {property.tag && <span className="split-card-tag">{property.tag}</span>}
@@ -85,9 +92,27 @@ const SplitPropertyCard = ({ property }) => {
           <span className="split-card-price">
             {property.price} <span>/ night</span>
           </span>
-          <Link to={`/property/${property.id}`} className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.85rem' }}>
-            Book Stays
-          </Link>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              type="button" 
+              className="btn-outline" 
+              style={{ padding: '6px 14px', fontSize: '0.8rem' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(property);
+              }}
+            >
+              <i className="fa-solid fa-location-crosshairs"></i> Find on Map
+            </button>
+            <Link 
+              to={`/property/${property.id}`} 
+              className="btn-primary" 
+              style={{ padding: '8px 18px', fontSize: '0.85rem' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              Book Stays
+            </Link>
+          </div>
         </div>
       </div>
     </div>
@@ -97,16 +122,16 @@ const SplitPropertyCard = ({ property }) => {
 const PropertyGrid = () => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [dbProperties, setDbProperties] = useState([]);
-  const [resolvedAllProperties, setResolvedAllProperties] = useState([]);
+  const [resolvedAllProperties, setResolvedAllProperties] = useState(properties);
   
-  // Map View Search and Viewport filtering states
-  const [mapView, setMapView] = useState(false);
+  // Search and Selection states
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterByMapBounds, setFilterByMapBounds] = useState(false);
-  const [mapBounds, setMapBounds] = useState(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState(null);
+  const [hoveredPropertyId, setHoveredPropertyId] = useState(null);
 
   const mapRef = useRef(null);
   const markersGroupRef = useRef(null);
+  const markersMapRef = useRef({});
   const { search } = useLocation();
 
   // Sync search parameter from URL
@@ -139,7 +164,6 @@ const PropertyGrid = () => {
               : "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=800"
           }));
           
-          // Resolve coordinates for all database properties
           const withCoords = await Promise.all(mappedData.map(p => resolveCoordinates(p)));
           setDbProperties(withCoords);
         }
@@ -150,13 +174,12 @@ const PropertyGrid = () => {
     fetchProperties();
   }, []);
 
-  // Combine mock properties and db properties, resolving coordinates for all of them
+  // Combine mock properties and db properties
   useEffect(() => {
     const prepareAll = async () => {
       const mockWithCoords = await Promise.all(properties.map(p => resolveCoordinates(p)));
       
       if (dbProperties.length > 0) {
-        // Merge without duplicate names
         const merged = [...dbProperties, ...mockWithCoords.filter(mp => !dbProperties.some(dp => dp.name === mp.name))];
         setResolvedAllProperties(merged);
       } else {
@@ -166,86 +189,26 @@ const PropertyGrid = () => {
     prepareAll();
   }, [dbProperties]);
 
-  // Handle Search Location input submission (geocoding search query & centering map)
-  const handleSearchSubmit = async (e) => {
-    if (e) e.preventDefault();
-    if (!searchQuery) return;
+  // Select a hotel: Center map, fly to lat/lon, and open marker popup
+  const selectHotelOnMap = (property) => {
+    if (!property) return;
+    setSelectedPropertyId(property.id);
 
-    try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
-      const data = await response.json();
-      if (data && data.length > 0 && mapRef.current) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-        
-        // Temporarily turn off boundary filtering during pan transition to avoid empty flash
-        const originalFilter = filterByMapBounds;
-        setFilterByMapBounds(false);
+    if (mapRef.current && property.lat && (property.lon || property.lng)) {
+      const lng = property.lon ?? property.lng;
+      mapRef.current.flyTo([property.lat, lng], 13.5, { duration: 1.4 });
 
-        mapRef.current.flyTo([lat, lon], 12, { duration: 1.8 });
-
-        setTimeout(() => {
-          setFilterByMapBounds(originalFilter);
-        }, 2000);
-      }
-    } catch (err) {
-      console.error("Nominatim search failed:", err);
+      setTimeout(() => {
+        const marker = markersMapRef.current[property.id];
+        if (marker) {
+          marker.openPopup();
+        }
+      }, 500);
     }
   };
 
-  // Setup Leaflet map instance and boundary listeners
-  useEffect(() => {
-    if (!mapView) {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-      return;
-    }
-
-    if (!window.L) return;
-    const L = window.L;
-
-    // Create map
-    const map = L.map('leaflet-map', {
-      zoomControl: false
-    }).setView([17.9258, 73.6510], 6); // default view centered on India/Mahabaleshwar
-
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-    // OpenStreetMap layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    mapRef.current = map;
-    markersGroupRef.current = L.layerGroup().addTo(map);
-
-    // Track map movement to update viewport bounds
-    const updateBounds = () => {
-      const bounds = map.getBounds();
-      setMapBounds({
-        northEast: bounds.getNorthEast(),
-        southWest: bounds.getSouthWest()
-      });
-    };
-
-    map.on('load', updateBounds);
-    map.on('moveend', updateBounds);
-    
-    // Trigger first bounds update
-    updateBounds();
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, [mapView]);
-
-  // Initial queries logic: filter properties by Tab + Search Input (memoized to break infinite loops)
-  const searchFilteredProperties = React.useMemo(() => {
+  // Filter properties by Tab + Search Input
+  const filteredProperties = React.useMemo(() => {
     return resolvedAllProperties.filter(prop => {
       const matchesFilter = activeFilter === 'All' || prop.type === activeFilter;
       const matchesSearch = !searchQuery || 
@@ -255,47 +218,121 @@ const PropertyGrid = () => {
     });
   }, [resolvedAllProperties, activeFilter, searchQuery]);
 
-  // Checkbox boundary filter check helper
-  const isInMapBounds = (prop) => {
-    if (!filterByMapBounds || !mapBounds) return true;
-    if (!prop.lat || !prop.lon) return true;
-    return (
-      prop.lat >= mapBounds.southWest.lat &&
-      prop.lat <= mapBounds.northEast.lat &&
-      prop.lon >= mapBounds.southWest.lng &&
-      prop.lon <= mapBounds.northEast.lng
+  // Handle Search Location input submission
+  const handleSearchSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!searchQuery || !searchQuery.trim()) return;
+
+    const term = searchQuery.trim().toLowerCase();
+    
+    const directMatches = filteredProperties.filter(p => 
+      p.name.toLowerCase().includes(term) || p.location.toLowerCase().includes(term)
     );
+
+    if (directMatches.length > 0) {
+      if (directMatches.length === 1) {
+        selectHotelOnMap(directMatches[0]);
+      } else if (mapRef.current && window.L) {
+        const L = window.L;
+        const validCoords = directMatches.filter(p => p.lat && (p.lon || p.lng));
+        if (validCoords.length > 0) {
+          const group = L.featureGroup(validCoords.map(p => L.marker([p.lat, p.lon ?? p.lng])));
+          mapRef.current.fitBounds(group.getBounds().pad(0.2));
+        }
+      }
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+      const data = await response.json();
+      if (data && data.length > 0 && mapRef.current) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        mapRef.current.flyTo([lat, lon], 12, { duration: 1.8 });
+      }
+    } catch (err) {
+      console.error("Nominatim search failed:", err);
+    }
   };
 
-  // Final properties listed in scroll column (split view) or grid container (classic view)
-  const finalFilteredProperties = searchFilteredProperties.filter(isInMapBounds);
+  // Setup Leaflet map instance
+  useEffect(() => {
+    if (!window.L) return;
+    const L = window.L;
 
-  // Update/Draw markers on the map when list of properties or map view changes
+    if (mapRef.current) return; // Prevent duplicate creation
+
+    let initialLat = 17.9258;
+    let initialLon = 73.6510;
+    let initialZoom = 6;
+
+    if (filteredProperties.length > 0) {
+      const firstValid = filteredProperties.find(p => p.lat && (p.lon || p.lng));
+      if (firstValid) {
+        initialLat = firstValid.lat;
+        initialLon = firstValid.lon ?? firstValid.lng;
+        initialZoom = filteredProperties.length === 1 ? 12 : 7;
+      }
+    }
+
+    // Create map
+    const map = L.map('leaflet-map', {
+      zoomControl: false
+    }).setView([initialLat, initialLon], initialZoom);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    mapRef.current = map;
+    markersGroupRef.current = L.layerGroup().addTo(map);
+
+    setTimeout(() => {
+      if (mapRef.current) {
+        mapRef.current.invalidateSize();
+      }
+    }, 200);
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update/Draw markers on the map when list of properties changes
   useEffect(() => {
     if (!mapRef.current || !markersGroupRef.current || !window.L) return;
     const L = window.L;
     const map = mapRef.current;
     const markersGroup = markersGroupRef.current;
 
-    // Clear old markers
     markersGroup.clearLayers();
+    markersMapRef.current = {};
 
-    if (searchFilteredProperties.length === 0) return;
+    if (filteredProperties.length === 0) return;
 
     const markersList = [];
 
-    searchFilteredProperties.forEach(property => {
-      if (!property.lat || !property.lon) return;
+    filteredProperties.forEach(property => {
+      const lat = property.lat;
+      const lon = property.lon ?? property.lng;
+      if (lat === undefined || lon === undefined) return;
 
-      // Custom marker icon showing price bubble
+      const isSelected = selectedPropertyId === property.id;
+
       const customIcon = L.divIcon({
         className: 'custom-price-marker',
-        html: `<div class="price-marker-bubble" id="marker-${property.id}">${property.price}</div>`,
+        html: `<div class="price-marker-bubble ${isSelected ? 'marker-active' : ''}" id="marker-${property.id}">${property.price}</div>`,
         iconSize: [60, 30],
         iconAnchor: [30, 15]
       });
 
-      const marker = L.marker([property.lat, property.lon], { icon: customIcon });
+      const marker = L.marker([lat, lon], { icon: customIcon });
 
       const popupContent = `
         <div class="popup-hotel-card">
@@ -314,27 +351,64 @@ const PropertyGrid = () => {
         offset: L.point(0, -10)
       });
 
-      // Hover bindings
       marker.on('mouseover', () => {
+        setHoveredPropertyId(property.id);
         const bubble = document.getElementById(`marker-${property.id}`);
         if (bubble) bubble.classList.add('marker-active');
       });
 
       marker.on('mouseout', () => {
-        const bubble = document.getElementById(`marker-${property.id}`);
-        if (bubble) bubble.classList.remove('marker-active');
+        setHoveredPropertyId(null);
+        if (selectedPropertyId !== property.id) {
+          const bubble = document.getElementById(`marker-${property.id}`);
+          if (bubble) bubble.classList.remove('marker-active');
+        }
+      });
+
+      marker.on('click', () => {
+        setSelectedPropertyId(property.id);
+        const cardElem = document.getElementById(`split-card-${property.id}`);
+        if (cardElem) {
+          cardElem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
       });
 
       markersGroup.addLayer(marker);
       markersList.push(marker);
+      markersMapRef.current[property.id] = marker;
     });
 
-    // Auto-fit the map view to display all markers (only on initial load or search/tab changes)
-    if (markersList.length > 0 && !filterByMapBounds) {
-      const boundsGroup = L.featureGroup(markersList);
-      map.fitBounds(boundsGroup.getBounds().pad(0.15));
+    // Auto-center and fit map view to display matching property markers
+    if (markersList.length > 0 && !selectedPropertyId) {
+      if (markersList.length === 1) {
+        const singleMarkerLatLng = markersList[0].getLatLng();
+        map.setView(singleMarkerLatLng, 12);
+        const singleProp = filteredProperties[0];
+        if (singleProp && markersMapRef.current[singleProp.id]) {
+          setTimeout(() => {
+            markersMapRef.current[singleProp.id]?.openPopup();
+          }, 300);
+        }
+      } else {
+        const boundsGroup = L.featureGroup(markersList);
+        map.fitBounds(boundsGroup.getBounds().pad(0.25), { maxZoom: 13 });
+      }
     }
-  }, [mapView, searchFilteredProperties, filterByMapBounds]);
+  }, [filteredProperties, selectedPropertyId]);
+
+  // Sync hovered state to marker DOM elements
+  useEffect(() => {
+    if (!hoveredPropertyId) return;
+    const bubble = document.getElementById(`marker-${hoveredPropertyId}`);
+    if (bubble) bubble.classList.add('marker-active');
+
+    return () => {
+      if (hoveredPropertyId && selectedPropertyId !== hoveredPropertyId) {
+        const b = document.getElementById(`marker-${hoveredPropertyId}`);
+        if (b) b.classList.remove('marker-active');
+      }
+    };
+  }, [hoveredPropertyId, selectedPropertyId]);
 
   return (
     <section className="property-grid-section" id="explore">
@@ -342,108 +416,94 @@ const PropertyGrid = () => {
         <span className="section-subtitle">Our Curated Collection</span>
         <h2>Explore Exceptional Stays</h2>
         
-        {/* Modern Control Bar: Tabs, Search Box, Map Controls */}
+        {/* Modern Control Bar: Category Tabs, Search Box, Quick Dropdown, Count Badge */}
         <div className="map-control-bar">
           <div className="filter-tabs" style={{ marginBottom: 0 }}>
             {['All', 'Villa', 'Hotel', 'Cabin', 'Resort'].map(tab => (
               <button 
                 key={tab}
                 className={`filter-btn ${activeFilter === tab ? 'active' : ''}`}
-                onClick={() => setActiveFilter(tab)}
+                onClick={() => {
+                  setActiveFilter(tab);
+                  setSelectedPropertyId(null);
+                }}
               >
                 {tab === 'All' ? 'All' : tab + 's'}
               </button>
             ))}
           </div>
 
-          {/* Search box with OSM Geocoding capability */}
+          {/* Search box with hotel name search + OSM Geocoding */}
           <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
             <i className="fa-solid fa-magnifying-glass"></i>
             <input 
               type="text" 
-              placeholder="Search by city, state or stay name..."
+              placeholder="Search hotel name or city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-location-input"
             />
           </form>
 
-          {/* Viewport Filter checkbox (only relevant in Map View) */}
-          {mapView && (
-            <label className="viewport-checkbox-label">
-              <input 
-                type="checkbox" 
-                checked={filterByMapBounds} 
-                onChange={(e) => setFilterByMapBounds(e.target.checked)} 
-                className="viewport-checkbox"
-              />
-              Filter by map viewport
-            </label>
-          )}
-
-          {/* Toggle View button */}
-          <button 
-            onClick={() => setMapView(!mapView)} 
-            className={`map-view-toggle-btn ${mapView ? 'btn-secondary-style' : ''}`}
+          {/* Quick Hotel Select Dropdown */}
+          <select 
+            className="hotel-quick-select"
+            value={selectedPropertyId || ''}
+            onChange={(e) => {
+              const selectedId = e.target.value;
+              if (selectedId) {
+                const targetProp = resolvedAllProperties.find(p => String(p.id) === String(selectedId));
+                if (targetProp) {
+                  selectHotelOnMap(targetProp);
+                }
+              } else {
+                setSelectedPropertyId(null);
+              }
+            }}
           >
-            {mapView ? (
-              <>
-                <i className="fa-solid fa-grip"></i> Show Grid View
-              </>
-            ) : (
-              <>
-                <i className="fa-solid fa-map-location-dot"></i> Show Map View
-              </>
-            )}
-          </button>
+            <option value="">Find Hotel on Map...</option>
+            {filteredProperties.map(p => (
+              <option key={p.id} value={p.id}>{p.name} ({p.location.split(',')[0]})</option>
+            ))}
+          </select>
+
+          {/* Count Badge */}
+          <span className="hotels-count-badge">
+            <i className="fa-solid fa-hotel" style={{ marginRight: '6px' }}></i>
+            {filteredProperties.length} Stays
+          </span>
         </div>
       </div>
       
-      {mapView ? (
-        /* Split view: scrollable property cards on the left, map on the right */
-        <div className="property-split-container">
-          <div className="properties-list-column">
-            {finalFilteredProperties.length > 0 ? (
-              finalFilteredProperties.map(property => (
-                <SplitPropertyCard key={property.id} property={property} />
-              ))
-            ) : (
-              <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
-                <i className="fa-solid fa-hotel" style={{ fontSize: '2rem', marginBottom: '10px', color: 'var(--secondary-color)' }}></i>
-                <h3>No stays found in this area</h3>
-                <p style={{ fontSize: '0.85rem', marginTop: '6px' }}>Try zoom out or panning the map to other locations.</p>
-              </div>
-            )}
-          </div>
-          <div className="map-column">
-            <div id="leaflet-map"></div>
-          </div>
+      {/* Map + Hotel List View */}
+      <div className="property-split-container">
+        <div className="properties-list-column">
+          {filteredProperties.length > 0 ? (
+            filteredProperties.map(property => (
+              <SplitPropertyCard 
+                key={property.id} 
+                property={property} 
+                isSelected={selectedPropertyId === property.id}
+                isHovered={hoveredPropertyId === property.id}
+                onSelect={selectHotelOnMap}
+                onHover={setHoveredPropertyId}
+                onLeave={() => setHoveredPropertyId(null)}
+              />
+            ))
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
+              <i className="fa-solid fa-hotel" style={{ fontSize: '2rem', marginBottom: '10px', color: 'var(--secondary-color)' }}></i>
+              <h3>No stays matching search</h3>
+              <p style={{ fontSize: '0.85rem', marginTop: '6px' }}>Try searching another city or selecting a different category.</p>
+            </div>
+          )}
         </div>
-      ) : (
-        /* Classic Grid view */
-        <>
-          <div className="grid-container" style={{ maxWidth: '1200px', margin: '0 auto 60px auto', padding: '0 20px' }}>
-            {finalFilteredProperties.length > 0 ? (
-              finalFilteredProperties.map(property => (
-                <PropertyCard key={property.id} property={property} />
-              ))
-            ) : (
-              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
-                <i className="fa-solid fa-hotel" style={{ fontSize: '2.5rem', marginBottom: '15px', color: 'var(--secondary-color)' }}></i>
-                <h3>No matching stays found</h3>
-                <p>Try resetting the search query or select another category above.</p>
-              </div>
-            )}
-          </div>
-          
-          <div className="view-all-container">
-            <button className="btn-outline">View All Destinations</button>
-          </div>
-        </>
-      )}
+        <div className="map-column">
+          <div id="leaflet-map"></div>
+        </div>
+      </div>
     </section>
   );
 };
 
 export default PropertyGrid;
-

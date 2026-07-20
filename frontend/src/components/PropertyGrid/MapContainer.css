@@ -424,3 +424,44 @@
     min-width: 100%;
   }
 }
+
+/* Card Selection & Active State */
+.split-grid-card.selected-card {
+  border: 2px solid var(--secondary-color) !important;
+  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.35) !important;
+  transform: translateY(-4px);
+  background-color: #fffdf9;
+}
+
+.split-grid-card.hovered-card {
+  border-color: var(--primary-color);
+  box-shadow: 0 6px 20px rgba(45, 67, 61, 0.18);
+}
+
+.hotel-quick-select {
+  padding: 10px 16px;
+  border-radius: 30px;
+  border: 1px solid rgba(45, 67, 61, 0.2);
+  background: #fdfcf9;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  max-width: 220px;
+}
+
+.hotel-quick-select:focus {
+  border-color: var(--secondary-color);
+}
+
+.hotels-count-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  background: rgba(45, 67, 61, 0.08);
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
