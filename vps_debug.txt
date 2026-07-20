@@ -1,9 +1,10 @@
 === Nginx Config Files ===
 total 8
-drwxr-xr-x 2 root root 4096 Jun 25 12:48 .
-drwxr-xr-x 8 root root 4096 Jun 25 12:32 ..
+drwxr-xr-x 2 root root 4096 Jul 20 05:05 .
+drwxr-xr-x 8 root root 4096 Jul 13 11:48 ..
+lrwxrwxrwx 1 root root   42 Jul 19 17:54 admin-shiftride -> /etc/nginx/sites-available/admin-shiftride
 lrwxrwxrwx 1 root root   38 Jun  1 09:58 itjobx.conf -> /etc/nginx/sites-available/itjobx.conf
-lrwxrwxrwx 1 root root   39 Jun 25 12:48 lonavala.fun -> /etc/nginx/sites-available/lonavala.fun
+lrwxrwxrwx 1 root root   39 Jul 20 05:05 lonavala.fun -> /etc/nginx/sites-available/lonavala.fun
 lrwxrwxrwx 1 root root   37 Jun  2 08:01 punarmilan -> /etc/nginx/sites-available/punarmilan
 lrwxrwxrwx 1 root root   36 Jun  1 09:52 shiftride -> /etc/nginx/sites-available/shiftride
 === Content of /etc/nginx/sites-enabled/lonavala.fun ===
@@ -91,6 +92,7 @@ index-FkZ5GN5Y.js
 mahableshwarview-DsV-wUe4.jpg
 
 /var/www/lonavala.fun/backend:
+create-admin.js
 index.js
 middleware
 models
