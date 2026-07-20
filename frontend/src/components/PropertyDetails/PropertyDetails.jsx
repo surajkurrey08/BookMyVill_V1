@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import './PropertyDetails.css';
+import '../PropertyGrid/MapContainer.css';
 import { properties as mockProperties } from '../../data/mockData';
 import { API_BASE_URL } from '../../config';
-
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -28,6 +28,8 @@ const PropertyDetails = () => {
   const [showFakeModal, setShowFakeModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingData, setPendingData] = useState(null);
+
+  const mapRef = useRef(null);
 
   useEffect(() => {
     const qCheckIn = searchParams.get('checkIn');
@@ -79,6 +81,99 @@ const PropertyDetails = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  // Leaflet map initialization for single property location
+  useEffect(() => {
+    if (!property || !window.L) return;
+    const L = window.L;
+
+    let lat = property.lat;
+    let lon = property.lon ?? property.lng;
+
+    if (!lat || !lon) {
+      const locLower = (property.location || '').toLowerCase();
+      const predefined = {
+        "shimla": { lat: 31.1048, lon: 77.1734 },
+        "munnar": { lat: 10.0889, lon: 77.0595 },
+        "manali": { lat: 32.2396, lon: 77.1887 },
+        "gulmarg": { lat: 34.0484, lon: 74.3805 },
+        "ooty": { lat: 11.4102, lon: 76.6950 },
+        "nainital": { lat: 29.3919, lon: 79.4542 },
+        "mahabaleshwar": { lat: 17.9258, lon: 73.6510 },
+        "panchgani": { lat: 17.9238, lon: 73.8050 },
+        "lonavala": { lat: 18.7557, lon: 73.4091 }
+      };
+
+      for (const [key, coords] of Object.entries(predefined)) {
+        if (locLower.includes(key)) {
+          lat = coords.lat;
+          lon = coords.lon;
+          break;
+        }
+      }
+      if (!lat || !lon) {
+        lat = 17.9258;
+        lon = 73.6510;
+      }
+    }
+
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+
+    const map = L.map('detail-leaflet-map', {
+      zoomControl: true
+    }).setView([lat, lon], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const customIcon = L.divIcon({
+      className: 'custom-price-marker',
+      html: `<div class="price-marker-bubble marker-active">${property.price || '₹15,000'}</div>`,
+      iconSize: [70, 32],
+      iconAnchor: [35, 16]
+    });
+
+    const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
+
+    const popupContent = `
+      <div class="popup-hotel-card">
+        <img src="${property.photos?.[0] || property.image}" alt="${property.name}" class="popup-hotel-image" />
+        <div class="popup-hotel-details">
+          <div class="popup-hotel-type">${property.type}</div>
+          <div class="popup-hotel-name">${property.name}</div>
+          <div class="popup-hotel-price">${property.price || '₹15,000'} <span>/ night</span></div>
+        </div>
+      </div>
+    `;
+
+    marker.bindPopup(popupContent).openPopup();
+    mapRef.current = map;
+
+    setTimeout(() => {
+      if (mapRef.current) {
+        mapRef.current.invalidateSize();
+      }
+    }, 300);
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [property]);
+
+  const getTodayDateString = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   const calculateTotalPrice = () => {
     if (!bookingDates.checkIn || !bookingDates.checkOut || !property) return 0;
     const start = new Date(bookingDates.checkIn);
@@ -106,7 +201,6 @@ const PropertyDetails = () => {
 
     try {
       setIsProcessing(true);
-      // Create order on server (marking as fake for now to ensure it works)
       const response = await fetch(`${API_BASE_URL}/api/bookings`, {
         method: 'POST',
         headers: {
@@ -127,9 +221,6 @@ const PropertyDetails = () => {
       if (!response.ok) throw new Error(data.msg || 'Booking failed');
 
       setPendingData(data);
-      console.log('Booking session initialized:', data.order_id);
-      
-      // Small timeout to ensure state is flushed before modal interactions
       setTimeout(() => {
         setShowFakeModal(true);
       }, 100);
@@ -141,16 +232,13 @@ const PropertyDetails = () => {
   };
 
   const confirmFakePayment = async () => {
-    // Safety check: if state is missing, try to recover or show detailed error
     if (!pendingData) {
-      console.error('State Error: pendingData is null');
       alert('Session lost. Please refresh and try again.');
       setShowFakeModal(false);
       return;
     }
 
     if (!pendingData.order_id) {
-      console.error('Data Error: order_id is missing in pendingData', pendingData);
       alert('Order ID missing. Please try reserving again.');
       setShowFakeModal(false);
       return;
@@ -159,7 +247,6 @@ const PropertyDetails = () => {
     setIsProcessing(true);
     const token = localStorage.getItem('token');
     try {
-      console.log('Confirming simulated payment for order:', pendingData.order_id);
       const response = await fetch(`${API_BASE_URL}/api/bookings/verify`, {
         method: 'POST',
         headers: {
@@ -173,8 +260,6 @@ const PropertyDetails = () => {
       });
 
       const resData = await response.json();
-      console.log('Verification response:', resData);
-
       if (response.ok) {
         alert('Payment Successful! (Simulated)');
         navigate('/dashboard');
@@ -182,7 +267,6 @@ const PropertyDetails = () => {
         alert(`Payment simulation failed: ${resData.msg || 'Unknown error'}`);
       }
     } catch (err) {
-      console.error('Verification Network Error:', err);
       alert('Network Error: Could not reach the server.');
     } finally {
       setIsProcessing(false);
@@ -224,6 +308,18 @@ const PropertyDetails = () => {
                   </ul>
                 </div>
               </div>
+
+              {/* Interactive Location Map Section */}
+              <div className="location-map-card glass-morphism">
+                <h3>Where you'll be staying</h3>
+                <p>
+                  <i className="fa-solid fa-location-dot" style={{ color: 'var(--secondary-color)', marginRight: '8px' }}></i> 
+                  {property.location}
+                </p>
+                <div className="detail-map-wrapper">
+                  <div id="detail-leaflet-map"></div>
+                </div>
+              </div>
             </div>
 
             <div className="booking-section">
@@ -236,11 +332,30 @@ const PropertyDetails = () => {
                 <form onSubmit={handleBookingStart} className="booking-form">
                   <div className="form-group">
                     <label>Check-in</label>
-                    <input type="date" required value={bookingDates.checkIn} onChange={(e) => setBookingDates({ ...bookingDates, checkIn: e.target.value })} />
+                    <input 
+                      type="date" 
+                      required 
+                      min={getTodayDateString()}
+                      value={bookingDates.checkIn} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBookingDates(prev => ({
+                          ...prev,
+                          checkIn: val,
+                          checkOut: prev.checkOut && prev.checkOut <= val ? '' : prev.checkOut
+                        }));
+                      }} 
+                    />
                   </div>
                   <div className="form-group">
                     <label>Check-out</label>
-                    <input type="date" required value={bookingDates.checkOut} onChange={(e) => setBookingDates({ ...bookingDates, checkOut: e.target.value })} />
+                    <input 
+                      type="date" 
+                      required 
+                      min={bookingDates.checkIn || getTodayDateString()}
+                      value={bookingDates.checkOut} 
+                      onChange={(e) => setBookingDates({ ...bookingDates, checkOut: e.target.value })} 
+                    />
                   </div>
                   <div className="form-group">
                     <label>Guests</label>

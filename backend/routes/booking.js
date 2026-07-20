@@ -39,10 +39,28 @@ router.post('/', auth, async (req, res) => {
       }
     }
 
+    // Handle mock property string IDs (like "1", "2", "3") by finding or creating a mock Property record in MongoDB
+    let validPropertyId = propertyId;
+    if (!mongoose.Types.ObjectId.isValid(propertyId)) {
+      let mockProperty = await Property.findOne({ name: `Mock Property #${propertyId}` });
+      if (!mockProperty) {
+        mockProperty = new Property({
+          owner: req.user.id,
+          name: `Mock Property #${propertyId}`,
+          type: 'Villa',
+          location: 'Mahabaleshwar',
+          price: totalPrice || 15000,
+          status: 'approved'
+        });
+        await mockProperty.save();
+      }
+      validPropertyId = mockProperty._id;
+    }
+
     // Save Booking to DB
     const booking = new Booking({
       user: req.user.id,
-      property: propertyId,
+      property: validPropertyId,
       checkIn,
       checkOut,
       totalPrice,

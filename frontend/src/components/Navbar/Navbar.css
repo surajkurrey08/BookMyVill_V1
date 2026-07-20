@@ -1,26 +1,22 @@
-.navbar {
+.navbar-header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  padding: 30px 5%;
+  padding: 16px 5%;
   z-index: 1000;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.navbar.scrolled {
-  padding: 10px 5%;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(242, 236, 228, 0.92);
   backdrop-filter: blur(15px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(45, 67, 61, 0.12);
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 }
 
-.navbar .logo {
-  transition: transform 0.4s ease;
-}
-
-.navbar.scrolled .logo {
-  transform: scale(0.8);
+.navbar-header.scrolled {
+  padding: 12px 5%;
+  background: rgba(242, 236, 228, 0.98);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.12);
 }
 
 .navbar-container {
@@ -31,24 +27,51 @@
   margin: 0 auto;
 }
 
+.logo-link {
+  text-decoration: none;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #D4AF37; /* Gold */
+  line-height: 0.9;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+.logo-subtext {
+  font-size: 0.65rem;
+  letter-spacing: 4px;
+  color: var(--primary-color);
+  font-weight: 700;
+  margin-top: 4px;
+}
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 30px;
 }
 
 .nav-links a {
   font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-primary);
+  font-weight: 600;
+  color: var(--primary-color);
   position: relative;
+  transition: color 0.3s ease;
 }
 
 .nav-links a::after {
   content: '';
   position: absolute;
-  bottom: -5px;
+  bottom: -4px;
   left: 0;
   width: 0;
   height: 2px;
@@ -60,58 +83,94 @@
   width: 100%;
 }
 
-.nav-links .btn-primary {
-  color: var(--white) !important;
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.nav-links .btn-primary::after {
-  display: none;
+.signin-btn {
+  background-color: #2D433D !important;
+  color: #FFFFFF !important;
+  padding: 10px 26px !important;
+  border-radius: 50px !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.5px;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #1a2924;
+  box-shadow: 0 4px 15px rgba(45, 67, 61, 0.3);
+  transition: all 0.3s ease;
 }
 
-.navbar.scrolled .nav-links a {
-  color: var(--text-primary);
-}
-
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
+.signin-btn:hover {
+  background-color: #D4AF37 !important;
+  color: #1a1a1a !important;
+  border-color: #D4AF37;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
 }
 
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 14px;
 }
 
 .dashboard-link {
   text-decoration: none;
-  color: var(--secondary-color);
+  color: var(--primary-color) !important;
   font-weight: 600;
-  font-size: 0.9rem;
-  padding: 5px 12px;
-  border: 1px solid var(--secondary-color);
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  border: 1px solid var(--primary-color);
   border-radius: 20px;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .dashboard-link:hover {
-  background: var(--secondary-color);
-  color: white;
+  background: var(--primary-color);
+  color: var(--white) !important;
 }
 
 .user-name {
   font-size: 0.9rem;
-  color: var(--text-primary);
-  font-weight: 500;
+  color: var(--primary-color);
+  font-weight: 700;
 }
 
 .logout-btn {
-  padding: 6px 15px;
+  padding: 6px 14px;
   font-size: 0.85rem;
   border-radius: 20px;
   cursor: pointer;
-  background: #ef4444;
+  background: #dc2626;
   color: #fff;
   border: none;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #b91c1c;
+}
+
+@media (max-width: 768px) {
+  .logo-text {
+    font-size: 1.8rem;
+  }
+
+  .nav-links {
+    gap: 15px;
+  }
+
+  .nav-links a {
+    font-size: 0.85rem;
+  }
 }

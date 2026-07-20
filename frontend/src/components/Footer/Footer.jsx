@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Footer.css';
 
 const Footer = () => {
@@ -8,33 +9,53 @@ const Footer = () => {
         <div className="footer-brand">
           <div className="logo">
             <span className="logo-text">Mahabaleshwar</span>
+            <span className="logo-subtext">LUXURY STAYS</span>
           </div>
-          <p>Curating the world's most beautiful hill station experiences.</p>
+          <p>Curating India's most extraordinary hill station resorts, private villas, and boutique stay experiences.</p>
+          <div className="footer-socials">
+            <a href="#instagram" aria-label="Instagram"><i className="fa-brands fa-instagram"></i></a>
+            <a href="#facebook" aria-label="Facebook"><i className="fa-brands fa-facebook-f"></i></a>
+            <a href="#twitter" aria-label="Twitter">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            </a>
+            <a href="#youtube" aria-label="YouTube"><i className="fa-brands fa-youtube"></i></a>
+          </div>
         </div>
 
         <div className="footer-links">
           <div className="link-group">
-            <h4>Explore</h4>
-            <a href="#villas">Villas</a>
-            <a href="#hotels">Hotels</a>
-            <a href="#cabins">Cabins</a>
+            <h4>Explore Stays</h4>
+            <a href="/#explore">All Destinations</a>
+            <a href="/#explore">Luxury Villas</a>
+            <a href="/#explore">Boutique Hotels</a>
+            <a href="/#explore">Mountain Cabins</a>
+            <a href="/#explore">Exclusive Resorts</a>
           </div>
           <div className="link-group">
-            <h4>Company</h4>
-            <a href="#about">About Us</a>
-            <a href="#careers">Careers</a>
-            <a href="#contact">Contact</a>
+            <h4>Account & Access</h4>
+            <Link to="/signin">Guest Sign In</Link>
+            <Link to="/dashboard">User Dashboard</Link>
           </div>
           <div className="link-group">
-            <h4>Support</h4>
-            <a href="#help">Help Center</a>
-            <a href="#safety">Safety Info</a>
-            <a href="#terms">Terms of Service</a>
+            <h4>Contact & Support</h4>
+            <p className="contact-item"><i className="fa-solid fa-phone"></i> +91 98765 43210</p>
+            <p className="contact-item"><i className="fa-solid fa-envelope"></i> concierge@mahabaleshwarstays.com</p>
+            <p className="contact-item"><i className="fa-solid fa-location-dot"></i> Mahabaleshwar, Maharashtra 412806</p>
           </div>
         </div>
       </div>
+
       <div className="footer-bottom">
-        <p>&copy; 2026 Mahableshwar Stays. All rights reserved.</p>
+        <div className="footer-bottom-container">
+          <p>&copy; 2026 Mahabaleshwar Luxury Stays. All rights reserved.</p>
+          <div className="footer-legal">
+            <a href="#privacy">Privacy Policy</a>
+            <a href="#terms">Terms of Service</a>
+            <a href="#cookies">Cookie Settings</a>
+          </div>
+        </div>
       </div>
     </footer>
   );

@@ -280,3 +280,37 @@
   border: none;
   cursor: pointer;
 }
+
+/* Property Location Map Section */
+.location-map-card {
+  padding: 30px;
+  border-radius: 24px;
+  margin-top: 30px;
+}
+
+.location-map-card h3 {
+  font-size: 1.6rem;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+}
+
+.location-map-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+.detail-map-wrapper {
+  height: 380px;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(45, 67, 61, 0.1);
+}
+
+#detail-leaflet-map {
+  height: 100%;
+  width: 100%;
+}
+

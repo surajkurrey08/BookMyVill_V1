@@ -6,7 +6,6 @@ import Hero from './components/Hero/Hero';
 import Features from './components/Features/Features';
 import Destinations from './components/Destinations/Destinations';
 import PropertyGrid from './components/PropertyGrid/PropertyGrid';
-import RegistrationForm from './components/RegistrationForm/RegistrationForm';
 import Footer from './components/Footer/Footer';
 import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
@@ -43,10 +42,6 @@ const AdminRedirect = () => {
 };
 
 const Home = () => {
-  const storedUser = localStorage.getItem('user');
-  const user = storedUser ? JSON.parse(storedUser) : null;
-  const isOwner = user && user.role === 'owner';
-  
   return (
     <>
       <Navbar />
@@ -55,7 +50,6 @@ const Home = () => {
         <Features />
         <Destinations />
         <PropertyGrid />
-        {isOwner && <RegistrationForm />}
       </main>
       <Footer />
     </>
