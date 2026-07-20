@@ -1,6 +1,6 @@
 .hero {
   position: relative;
-  height: 100vh;
+  height: 70vh;
   width: 100%;
   display: flex;
   align-items: center;
@@ -92,7 +92,7 @@
   border-radius: 100px;
   gap: 0;
   width: 100%;
-  max-width: 900px;
+  max-width: 1050px;
   margin: 0 auto;
   background: var(--white);
 }
@@ -102,7 +102,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 12px 20px;
+  padding: 12px 14px;
   border-right: 1px solid rgba(0,0,0,0.1);
 }
 
@@ -111,7 +111,7 @@
 }
 
 .search-field label {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
   color: var(--primary-color);
   text-transform: uppercase;
@@ -124,7 +124,7 @@
   border: none;
   outline: none;
   width: 100%;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--text-primary);
   font-weight: 500;
   padding: 0;
@@ -134,6 +134,12 @@
 .search-select {
   appearance: none;
   -webkit-appearance: none;
+}
+
+.search-select:disabled {
+  color: rgba(0, 0, 0, 0.45) !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
 }
 
 .search-btn {

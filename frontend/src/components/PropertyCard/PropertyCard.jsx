@@ -16,7 +16,10 @@ const PropertyCard = ({ property }) => {
       <div className="card-info">
         <div className="card-header">
           <h3>{property.name}</h3>
-          <span className="rating">★ {property.rating}</span>
+          <div className="rating-wrapper">
+            <span className="rating">★ {property.rating}</span>
+            <span className="reviews">({property.reviewsCount || Math.floor(Math.random() * 80) + 20} reviews)</span>
+          </div>
         </div>
         <p className="location">{property.location}</p>
         <div className="card-footer">

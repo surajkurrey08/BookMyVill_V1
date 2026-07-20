@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Hero.css';
 import { API_BASE_URL } from '../../config';
+import { properties } from '../../data/mockData';
 
 import bg1 from '../../assets/hillstationhome (1).jpg';
 import bg2 from '../../assets/hillstationhome (2).jpg';
@@ -12,23 +13,46 @@ const Hero = () => {
   const images = [bg1, bg2, bg3, bg4];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [hotels, setHotels] = useState([]);
-  const [selectedHotel, setSelectedHotel] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('1');
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch registered hotels
+    // Fetch registered hotels and merge with mock data
     const fetchHotels = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/properties/all`);
         const data = await response.json();
-        if (response.ok) {
-          setHotels(data);
+        
+        let allHotels = [];
+        const mockHotels = properties.map(p => ({
+          _id: String(p.id),
+          name: p.name,
+          location: p.location
+        }));
+
+        if (response.ok && Array.isArray(data)) {
+          const dbHotels = data.map(h => ({
+            _id: h._id,
+            name: h.name,
+            location: h.location
+          }));
+          
+          allHotels = [...dbHotels, ...mockHotels.filter(mh => !dbHotels.some(dh => dh.name === mh.name))];
+        } else {
+          allHotels = mockHotels;
         }
+        setHotels(allHotels);
       } catch (err) {
         console.error('Failed to fetch hotels:', err);
+        const mockHotels = properties.map(p => ({
+          _id: String(p.id),
+          name: p.name,
+          location: p.location
+        }));
+        setHotels(mockHotels);
       }
     };
     fetchHotels();
@@ -40,6 +64,17 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, [images.length]);
 
+  // Extract unique locations sorted alphabetically
+  const uniqueLocations = Array.from(
+    new Set(
+      hotels.map(h => {
+        if (!h.location) return '';
+        const parts = h.location.split(',');
+        return parts[0].trim();
+      }).filter(Boolean)
+    )
+  ).sort();
+
   const getTodayDateString = () => {
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -49,16 +84,24 @@ const Hero = () => {
   };
 
   const handleSearch = () => {
-    if (selectedHotel) {
+    if (selectedLocation) {
       const queryParams = new URLSearchParams();
+      queryParams.append('search', selectedLocation);
       if (checkIn) queryParams.append('checkIn', checkIn);
       if (checkOut) queryParams.append('checkOut', checkOut);
       if (guests) queryParams.append('guests', guests);
       
-      const queryString = queryParams.toString();
-      navigate(`/property/${selectedHotel}${queryString ? `?${queryString}` : ''}`);
+      navigate(`/?${queryParams.toString()}#explore`);
+      
+      // Smooth scroll to explore section
+      setTimeout(() => {
+        const exploreSection = document.getElementById('explore');
+        if (exploreSection) {
+          exploreSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     } else {
-      alert('Please select a hotel to search.');
+      alert('Please select a location to search.');
     }
   };
 
@@ -83,18 +126,19 @@ const Hero = () => {
         
         <div className="search-bar-container glass-morphism">
           <div className="search-field">
-            <label>Hotel</label>
+            <label>Trip Location</label>
             <select 
               className="search-select" 
-              value={selectedHotel} 
-              onChange={(e) => setSelectedHotel(e.target.value)}
+              value={selectedLocation} 
+              onChange={(e) => setSelectedLocation(e.target.value)}
             >
-              <option value="">Select Hotel</option>
-              {hotels.map(hotel => (
-                <option key={hotel._id} value={hotel._id}>{hotel.name}</option>
+              <option value="">Select Location</option>
+              {uniqueLocations.map((loc, idx) => (
+                <option key={idx} value={loc}>{loc}</option>
               ))}
             </select>
           </div>
+
           <div className="search-field">
             <label>Check-in</label>
             <input 

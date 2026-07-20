@@ -2,6 +2,15 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;700;900&family=Cormorant+Garamond:wght@600;700&display=swap');
 
+/* Hide scrollbars globally */
+::-webkit-scrollbar {
+  display: none !important;
+}
+html, body {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
 html.lenis,
 html.lenis body {
   height: auto;

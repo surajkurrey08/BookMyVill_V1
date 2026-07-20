@@ -1,11 +1,11 @@
 .signin-container {
-  height: 100vh;
+  min-height: 100vh;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  padding: 20px 20px;
 }
 
 .signin-container::before {
@@ -46,9 +46,9 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 420px;
-  padding: 30px 40px;
-  border-radius: 24px;
+  max-width: 421px;
+  padding: 13px 25px;
+  border-radius: 16px;
   text-align: center;
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -57,26 +57,36 @@
 }
 
 .signin-header {
-  margin-bottom: 25px;
+  margin-bottom: 8px;
 }
 
 .signin-header .logo {
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+.signin-header .logo-text {
+  font-size: 1.8rem !important;
+}
+
+.signin-header .logo-subtext {
+  font-size: 0.6rem !important;
+  letter-spacing: 4px !important;
+  margin-top: 3px !important;
+}
+
 .signin-header h2 {
   font-family: 'Playfair Display', serif;
-  font-size: 1.8rem;
-  margin-bottom: 5px;
+  font-size: 1.25rem;
+  margin-bottom: 2px;
   font-weight: 700;
   letter-spacing: 1px;
 }
 
 .signin-header p {
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   opacity: 0.8;
   letter-spacing: 0.5px;
 }
@@ -86,17 +96,18 @@
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 8px;
 }
 
 .form-group label {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 500;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
   text-transform: uppercase;
   letter-spacing: 1px;
   opacity: 0.9;
+  color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .label-row {
@@ -106,7 +117,9 @@
 }
 
 .forgot-link {
-  font-size: 0.75rem;
+  display: block;
+  text-align: right;
+  font-size: 0.68rem;
   color: #FFD700;
   text-decoration: none;
   transition: all 0.3s ease;
@@ -117,22 +130,29 @@
   opacity: 0.8;
 }
 
-.signin-form input {
+.signin-form input,
+.signin-form select {
   width: 100%;
-  padding: 15px 20px;
+  padding: 8px 12px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
+  border-radius: 8px;
   color: white;
-  font-size: 1rem;
+  font-size: 0.8rem;
   transition: all 0.3s ease;
   outline: none;
 }
 
-.signin-form input:focus {
+.signin-form select option {
+  background-color: #1a2a26;
+  color: white;
+}
+
+.signin-form input:focus,
+.signin-form select:focus {
   background: rgba(255, 255, 255, 0.12);
   border-color: #FFD700;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
 }
 
 .signin-form input::placeholder {
@@ -141,9 +161,9 @@
 
 .signin-btn {
   width: 100%;
-  margin-top: 15px;
-  padding: 18px;
-  font-size: 1rem;
+  margin-top: 8px;
+  padding: 10px;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 2px;
   cursor: pointer;
@@ -151,32 +171,38 @@
 }
 
 .signin-footer {
-  margin-top: 30px;
-  font-size: 0.9rem;
-  color: #000000;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
   font-weight: 500;
 }
 
 .signin-footer a {
-  color: var(--primary-color);
+  color: #FFD700;
   text-decoration: none;
   font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.signin-footer a:hover {
+  text-decoration: underline;
+  opacity: 0.9;
 }
 
 .back-to-home {
-  margin-top: 25px;
+  margin-top: 10px;
 }
 
 .back-to-home a {
-  font-size: 0.85rem;
-  color: #000000;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
   font-weight: 500;
 }
 
 .back-to-home a:hover {
-  color: white;
+  color: #FFD700;
 }
 
 @media (max-width: 500px) {
@@ -184,4 +210,43 @@
     max-width: 90%;
     padding: 30px 20px;
   }
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 50px !important;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 15px;
+  top: 0;
+  height: 100%;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: color 0.2s ease;
+  z-index: 10;
+}
+
+.password-toggle-btn:hover {
+  color: #FFD700;
+}
+
+.forgot-password-container {
+  text-align: right;
+  width: 100%;
+  margin-top: 4px;
 }

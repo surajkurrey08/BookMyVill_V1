@@ -7,6 +7,7 @@ import { API_BASE_URL } from '../../config';
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -58,18 +59,28 @@ const SignIn = () => {
           </div>
 
           <div className="form-group">
-            <div className="label-row">
-              <label htmlFor="password">Password</label>
-              <a href="#" className="forgot-link">Forgot?</a>
+            <label htmlFor="password">Password</label>
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+              </button>
             </div>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
+            <div className="forgot-password-container">
+              <a href="#" className="forgot-link">Forgot Password?</a>
+            </div>
           </div>
 
           <button type="submit" className="signin-btn btn-primary">

@@ -1,0 +1,426 @@
+/* Layout for Split View (Map + List) */
+.property-split-container {
+  display: flex;
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  gap: 24px;
+  padding: 0 20px;
+  margin-top: 20px;
+  margin-bottom: 60px;
+  height: 550px;
+}
+
+.properties-list-column {
+  flex: 4.5;
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Custom Scrollbar for scrollable column */
+.properties-list-column::-webkit-scrollbar {
+  width: 6px;
+}
+
+.properties-list-column::-webkit-scrollbar-track {
+  background: rgba(45, 67, 61, 0.05);
+  border-radius: 10px;
+}
+
+.properties-list-column::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 10px;
+}
+
+.properties-list-column::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+.map-column {
+  flex: 5.5;
+  height: 100%;
+  position: sticky;
+  top: 100px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background-color: #ddd;
+}
+
+#leaflet-map {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+/* Split-view specific cards layout */
+.split-grid-card {
+  display: flex;
+  background: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(45, 67, 61, 0.08);
+}
+
+.split-grid-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(45, 67, 61, 0.15);
+  border-color: var(--secondary-color);
+}
+
+.split-card-img-wrapper {
+  width: 40%;
+  min-width: 150px;
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.split-card-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.split-grid-card:hover .split-card-img-wrapper img {
+  transform: scale(1.08);
+}
+
+.split-card-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--primary-color);
+  color: var(--white);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 2;
+  border: 1px solid var(--secondary-color);
+}
+
+.split-card-info {
+  padding: 16px 20px;
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.split-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.split-card-type {
+  font-size: 0.8rem;
+  color: var(--secondary-color);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.split-card-rating {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.split-card-rating i {
+  color: var(--secondary-color);
+}
+
+.split-card-reviews {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-left: 2px;
+}
+
+.split-card-info h3 {
+  font-size: 1.25rem;
+  color: var(--primary-color);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.split-card-location {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.split-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  padding-top: 12px;
+}
+
+.split-card-price {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.split-card-price span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Control Bar Styles */
+.map-control-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  max-width: 1000px;
+  margin: -10px auto 25px auto;
+  padding: 16px 24px;
+  background: white;
+  border-radius: 40px;
+  box-shadow: 0 4px 20px rgba(45, 67, 61, 0.08);
+  border: 1px solid rgba(45, 67, 61, 0.1);
+  z-index: 10;
+  position: relative;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1.5;
+  min-width: 250px;
+}
+
+.search-input-wrapper i {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary-color);
+  opacity: 0.7;
+}
+
+.search-location-input {
+  width: 100%;
+  padding: 10px 16px 10px 42px;
+  border-radius: 30px;
+  border: 1px solid rgba(45, 67, 61, 0.2);
+  background: #fdfcf9;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.search-location-input:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+}
+
+.viewport-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.viewport-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+/* Views toggling and active styles */
+.map-view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 30px;
+  background: var(--primary-color);
+  color: var(--white);
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 15px rgba(45, 67, 61, 0.2);
+}
+
+.map-view-toggle-btn:hover {
+  background: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+.map-view-toggle-btn.btn-secondary-style {
+  background: var(--secondary-color);
+  color: #1a1a1a;
+  border: 1px solid var(--primary-color);
+}
+
+.map-view-toggle-btn.btn-secondary-style:hover {
+  filter: brightness(1.05);
+}
+
+/* Custom pricing pins on Leaflet */
+.custom-price-marker {
+  background: none !important;
+  border: none !important;
+}
+
+.price-marker-bubble {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: 1.5px solid var(--secondary-color);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-weight: 700;
+  font-size: 12px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.price-marker-bubble:hover,
+.price-marker-bubble.marker-active {
+  background-color: var(--secondary-color);
+  color: #1a1a1a;
+  border-color: var(--primary-color);
+  transform: scale(1.15) translateY(-2px);
+  z-index: 1000 !important;
+}
+
+/* Popup design */
+.leaflet-popup-content-wrapper {
+  background: white !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  padding: 0 !important;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2) !important;
+  border: 1px solid rgba(45, 67, 61, 0.15);
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: 240px !important;
+}
+
+.popup-hotel-card {
+  width: 100%;
+}
+
+.popup-hotel-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.popup-hotel-details {
+  padding: 12px;
+}
+
+.popup-hotel-type {
+  font-size: 0.7rem;
+  color: var(--secondary-color);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.popup-hotel-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.popup-hotel-price {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.popup-hotel-link {
+  display: block;
+  text-align: center;
+  background: var(--primary-color);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.popup-hotel-link:hover {
+  background: var(--secondary-color);
+  color: #1A1A1A;
+}
+
+.leaflet-popup-tip-container {
+  display: none !important; /* Hide standard arrow for simpler design */
+}
+
+/* Mobile responsive split view */
+@media (max-width: 900px) {
+  .property-split-container {
+    flex-direction: column-reverse;
+    height: auto;
+  }
+  
+  .properties-list-column {
+    width: 100%;
+    height: 500px;
+    padding-right: 0;
+  }
+  
+  .map-column {
+    width: 100%;
+    height: 400px;
+    position: relative;
+    top: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .map-control-bar {
+    border-radius: 20px;
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-input-wrapper {
+    width: 100%;
+    min-width: 100%;
+  }
+}
