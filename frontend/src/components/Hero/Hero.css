@@ -127,10 +127,15 @@
   outline: none;
   width: 100%;
   font-size: 0.85rem;
-  color: var(--text-primary);
-  font-weight: 500;
+  color: #1a1a1a !important;
+  font-weight: 600;
   padding: 0;
   cursor: pointer;
+}
+
+.search-select option {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
 }
 
 .search-select {

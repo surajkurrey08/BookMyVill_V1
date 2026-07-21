@@ -72,7 +72,9 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
     >
       <div className="split-card-img-wrapper">
         <img src={property.image} alt={property.name} />
-        {property.tag && <span className="split-card-tag">{property.tag}</span>}
+        <span className="split-card-tag" style={{ background: '#2D433D', border: '1px solid #D4AF37', color: '#fff' }}>
+          ☀️ Day & 🌙 Night
+        </span>
       </div>
       <div className="split-card-info">
         <div>
@@ -90,13 +92,13 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
         </div>
         <div className="split-card-footer">
           <span className="split-card-price">
-            {property.price} <span>/ night</span>
+            {property.price}
           </span>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button 
               type="button" 
               className="btn-outline" 
-              style={{ padding: '6px 14px', fontSize: '0.8rem' }}
+              style={{ padding: '8px 14px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
               onClick={(e) => {
                 e.stopPropagation();
                 onSelect(property);
@@ -105,9 +107,9 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
               <i className="fa-solid fa-location-crosshairs"></i> Find on Map
             </button>
             <Link 
-              to={`/property/${property.id}`} 
+              to={`/property/${property._id || property.id}`} 
               className="btn-primary" 
-              style={{ padding: '8px 18px', fontSize: '0.85rem' }}
+              style={{ padding: '9px 24px', fontSize: '0.9rem', fontWeight: '700', borderRadius: '30px', whiteSpace: 'nowrap' }}
               onClick={(e) => e.stopPropagation()}
             >
               Book Stays
@@ -128,6 +130,7 @@ const PropertyGrid = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [hoveredPropertyId, setHoveredPropertyId] = useState(null);
+  const [showViewAllModal, setShowViewAllModal] = useState(false);
 
   const mapRef = useRef(null);
   const markersGroupRef = useRef(null);
@@ -258,45 +261,62 @@ const PropertyGrid = () => {
 
   // Setup Leaflet map instance
   useEffect(() => {
-    if (!window.L) return;
-    const L = window.L;
+    let checkInterval;
 
-    if (mapRef.current) return; // Prevent duplicate creation
+    const initMap = () => {
+      if (!window.L) return false;
+      const mapElement = document.getElementById('leaflet-map');
+      if (!mapElement) return false;
+      if (mapRef.current) return true;
 
-    let initialLat = 17.9258;
-    let initialLon = 73.6510;
-    let initialZoom = 6;
+      const L = window.L;
 
-    if (filteredProperties.length > 0) {
-      const firstValid = filteredProperties.find(p => p.lat && (p.lon || p.lng));
-      if (firstValid) {
-        initialLat = firstValid.lat;
-        initialLon = firstValid.lon ?? firstValid.lng;
-        initialZoom = filteredProperties.length === 1 ? 12 : 7;
+      let initialLat = 17.9258;
+      let initialLon = 73.6510;
+      let initialZoom = 6;
+
+      if (filteredProperties.length > 0) {
+        const firstValid = filteredProperties.find(p => p.lat && (p.lon || p.lng));
+        if (firstValid) {
+          initialLat = firstValid.lat;
+          initialLon = firstValid.lon ?? firstValid.lng;
+          initialZoom = filteredProperties.length === 1 ? 12 : 7;
+        }
       }
+
+      // Create map
+      const map = L.map('leaflet-map', {
+        zoomControl: false
+      }).setView([initialLat, initialLon], initialZoom);
+
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      mapRef.current = map;
+      markersGroupRef.current = L.layerGroup().addTo(map);
+
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      }, 300);
+
+      return true;
+    };
+
+    if (!initMap()) {
+      checkInterval = setInterval(() => {
+        if (initMap()) {
+          clearInterval(checkInterval);
+        }
+      }, 200);
     }
 
-    // Create map
-    const map = L.map('leaflet-map', {
-      zoomControl: false
-    }).setView([initialLat, initialLon], initialZoom);
-
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    mapRef.current = map;
-    markersGroupRef.current = L.layerGroup().addTo(map);
-
-    setTimeout(() => {
-      if (mapRef.current) {
-        mapRef.current.invalidateSize();
-      }
-    }, 200);
-
     return () => {
+      if (checkInterval) clearInterval(checkInterval);
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -326,10 +346,15 @@ const PropertyGrid = () => {
       const isSelected = selectedPropertyId === property.id;
 
       const customIcon = L.divIcon({
-        className: 'custom-price-marker',
-        html: `<div class="price-marker-bubble ${isSelected ? 'marker-active' : ''}" id="marker-${property.id}">${property.price}</div>`,
-        iconSize: [60, 30],
-        iconAnchor: [30, 15]
+        className: 'custom-red-pin-marker',
+        html: `<div class="map-red-pin ${isSelected ? 'marker-active' : ''}" id="marker-${property.id}">
+                 <svg width="34" height="46" viewBox="0 0 384 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <path fill="#e63946" d="M172.268 501.67C26.97 291.03 0 269.41 0 192 0 85.96 85.96 0 192 0s192 85.96 192 192c0 77.41-26.97 99.03-172.268 309.67a24 24 0 0 1-35.464 0z"/>
+                   <circle cx="192" cy="192" r="75" fill="#ffffff"/>
+                 </svg>
+               </div>`,
+        iconSize: [34, 46],
+        iconAnchor: [17, 46]
       });
 
       const marker = L.marker([lat, lon], { icon: customIcon });
@@ -340,8 +365,8 @@ const PropertyGrid = () => {
           <div class="popup-hotel-details">
             <div class="popup-hotel-type">${property.type} • ★ ${property.rating} (${property.reviewsCount || Math.floor(Math.random() * 80) + 20} reviews)</div>
             <div class="popup-hotel-name">${property.name}</div>
-            <div class="popup-hotel-price">${property.price} <span>/ night</span></div>
-            <a href="/property/${property.id}" class="popup-hotel-link">Book Stays</a>
+            <div class="popup-hotel-price">${property.price}</div>
+            <a href="/property/${property._id || property.id}" class="popup-hotel-link">Book Stays</a>
           </div>
         </div>
       `;
@@ -410,13 +435,27 @@ const PropertyGrid = () => {
     };
   }, [hoveredPropertyId, selectedPropertyId]);
 
+  const handleViewAll = () => {
+    setActiveFilter('All');
+    setSearchQuery('');
+    setSelectedPropertyId(null);
+    if (mapRef.current && markersGroupRef.current && window.L) {
+      const L = window.L;
+      const validCoords = resolvedAllProperties.filter(p => p.lat && (p.lon || p.lng));
+      if (validCoords.length > 0) {
+        const group = L.featureGroup(validCoords.map(p => L.marker([p.lat, p.lon ?? p.lng])));
+        mapRef.current.fitBounds(group.getBounds().pad(0.25), { maxZoom: 13 });
+      }
+    }
+  };
+
   return (
     <section className="property-grid-section" id="explore">
       <div className="section-header">
         <span className="section-subtitle">Our Curated Collection</span>
         <h2>Explore Exceptional Stays</h2>
         
-        {/* Modern Control Bar: Category Tabs, Search Box, Quick Dropdown, Count Badge */}
+        {/* Modern Control Bar: Category Tabs, Search Box, Quick Dropdown, View All Button */}
         <div className="map-control-bar">
           <div className="filter-tabs" style={{ marginBottom: 0 }}>
             {['All', 'Villa', 'Hotel', 'Cabin', 'Resort'].map(tab => (
@@ -477,9 +516,9 @@ const PropertyGrid = () => {
       
       {/* Map + Hotel List View */}
       <div className="property-split-container">
-        <div className="properties-list-column">
+        <div className="properties-list-column" data-lenis-prevent>
           {filteredProperties.length > 0 ? (
-            filteredProperties.map(property => (
+            filteredProperties.slice(0, 3).map(property => (
               <SplitPropertyCard 
                 key={property.id} 
                 property={property} 
@@ -502,6 +541,98 @@ const PropertyGrid = () => {
           <div id="leaflet-map"></div>
         </div>
       </div>
+
+      {/* Full-width View All Hotels Banner */}
+      <div style={{
+        maxWidth: '1400px',
+        margin: '30px auto 0 auto',
+        padding: '0 20px',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
+          borderRadius: '24px',
+          padding: '30px 40px',
+          color: '#ffffff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '20px',
+          boxShadow: '0 10px 30px rgba(27, 67, 50, 0.3)'
+        }}>
+          <div style={{ textAlign: 'left' }}>
+            <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', color: '#d4af37', margin: '0 0 6px 0' }}>
+              Explore All Available Hotels ({resolvedAllProperties.length} Stays)
+            </h3>
+            <p style={{ margin: 0, opacity: 0.9, fontSize: '0.95rem' }}>
+              Browse complete luxury amenities, room details, ratings, and video tours for all stays.
+            </p>
+          </div>
+          <button 
+            onClick={() => setShowViewAllModal(true)} 
+            className="btn-primary"
+            style={{
+              background: '#d4af37',
+              color: '#1a1a1a',
+              fontWeight: '700',
+              padding: '14px 32px',
+              borderRadius: '50px',
+              fontSize: '1rem',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <i className="fa-solid fa-list-check" style={{ marginRight: '8px' }}></i> View All Hotels & Details
+          </button>
+        </div>
+      </div>
+
+      {/* All Available Hotels Detailed Explorer Modal */}
+      {showViewAllModal && (
+        <div className="view-all-modal-overlay">
+          <div className="view-all-modal-content" data-lenis-prevent>
+            <div className="view-all-modal-header">
+              <div>
+                <h2>All Available Luxury Hotels & Stays</h2>
+                <p>Displaying {resolvedAllProperties.length} curated luxury properties</p>
+              </div>
+              <button onClick={() => setShowViewAllModal(false)} className="modal-close-btn">×</button>
+            </div>
+
+            <div className="view-all-modal-grid">
+              {resolvedAllProperties.map(property => (
+                <div key={property.id} className="all-hotel-card">
+                  <div className="all-hotel-image">
+                    <img src={property.image} alt={property.name} />
+                    <span className="all-hotel-badge">{property.type}</span>
+                  </div>
+                  <div className="all-hotel-info">
+                    <div className="all-hotel-rating">
+                      ★ {property.rating} <span style={{ color: '#666', fontSize: '0.8rem' }}>({property.reviewsCount || 45} reviews)</span>
+                    </div>
+                    <h4>{property.name}</h4>
+                    <p className="all-hotel-location">📍 {property.location}</p>
+                    <div className="all-hotel-footer">
+                      <span className="all-hotel-price">{property.price} <span>/ night</span></span>
+                      <Link 
+                        to={`/property/${property._id || property.id}`} 
+                        className="btn-primary" 
+                        onClick={() => setShowViewAllModal(false)}
+                        style={{ padding: '8px 18px', fontSize: '0.85rem', textDecoration: 'none' }}
+                      >
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

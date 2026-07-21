@@ -8,13 +8,16 @@ router.post('/add', auth, async (req, res) => {
   if (req.user.role !== 'owner') return res.status(403).json({ msg: 'Access denied' });
 
   try {
-    const { name, type, location, photos } = req.body;
+    const { name, type, location, price, photos, videos } = req.body;
     const newProperty = new Property({
       owner: req.user.id,
       name,
       type,
       location,
-      photos
+      price: price ? parseInt(price) : 10000,
+      photos: photos || [],
+      videos: videos || [],
+      status: 'approved'
     });
     await newProperty.save();
     res.json(newProperty);
@@ -33,10 +36,10 @@ router.get('/my-properties', auth, async (req, res) => {
   }
 });
 
-// Get all approved properties (Public)
+// Get all properties (Public)
 router.get('/all', async (req, res) => {
   try {
-    const properties = await Property.find({ status: 'approved' });
+    const properties = await Property.find({});
     res.json(properties);
   } catch (err) {
     res.status(500).send('Server error');

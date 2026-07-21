@@ -11,6 +11,7 @@ import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
 import PropertyDetails from './components/PropertyDetails/PropertyDetails';
 import UserDashboard from './components/UserDashboard/UserDashboard';
+import RegistrationForm from './components/RegistrationForm/RegistrationForm';
 import './App.css';
 import 'lenis/dist/lenis.css';
 
@@ -85,6 +86,15 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/register-property" element={
+            <>
+              <Navbar />
+              <div style={{ paddingTop: '80px' }}>
+                <RegistrationForm />
+              </div>
+              <Footer />
+            </>
+          } />
           <Route path="/admin" element={<AdminRedirect />} />
           <Route path="/property/:id" element={<PropertyDetails />} />
           <Route path="/dashboard" element={<UserDashboard />} />

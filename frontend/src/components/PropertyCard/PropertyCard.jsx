@@ -8,7 +8,7 @@ const PropertyCard = ({ property }) => {
         <img src={property.image} alt={property.name} />
         <span className="card-tag">{property.tag}</span>
         <div className="card-overlay">
-          <Link to={`/property/${property.id}`} className="btn-primary" style={{ textDecoration: 'none' }}>
+          <Link to={`/property/${property._id || property.id}`} className="btn-primary" style={{ textDecoration: 'none' }}>
             Book Now
           </Link>
         </div>

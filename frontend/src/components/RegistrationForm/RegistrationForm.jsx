@@ -2,18 +2,20 @@ import React, { useState, useRef } from 'react';
 import './RegistrationForm.css';
 import { API_BASE_URL } from '../../config';
 
-
-const RegistrationForm = () => {
+const RegistrationForm = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     propertyName: '',
     propertyType: 'Villa',
     location: '',
-    photos: []
+    price: '',
+    photos: [],
+    videos: []
   });
 
-  const fileInputRef = useRef(null);
+  const photoInputRef = useRef(null);
+  const videoInputRef = useRef(null);
 
   const convertToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -24,23 +26,43 @@ const RegistrationForm = () => {
     });
   };
 
-  const handleFileChange = async (e) => {
+  const handlePhotoChange = async (e) => {
     const files = Array.from(e.target.files);
     try {
       const base64Files = await Promise.all(files.map(file => convertToBase64(file)));
-      setFormData({ ...formData, photos: base64Files });
+      setFormData(prev => ({ ...prev, photos: [...prev.photos, ...base64Files] }));
     } catch (err) {
-      console.error('Error converting files:', err);
+      console.error('Error converting images:', err);
       alert('Error processing images. Please try again.');
+    }
+  };
+
+  const handleVideoChange = async (e) => {
+    const files = Array.from(e.target.files);
+    try {
+      const base64Files = await Promise.all(files.map(file => convertToBase64(file)));
+      setFormData(prev => ({ ...prev, videos: [...prev.videos, ...base64Files] }));
+    } catch (err) {
+      console.error('Error converting video files:', err);
+      alert('Error processing video files. Please try again.');
     }
   };
 
   const removePhotos = (e) => {
     e.stopPropagation();
     e.preventDefault();
-    setFormData({ ...formData, photos: [] });
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    setFormData(prev => ({ ...prev, photos: [] }));
+    if (photoInputRef.current) {
+      photoInputRef.current.value = '';
+    }
+  };
+
+  const removeVideos = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setFormData(prev => ({ ...prev, videos: [] }));
+    if (videoInputRef.current) {
+      videoInputRef.current.value = '';
     }
   };
 
@@ -65,21 +87,26 @@ const RegistrationForm = () => {
           name: formData.propertyName,
           type: formData.propertyType,
           location: formData.location,
-          photos: formData.photos // Sending the file names/urls to MongoDB
+          price: formData.price ? parseInt(formData.price) : 10000,
+          photos: formData.photos,
+          videos: formData.videos
         })
       });
 
       const data = await response.json();
       if (response.ok) {
-        alert('Success! Your property and images are now saved in MongoDB.');
+        alert('Success! Property listing with images and video tour created successfully.');
         setFormData({
           name: '',
           email: '',
           propertyName: '',
           propertyType: 'Villa',
           location: '',
-          photos: []
+          price: '',
+          photos: [],
+          videos: []
         });
+        if (onSuccess) onSuccess();
       } else {
         alert(data.msg || 'Failed to register property');
       }
@@ -94,28 +121,28 @@ const RegistrationForm = () => {
       <div className="registration-container">
         <div className="registration-info fade-in">
           <h2>Become a Host</h2>
-          <p>Join our exclusive community of premium hill station property owners. We help you reach travelers looking for unique and luxury experiences.</p>
+          <p>Join our exclusive community of premium hill station property owners. Upload high-res images & video tours to show travelers your luxury stays.</p>
           
           <ul className="benefits-list">
             <li>
               <span className="icon">✓</span>
               <div>
-                <h4>Increased Visibility</h4>
-                <p>Get featured in our curated collections.</p>
+                <h4>HD Photos & Video Tours</h4>
+                <p>Add rich media & video walk-throughs to attract premium guests.</p>
               </div>
             </li>
             <li>
               <span className="icon">✓</span>
               <div>
-                <h4>Premium Audience</h4>
-                <p>Reach high-value guests looking for quality.</p>
+                <h4>Increased Visibility</h4>
+                <p>Get featured in our curated collections and map explorer.</p>
               </div>
             </li>
             <li>
               <span className="icon">✓</span>
               <div>
                 <h4>Seamless Management</h4>
-                <p>Easy-to-use tools to manage your listings.</p>
+                <p>Easy-to-use tools to manage your property listings & bookings.</p>
               </div>
             </li>
           </ul>
@@ -144,6 +171,7 @@ const RegistrationForm = () => {
                 placeholder="john@example.com" 
               />
             </div>
+
             <div className="form-row">
               <div className="form-group">
                 <label>Property Name</label>
@@ -168,30 +196,48 @@ const RegistrationForm = () => {
                 </select>
               </div>
             </div>
-            <div className="form-group">
-              <label>Location</label>
-              <input 
-                type="text" 
-                required 
-                value={formData.location}
-                onChange={(e) => setFormData({...formData, location: e.target.value})}
-                placeholder="City, State" 
-              />
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Location</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={formData.location}
+                  onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  placeholder="City, State" 
+                />
+              </div>
+              <div className="form-group">
+                <label>Nightly Price (₹)</label>
+                <input 
+                  type="number" 
+                  required 
+                  value={formData.price}
+                  onChange={(e) => setFormData({...formData, price: e.target.value})}
+                  placeholder="e.g. 15000" 
+                />
+              </div>
             </div>
+
+            {/* Photo Upload Field */}
             <div className="form-group">
-              <label>Property Photos {formData.photos.length > 0 && `(${formData.photos.length} selected)`}</label>
+              <label>
+                <i className="fa-solid fa-camera" style={{ marginRight: '6px', color: 'var(--primary-color)' }}></i>
+                Property Photos {formData.photos.length > 0 && `(${formData.photos.length} selected)`}
+              </label>
               <div className="photo-upload-area">
                 <div className="upload-content">
                   <span className="upload-icon">+</span>
-                  <p>{formData.photos.length > 0 ? `${formData.photos.length} images selected` : 'Upload property images'}</p>
-                  <span>Supported formats: JPG, PNG</span>
+                  <p>{formData.photos.length > 0 ? `${formData.photos.length} photo(s) selected` : 'Upload property images (JPG, PNG)'}</p>
                 </div>
                 <input 
                   type="file" 
                   multiple 
+                  accept="image/*"
                   className="file-input" 
-                  onChange={handleFileChange} 
-                  ref={fileInputRef}
+                  onChange={handlePhotoChange} 
+                  ref={photoInputRef}
                 />
                 {formData.photos.length > 0 && (
                   <button 
@@ -205,7 +251,40 @@ const RegistrationForm = () => {
                 )}
               </div>
             </div>
-            <button type="submit" className="btn-primary w-full">Submit Application</button>
+
+            {/* Video Upload Field */}
+            <div className="form-group">
+              <label>
+                <i className="fa-solid fa-video" style={{ marginRight: '6px', color: 'var(--secondary-color)' }}></i>
+                Property Video Tour {formData.videos.length > 0 && `(${formData.videos.length} selected)`}
+              </label>
+              <div className="photo-upload-area" style={{ borderColor: 'var(--secondary-color)' }}>
+                <div className="upload-content">
+                  <span className="upload-icon" style={{ color: 'var(--secondary-color)' }}>🎥</span>
+                  <p>{formData.videos.length > 0 ? `${formData.videos.length} video(s) attached` : 'Upload video tour (MP4, WebM)'}</p>
+                </div>
+                <input 
+                  type="file" 
+                  multiple 
+                  accept="video/*"
+                  className="file-input" 
+                  onChange={handleVideoChange} 
+                  ref={videoInputRef}
+                />
+                {formData.videos.length > 0 && (
+                  <button 
+                    type="button" 
+                    className="remove-photos-btn" 
+                    onClick={removeVideos}
+                    title="Remove selected videos"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <button type="submit" className="btn-primary w-full">Submit Property Listing</button>
           </form>
         </div>
       </div>

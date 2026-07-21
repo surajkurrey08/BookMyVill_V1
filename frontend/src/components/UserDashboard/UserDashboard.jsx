@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './UserDashboard.css';
 import bgImage from '../../assets/hillstationhome (1).jpg';
 import { API_BASE_URL } from '../../config';
-
 
 const UserDashboard = () => {
   const [bookings, setBookings] = useState([]);
@@ -11,6 +10,7 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [properties, setProperties] = useState([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState('personal');
+  const [activeReceiptBooking, setActiveReceiptBooking] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -94,7 +94,6 @@ const UserDashboard = () => {
 
     const token = localStorage.getItem('token');
     try {
-      console.log('Attempting to cancel booking:', bookingId);
       const response = await fetch(`${API_BASE_URL}/api/bookings/cancel/${bookingId}`, {
         method: 'POST',
         headers: { 
@@ -106,7 +105,7 @@ const UserDashboard = () => {
       
       if (response.ok) {
         alert('Booking cancelled successfully.');
-        fetchBookings(selectedPropertyId, token); // Refresh list
+        fetchBookings(selectedPropertyId, token);
       } else {
         alert(data.msg || 'Cancellation failed.');
       }
@@ -151,8 +150,8 @@ const UserDashboard = () => {
               
               <div className="booking-list-details">
                 <div className="booking-list-header">
-                  <h2>{booking.property?.name || 'Deleted Property'}</h2>
-                  <p className="location"><i className="fas fa-map-marker-alt"></i> {booking.property?.location || 'Unknown Location'}</p>
+                  <h2>{booking.property?.name || 'Luxury Stay'}</h2>
+                  <p className="location"><i className="fas fa-map-marker-alt"></i> {booking.property?.location || 'Mahabaleshwar'}</p>
                   {selectedPropertyId !== 'personal' && booking.user && (
                     <div className="guest-info">
                       <span className="guest-label">Guest:</span> {booking.user.name} ({booking.user.email})
@@ -179,7 +178,13 @@ const UserDashboard = () => {
                   <strong>₹{booking.totalPrice}</strong>
                 </div>
                 <div className="action-buttons">
-                  <button className="view-details-btn">View Receipt</button>
+                  <button 
+                    className="view-details-btn"
+                    onClick={() => setActiveReceiptBooking(booking)}
+                  >
+                    <i className="fa-solid fa-file-invoice" style={{ marginRight: '6px' }}></i>
+                    View Receipt
+                  </button>
                   {selectedPropertyId === 'personal' && !isHistoryOrCancelled && booking.status !== 'cancelled' && (
                     (() => {
                       const diffHours = Math.abs(new Date() - new Date(booking.createdAt)) / 36e5;
@@ -232,10 +237,67 @@ const UserDashboard = () => {
       <div className="dashboard-content">
         <header className="content-header">
           <h1>Your Luxury Dashboard</h1>
-          <p>Manage your bookings, cancellations, and history</p>
+          <p>Manage your bookings, view receipts, and track history</p>
         </header>
 
-        {user?.role === 'owner' && properties.length > 0 && (
+        {user?.role === 'owner' && (
+          <div className="provider-profile-card glass-morphism" style={{
+            background: 'rgba(0, 0, 0, 0.45)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            padding: '30px',
+            marginBottom: '30px',
+            border: '1px solid rgba(212, 175, 55, 0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div className="provider-avatar" style={{
+                  width: '75px',
+                  height: '75px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #d4af37 0%, #1b4332 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '2rem',
+                  fontWeight: '700',
+                  color: '#ffffff',
+                  boxShadow: '0 6px 20px rgba(212, 175, 55, 0.3)',
+                  border: '2.5px solid #d4af37'
+                }}>
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <h2 style={{ margin: 0, fontSize: '1.8rem', fontFamily: 'var(--font-heading)', color: '#ffffff' }}>
+                      {user?.name}
+                    </h2>
+                    <span className="owner-label" style={{ background: '#d4af37', color: '#1a1a1a', padding: '4px 12px', borderRadius: '20px', fontWeight: '700', fontSize: '0.75rem' }}>
+                      Verified Luxury Host
+                    </span>
+                  </div>
+                  <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.95rem' }}>
+                    <i className="fa-solid fa-envelope" style={{ marginRight: '6px', color: '#d4af37' }}></i> {user?.email}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '25px', background: 'rgba(255, 255, 255, 0.05)', padding: '15px 25px', borderRadius: '18px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.6)', letterSpacing: '1px' }}>Listed Stays</span>
+                  <strong style={{ fontSize: '1.5rem', color: '#d4af37' }}>{properties.length}</strong>
+                </div>
+                <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }}></div>
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.6)', letterSpacing: '1px' }}>Total Bookings</span>
+                  <strong style={{ fontSize: '1.5rem', color: '#52b788' }}>{bookings.length}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {user?.role === 'owner' && (
           <div className="property-selector-container glass-morphism">
             <span className="property-selector-label">
               <i className="fas fa-hotel"></i> Dashboard Mode:
@@ -249,60 +311,146 @@ const UserDashboard = () => {
               }}
               className="property-dropdown"
             >
-              <optgroup label="Guest Mode">
-                <option value="personal">My Personal Stays</option>
-              </optgroup>
-              <optgroup label="Host Mode (Properties)">
-                {properties.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.name} ({p.location})
-                  </option>
-                ))}
-              </optgroup>
+              <option value="personal">My Personal Bookings</option>
+              {properties.map((p) => (
+                <option key={p._id} value={p._id}>
+                  Manage: {p.name}
+                </option>
+              ))}
             </select>
+
+            <Link 
+              to="/register-property" 
+              className="btn-primary"
+              style={{
+                padding: '8px 20px',
+                borderRadius: '50px',
+                background: '#d4af37',
+                color: '#1a1a1a',
+                fontWeight: '700',
+                textDecoration: 'none',
+                fontSize: '0.85rem',
+                boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i> Add New Property
+            </Link>
           </div>
         )}
 
-        {/* Quick Nav Tabs */}
-        <div className="dashboard-tabs-nav glass-morphism">
-          <a href="#active-bookings" className="tab-nav-link">
-            <span className="nav-icon">🛎️</span> Active Bookings ({activeBookings.length})
+        <div className="dashboard-tabs-nav">
+          <a href="#active" className="tab-nav-link">
+            <i className="fa-solid fa-calendar-check nav-icon"></i>
+            Active Bookings ({activeBookings.length})
           </a>
-          <a href="#cancelled-bookings" className="tab-nav-link">
-            <span className="nav-icon">❌</span> Cancelled Bookings ({cancelledBookings.length})
+          <a href="#history" className="tab-nav-link">
+            <i className="fa-solid fa-clock-rotate-left nav-icon"></i>
+            Booking History ({bookingHistory.length})
           </a>
-          <a href="#booking-history" className="tab-nav-link">
-            <span className="nav-icon">⏳</span> Booking History ({bookingHistory.length})
+          <a href="#cancelled" className="tab-nav-link">
+            <i className="fa-solid fa-ban nav-icon"></i>
+            Cancelled ({cancelledBookings.length})
           </a>
         </div>
 
-        {/* Active Bookings Section */}
-        <section id="active-bookings" className="dashboard-section">
+        <section id="active" className="dashboard-section">
           <div className="section-title-container">
-            <h2>🛎️ Active Bookings</h2>
-            <span className="section-badge active-badge">{activeBookings.length}</span>
+            <h2>Active Bookings</h2>
+            <span className="section-badge active-badge">{activeBookings.length} Active</span>
           </div>
-          {renderBookingList(activeBookings, "You do not have any active stays at the moment. Explore our luxury stays!", false)}
+          {renderBookingList(activeBookings, "No active bookings found. Ready for your next getaway?", false)}
         </section>
 
-        {/* Cancelled Bookings Section */}
-        <section id="cancelled-bookings" className="dashboard-section">
+        <section id="history" className="dashboard-section">
           <div className="section-title-container">
-            <h2>❌ Cancelled Bookings</h2>
-            <span className="section-badge cancelled-badge">{cancelledBookings.length}</span>
+            <h2>Booking History</h2>
+            <span className="section-badge history-badge">{bookingHistory.length} Past</span>
           </div>
-          {renderBookingList(cancelledBookings, "No cancelled bookings found.", true)}
+          {renderBookingList(bookingHistory, "No past booking history available.", true)}
         </section>
 
-        {/* Booking History Section */}
-        <section id="booking-history" className="dashboard-section">
+        <section id="cancelled" className="dashboard-section">
           <div className="section-title-container">
-            <h2>⏳ Booking History</h2>
-            <span className="section-badge history-badge">{bookingHistory.length}</span>
+            <h2>Cancelled Stays</h2>
+            <span className="section-badge cancelled-badge">{cancelledBookings.length} Cancelled</span>
           </div>
-          {renderBookingList(bookingHistory, "You haven't stayed with us in the past yet.", true)}
+          {renderBookingList(cancelledBookings, "No cancelled bookings.", true)}
         </section>
       </div>
+
+      {/* Printable Luxury Booking Receipt Modal */}
+      {activeReceiptBooking && (
+        <div className="receipt-modal-overlay">
+          <div className="receipt-modal-card">
+            <div className="receipt-modal-header">
+              <h2>Mahabaleshwar Luxury Stays</h2>
+              <button onClick={() => setActiveReceiptBooking(null)} className="receipt-close-btn">×</button>
+            </div>
+            <div className="receipt-modal-body">
+              <div className="receipt-number-badge">
+                <span>Official Booking Receipt</span>
+                <strong>#MS-REC-{String(activeReceiptBooking._id).slice(-6).toUpperCase()}</strong>
+              </div>
+
+              <div className="receipt-details-grid">
+                <div className="receipt-detail-item">
+                  <label>Property</label>
+                  <strong>{activeReceiptBooking.property?.name || 'Luxury Stay'}</strong>
+                </div>
+                <div className="receipt-detail-item">
+                  <label>Location</label>
+                  <strong>{activeReceiptBooking.property?.location || 'Mahabaleshwar'}</strong>
+                </div>
+                <div className="receipt-detail-item">
+                  <label>Guest Name</label>
+                  <strong>{activeReceiptBooking.user?.name || user?.name || 'Guest User'}</strong>
+                </div>
+                <div className="receipt-detail-item">
+                  <label>Guest Email</label>
+                  <strong>{activeReceiptBooking.user?.email || user?.email || 'guest@example.com'}</strong>
+                </div>
+                <div className="receipt-detail-item">
+                  <label>Check In</label>
+                  <strong>{new Date(activeReceiptBooking.checkIn).toLocaleDateString()}</strong>
+                </div>
+                <div className="receipt-detail-item">
+                  <label>Check Out</label>
+                  <strong>{new Date(activeReceiptBooking.checkOut).toLocaleDateString()}</strong>
+                </div>
+                <div className="receipt-detail-item">
+                  <label>Booking Status</label>
+                  <strong style={{ color: '#2d6a4f', textTransform: 'capitalize' }}>
+                    {activeReceiptBooking.status} ({activeReceiptBooking.paymentStatus || 'paid'})
+                  </strong>
+                </div>
+                <div className="receipt-detail-item">
+                  <label>Transaction ID</label>
+                  <strong>{activeReceiptBooking.razorpayOrderId || `TXN_${String(activeReceiptBooking._id).slice(-8)}`}</strong>
+                </div>
+              </div>
+
+              <div className="receipt-amount-box">
+                <span>Total Paid Amount</span>
+                <strong>₹{activeReceiptBooking.totalPrice}</strong>
+              </div>
+
+              <div className="receipt-actions">
+                <button onClick={() => window.print()} className="print-receipt-btn">
+                  <i className="fa-solid fa-print"></i> Print / Download Receipt
+                </button>
+                <button 
+                  onClick={() => setActiveReceiptBooking(null)} 
+                  className="btn-outline" 
+                  style={{ borderRadius: '12px', padding: '12px 20px', cursor: 'pointer' }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

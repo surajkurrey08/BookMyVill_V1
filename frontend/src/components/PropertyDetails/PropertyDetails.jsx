@@ -174,14 +174,26 @@ const PropertyDetails = () => {
     return `${yyyy}-${mm}-${dd}`;
   };
 
+  const handleResetBookingForm = () => {
+    setBookingDates({ checkIn: '', checkOut: '' });
+    setGuests(1);
+    setStayType('night');
+  };
+
   const calculateTotalPrice = () => {
-    if (!bookingDates.checkIn || !bookingDates.checkOut || !property) return 0;
+    if (!bookingDates.checkIn || !property) return 0;
+    const priceValue = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '15000');
+    
+    if (stayType === 'day') {
+      return Math.round(priceValue * 0.55); // Day pass at 55% rate
+    }
+
+    if (!bookingDates.checkOut) return priceValue;
     const start = new Date(bookingDates.checkIn);
     const end = new Date(bookingDates.checkOut);
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-    const priceValue = property.price?.toString().replace(/[^0-9]/g, '') || '15000';
-    return parseInt(priceValue) * diffDays;
+    return priceValue * diffDays;
   };
 
   const handleBookingStart = async (e) => {
@@ -208,9 +220,9 @@ const PropertyDetails = () => {
           'x-auth-token': token
         },
         body: JSON.stringify({
-          propertyId: id,
+          propertyId: property?._id || id,
           checkIn: bookingDates.checkIn,
-          checkOut: bookingDates.checkOut,
+          checkOut: bookingDates.checkOut || bookingDates.checkIn,
           guests: guests,
           totalPrice: total,
           isFake: true 
@@ -309,6 +321,37 @@ const PropertyDetails = () => {
                 </div>
               </div>
 
+              {/* Host / Provider Profile Card */}
+              <div className="description-card glass-morphism" style={{ marginTop: '25px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #1b4332 0%, #52b788 100%)',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.5rem',
+                    fontWeight: '700',
+                    border: '2px solid var(--secondary-color)',
+                    boxShadow: '0 4px 12px rgba(27, 67, 50, 0.3)'
+                  }}>
+                    {property.owner?.name ? property.owner.name.charAt(0).toUpperCase() : 'H'}
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.35rem', color: 'var(--primary-color)' }}>
+                      Hosted by {property.owner?.name || 'Verified Luxury Host'}
+                    </h3>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                      <i className="fa-solid fa-shield-halved" style={{ color: 'var(--secondary-color)', marginRight: '6px' }}></i>
+                      Verified Stay Provider • 100% Superhost Response Rate
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Interactive Location Map Section */}
               <div className="location-map-card glass-morphism">
                 <h3>Where you'll be staying</h3>
@@ -320,18 +363,82 @@ const PropertyDetails = () => {
                   <div id="detail-leaflet-map"></div>
                 </div>
               </div>
+
+              {/* Property Video Tour Section */}
+              {property.videos && property.videos.length > 0 && (
+                <div className="location-map-card glass-morphism" style={{ marginTop: '30px' }}>
+                  <h3>
+                    <i className="fa-solid fa-circle-play" style={{ color: 'var(--secondary-color)', marginRight: '10px' }}></i>
+                    Property Video Tour
+                  </h3>
+                  <p>Take an immersive video walkthrough of {property.name}</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginTop: '15px' }}>
+                    {property.videos.map((vid, idx) => (
+                      <video key={idx} controls style={{ width: '100%', borderRadius: '16px', boxShaow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                        <source src={vid} type="video/mp4" />
+                        <source src={vid} type="video/webm" />
+                        Your browser does not support the video tag.
+                      </video>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="booking-section">
               <div className="booking-card glass-morphism">
                 <div className="price-header">
-                  <span className="price-text">₹{property.price || '15,000'}</span>
-                  <span className="per-night">/ night</span>
+                  <span className="price-text">
+                    ₹{stayType === 'day' 
+                      ? Math.round(parseInt(property.price?.toString().replace(/[^0-9]/g, '') || 15000) * 0.55).toLocaleString('en-IN')
+                      : (property.price || '15,000')}
+                  </span>
+                  <span className="per-night">{stayType === 'day' ? ' / day pass (9 AM - 6 PM)' : ' / night'}</span>
+                </div>
+
+                {/* Day & Night Stay Selector Toggle */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => setStayType('night')}
+                    style={{
+                      flex: 1,
+                      padding: '10px 8px',
+                      borderRadius: '12px',
+                      border: stayType === 'night' ? '2px solid #2D433D' : '1px solid #ddd',
+                      background: stayType === 'night' ? '#2D433D' : '#ffffff',
+                      color: stayType === 'night' ? '#ffffff' : '#1a1a1a',
+                      fontWeight: '700',
+                      fontSize: '0.82rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    🌙 Night Stay
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setStayType('day')}
+                    style={{
+                      flex: 1,
+                      padding: '10px 8px',
+                      borderRadius: '12px',
+                      border: stayType === 'day' ? '2px solid #D4AF37' : '1px solid #ddd',
+                      background: stayType === 'day' ? '#D4AF37' : '#ffffff',
+                      color: stayType === 'day' ? '#1a1a1a' : '#1a1a1a',
+                      fontWeight: '700',
+                      fontSize: '0.82rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    ☀️ Day Pass
+                  </button>
                 </div>
 
                 <form onSubmit={handleBookingStart} className="booking-form">
                   <div className="form-group">
-                    <label>Check-in</label>
+                    <label>{stayType === 'day' ? 'Date of Visit' : 'Check-in'}</label>
                     <input 
                       type="date" 
                       required 
@@ -342,21 +449,31 @@ const PropertyDetails = () => {
                         setBookingDates(prev => ({
                           ...prev,
                           checkIn: val,
-                          checkOut: prev.checkOut && prev.checkOut <= val ? '' : prev.checkOut
+                          checkOut: stayType === 'day' ? val : (prev.checkOut && prev.checkOut <= val ? '' : prev.checkOut)
                         }));
                       }} 
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Check-out</label>
-                    <input 
-                      type="date" 
-                      required 
-                      min={bookingDates.checkIn || getTodayDateString()}
-                      value={bookingDates.checkOut} 
-                      onChange={(e) => setBookingDates({ ...bookingDates, checkOut: e.target.value })} 
-                    />
-                  </div>
+
+                  {stayType === 'night' && (
+                    <div className="form-group">
+                      <label>Check-out</label>
+                      <input 
+                        type="date" 
+                        required 
+                        min={bookingDates.checkIn || getTodayDateString()}
+                        value={bookingDates.checkOut} 
+                        onChange={(e) => setBookingDates({ ...bookingDates, checkOut: e.target.value })} 
+                      />
+                    </div>
+                  )}
+
+                  {stayType === 'day' && (
+                    <div className="form-group" style={{ background: '#f8f9fa', padding: '12px', borderRadius: '10px', border: '1px solid #e9ecef' }}>
+                      <span style={{ fontSize: '0.78rem', color: '#666', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>Day Slot Hours</span>
+                      <strong style={{ fontSize: '0.95rem', color: '#2D433D' }}>9:00 AM - 6:00 PM (Full Day Pass)</strong>
+                    </div>
+                  )}
                   <div className="form-group">
                     <label>Guests</label>
                     <select value={guests} onChange={(e) => setGuests(parseInt(e.target.value))}>
@@ -376,9 +493,19 @@ const PropertyDetails = () => {
                     </div>
                   )}
 
-                  <button type="submit" disabled={isProcessing} className="btn-primary w-full">
-                    {isProcessing ? 'Processing...' : 'Reserve & Pay'}
-                  </button>
+                  <div className="booking-actions-group" style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                    <button type="submit" disabled={isProcessing} className="btn-primary" style={{ flex: '2', padding: '12px 20px', borderRadius: '50px' }}>
+                      {isProcessing ? 'Processing...' : 'Reserve & Pay'}
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={handleResetBookingForm} 
+                      className="cancel-booking-form-btn"
+                      style={{ flex: '1', padding: '12px 16px', borderRadius: '50px', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </form>
                 <p className="no-charge">Secure Simulation Mode Active</p>
               </div>

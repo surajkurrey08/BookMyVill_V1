@@ -2,52 +2,40 @@
 .property-split-container {
   display: flex;
   width: 100%;
-  max-width: 1300px;
+  max-width: 1400px;
   margin: 0 auto;
-  gap: 24px;
+  gap: 28px;
   padding: 0 20px;
-  margin-top: 20px;
+  margin-top: 40px;
   margin-bottom: 60px;
-  height: 550px;
+  height: 660px;
+  scroll-margin-top: 100px;
 }
 
 .properties-list-column {
-  flex: 4.5;
+  flex: 4.8;
   height: 100%;
-  overflow-y: auto;
-  padding-right: 12px;
+  overflow-y: hidden;
+  padding-right: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 /* Custom Scrollbar for scrollable column */
 .properties-list-column::-webkit-scrollbar {
-  width: 6px;
-}
-
-.properties-list-column::-webkit-scrollbar-track {
-  background: rgba(45, 67, 61, 0.05);
-  border-radius: 10px;
-}
-
-.properties-list-column::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 10px;
-}
-
-.properties-list-column::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-color);
+  width: 0px;
+  display: none;
 }
 
 .map-column {
-  flex: 5.5;
+  flex: 5.2;
   height: 100%;
   position: sticky;
   top: 100px;
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.5);
   background-color: #ddd;
 }
@@ -66,19 +54,20 @@
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   transition: all 0.3s ease;
-  border: 1px solid rgba(45, 67, 61, 0.08);
+  border: 1.5px solid rgba(45, 67, 61, 0.1);
+  min-height: 185px;
 }
 
 .split-grid-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(45, 67, 61, 0.15);
   border-color: var(--secondary-color);
 }
 
 .split-card-img-wrapper {
-  width: 40%;
-  min-width: 150px;
-  height: 180px;
+  width: 38%;
+  min-width: 155px;
+  height: 185px;
   position: relative;
   overflow: hidden;
 }
@@ -96,13 +85,13 @@
 
 .split-card-tag {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 10px;
+  left: 10px;
   background: var(--primary-color);
   color: var(--white);
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   z-index: 2;
   border: 1px solid var(--secondary-color);
@@ -110,7 +99,7 @@
 
 .split-card-info {
   padding: 16px 20px;
-  width: 60%;
+  width: 62%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -120,20 +109,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .split-card-type {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--secondary-color);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
 
 .split-card-rating {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
   color: var(--text-primary);
   display: flex;
   align-items: center;
@@ -145,28 +134,37 @@
 }
 
 .split-card-reviews {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   font-weight: 400;
   margin-left: 2px;
 }
 
 .split-card-info h3 {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   color: var(--primary-color);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .split-card-location {
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   color: var(--text-secondary);
-  margin-bottom: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 6px;
+  line-height: 1.3;
+}
+
+.split-card-location i {
+  color: #e63946;
+  font-size: 1.05rem;
+  animation: spin-location-icon 3.5s infinite linear;
+  display: inline-block;
 }
 
 .split-card-footer {
@@ -174,18 +172,18 @@
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
-  border-top: 1px solid rgba(0,0,0,0.05);
-  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  padding-top: 14px;
 }
 
 .split-card-price {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.3rem;
+  font-weight: 800;
   color: var(--primary-color);
 }
 
 .split-card-price span {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   font-weight: 400;
 }
@@ -258,6 +256,30 @@
   cursor: pointer;
 }
 
+.view-all-btn {
+  background: var(--primary-color);
+  color: #ffffff;
+  border: 1.5px solid var(--secondary-color);
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(45, 67, 61, 0.15);
+}
+
+.view-all-btn:hover {
+  background: var(--secondary-color);
+  color: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.35);
+}
+
 /* Views toggling and active styles */
 .map-view-toggle-btn {
   display: inline-flex;
@@ -287,35 +309,75 @@
   filter: brightness(1.05);
 }
 
-/* Custom pricing pins on Leaflet */
+/* Rotating Location Pin Animations */
+@keyframes spin-location-pin {
+  0% {
+    transform: rotate(45deg) rotateY(0deg);
+  }
+  50% {
+    transform: rotate(45deg) rotateY(180deg);
+  }
+  100% {
+    transform: rotate(45deg) rotateY(360deg);
+  }
+}
+
+@keyframes spin-location-icon {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(180deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes pulse-pin-shadow {
+  0%, 100% {
+    box-shadow: 0 6px 16px rgba(230, 57, 70, 0.4);
+  }
+  50% {
+    box-shadow: 0 10px 25px rgba(230, 57, 70, 0.7);
+  }
+}
+
+/* Custom red location pin signs on Leaflet */
+.custom-red-pin-marker,
 .custom-price-marker {
   background: none !important;
   border: none !important;
 }
 
-.price-marker-bubble {
-  background-color: var(--primary-color);
-  color: var(--white);
-  border: 1.5px solid var(--secondary-color);
-  border-radius: 20px;
-  padding: 4px 10px;
-  font-weight: 700;
-  font-size: 12px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  white-space: nowrap;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.map-red-pin {
+  width: 34px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-family: var(--font-body);
+  filter: drop-shadow(0 6px 12px rgba(230, 57, 70, 0.45));
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.price-marker-bubble:hover,
-.price-marker-bubble.marker-active {
-  background-color: var(--secondary-color);
-  color: #1a1a1a;
-  border-color: var(--primary-color);
-  transform: scale(1.15) translateY(-2px);
+.map-red-pin svg {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease;
+  animation: spin-location-icon 3.8s infinite linear;
+}
+
+.map-red-pin:hover,
+.map-red-pin.marker-active {
+  filter: drop-shadow(0 10px 22px rgba(212, 175, 55, 0.8));
+  transform: scale(1.3) translateY(-4px);
   z-index: 1000 !important;
+}
+
+.map-red-pin:hover svg path,
+.map-red-pin.marker-active svg path {
+  fill: #d4af37;
 }
 
 /* Popup design */
@@ -463,5 +525,178 @@
   background: rgba(45, 67, 61, 0.08);
   padding: 6px 14px;
   border-radius: 20px;
+}
+
+/* All Hotels Explorer Modal */
+.view-all-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+}
+
+.view-all-modal-content {
+  width: 100%;
+  max-width: 1250px;
+  max-height: 85vh;
+  background: #ffffff;
+  border-radius: 28px;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  padding: 35px;
+  position: relative;
+  color: #1a1a1a;
+}
+
+.view-all-modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.view-all-modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.view-all-modal-content::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 10px;
+}
+
+.view-all-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid #eee;
+  padding-bottom: 20px;
+  margin-bottom: 25px;
+}
+
+.view-all-modal-header h2 {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  color: var(--primary-color);
+  margin: 0 0 4px 0;
+}
+
+.view-all-modal-header p {
+  color: #666;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 2.2rem;
+  color: #333;
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: #ef4444;
+  transform: scale(1.15);
+}
+
+.view-all-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.all-hotel-card {
+  background: #fdfcf9;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(45, 67, 61, 0.12);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.all-hotel-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(45, 67, 61, 0.18);
+  border-color: var(--secondary-color);
+}
+
+.all-hotel-image {
+  position: relative;
+  height: 180px;
+}
+
+.all-hotel-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.all-hotel-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--primary-color);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid var(--secondary-color);
+}
+
+.all-hotel-info {
+  padding: 18px 20px;
+}
+
+.all-hotel-rating {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--secondary-color);
+  margin-bottom: 6px;
+}
+
+.all-hotel-info h4 {
+  font-size: 1.25rem;
+  color: var(--primary-color);
+  margin: 0 0 6px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.all-hotel-location {
+  font-size: 0.88rem;
+  color: #666;
+  margin: 0 0 16px 0;
+}
+
+.all-hotel-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+}
+
+.all-hotel-price {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+.all-hotel-price span {
+  font-size: 0.75rem;
+  color: #777;
+  font-weight: 400;
 }
 
