@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './RegistrationForm.css';
 import { API_BASE_URL } from '../../config';
 
 const RegistrationForm = ({ onClose, onSuccess }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -71,8 +73,9 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    if (!token || user.role !== 'owner') {
-      alert('Please sign in as a Property Owner to register your property.');
+    if (!token) {
+      alert('Please sign in to register your property.');
+      navigate('/signin');
       return;
     }
 
@@ -108,6 +111,13 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
         });
         if (onSuccess) onSuccess();
       } else {
+        if (response.status === 401 || data.msg?.includes('token') || data.msg?.includes('authorization')) {
+          alert('Session expired or unauthorized. Please sign in again.');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          navigate('/signin');
+          return;
+        }
         alert(data.msg || 'Failed to register property');
       }
     } catch (err) {

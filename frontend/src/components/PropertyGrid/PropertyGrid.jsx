@@ -273,14 +273,14 @@ const PropertyGrid = () => {
 
       let initialLat = 17.9258;
       let initialLon = 73.6510;
-      let initialZoom = 6;
+      let initialZoom = 13;
 
       if (filteredProperties.length > 0) {
         const firstValid = filteredProperties.find(p => p.lat && (p.lon || p.lng));
         if (firstValid) {
           initialLat = firstValid.lat;
           initialLon = firstValid.lon ?? firstValid.lng;
-          initialZoom = filteredProperties.length === 1 ? 12 : 7;
+          initialZoom = 13;
         }
       }
 
@@ -298,14 +298,28 @@ const PropertyGrid = () => {
       mapRef.current = map;
       markersGroupRef.current = L.layerGroup().addTo(map);
 
-      setTimeout(() => {
-        if (mapRef.current) {
-          mapRef.current.invalidateSize();
-        }
-      }, 300);
+      // Multi-stage map tile calculation
+      [50, 200, 400, 700, 1200].forEach(delay => {
+        setTimeout(() => {
+          if (mapRef.current) {
+            mapRef.current.invalidateSize();
+          }
+        }, delay);
+      });
 
       return true;
     };
+
+    let resizeObserver;
+    const mapEl = document.getElementById('leaflet-map');
+    if (mapEl && window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      });
+      resizeObserver.observe(mapEl);
+    }
 
     if (!initMap()) {
       checkInterval = setInterval(() => {
@@ -317,6 +331,7 @@ const PropertyGrid = () => {
 
     return () => {
       if (checkInterval) clearInterval(checkInterval);
+      if (resizeObserver) resizeObserver.disconnect();
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;

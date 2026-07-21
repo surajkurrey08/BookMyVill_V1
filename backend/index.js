@@ -17,6 +17,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/properties', require('./routes/property'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/bookings', require('./routes/booking'));
+app.use('/api/caretaker', require('./routes/caretaker'));
 
 // DB Connection
 console.log('Using MongoDB URI:', process.env.MONGODB_URI ? 'FOUND' : 'MISSING');

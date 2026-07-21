@@ -28,6 +28,7 @@ const PropertyDetails = () => {
   const [showFakeModal, setShowFakeModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingData, setPendingData] = useState(null);
+  const [stayType, setStayType] = useState('night');
 
   const mapRef = useRef(null);
 
@@ -83,7 +84,10 @@ const PropertyDetails = () => {
 
   // Leaflet map initialization for single property location
   useEffect(() => {
-    if (!property || !window.L) return;
+    if (!property || loading || !window.L) return;
+    const mapElement = document.getElementById('detail-leaflet-map');
+    if (!mapElement) return;
+
     const L = window.L;
 
     let lat = property.lat;
@@ -116,47 +120,56 @@ const PropertyDetails = () => {
       }
     }
 
-    if (mapRef.current) {
-      mapRef.current.remove();
-      mapRef.current = null;
-    }
-
-    const map = L.map('detail-leaflet-map', {
-      zoomControl: true
-    }).setView([lat, lon], 13);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    const customIcon = L.divIcon({
-      className: 'custom-price-marker',
-      html: `<div class="price-marker-bubble marker-active">${property.price || '₹15,000'}</div>`,
-      iconSize: [70, 32],
-      iconAnchor: [35, 16]
-    });
-
-    const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
-
-    const popupContent = `
-      <div class="popup-hotel-card">
-        <img src="${property.photos?.[0] || property.image}" alt="${property.name}" class="popup-hotel-image" />
-        <div class="popup-hotel-details">
-          <div class="popup-hotel-type">${property.type}</div>
-          <div class="popup-hotel-name">${property.name}</div>
-          <div class="popup-hotel-price">${property.price || '₹15,000'} <span>/ night</span></div>
-        </div>
-      </div>
-    `;
-
-    marker.bindPopup(popupContent).openPopup();
-    mapRef.current = map;
-
-    setTimeout(() => {
+    try {
       if (mapRef.current) {
-        mapRef.current.invalidateSize();
+        mapRef.current.remove();
+        mapRef.current = null;
       }
-    }, 300);
+
+      const map = L.map('detail-leaflet-map', {
+        zoomControl: true
+      }).setView([lat, lon], 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      const customIcon = L.divIcon({
+        className: 'custom-red-pin-marker',
+        html: `<div class="map-red-pin marker-active">
+                 <svg width="34" height="46" viewBox="0 0 384 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <path fill="#e63946" d="M172.268 501.67C26.97 291.03 0 269.41 0 192 0 85.96 85.96 0 192 0s192 85.96 192 192c0 77.41-26.97 99.03-172.268 309.67a24 24 0 0 1-35.464 0z"/>
+                   <circle cx="192" cy="192" r="75" fill="#ffffff"/>
+                 </svg>
+               </div>`,
+        iconSize: [34, 46],
+        iconAnchor: [17, 46]
+      });
+
+      const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
+
+      const popupContent = `
+        <div class="popup-hotel-card">
+          <img src="${property.photos?.[0] || property.image}" alt="${property.name}" class="popup-hotel-image" />
+          <div class="popup-hotel-details">
+            <div class="popup-hotel-type">${property.type}</div>
+            <div class="popup-hotel-name">${property.name}</div>
+            <div class="popup-hotel-price">${property.price || '₹15,000'}</div>
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupContent);
+      mapRef.current = map;
+
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      }, 200);
+    } catch (err) {
+      console.warn('Leaflet detail map initialization skipped:', err);
+    }
 
     return () => {
       if (mapRef.current) {
@@ -297,9 +310,11 @@ const PropertyDetails = () => {
           <img src={property.photos?.[0] || property.image} alt={property.name} />
           <div className="hero-overlay">
             <div className="container">
-              <span className="badge">{property.type}</span>
-              <h1>{property.name}</h1>
-              <p className="location-text">📍 {property.location}</p>
+              <div>
+                <span className="badge">{property.type}</span>
+                <h1>{property.name}</h1>
+                <p className="location-text">📍 {property.location}</p>
+              </div>
             </div>
           </div>
         </div>

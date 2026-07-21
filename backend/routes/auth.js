@@ -54,4 +54,37 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// GET Login info fallback (prevents Cannot GET /api/auth/login)
+router.get('/login', (req, res) => {
+  res.json({ msg: 'Authentication endpoint active. Submit a POST request with email and password to log in.' });
+});
+
+const auth = require('../middleware/auth');
+
+// Update User/Provider Profile
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { name, phone, bio } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: 'User not found' });
+
+    if (name) user.name = name;
+    if (phone !== undefined) user.phone = phone;
+    if (bio !== undefined) user.bio = bio;
+
+    await user.save();
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      phone: user.phone,
+      bio: user.bio
+    });
+  } catch (err) {
+    console.error('Profile update error:', err.message);
+    res.status(500).json({ msg: 'Server error updating profile' });
+  }
+});
+
 module.exports = router;
