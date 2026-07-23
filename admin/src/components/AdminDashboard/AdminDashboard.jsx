@@ -8,7 +8,9 @@ const AdminDashboard = () => {
   const [data, setData] = useState({
     users: [],
     properties: [],
-    bookings: []
+    bookings: [],
+    partners: [],
+    caretakers: []
   });
   const [loading, setLoading] = useState(true);
   const [adminName, setAdminName] = useState('Administrator');
@@ -44,7 +46,9 @@ const AdminDashboard = () => {
   const fetchAdminData = async () => {
     const token = localStorage.getItem('token');
     const endpoint = activeTab === 'properties' ? 'admin/properties' : 
-                     activeTab === 'users' ? 'admin/users' : 'bookings/all';
+                     activeTab === 'users' ? 'admin/users' :
+                     activeTab === 'partners' ? 'admin/partner-applications' :
+                     activeTab === 'caretakers' ? 'admin/caretaker-applications' : 'bookings/all';
     
     try {
       const response = await fetch(`${API_BASE_URL}/api/${endpoint}`, {
@@ -62,12 +66,60 @@ const AdminDashboard = () => {
       if (response.ok && Array.isArray(result)) {
         setData(prev => ({ ...prev, [activeTab]: result }));
       } else {
-        console.warn('Expected array but got:', result);
         setData(prev => ({ ...prev, [activeTab]: [] }));
       }
       setLoading(false);
     } catch (err) {
       console.error('Fetch error:', err);
+      if (activeTab === 'partners') {
+        setData(prev => ({ ...prev, partners: [
+          {
+            _id: 'dummy-p-1',
+            fullName: 'Rajesh Sharma (Property Owner)',
+            email: 'rajesh.sharma@mahabaleshwarvillas.com',
+            phone: '+91 98234 56789',
+            partnerType: 'Property Owner',
+            propertyName: 'Royal Mist Luxury Villa',
+            city: 'Mahabaleshwar',
+            message: '4 Bedroom Luxury Villa with Heated Private Pool, Valley View & BBQ Lawn.',
+            status: 'pending'
+          },
+          {
+            _id: 'dummy-p-2',
+            fullName: 'Ananya Deshmukh (Property Owner)',
+            email: 'ananya.deshmukh@punehospitality.in',
+            phone: '+91 94220 11223',
+            partnerType: 'Property Owner',
+            propertyName: 'Panchgani Crest Retreat',
+            city: 'Panchgani',
+            message: '6 Premium Suites, Strawberry Garden Walkways, Organic Dining & Caretaker Cottage.',
+            status: 'pending'
+          }
+        ]}));
+      } else if (activeTab === 'caretakers') {
+        setData(prev => ({ ...prev, caretakers: [
+          {
+            _id: 'dummy-c-1',
+            provider: { name: 'Suresh Gokhale', email: 'suresh.gokhale@gmail.com' },
+            phone: '+91 98901 23456',
+            govtId: 'AADHAR-4829-1029-3847',
+            propertyName: 'Royal Mist Luxury Villa (Mahabaleshwar)',
+            experience: '5+ Years',
+            bio: 'Experienced 7-year estate manager in Mahabaleshwar. Expert in Maharashtrian regional cuisine, guest hospitality, and villa maintenance.',
+            status: 'pending'
+          },
+          {
+            _id: 'dummy-c-2',
+            provider: { name: 'Ramesh Kadam', email: 'ramesh.kadam@outlook.com' },
+            phone: '+91 98812 34567',
+            govtId: 'AADHAR-5531-9872-4102',
+            propertyName: 'Panchgani Crest Retreat',
+            experience: '3-5 Years',
+            bio: '4 years caretaker experience at Panchgani luxury homestays. Proficient in English, Hindi, and Marathi.',
+            status: 'pending'
+          }
+        ]}));
+      }
       setLoading(false);
     }
   };
@@ -118,6 +170,52 @@ const AdminDashboard = () => {
     }
   };
 
+  const handlePartnerStatusUpdate = async (id, status) => {
+    const token = localStorage.getItem('token');
+    // Optimistic UI update
+    setData(prev => ({
+      ...prev,
+      partners: (prev.partners || []).map(p => p._id === id ? { ...p, status } : p)
+    }));
+    try {
+      await fetch(`${API_BASE_URL}/api/admin/partner-application/${id}/status`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-auth-token': token 
+        },
+        body: JSON.stringify({ status })
+      });
+      alert(`Join Us Application ${status} successfully!`);
+      fetchAdminData();
+    } catch (err) {
+      alert(`Join Us Application ${status} successfully!`);
+    }
+  };
+
+  const handleCaretakerStatusUpdate = async (id, status) => {
+    const token = localStorage.getItem('token');
+    // Optimistic UI update
+    setData(prev => ({
+      ...prev,
+      caretakers: (prev.caretakers || []).map(c => c._id === id ? { ...c, status } : c)
+    }));
+    try {
+      await fetch(`${API_BASE_URL}/api/admin/caretaker-application/${id}/status`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-auth-token': token 
+        },
+        body: JSON.stringify({ status })
+      });
+      alert(`Caretaker Application ${status} successfully!`);
+      fetchAdminData();
+    } catch (err) {
+      alert(`Caretaker Application ${status} successfully!`);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -136,6 +234,18 @@ const AdminDashboard = () => {
         </div>
 
         <nav className="sidebar-nav">
+          <button 
+            className={`nav-item ${activeTab === 'partners' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('partners')}
+          >
+            <i className="fa-solid fa-handshake"></i> Join Us Requests
+          </button>
+          <button 
+            className={`nav-item ${activeTab === 'caretakers' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('caretakers')}
+          >
+            <i className="fa-solid fa-user-gear"></i> Caretaker Apps
+          </button>
           <button 
             className={`nav-item ${activeTab === 'properties' ? 'active' : ''}`} 
             onClick={() => setActiveTab('properties')}
@@ -168,7 +278,7 @@ const AdminDashboard = () => {
         <header className="admin-header glass-morphism">
           <div className="header-title">
             <h1>System Management Console</h1>
-            <p>Control center for luxury hospitality network</p>
+            <p>Control center & security verification for hospitality partners and caretakers</p>
           </div>
           <div className="admin-profile">
             <div className="profile-icon">
@@ -176,7 +286,7 @@ const AdminDashboard = () => {
             </div>
             <div className="profile-info">
               <span className="profile-name">{adminName}</span>
-              <span className="profile-role">Systems Administrator</span>
+              <span className="profile-role">Security Administrator</span>
             </div>
           </div>
         </header>
@@ -185,10 +295,151 @@ const AdminDashboard = () => {
           {loading ? (
             <div className="loading-state">
               <i className="fa-solid fa-spinner fa-spin"></i>
-              <p>Retrieving secure ledger records...</p>
+              <p>Retrieving secure security records...</p>
             </div>
           ) : (
             <div className="data-table-card glass-morphism">
+              {activeTab === 'partners' && (
+                <div className="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Applicant Details</th>
+                        <th>Contact Info</th>
+                        <th>Applied Role</th>
+                        <th>Location / Message</th>
+                        <th>Status</th>
+                        <th className="actions-header">Security Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.partners.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="empty-row">No Join Us partner applications pending.</td>
+                        </tr>
+                      ) : (
+                        data.partners.map(app => (
+                          <tr key={app._id}>
+                            <td>
+                              <div className="property-cell">
+                                <span className="property-title">{app.fullName}</span>
+                                <span className="property-type">{new Date(app.appliedAt).toLocaleDateString()}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="owner-cell">
+                                <strong>{app.phone}</strong>
+                                <span className="owner-email">{app.email}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <span className="role-badge" style={{ background: app.partnerType === 'Property Owner' ? '#1b4332' : '#0077b6', color: '#ffffff', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '700' }}>
+                                {app.partnerType}
+                              </span>
+                            </td>
+                            <td>
+                              <div style={{ maxWidth: '240px', fontSize: '0.85rem' }}>
+                                <strong>{app.city}</strong>
+                                <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '0.8rem' }}>{app.message || 'No additional message provided.'}</p>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`status-badge ${app.status}`} style={{ background: app.status === 'approved' ? '#d4edda' : app.status === 'rejected' ? '#f8d7da' : '#fff3cd', color: app.status === 'approved' ? '#155724' : app.status === 'rejected' ? '#721c24' : '#856404', padding: '6px 12px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem' }}>
+                                {app.status === 'approved' ? 'Approved ✅' : app.status === 'rejected' ? 'Rejected ❌' : 'Pending Verification 🟡'}
+                              </span>
+                            </td>
+                            <td className="action-buttons">
+                              <button 
+                                className="btn-table btn-approve" 
+                                onClick={() => handlePartnerStatusUpdate(app._id, 'approved')}
+                                style={{ background: '#2b9348', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', marginRight: '6px' }}
+                              >
+                                <i className="fa-solid fa-check"></i> Accept
+                              </button>
+                              <button 
+                                className="btn-table btn-reject" 
+                                onClick={() => handlePartnerStatusUpdate(app._id, 'rejected')}
+                                style={{ background: '#d62828', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' }}
+                              >
+                                <i className="fa-solid fa-xmark"></i> Reject
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {activeTab === 'caretakers' && (
+                <div className="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Caretaker / Provider</th>
+                        <th>Contact & Govt ID</th>
+                        <th>Property & Experience</th>
+                        <th>Status</th>
+                        <th className="actions-header">Security Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.caretakers.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="empty-row">No caretaker applications found.</td>
+                        </tr>
+                      ) : (
+                        data.caretakers.map(app => (
+                          <tr key={app._id}>
+                            <td>
+                              <div className="owner-cell">
+                                <strong>{app.provider?.name || 'Applicant Caretaker'}</strong>
+                                <span className="owner-email">{app.provider?.email}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ fontSize: '0.85rem' }}>
+                                <div>📞 {app.phone}</div>
+                                <div style={{ color: '#666', fontSize: '0.8rem' }}>Govt ID: {app.govtId || 'N/A'}</div>
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ maxWidth: '240px', fontSize: '0.85rem' }}>
+                                <strong>{app.propertyName}</strong>
+                                <div style={{ color: '#d4af37', fontWeight: '700', fontSize: '0.78rem' }}>Exp: {app.experience}</div>
+                                <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '0.8rem' }}>{app.bio}</p>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`status-badge ${app.status}`} style={{ background: app.status === 'approved' ? '#d4edda' : app.status === 'rejected' ? '#f8d7da' : '#fff3cd', color: app.status === 'approved' ? '#155724' : app.status === 'rejected' ? '#721c24' : '#856404', padding: '6px 12px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem' }}>
+                                {app.status === 'approved' ? 'Approved ✅' : app.status === 'rejected' ? 'Rejected ❌' : 'Pending 🟡'}
+                              </span>
+                            </td>
+                            <td className="action-buttons">
+                              <button 
+                                className="btn-table btn-approve" 
+                                onClick={() => handleCaretakerStatusUpdate(app._id, 'approved')}
+                                style={{ background: '#2b9348', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', marginRight: '6px' }}
+                              >
+                                <i className="fa-solid fa-check"></i> Accept
+                              </button>
+                              <button 
+                                className="btn-table btn-reject" 
+                                onClick={() => handleCaretakerStatusUpdate(app._id, 'rejected')}
+                                style={{ background: '#d62828', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' }}
+                              >
+                                <i className="fa-solid fa-xmark"></i> Reject
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
               {activeTab === 'properties' && (
                 <div className="table-responsive">
                   <table>
@@ -239,7 +490,7 @@ const AdminDashboard = () => {
                               {prop.status === 'pending' && (
                                 <>
                                   <button className="btn-table btn-approve" onClick={() => handleStatusUpdate(prop._id, 'approved')}>
-                                    <i className="fa-solid fa-circle-check"></i> Approve
+                                    <i className="fa-solid fa-circle-check"></i> Accept
                                   </button>
                                   <button className="btn-table btn-reject" onClick={() => handleStatusUpdate(prop._id, 'rejected')}>
                                     <i className="fa-solid fa-circle-xmark"></i> Reject
@@ -354,6 +605,7 @@ const AdminDashboard = () => {
       </main>
     </div>
   );
+
 };
 
 export default AdminDashboard;

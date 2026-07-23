@@ -7,7 +7,7 @@ const User = require('../models/User');
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, phone, password, role } = req.body;
     console.log('Registering user:', email);
     
     let user = await User.findOne({ email });
@@ -16,7 +16,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    user = new User({ name, email, password, role });
+    user = new User({ name, email, phone: phone || '', password, role });
     await user.save();
     console.log('User saved to MongoDB');
 

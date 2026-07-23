@@ -1,0 +1,229 @@
+.caretaker-page {
+  min-height: 100vh;
+  position: relative;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  padding-bottom: 60px;
+}
+
+.caretaker-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -2;
+}
+
+.caretaker-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.caretaker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: radial-gradient(circle at center, rgba(11, 17, 15, 0.75) 0%, rgba(5, 8, 7, 0.95) 100%);
+  z-index: -1;
+}
+
+.caretaker-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 100px 20px 40px;
+}
+
+.caretaker-card {
+  background: rgba(18, 26, 23, 0.85);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+
+.caretaker-title-section {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 20px;
+  margin-bottom: 28px;
+}
+
+.caretaker-title-section h2 {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 1.6rem;
+  margin: 0 0 6px 0;
+  color: #d4af37;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.caretaker-title-section p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+.caretaker-field-group {
+  margin-bottom: 22px;
+}
+
+.caretaker-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.caretaker-label span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.caretaker-icon {
+  color: #d4af37;
+}
+
+.caretaker-input,
+.caretaker-select,
+.caretaker-textarea {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.caretaker-input:focus,
+.caretaker-select:focus,
+.caretaker-textarea:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.caretaker-input.has-error,
+.caretaker-select.has-error,
+.caretaker-textarea.has-error {
+  border-color: #ff6b6b !important;
+  box-shadow: 0 0 12px rgba(255, 107, 107, 0.3) !important;
+}
+
+.caretaker-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.caretaker-field-error {
+  color: #ff6b6b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.caretaker-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-cancel-caretaker {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 13px 28px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-cancel-caretaker:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.btn-submit-caretaker {
+  background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+  color: #1a1a1a;
+  border: none;
+  padding: 13px 32px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.35);
+  transition: all 0.25s ease;
+}
+
+.btn-submit-caretaker:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
+}
+
+.btn-submit-caretaker:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.existing-apps-section {
+  margin-bottom: 30px;
+  background: rgba(82, 183, 136, 0.1);
+  border: 1px solid rgba(82, 183, 136, 0.3);
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.app-badge-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  margin-top: 10px;
+  border: 1px solid rgba(82, 183, 136, 0.2);
+}
+
+@media (max-width: 640px) {
+  .caretaker-actions-bar {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+
+  .btn-cancel-caretaker,
+  .btn-submit-caretaker {
+    width: 100%;
+    justify-content: center;
+  }
+}

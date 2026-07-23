@@ -17,7 +17,7 @@ router.post('/apply', auth, async (req, res) => {
       services: services || ['Guest Check-in', 'Maintenance'],
       govtId: govtId || '',
       bio: bio || '',
-      status: 'approved' // Auto-approve for instant live display
+      status: 'pending' // Pending security approval by Admin
     });
 
     await application.save();

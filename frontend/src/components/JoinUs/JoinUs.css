@@ -1,0 +1,207 @@
+.joinus-page {
+  min-height: 100vh;
+  position: relative;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  padding-bottom: 60px;
+}
+
+.joinus-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -2;
+}
+
+.joinus-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.joinus-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: radial-gradient(circle at center, rgba(11, 17, 15, 0.82) 0%, rgba(5, 8, 7, 0.96) 100%);
+  z-index: -1;
+}
+
+.joinus-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 110px 20px 60px;
+}
+
+.joinus-header {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.joinus-header h1 {
+  font-family: var(--font-heading, 'Outfit', serif);
+  font-size: 2.8rem;
+  color: #d4af37;
+  margin: 0 0 10px 0;
+  text-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+}
+
+.joinus-header p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.joinus-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+  margin-bottom: 50px;
+}
+
+.joinus-card {
+  background: rgba(18, 26, 23, 0.85);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 24px;
+  padding: 36px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+}
+
+.joinus-card-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #d4af37;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+.joinus-card h3 {
+  font-family: var(--font-heading, 'Outfit', serif);
+  font-size: 1.5rem;
+  margin: 0 0 12px 0;
+  color: #ffffff;
+}
+
+.joinus-card p {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.joinus-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.joinus-benefits li {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.joinus-benefits i {
+  color: #52b788;
+}
+
+.btn-join-action {
+  margin-top: auto;
+  background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+  color: #1a1a1a;
+  padding: 13px 26px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 5px 18px rgba(212, 175, 55, 0.35);
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-join-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
+}
+
+.partner-form-section {
+  background: rgba(18, 26, 23, 0.88);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 40px;
+}
+
+.partner-form-title {
+  margin-bottom: 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 18px;
+}
+
+.partner-form-title h2 {
+  font-family: var(--font-heading, 'Outfit', serif);
+  font-size: 1.6rem;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+}
+
+.partner-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.form-group-custom label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.form-input-custom,
+.form-select-custom,
+.form-textarea-custom {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  font-size: 0.92rem;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-input-custom:focus,
+.form-select-custom:focus,
+.form-textarea-custom:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+}

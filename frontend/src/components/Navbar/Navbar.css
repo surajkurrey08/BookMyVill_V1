@@ -25,6 +25,7 @@
   align-items: center;
   max-width: 1400px;
   margin: 0 auto;
+  position: relative;
 }
 
 .logo-link {
@@ -54,33 +55,44 @@
   margin-top: 4px;
 }
 
-.nav-links {
+.nav-links-center {
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: 28px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.nav-links a {
+.nav-links-center a {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--primary-color);
+  color: var(--primary-color, #2D433D);
   position: relative;
   transition: color 0.3s ease;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
-.nav-links a::after {
+.nav-links-center a::after {
   content: '';
   position: absolute;
   bottom: -4px;
   left: 0;
   width: 0;
   height: 2px;
-  background: var(--secondary-color);
+  background: var(--secondary-color, #D4AF37);
   transition: width 0.3s ease;
 }
 
-.nav-links a:hover::after {
+.nav-links-center a:hover::after {
   width: 100%;
+}
+
+.nav-right-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .auth-buttons {

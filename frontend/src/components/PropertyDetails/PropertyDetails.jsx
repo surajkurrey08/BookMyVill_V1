@@ -29,6 +29,16 @@ const PropertyDetails = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingData, setPendingData] = useState(null);
   const [stayType, setStayType] = useState('night');
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [activeMediaType, setActiveMediaType] = useState('photo'); // 'photo' or 'video'
+
+  const [lightboxState, setLightboxState] = useState({
+    isOpen: false,
+    type: 'image',
+    url: '',
+    index: 0
+  });
+  const [zoomScale, setZoomScale] = useState(1);
 
   const mapRef = useRef(null);
 
@@ -70,11 +80,11 @@ const PropertyDetails = () => {
           setProperty(data);
         } else {
           const mockItem = mockProperties.find(p => p.id === parseInt(id));
-          if (mockItem) setProperty({ ...mockItem, photos: [mockItem.image] });
+          if (mockItem) setProperty({ ...mockItem, photos: mockItem.photos || [mockItem.image] });
         }
       } catch (err) {
         const mockItem = mockProperties.find(p => p.id === parseInt(id));
-        if (mockItem) setProperty({ ...mockItem, photos: [mockItem.image] });
+        if (mockItem) setProperty({ ...mockItem, photos: mockItem.photos || [mockItem.image] });
       }
       setLoading(false);
     };
@@ -104,7 +114,14 @@ const PropertyDetails = () => {
         "nainital": { lat: 29.3919, lon: 79.4542 },
         "mahabaleshwar": { lat: 17.9258, lon: 73.6510 },
         "panchgani": { lat: 17.9238, lon: 73.8050 },
-        "lonavala": { lat: 18.7557, lon: 73.4091 }
+        "lonavala": { lat: 18.7557, lon: 73.4091 },
+        "pune": { lat: 18.5204, lon: 73.8567 },
+        "pawna": { lat: 18.6878, lon: 73.4832 },
+        "mulshi": { lat: 18.5083, lon: 73.5132 },
+        "lavasa": { lat: 18.4088, lon: 73.5080 },
+        "khandala": { lat: 18.7512, lon: 73.3814 },
+        "baner": { lat: 18.5590, lon: 73.7868 },
+        "kamshet": { lat: 18.7583, lon: 73.5604 }
       };
 
       for (const [key, coords] of Object.entries(predefined)) {
@@ -302,18 +319,94 @@ const PropertyDetails = () => {
   if (loading) return <div className="loading">Loading your luxury experience...</div>;
   if (!property) return <div className="error">Property not found</div>;
 
+  const galleryPhotos = (property.photos && property.photos.length > 0)
+    ? property.photos
+    : [
+        property.image,
+        'https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800'
+      ];
+
+  const openImageZoom = (index) => {
+    setLightboxState({
+      isOpen: true,
+      type: 'image',
+      url: galleryPhotos[index] || galleryPhotos[0],
+      index: index
+    });
+    setZoomScale(1);
+  };
+
+  const openVideoZoom = (vidUrl) => {
+    setLightboxState({
+      isOpen: true,
+      type: 'video',
+      url: vidUrl,
+      index: 0
+    });
+    setZoomScale(1);
+  };
+
+  const handleZoomIn = () => setZoomScale(prev => Math.min(prev + 0.5, 3.5));
+  const handleZoomOut = () => setZoomScale(prev => Math.max(prev - 0.5, 0.5));
+  const handleZoomReset = () => setZoomScale(1);
+
+  const closeLightbox = () => {
+    setLightboxState({ isOpen: false, type: 'image', url: '', index: 0 });
+    setZoomScale(1);
+  };
+
+  const prevPhotoZoom = () => {
+    if (lightboxState.type !== 'image') return;
+    const newIdx = (lightboxState.index - 1 + galleryPhotos.length) % galleryPhotos.length;
+    setLightboxState({
+      ...lightboxState,
+      url: galleryPhotos[newIdx],
+      index: newIdx
+    });
+    setZoomScale(1);
+  };
+
+  const nextPhotoZoom = () => {
+    if (lightboxState.type !== 'image') return;
+    const newIdx = (lightboxState.index + 1) % galleryPhotos.length;
+    setLightboxState({
+      ...lightboxState,
+      url: galleryPhotos[newIdx],
+      index: newIdx
+    });
+    setZoomScale(1);
+  };
+
   return (
     <>
       <Navbar />
       <div className="property-details-page">
-        <div className="details-hero">
-          <img src={property.photos?.[0] || property.image} alt={property.name} />
-          <div className="hero-overlay">
-            <div className="container">
-              <div>
-                <span className="badge">{property.type}</span>
-                <h1>{property.name}</h1>
-                <p className="location-text">📍 {property.location}</p>
+        <div className="details-hero" style={{ position: 'relative', overflow: 'hidden', background: '#0d1b1e' }}>
+          {activeMediaType === 'photo' ? (
+            <img 
+              src={galleryPhotos[activePhotoIndex] || galleryPhotos[0]} 
+              alt={property.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <video 
+              src={property.video || "https://assets.mixkit.co/videos/preview/mixkit-resort-pool-in-a-sunny-day-42845-large.mp4"} 
+              controls 
+              autoPlay 
+              loop
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          )}
+          <div className="hero-overlay" style={{ pointerEvents: 'none' }}>
+            <div className="container" style={{ pointerEvents: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>
+                <div>
+                  <span className="badge">{property.type}</span>
+                  <h1>{property.name}</h1>
+                  <p className="location-text">📍 {property.location}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -322,22 +415,144 @@ const PropertyDetails = () => {
         <div className="container main-content">
           <div className="details-grid">
             <div className="info-section">
+              {/* Property Photos & Video Tour Showcase in Same Place */}
+              <div className="description-card glass-morphism">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 12px 0', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.4rem' }}>
+                    <i className="fa-solid fa-photo-film" style={{ color: 'var(--secondary-color)', marginRight: '10px' }}></i>
+                    Photos & HD Video Showcase
+                  </h3>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => setActiveMediaType('photo')}
+                      style={{
+                        background: activeMediaType === 'photo' ? '#1b4332' : '#e8e8e8',
+                        color: activeMediaType === 'photo' ? '#ffffff' : '#333333',
+                        border: 'none',
+                        padding: '7px 18px',
+                        borderRadius: '20px',
+                        fontSize: '0.82rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        transition: 'all 0.25s ease'
+                      }}
+                    >
+                      📷 Photos ({galleryPhotos.length})
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setActiveMediaType('video')}
+                      style={{
+                        background: activeMediaType === 'video' ? '#d4af37' : '#e8e8e8',
+                        color: activeMediaType === 'video' ? '#1a1a1a' : '#333333',
+                        border: 'none',
+                        padding: '7px 18px',
+                        borderRadius: '20px',
+                        fontSize: '0.82rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        transition: 'all 0.25s ease'
+                      }}
+                    >
+                      🎬 HD Video Tour
+                    </button>
+                  </div>
+                </div>
+                <p style={{ margin: '0 0 16px 0', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+                  Click photos or the video thumbnail below to switch view directly in the top showcase frame
+                </p>
+
+                <div className="gallery-thumbnails-strip" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
+                  {/* Photo Thumbnails */}
+                  {galleryPhotos.map((photoUrl, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`gallery-thumb-item ${activeMediaType === 'photo' && activePhotoIndex === idx ? 'active-thumb' : ''}`}
+                      onClick={() => {
+                        setActiveMediaType('photo');
+                        setActivePhotoIndex(idx);
+                      }}
+                      title={`View Photo ${idx + 1}`}
+                      style={{ 
+                        cursor: 'pointer', 
+                        position: 'relative', 
+                        minWidth: '95px', 
+                        height: '68px', 
+                        borderRadius: '12px', 
+                        overflow: 'hidden', 
+                        border: (activeMediaType === 'photo' && activePhotoIndex === idx) ? '3px solid #d4af37' : '2px solid transparent',
+                        boxShadow: (activeMediaType === 'photo' && activePhotoIndex === idx) ? '0 4px 12px rgba(212, 175, 55, 0.4)' : 'none'
+                      }}
+                    >
+                      <img src={photoUrl} alt={`${property.name} view ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <span style={{
+                        position: 'absolute',
+                        bottom: '4px',
+                        right: '4px',
+                        background: 'rgba(0,0,0,0.65)',
+                        color: '#fff',
+                        borderRadius: '50%',
+                        width: '18px',
+                        height: '18px',
+                        fontSize: '0.6rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        📷
+                      </span>
+                    </div>
+                  ))}
+
+                  {/* Video Thumbnail in Same Place */}
+                  <div 
+                    className={`gallery-thumb-item ${activeMediaType === 'video' ? 'active-thumb' : ''}`}
+                    onClick={() => setActiveMediaType('video')}
+                    title="Play HD Video Tour"
+                    style={{ 
+                      cursor: 'pointer', 
+                      position: 'relative', 
+                      minWidth: '115px', 
+                      height: '68px', 
+                      borderRadius: '12px', 
+                      overflow: 'hidden', 
+                      border: activeMediaType === 'video' ? '3px solid #d4af37' : '2px solid #1b4332',
+                      background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#ffffff',
+                      boxShadow: activeMediaType === 'video' ? '0 4px 12px rgba(212, 175, 55, 0.4)' : 'none'
+                    }}
+                  >
+                    <i className="fa-solid fa-circle-play" style={{ fontSize: '1.4rem', color: '#d4af37' }}></i>
+                    <span style={{ fontSize: '0.68rem', fontWeight: '800', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      ▶ PLAY VIDEO
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div className="description-card glass-morphism">
                 <h3>About this {property.type}</h3>
-                <p>Experience the ultimate luxury at {property.name}. Nestled in the heart of {property.location}, this exquisite {property.type} offers breathtaking views and premium amenities.</p>
+                <p>Experience the ultimate luxury at {property.name}. Nestled in the heart of {property.location}, this exquisite {property.type} offers breathtaking views, mountain mist breeze, and premium amenities.</p>
                 <div className="amenities">
                   <h4>What this place offers</h4>
                   <ul>
-                    <li>Mountain View</li>
-                    <li>Premium Wifi</li>
-                    <li>Private Kitchen</li>
-                    <li>Infinity Pool Access</li>
+                    <li>⛰️ Mountain & Valley View</li>
+                    <li>📶 Premium High-Speed Wi-Fi</li>
+                    <li>🍳 Private Kitchen & Chef Service</li>
+                    <li>🏊 Infinity Pool & Jacuzzi Access</li>
+                    <li>🔥 Private Evening Bonfire Pass</li>
+                    <li>🚗 Free Valet Parking</li>
                   </ul>
                 </div>
               </div>
 
               {/* Host / Provider Profile Card */}
-              <div className="description-card glass-morphism" style={{ marginTop: '25px' }}>
+              <div className="description-card glass-morphism">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
                   <div style={{
                     width: '60px',
@@ -380,24 +595,61 @@ const PropertyDetails = () => {
               </div>
 
               {/* Property Video Tour Section */}
-              {property.videos && property.videos.length > 0 && (
-                <div className="location-map-card glass-morphism" style={{ marginTop: '30px' }}>
-                  <h3>
-                    <i className="fa-solid fa-circle-play" style={{ color: 'var(--secondary-color)', marginRight: '10px' }}></i>
-                    Property Video Tour
-                  </h3>
-                  <p>Take an immersive video walkthrough of {property.name}</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginTop: '15px' }}>
-                    {property.videos.map((vid, idx) => (
-                      <video key={idx} controls style={{ width: '100%', borderRadius: '16px', boxShaow: '0 4px 15px rgba(0,0,0,0.1)' }}>
-                        <source src={vid} type="video/mp4" />
-                        <source src={vid} type="video/webm" />
-                        Your browser does not support the video tag.
-                      </video>
-                    ))}
-                  </div>
+              <div className="location-map-card glass-morphism" style={{ marginTop: '30px' }}>
+                <h3>
+                  <i className="fa-solid fa-circle-play" style={{ color: 'var(--secondary-color)', marginRight: '10px' }}></i>
+                  Property HD Video Tour & Walkthrough
+                </h3>
+                <p>Take an immersive video tour of {property.name}, infinity pool, and mountain mist views</p>
+                <div style={{ marginTop: '15px' }}>
+                  {(() => {
+                    const videoList = (property.videos && property.videos.length > 0)
+                      ? property.videos
+                      : [
+                          "https://assets.mixkit.co/videos/preview/mixkit-luxury-house-with-a-swimming-pool-41481-large.mp4",
+                          "https://assets.mixkit.co/videos/preview/mixkit-living-room-of-a-modern-house-41482-large.mp4"
+                        ];
+
+                    return (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                        {videoList.map((vidUrl, idx) => (
+                          <div key={idx} style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 25px rgba(0,0,0,0.15)', background: '#000', position: 'relative' }}>
+                            <video 
+                              controls 
+                              preload="metadata"
+                              poster={galleryPhotos[idx % galleryPhotos.length]}
+                              style={{ width: '100%', height: '240px', objectFit: 'cover', display: 'block' }}
+                            >
+                              <source src={vidUrl} type="video/mp4" />
+                              <source src={vidUrl} type="video/webm" />
+                            </video>
+                            <div style={{ padding: '10px 14px', background: '#1b4332', color: '#ffffff', fontSize: '0.82rem', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span><i className="fa-solid fa-film" style={{ color: '#d4af37', marginRight: '6px' }}></i> Tour Video #{idx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => openVideoZoom(vidUrl)}
+                                style={{
+                                  background: '#d4af37',
+                                  color: '#1a1a1a',
+                                  border: 'none',
+                                  padding: '4px 12px',
+                                  borderRadius: '20px',
+                                  fontWeight: '700',
+                                  fontSize: '0.75rem',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <i className="fa-solid fa-expand" style={{ marginRight: '4px' }}></i> Fullscreen Zoom
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
-              )}
+              </div>
+
             </div>
 
             <div className="booking-section">
@@ -554,6 +806,74 @@ const PropertyDetails = () => {
                 </button>
                 <button onClick={() => setShowFakeModal(false)} className="btn-text cancel-btn">Cancel</button>
               </div>
+            </div>
+          </div>
+        )}
+        {/* Fullscreen Zoom Lightbox Modal for Images and Videos */}
+        {lightboxState.isOpen && (
+          <div className="media-zoom-overlay" onClick={closeLightbox}>
+            <div className="zoom-modal-toolbar" onClick={(e) => e.stopPropagation()}>
+              <div className="zoom-controls-group">
+                <span style={{ fontWeight: '700', fontSize: '0.9rem', color: '#d4af37' }}>
+                  {lightboxState.type === 'image' ? `Photo (${lightboxState.index + 1}/${galleryPhotos.length})` : 'HD Video Theater'}
+                </span>
+                
+                <button type="button" onClick={handleZoomIn} className="zoom-btn" title="Zoom In">
+                  <i className="fa-solid fa-magnifying-glass-plus"></i> Zoom In
+                </button>
+                <button type="button" onClick={handleZoomOut} className="zoom-btn" title="Zoom Out">
+                  <i className="fa-solid fa-magnifying-glass-minus"></i> Zoom Out
+                </button>
+                <button type="button" onClick={handleZoomReset} className="zoom-btn" title="Reset Zoom">
+                  Reset
+                </button>
+                <span className="zoom-scale-badge">{Math.round(zoomScale * 100)}%</span>
+              </div>
+
+              {lightboxState.type === 'image' && (
+                <div className="zoom-controls-group">
+                  <button type="button" onClick={prevPhotoZoom} className="zoom-btn">
+                    <i className="fa-solid fa-chevron-left"></i> Previous
+                  </button>
+                  <button type="button" onClick={nextPhotoZoom} className="zoom-btn">
+                    Next <i className="fa-solid fa-chevron-right"></i>
+                  </button>
+                </div>
+              )}
+
+              <button type="button" onClick={closeLightbox} className="zoom-close-btn" title="Close Lightbox">
+                ✕
+              </button>
+            </div>
+
+            <div className="zoom-stage-viewport" onClick={closeLightbox}>
+              {lightboxState.type === 'image' ? (
+                <img 
+                  src={lightboxState.url} 
+                  alt="Zoom View"
+                  className="zoomable-media-element"
+                  style={{ transform: `scale(${zoomScale})`, cursor: zoomScale > 1 ? 'grab' : 'zoom-in' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (zoomScale === 1) handleZoomIn();
+                  }}
+                />
+              ) : (
+                <div 
+                  className="zoomable-media-element" 
+                  onClick={(e) => e.stopPropagation()} 
+                  style={{ transform: `scale(${zoomScale})`, width: '85%', maxWidth: '1100px' }}
+                >
+                  <video 
+                    controls 
+                    autoPlay 
+                    style={{ width: '100%', borderRadius: '16px', maxHeight: '75vh', background: '#000', display: 'block' }}
+                  >
+                    <source src={lightboxState.url} type="video/mp4" />
+                    <source src={lightboxState.url} type="video/webm" />
+                  </video>
+                </div>
+              )}
             </div>
           </div>
         )}

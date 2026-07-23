@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import Navbar from '../Navbar/Navbar';
+import Footer from '../Footer/Footer';
 import './UserDashboard.css';
 import bgImage from '../../assets/hillstationhome (1).jpg';
 import { API_BASE_URL } from '../../config';
@@ -55,6 +57,10 @@ const UserDashboard = () => {
       fetchCaretakerApps(token);
     } else {
       fetchBookings('personal', token);
+    }
+
+    if (window.location.pathname === '/profile' || window.location.search.includes('edit=true')) {
+      setShowEditProfileModal(true);
     }
   }, [navigate]);
 
@@ -198,16 +204,33 @@ const UserDashboard = () => {
 
   const validateProfileForm = (formData) => {
     const errors = {};
-    if (!formData.name || formData.name.trim().length < 3) {
+    const trimmedName = (formData.name || '').trim();
+    if (!trimmedName) {
+      errors.name = 'Full Name is required.';
+    } else if (trimmedName.length < 3) {
       errors.name = 'Full Name must be at least 3 characters.';
+    } else if (trimmedName.length > 50) {
+      errors.name = 'Full Name cannot exceed 50 characters.';
+    } else if (!/^[a-zA-Z\s.'-]+$/.test(trimmedName)) {
+      errors.name = 'Full Name can only contain letters and spaces.';
     }
-    const digits = (formData.phone || '').replace(/\D/g, '');
-    if (digits && (digits.length < 10 || digits.length > 12)) {
-      errors.phone = 'Please enter a valid 10-digit phone number.';
+
+    const cleanPhone = (formData.phone || '').replace(/[\s-]/g, '');
+    if (!cleanPhone) {
+      errors.phone = 'Phone Number is required.';
+    } else if (!/^\+?[0-9]{10,12}$/.test(cleanPhone)) {
+      errors.phone = 'Please enter a valid 10 to 12 digit phone number.';
     }
-    if (formData.bio && formData.bio.length > 300) {
-      errors.bio = 'Bio description cannot exceed 300 characters.';
+
+    const trimmedBio = (formData.bio || '').trim();
+    if (!trimmedBio) {
+      errors.bio = 'Bio / Host Description is required.';
+    } else if (trimmedBio.length < 10) {
+      errors.bio = 'Bio must be at least 10 characters long.';
+    } else if (trimmedBio.length > 300) {
+      errors.bio = 'Bio cannot exceed 300 characters.';
     }
+
     return errors;
   };
 
@@ -357,155 +380,20 @@ const UserDashboard = () => {
     );
   };
 
-  if (loading) return <div className="loading">Loading your dashboard...</div>;
-
   return (
     <div className="user-dashboard">
+      <Navbar />
+
       <div className="dashboard-bg">
         <img src={bgImage} alt="Background" />
         <div className="dashboard-overlay"></div>
       </div>
       
-      <nav className="dashboard-nav">
-        <div className="user-info">
-          <div className="user-avatar">
-            {user?.name?.charAt(0).toUpperCase()}
-          </div>
-          <div className="user-details">
-            <h3>
-              {user?.name}
-              {user?.role === 'owner' && <span className="owner-label">Owner</span>}
-            </h3>
-            {user?.role !== 'owner' && <p>{user?.email}</p>}
-          </div>
-        </div>
-        <button 
-          onDoubleClick={handleLogout} 
-          className="logout-btn"
-        >
-          Logout
-        </button>
-      </nav>
-
-      <div className="dashboard-content">
+      <div className="dashboard-content" style={{ paddingTop: '100px' }}>
         <header className="content-header">
           <h1>Your Luxury Dashboard</h1>
           <p>Manage your bookings, view receipts, and track history</p>
         </header>
-
-        {user?.role === 'owner' && (
-          <div className="provider-profile-card glass-morphism" style={{
-            background: 'rgba(0, 0, 0, 0.45)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '24px',
-            padding: '30px',
-            marginBottom: '30px',
-            border: '1px solid rgba(212, 175, 55, 0.3)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <div className="provider-avatar" style={{
-                  width: '75px',
-                  height: '75px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #1b4332 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '2rem',
-                  fontWeight: '700',
-                  color: '#ffffff',
-                  boxShadow: '0 6px 20px rgba(212, 175, 55, 0.3)',
-                  border: '2.5px solid #d4af37'
-                }}>
-                  {user?.name?.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.8rem', fontFamily: 'var(--font-heading)', color: '#ffffff' }}>
-                      {user?.name}
-                    </h2>
-                    <span className="owner-label" style={{ background: '#d4af37', color: '#1a1a1a', padding: '4px 12px', borderRadius: '20px', fontWeight: '700', fontSize: '0.75rem' }}>
-                      Verified Luxury Host
-                    </span>
-                  </div>
-                  <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.95rem' }}>
-                    <i className="fa-solid fa-envelope" style={{ marginRight: '6px', color: '#d4af37' }}></i> {user?.email}
-                  </p>
-
-                  <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <button 
-                      onClick={() => setShowEditProfileModal(true)}
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.15)',
-                        color: '#ffffff',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                        padding: '6px 16px',
-                        borderRadius: '30px',
-                        fontSize: '0.82rem',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      <i className="fa-solid fa-user-pen"></i> Edit Profile
-                    </button>
-                    {caretakerApps.length > 0 ? (
-                      <span style={{
-                        background: 'rgba(82, 183, 136, 0.2)',
-                        color: '#52b788',
-                        border: '1px solid #52b788',
-                        padding: '5px 14px',
-                        borderRadius: '30px',
-                        fontSize: '0.78rem',
-                        fontWeight: '700',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}>
-                        <i className="fa-solid fa-shield-check"></i> Certified Property Caretaker
-                      </span>
-                    ) : (
-                      <button 
-                        onClick={() => setShowCaretakerModal(true)}
-                        style={{
-                          background: 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)',
-                          color: '#1a1a1a',
-                          border: 'none',
-                          padding: '7px 18px',
-                          borderRadius: '30px',
-                          fontSize: '0.82rem',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(212, 175, 55, 0.35)',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        <i className="fa-solid fa-user-gear"></i> Apply as Property Caretaker
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '25px', background: 'rgba(255, 255, 255, 0.05)', padding: '15px 25px', borderRadius: '18px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <span style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.6)', letterSpacing: '1px' }}>Listed Stays</span>
-                  <strong style={{ fontSize: '1.5rem', color: '#d4af37' }}>{properties.length}</strong>
-                </div>
-                <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }}></div>
-                <div style={{ textAlign: 'center' }}>
-                  <span style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.6)', letterSpacing: '1px' }}>Total Bookings</span>
-                  <strong style={{ fontSize: '1.5rem', color: '#52b788' }}>{bookings.length}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {user?.role === 'owner' && (
           <div className="property-selector-container glass-morphism">
@@ -939,6 +827,8 @@ const UserDashboard = () => {
           </div>
         </div>
       )}
+
+      <Footer />
     </div>
   );
 };

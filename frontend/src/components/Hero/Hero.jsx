@@ -91,15 +91,7 @@ const Hero = () => {
       if (checkOut) queryParams.append('checkOut', checkOut);
       if (guests) queryParams.append('guests', guests);
       
-      navigate(`/?${queryParams.toString()}#explore`);
-      
-      // Smooth scroll to explore section
-      setTimeout(() => {
-        const exploreSection = document.getElementById('explore');
-        if (exploreSection) {
-          exploreSection.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+      navigate(`/explore?${queryParams.toString()}`);
     } else {
       alert('Please select a location to search.');
     }

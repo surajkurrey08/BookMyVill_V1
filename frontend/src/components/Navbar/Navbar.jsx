@@ -58,31 +58,16 @@ const Navbar = () => {
             </div>
           </Link>
 
-          <div className="header-page-title" style={{
-            fontSize: '0.9rem',
-            fontWeight: '700',
-            letterSpacing: '1.2px',
-            color: '#2D433D',
-            fontFamily: 'var(--font-heading)',
-            textTransform: 'uppercase',
-            background: 'rgba(212, 175, 55, 0.12)',
-            padding: '6px 18px',
-            borderRadius: '20px',
-            border: '1px solid rgba(212, 175, 55, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
-          }}>
-            <span style={{ color: '#D4AF37', fontSize: '0.8rem' }}>✦</span>
-            MAHABLESHWAR LUXURY STAYS
-            <span style={{ color: '#D4AF37', fontSize: '0.8rem' }}>✦</span>
-          </div>
 
-          <nav className="nav-links">
+          <nav className="nav-links-center">
             <Link to="/" onClick={() => scrollToSection('home')}>Home</Link>
-            <a href="#explore" onClick={(e) => { e.preventDefault(); scrollToSection('explore'); }}>Explore Stays</a>
-            
+            <Link to="/explore">Explore Stays</Link>
+            <Link to="/packages">Packages</Link>
+            <Link to="/join-us">Join Us</Link>
+            <Link to="/about-us">About Us</Link>
+          </nav>
+
+          <div className="nav-right-container">
             {user ? (
               <div className="user-profile-menu-container" style={{ position: 'relative' }}>
                 <button 
@@ -128,43 +113,26 @@ const Navbar = () => {
                 {showProfileDropdown && (
                   <div className="profile-dropdown-card" style={{
                     position: 'absolute',
-                    top: '45px',
-                    right: '0',
-                    width: '270px',
+                    top: 'calc(100% + 10px)',
+                    right: 0,
+                    width: '260px',
                     background: '#ffffff',
-                    borderRadius: '20px',
-                    padding: '18px',
-                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.18)',
-                    border: '1px solid rgba(212, 175, 55, 0.3)',
-                    zIndex: 10000
+                    borderRadius: '16px',
+                    padding: '16px',
+                    boxShadow: '0 15px 35px rgba(0, 0, 0, 0.2)',
+                    border: '1px solid rgba(0, 0, 0, 0.08)',
+                    zIndex: 99999
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid #eee' }}>
-                      <div style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #d4af37 0%, #1b4332 100%)',
-                        color: '#ffffff',
-                        fontWeight: '700',
-                        fontSize: '1.1rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                      </div>
-                      <div>
-                        <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#1a1a1a' }}>{user.name}</h4>
-                        <span style={{ fontSize: '0.75rem', color: '#666', display: 'block' }}>{user.email}</span>
-                        <span style={{ background: '#d4af37', color: '#1a1a1a', padding: '2px 8px', borderRadius: '10px', fontSize: '0.62rem', fontWeight: '700', marginTop: '4px', display: 'inline-block' }}>
-                          {user.role === 'owner' ? 'Luxury Property Provider' : 'Guest Traveler'}
-                        </span>
-                      </div>
+                    <div style={{ paddingBottom: '12px', borderBottom: '1px solid #eee', marginBottom: '12px' }}>
+                      <strong style={{ display: 'block', color: '#1a1a1a', fontSize: '0.95rem' }}>{user.name}</strong>
+                      <span style={{ fontSize: '0.8rem', color: '#666' }}>{user.email}</span>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <Link 
-                        to="/dashboard" 
+                        to="/profile" 
+                        target="_blank"
+                        rel="noopener noreferrer"
                         onClick={() => setShowProfileDropdown(false)}
                         style={{
                           display: 'flex',
@@ -179,10 +147,12 @@ const Navbar = () => {
                           background: 'rgba(0, 0, 0, 0.03)'
                         }}
                       >
-                        <i className="fa-solid fa-hotel" style={{ color: '#d4af37' }}></i> Host Dashboard
+                        <i className="fa-solid fa-user-pen" style={{ color: '#d4af37' }}></i> User Profile Edit ↗
                       </Link>
                       <Link 
                         to="/dashboard" 
+                        target="_blank"
+                        rel="noopener noreferrer"
                         onClick={() => setShowProfileDropdown(false)}
                         style={{
                           display: 'flex',
@@ -197,11 +167,13 @@ const Navbar = () => {
                           background: 'rgba(0, 0, 0, 0.03)'
                         }}
                       >
-                        <i className="fa-solid fa-user-pen" style={{ color: '#2b9348' }}></i> Edit Provider Profile
+                        <i className="fa-solid fa-hotel" style={{ color: '#2b9348' }}></i> Stays Dashboard ↗
                       </Link>
                       {user.role === 'owner' && (
                         <Link 
-                          to="/dashboard" 
+                          to="/caretaker-apply" 
+                          target="_blank"
+                          rel="noopener noreferrer"
                           onClick={() => setShowProfileDropdown(false)}
                           style={{
                             display: 'flex',
@@ -216,11 +188,11 @@ const Navbar = () => {
                             background: 'rgba(0, 0, 0, 0.03)'
                           }}
                         >
-                          <i className="fa-solid fa-user-gear" style={{ color: '#0077b6' }}></i> Caretaker Status / Apply
+                          <i className="fa-solid fa-user-gear" style={{ color: '#0077b6' }}></i> Caretaker Status / Apply ↗
                         </Link>
                       )}
                       <button 
-                        onDoubleClick={handleLogout}
+                        onClick={handleLogout}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -247,40 +219,9 @@ const Navbar = () => {
                 Sign In
               </Link>
             )}
-          </nav>
+          </div>
         </div>
       </header>
-
-      {location.pathname !== '/' && (
-        <div style={{
-          position: 'fixed',
-          top: '90px',
-          left: '25px',
-          zIndex: 9999
-        }}>
-          <button 
-            onClick={() => navigate(-1)}
-            title="Go to previous page"
-            style={{
-              background: '#ffffff',
-              color: '#1a1a1a',
-              border: '1px solid rgba(0, 0, 0, 0.12)',
-              padding: '9px 20px',
-              borderRadius: '30px',
-              fontSize: '0.9rem',
-              fontWeight: '700',
-              cursor: 'pointer',
-              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.12)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <i className="fa-solid fa-arrow-left" style={{ color: '#2D433D' }}></i> Back
-          </button>
-        </div>
-      )}
     </>
   );
 };

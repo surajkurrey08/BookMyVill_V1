@@ -11,7 +11,13 @@ import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
 import PropertyDetails from './components/PropertyDetails/PropertyDetails';
 import UserDashboard from './components/UserDashboard/UserDashboard';
+import UserProfile from './components/UserProfile/UserProfile';
+import CaretakerApply from './components/Caretaker/CaretakerApply';
+import Packages from './components/Packages/Packages';
+import JoinUs from './components/JoinUs/JoinUs';
+import AboutUs from './components/AboutUs/AboutUs';
 import RegistrationForm from './components/RegistrationForm/RegistrationForm';
+import ExploreStaysPage from './components/ExploreStays/ExploreStaysPage';
 import './App.css';
 import 'lenis/dist/lenis.css';
 
@@ -50,7 +56,7 @@ const Home = () => {
         <Hero />
         <Features />
         <Destinations />
-        <PropertyGrid />
+        <PropertyGrid isHomePage={true} />
       </main>
       <Footer />
     </>
@@ -85,6 +91,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/login" element={<SignIn />} />
           <Route path="/register" element={<Register />} />
           <Route path="/register-property" element={
             <>
@@ -98,6 +105,14 @@ function App() {
           <Route path="/admin" element={<AdminRedirect />} />
           <Route path="/property/:id" element={<PropertyDetails />} />
           <Route path="/dashboard" element={<UserDashboard />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/caretaker-apply" element={<CaretakerApply />} />
+          <Route path="/explore" element={<ExploreStaysPage />} />
+          <Route path="/explore-stays" element={<ExploreStaysPage />} />
+          <Route path="/packages" element={<Packages />} />
+          <Route path="/join-us" element={<JoinUs />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/about" element={<AboutUs />} />
         </Routes>
       </div>
     </Router>

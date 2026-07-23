@@ -34,6 +34,40 @@ const SignIn = () => {
 
   return (
     <div className="signin-container">
+      <div style={{
+        position: 'fixed',
+        top: '25px',
+        left: '25px',
+        zIndex: 9999
+      }}>
+        <button 
+          onClick={() => {
+            if (window.history.length > 1 && window.history.state?.idx > 0) {
+              navigate(-1);
+            } else {
+              navigate('/');
+            }
+          }}
+          title="Go to previous page"
+          style={{
+            background: 'rgba(255, 255, 255, 0.9)',
+            color: '#1a1a1a',
+            border: '1px solid rgba(0, 0, 0, 0.12)',
+            padding: '9px 20px',
+            borderRadius: '30px',
+            fontSize: '0.9rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <i className="fa-solid fa-arrow-left" style={{ color: '#2D433D' }}></i> Back
+        </button>
+      </div>
       <div className="signin-overlay"></div>
       <div className="signin-card glass-morphism fade-in">
         <div className="signin-header">
@@ -90,10 +124,6 @@ const SignIn = () => {
 
         <div className="signin-footer">
           <p>Don't have an account? <Link to="/register">Create one</Link></p>
-        </div>
-        
-        <div className="back-to-home">
-          <Link to="/">← Back to Home</Link>
         </div>
       </div>
     </div>

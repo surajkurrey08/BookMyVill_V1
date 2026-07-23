@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { properties } from '../../data/mockData';
 import './PropertyGrid.css';
 import './MapContainer.css';
@@ -15,7 +15,14 @@ const LOCATION_COORDINATES = {
   "Nainital": { lat: 29.3919, lon: 79.4542 },
   "Mahabaleshwar": { lat: 17.9258, lon: 73.6510 },
   "Panchgani": { lat: 17.9238, lon: 73.8050 },
-  "Lonavala": { lat: 18.7557, lon: 73.4091 }
+  "Lonavala": { lat: 18.7557, lon: 73.4091 },
+  "Pune": { lat: 18.5204, lon: 73.8567 },
+  "Pawna": { lat: 18.6878, lon: 73.4832 },
+  "Mulshi": { lat: 18.5083, lon: 73.5132 },
+  "Lavasa": { lat: 18.4088, lon: 73.5080 },
+  "Khandala": { lat: 18.7512, lon: 73.3814 },
+  "Baner": { lat: 18.5590, lon: 73.7868 },
+  "Kamshet": { lat: 18.7583, lon: 73.5604 }
 };
 
 // Geocoding helper with local lookup + OpenStreetMap fallback
@@ -59,8 +66,12 @@ const resolveCoordinates = async (property) => {
   };
 };
 
-// Horizontal card for the list view next to the map
+// Horizontal card for the Home Page split view next to the map (Matching User's Screenshot)
 const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover, onLeave }) => {
+  const rawPriceNum = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '10000');
+  const numericPrice = `₹${rawPriceNum.toLocaleString('en-IN')}`;
+  const originalPrice = `₹${Math.round(rawPriceNum * 1.22).toLocaleString('en-IN')}`;
+
   return (
     <div 
       id={`split-card-${property.id}`}
@@ -79,37 +90,41 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
       <div className="split-card-info">
         <div>
           <div className="split-card-meta">
-            <span className="split-card-type">{property.type}</span>
+            <span className="split-card-type">{property.type?.toUpperCase()}</span>
             <span className="split-card-rating">
-              <i className="fa-solid fa-star"></i> {property.rating}
-              <span className="split-card-reviews">({property.reviewsCount || Math.floor(Math.random() * 80) + 20} reviews)</span>
+              ★ {property.rating} <span className="split-card-reviews">({property.reviewsCount || 70} reviews)</span>
             </span>
           </div>
-          <h3>{property.name}</h3>
-          <p className="split-card-location">
-            <i className="fa-solid fa-location-dot"></i> {property.location}
+          <h3 style={{ fontSize: '1.25rem', margin: '4px 0 4px 0', fontFamily: 'var(--font-heading)', color: '#1a1a1a' }}>{property.name}</h3>
+          <p className="split-card-location" style={{ margin: '0 0 6px 0' }}>
+            <i className="fa-solid fa-location-dot" style={{ color: '#d4af37', marginRight: '6px' }}></i>
+            {property.location}
           </p>
         </div>
-        <div className="split-card-footer">
-          <span className="split-card-price">
-            {property.price}
+
+        <div className="card-price-row">
+          <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#1a1a1a', fontFamily: 'var(--font-heading)' }}>
+            {numericPrice} <span style={{ fontSize: '0.82rem', color: '#666', fontWeight: '500' }}>/night</span>
           </span>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        </div>
+
+        <div className="split-card-footer" style={{ marginTop: 'auto', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
             <button 
               type="button" 
-              className="btn-outline" 
-              style={{ padding: '8px 14px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+              className="btn-locate-map" 
               onClick={(e) => {
                 e.stopPropagation();
                 onSelect(property);
               }}
+              title="Locate hotel and zoom on interactive map"
             >
-              <i className="fa-solid fa-location-crosshairs"></i> Find on Map
+              <i className="fa-solid fa-location-crosshairs" style={{ color: '#d4af37' }}></i> Find on Map
             </button>
             <Link 
               to={`/property/${property._id || property.id}`} 
               className="btn-primary" 
-              style={{ padding: '9px 24px', fontSize: '0.9rem', fontWeight: '700', borderRadius: '30px', whiteSpace: 'nowrap' }}
+              style={{ padding: '9px 22px', fontSize: '0.88rem', fontWeight: '700', borderRadius: '30px', whiteSpace: 'nowrap', background: '#1b4332' }}
               onClick={(e) => e.stopPropagation()}
             >
               Book Stays
@@ -121,8 +136,88 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
   );
 };
 
-const PropertyGrid = () => {
+// Redesigned Luxury Property Card for standalone Explore page
+const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover, onLeave, isWishlisted, onToggleWishlist }) => {
+  const rawPriceNum = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '10000');
+  const numericPrice = `₹${rawPriceNum.toLocaleString('en-IN')}`;
+  const originalPrice = `₹${Math.round(rawPriceNum * 1.22).toLocaleString('en-IN')}`;
+
+  return (
+    <div 
+      id={`split-card-${property.id}`}
+      className={`luxury-explore-card ${isSelected ? 'selected-card' : ''} ${isHovered ? 'hovered-card' : ''}`}
+      onClick={() => onSelect(property)}
+      onMouseEnter={() => onHover(property.id)}
+      onMouseLeave={onLeave}
+      style={{ cursor: 'pointer' }}
+    >
+      <div className="card-img-box">
+        <img src={property.image} alt={property.name} />
+        <span className="day-night-badge">
+          Day & Night
+        </span>
+        <button 
+          type="button"
+          className={`wishlist-heart-btn ${isWishlisted ? 'active' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleWishlist(property.id);
+          }}
+          title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <i className={`fa-${isWishlisted ? 'solid' : 'regular'} fa-heart`}></i>
+        </button>
+      </div>
+
+      <div className="card-content-box">
+        <h3 className="card-title">{property.name}</h3>
+        <p className="card-location">
+          <i className="fa-solid fa-location-dot" style={{ color: '#d4af37', marginRight: '6px' }}></i>
+          {property.location}
+        </p>
+
+        <div className="card-rating-row">
+          <span className="card-rating-star">★ {property.rating}</span>
+          <span className="card-reviews-count">({property.reviewsCount || 70} reviews)</span>
+        </div>
+
+        <div className="card-price-row">
+          <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#1a1a1a', fontFamily: 'var(--font-heading)' }}>
+            {numericPrice} <span style={{ fontSize: '0.82rem', color: '#666', fontWeight: '500' }}>/night</span>
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+          <button
+            type="button"
+            className="btn-locate-map"
+            style={{ flex: '1', justifyContent: 'center' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(property);
+            }}
+            title="Locate hotel and zoom on interactive map"
+          >
+            <i className="fa-solid fa-location-crosshairs" style={{ color: '#d4af37' }}></i> Map Pin
+          </button>
+          <Link 
+            to={`/property/${property._id || property.id}`} 
+            className="btn-book-now-gold"
+            style={{ flex: '1.2', padding: '10px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            Book Now
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PropertyGrid = ({ isHomePage = false }) => {
   const [activeFilter, setActiveFilter] = useState('All');
+  const [sortOption, setSortOption] = useState('low-high');
+  const [wishlistMap, setWishlistMap] = useState({});
   const [dbProperties, setDbProperties] = useState([]);
   const [resolvedAllProperties, setResolvedAllProperties] = useState(properties);
   
@@ -136,6 +231,14 @@ const PropertyGrid = () => {
   const markersGroupRef = useRef(null);
   const markersMapRef = useRef({});
   const { search } = useLocation();
+  const navigate = useNavigate();
+
+  const toggleWishlist = (propId) => {
+    setWishlistMap(prev => ({
+      ...prev,
+      [propId]: !prev[propId]
+    }));
+  };
 
   // Sync search parameter from URL
   useEffect(() => {
@@ -192,14 +295,19 @@ const PropertyGrid = () => {
     prepareAll();
   }, [dbProperties]);
 
-  // Select a hotel: Center map, fly to lat/lon, and open marker popup
+  // Select a hotel: Center map, fly to lat/lon, scroll to map viewport, and open marker popup
   const selectHotelOnMap = (property) => {
     if (!property) return;
     setSelectedPropertyId(property.id);
 
+    const mapElement = document.getElementById('leaflet-map');
+    if (mapElement) {
+      mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     if (mapRef.current && property.lat && (property.lon || property.lng)) {
       const lng = property.lon ?? property.lng;
-      mapRef.current.flyTo([property.lat, lng], 13.5, { duration: 1.4 });
+      mapRef.current.flyTo([property.lat, lng], 14.5, { duration: 1.5 });
 
       setTimeout(() => {
         const marker = markersMapRef.current[property.id];
@@ -210,16 +318,34 @@ const PropertyGrid = () => {
     }
   };
 
-  // Filter properties by Tab + Search Input
+  // Filter & Sort properties by Tab + Search Input + Sort Option
   const filteredProperties = React.useMemo(() => {
-    return resolvedAllProperties.filter(prop => {
-      const matchesFilter = activeFilter === 'All' || prop.type === activeFilter;
+    let result = resolvedAllProperties.filter(prop => {
+      const matchesFilter = activeFilter === 'All' || prop.type === activeFilter || (activeFilter === 'Cottage' && prop.type === 'Cottage') || (activeFilter === 'Farm House' && (prop.type === 'Farm House' || prop.type === 'Villa'));
       const matchesSearch = !searchQuery || 
         prop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         prop.location.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesFilter && matchesSearch;
     });
-  }, [resolvedAllProperties, activeFilter, searchQuery]);
+
+    if (sortOption === 'low-high') {
+      result.sort((a, b) => {
+        const valA = parseInt(a.price.toString().replace(/[^0-9]/g, '') || '0');
+        const valB = parseInt(b.price.toString().replace(/[^0-9]/g, '') || '0');
+        return valA - valB;
+      });
+    } else if (sortOption === 'high-low') {
+      result.sort((a, b) => {
+        const valA = parseInt(a.price.toString().replace(/[^0-9]/g, '') || '0');
+        const valB = parseInt(b.price.toString().replace(/[^0-9]/g, '') || '0');
+        return valB - valA;
+      });
+    } else if (sortOption === 'rating') {
+      result.sort((a, b) => b.rating - a.rating);
+    }
+
+    return result;
+  }, [resolvedAllProperties, activeFilter, searchQuery, sortOption]);
 
   // Handle Search Location input submission
   const handleSearchSubmit = async (e) => {
@@ -273,75 +399,60 @@ const PropertyGrid = () => {
 
       let initialLat = 17.9258;
       let initialLon = 73.6510;
-      let initialZoom = 13;
 
       if (filteredProperties.length > 0) {
         const firstValid = filteredProperties.find(p => p.lat && (p.lon || p.lng));
         if (firstValid) {
           initialLat = firstValid.lat;
           initialLon = firstValid.lon ?? firstValid.lng;
-          initialZoom = 13;
         }
       }
 
-      // Create map
-      const map = L.map('leaflet-map', {
-        zoomControl: false
-      }).setView([initialLat, initialLon], initialZoom);
+      try {
+        const map = L.map('leaflet-map', {
+          zoomControl: false,
+          scrollWheelZoom: true
+        }).setView([initialLat, initialLon], 13);
 
-      L.control.zoom({ position: 'bottomright' }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
+          maxZoom: 19
+        }).addTo(map);
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      mapRef.current = map;
-      markersGroupRef.current = L.layerGroup().addTo(map);
-
-      // Multi-stage map tile calculation
-      [50, 200, 400, 700, 1200].forEach(delay => {
-        setTimeout(() => {
-          if (mapRef.current) {
-            mapRef.current.invalidateSize();
-          }
-        }, delay);
-      });
-
-      return true;
+        markersGroupRef.current = L.featureGroup().addTo(map);
+        mapRef.current = map;
+        return true;
+      } catch (e) {
+        console.error("Leaflet map setup error:", e);
+        return false;
+      }
     };
-
-    let resizeObserver;
-    const mapEl = document.getElementById('leaflet-map');
-    if (mapEl && window.ResizeObserver) {
-      resizeObserver = new ResizeObserver(() => {
-        if (mapRef.current) {
-          mapRef.current.invalidateSize();
-        }
-      });
-      resizeObserver.observe(mapEl);
-    }
 
     if (!initMap()) {
       checkInterval = setInterval(() => {
         if (initMap()) {
           clearInterval(checkInterval);
         }
-      }, 200);
+      }, 250);
     }
 
     return () => {
       if (checkInterval) clearInterval(checkInterval);
-      if (resizeObserver) resizeObserver.disconnect();
       if (mapRef.current) {
-        mapRef.current.remove();
+        try {
+          mapRef.current.remove();
+        } catch (e) {}
         mapRef.current = null;
       }
     };
   }, []);
 
-  // Update/Draw markers on the map when list of properties changes
+  // Update map markers when filteredProperties change
   useEffect(() => {
     if (!mapRef.current || !markersGroupRef.current || !window.L) return;
+
     const L = window.L;
     const map = mapRef.current;
     const markersGroup = markersGroupRef.current;
@@ -349,27 +460,24 @@ const PropertyGrid = () => {
     markersGroup.clearLayers();
     markersMapRef.current = {};
 
-    if (filteredProperties.length === 0) return;
-
     const markersList = [];
 
-    filteredProperties.forEach(property => {
+    filteredProperties.forEach((property) => {
       const lat = property.lat;
       const lon = property.lon ?? property.lng;
-      if (lat === undefined || lon === undefined) return;
 
-      const isSelected = selectedPropertyId === property.id;
+      if (!lat || !lon) return;
+
+      const isSel = selectedPropertyId === property.id;
+      const priceTag = property.price?.toString().startsWith('₹') ? property.price : `₹${property.price}`;
 
       const customIcon = L.divIcon({
-        className: 'custom-red-pin-marker',
-        html: `<div class="map-red-pin ${isSelected ? 'marker-active' : ''}" id="marker-${property.id}">
-                 <svg width="34" height="46" viewBox="0 0 384 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-                   <path fill="#e63946" d="M172.268 501.67C26.97 291.03 0 269.41 0 192 0 85.96 85.96 0 192 0s192 85.96 192 192c0 77.41-26.97 99.03-172.268 309.67a24 24 0 0 1-35.464 0z"/>
-                   <circle cx="192" cy="192" r="75" fill="#ffffff"/>
-                 </svg>
+        className: 'custom-gold-price-pin',
+        html: `<div id="marker-${property.id}" class="map-price-pill ${isSel ? 'marker-active' : ''}">
+                 ${priceTag}
                </div>`,
-        iconSize: [34, 46],
-        iconAnchor: [17, 46]
+        iconSize: [85, 34],
+        iconAnchor: [42, 17]
       });
 
       const marker = L.marker([lat, lon], { icon: customIcon });
@@ -378,7 +486,7 @@ const PropertyGrid = () => {
         <div class="popup-hotel-card">
           <img src="${property.image}" alt="${property.name}" class="popup-hotel-image" />
           <div class="popup-hotel-details">
-            <div class="popup-hotel-type">${property.type} • ★ ${property.rating} (${property.reviewsCount || Math.floor(Math.random() * 80) + 20} reviews)</div>
+            <div class="popup-hotel-type">${property.type} • ★ ${property.rating} (${property.reviewsCount || 45} reviews)</div>
             <div class="popup-hotel-name">${property.name}</div>
             <div class="popup-hotel-price">${property.price}</div>
             <a href="/property/${property._id || property.id}" class="popup-hotel-link">Book Stays</a>
@@ -418,7 +526,6 @@ const PropertyGrid = () => {
       markersMapRef.current[property.id] = marker;
     });
 
-    // Auto-center and fit map view to display matching property markers
     if (markersList.length > 0 && !selectedPropertyId) {
       if (markersList.length === 1) {
         const singleMarkerLatLng = markersList[0].getLatLng();
@@ -450,160 +557,282 @@ const PropertyGrid = () => {
     };
   }, [hoveredPropertyId, selectedPropertyId]);
 
-  const handleViewAll = () => {
-    setActiveFilter('All');
-    setSearchQuery('');
-    setSelectedPropertyId(null);
-    if (mapRef.current && markersGroupRef.current && window.L) {
-      const L = window.L;
-      const validCoords = resolvedAllProperties.filter(p => p.lat && (p.lon || p.lng));
-      if (validCoords.length > 0) {
-        const group = L.featureGroup(validCoords.map(p => L.marker([p.lat, p.lon ?? p.lng])));
-        mapRef.current.fitBounds(group.getBounds().pad(0.25), { maxZoom: 13 });
-      }
-    }
-  };
-
   return (
-    <section className="property-grid-section" id="explore">
-      <div className="section-header">
-        <span className="section-subtitle">Our Curated Collection</span>
-        <h2>Explore Exceptional Stays</h2>
-        
-        {/* Modern Control Bar: Category Tabs, Search Box, Quick Dropdown, View All Button */}
-        <div className="map-control-bar">
-          <div className="filter-tabs" style={{ marginBottom: 0 }}>
-            {['All', 'Villa', 'Hotel', 'Cabin', 'Resort'].map(tab => (
-              <button 
-                key={tab}
-                className={`filter-btn ${activeFilter === tab ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveFilter(tab);
-                  setSelectedPropertyId(null);
+    <section className="property-grid-section" id="explore" style={{ padding: isHomePage ? '90px 0' : '50px 0 90px 0' }}>
+      {isHomePage ? (
+        /* HOME PAGE SPLIT VIEW LAYOUT (MATCHING USER'S SCREENSHOT) */
+        <>
+          <div className="section-header">
+            <span className="section-subtitle">Our Curated Collection</span>
+            <h2>Explore Exceptional Stays</h2>
+            
+            {/* Control Bar: Category Tabs, Search Box, Quick Dropdown */}
+            <div className="map-control-bar">
+              <div className="filter-tabs" style={{ marginBottom: 0 }}>
+                {['All', 'Villa', 'Hotel', 'Cabin', 'Resort'].map(tab => (
+                  <button 
+                    key={tab}
+                    className={`filter-btn ${activeFilter === tab ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveFilter(tab);
+                      setSelectedPropertyId(null);
+                    }}
+                  >
+                    {tab === 'All' ? 'All' : tab + 's'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search box */}
+              <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
+                <i className="fa-solid fa-magnifying-glass"></i>
+                <input 
+                  type="text" 
+                  placeholder="Search hotel name or city..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="search-location-input"
+                />
+              </form>
+
+              {/* Quick Hotel Select Dropdown */}
+              <select 
+                className="hotel-quick-select"
+                value={selectedPropertyId || ''}
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  if (selectedId) {
+                    const targetProp = resolvedAllProperties.find(p => String(p.id) === String(selectedId));
+                    if (targetProp) {
+                      selectHotelOnMap(targetProp);
+                    }
+                  } else {
+                    setSelectedPropertyId(null);
+                  }
                 }}
               >
-                {tab === 'All' ? 'All' : tab + 's'}
-              </button>
-            ))}
-          </div>
+                <option value="">Find Hotel on Map...</option>
+                {filteredProperties.map(p => (
+                  <option key={p.id} value={p.id}>{p.name} ({p.location.split(',')[0]})</option>
+                ))}
+              </select>
 
-          {/* Search box with hotel name search + OSM Geocoding */}
-          <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
-            <i className="fa-solid fa-magnifying-glass"></i>
-            <input 
-              type="text" 
-              placeholder="Search hotel name or city..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-location-input"
-            />
-          </form>
-
-          {/* Quick Hotel Select Dropdown */}
-          <select 
-            className="hotel-quick-select"
-            value={selectedPropertyId || ''}
-            onChange={(e) => {
-              const selectedId = e.target.value;
-              if (selectedId) {
-                const targetProp = resolvedAllProperties.find(p => String(p.id) === String(selectedId));
-                if (targetProp) {
-                  selectHotelOnMap(targetProp);
-                }
-              } else {
-                setSelectedPropertyId(null);
-              }
-            }}
-          >
-            <option value="">Find Hotel on Map...</option>
-            {filteredProperties.map(p => (
-              <option key={p.id} value={p.id}>{p.name} ({p.location.split(',')[0]})</option>
-            ))}
-          </select>
-
-          {/* Count Badge */}
-          <span className="hotels-count-badge">
-            <i className="fa-solid fa-hotel" style={{ marginRight: '6px' }}></i>
-            {filteredProperties.length} Stays
-          </span>
-        </div>
-      </div>
-      
-      {/* Map + Hotel List View */}
-      <div className="property-split-container">
-        <div className="properties-list-column" data-lenis-prevent>
-          {filteredProperties.length > 0 ? (
-            filteredProperties.slice(0, 3).map(property => (
-              <SplitPropertyCard 
-                key={property.id} 
-                property={property} 
-                isSelected={selectedPropertyId === property.id}
-                isHovered={hoveredPropertyId === property.id}
-                onSelect={selectHotelOnMap}
-                onHover={setHoveredPropertyId}
-                onLeave={() => setHoveredPropertyId(null)}
-              />
-            ))
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
-              <i className="fa-solid fa-hotel" style={{ fontSize: '2rem', marginBottom: '10px', color: 'var(--secondary-color)' }}></i>
-              <h3>No stays matching search</h3>
-              <p style={{ fontSize: '0.85rem', marginTop: '6px' }}>Try searching another city or selecting a different category.</p>
+              {/* Count Badge */}
+              <span className="hotels-count-badge">
+                <i className="fa-solid fa-hotel" style={{ marginRight: '6px' }}></i>
+                {filteredProperties.length} Stays
+              </span>
             </div>
-          )}
-        </div>
-        <div className="map-column">
-          <div id="leaflet-map"></div>
-        </div>
-      </div>
-
-      {/* Full-width View All Hotels Banner */}
-      <div style={{
-        maxWidth: '1400px',
-        margin: '30px auto 0 auto',
-        padding: '0 20px',
-        textAlign: 'center'
-      }}>
-        <div style={{
-          background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
-          borderRadius: '24px',
-          padding: '30px 40px',
-          color: '#ffffff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '20px',
-          boxShadow: '0 10px 30px rgba(27, 67, 50, 0.3)'
-        }}>
-          <div style={{ textAlign: 'left' }}>
-            <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', color: '#d4af37', margin: '0 0 6px 0' }}>
-              Explore All Available Hotels ({resolvedAllProperties.length} Stays)
-            </h3>
-            <p style={{ margin: 0, opacity: 0.9, fontSize: '0.95rem' }}>
-              Browse complete luxury amenities, room details, ratings, and video tours for all stays.
-            </p>
           </div>
-          <button 
-            onClick={() => setShowViewAllModal(true)} 
-            className="btn-primary"
-            style={{
-              background: '#d4af37',
-              color: '#1a1a1a',
-              fontWeight: '700',
-              padding: '14px 32px',
-              borderRadius: '50px',
-              fontSize: '1rem',
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            <i className="fa-solid fa-list-check" style={{ marginRight: '8px' }}></i> View All Hotels & Details
-          </button>
-        </div>
-      </div>
+          
+          {/* Side-by-Side Map + Hotel List View (User Screenshot Design) */}
+          <div className="property-split-container" style={{ height: '620px' }}>
+            <div className="properties-list-column" data-lenis-prevent style={{ flex: '4.8', overflowY: 'auto' }}>
+              {filteredProperties.length > 0 ? (
+                filteredProperties.map(property => (
+                  <SplitPropertyCard 
+                    key={property.id} 
+                    property={property} 
+                    isSelected={selectedPropertyId === property.id}
+                    isHovered={hoveredPropertyId === property.id}
+                    onSelect={selectHotelOnMap}
+                    onHover={setHoveredPropertyId}
+                    onLeave={() => setHoveredPropertyId(null)}
+                  />
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
+                  <i className="fa-solid fa-hotel" style={{ fontSize: '2rem', marginBottom: '10px', color: 'var(--secondary-color)' }}></i>
+                  <h3>No stays matching search</h3>
+                  <p style={{ fontSize: '0.85rem', marginTop: '6px' }}>Try searching another city or selecting a different category.</p>
+                </div>
+              )}
+            </div>
+            <div className="map-column" style={{ flex: '5.2', height: '620px' }}>
+              <div id="leaflet-map" style={{ height: '100%' }}></div>
+            </div>
+          </div>
+
+          {/* Full-width View All Hotels Banner (Navigates to /explore page) */}
+          <div style={{
+            maxWidth: '1400px',
+            margin: '30px auto 0 auto',
+            padding: '0 20px',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
+              borderRadius: '24px',
+              padding: '30px 40px',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '20px',
+              boxShadow: '0 10px 30px rgba(27, 67, 50, 0.3)'
+            }}>
+              <div style={{ textAlign: 'left' }}>
+                <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', color: '#d4af37', margin: '0 0 6px 0' }}>
+                  Explore All Available Hotels ({resolvedAllProperties.length} Stays)
+                </h3>
+                <p style={{ margin: 0, opacity: 0.9, fontSize: '0.95rem' }}>
+                  Browse complete luxury amenities, room details, ratings, and video tours for all stays.
+                </p>
+              </div>
+              <button 
+                onClick={() => navigate('/explore')} 
+                className="btn-primary"
+                style={{
+                  background: '#d4af37',
+                  color: '#1a1a1a',
+                  fontWeight: '700',
+                  padding: '14px 32px',
+                  borderRadius: '50px',
+                  fontSize: '1rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <i className="fa-solid fa-list-check" style={{ marginRight: '8px' }}></i> View All Hotels & Details
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
+        /* STANDALONE EXPLORE STAYS PAGE LAYOUT (/explore) */
+        <>
+          {/* Top Header Row */}
+          <div className="explore-header-container">
+            <div className="explore-title-box">
+              <h2>
+                Stay in <span className="gold-text">Nature</span>, Live in <span className="gold-text">Luxury</span>
+              </h2>
+            </div>
+
+            {/* Right side: Category Filters + Search Functionality FIRST */}
+            <div className="explore-top-controls">
+              <div className="category-pill-group">
+                {['All', 'Villa', 'Cottage', 'Cabin', 'Farm House'].map(tab => (
+                  <button 
+                    key={tab}
+                    className={`category-pill-btn ${activeFilter === tab ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveFilter(tab);
+                      setSelectedPropertyId(null);
+                    }}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              <form onSubmit={handleSearchSubmit} className="explore-search-form">
+                <input 
+                  type="text" 
+                  placeholder="Search location or property..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="explore-search-input"
+                />
+                <button type="submit" className="explore-search-btn" title="Search">
+                  <i className="fa-solid fa-magnifying-glass"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* Sub-Header Row: Price Sort Dropdown & Filters Button */}
+          <div className="explore-subheader-controls">
+            <div className="subheader-left">
+              <div className="sort-dropdown-wrapper">
+                <select
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                  className="sort-dropdown-btn"
+                >
+                  <option value="low-high">Price: Low to High ⌵</option>
+                  <option value="high-low">Price: High to Low ⌵</option>
+                  <option value="rating">Rating: Highest Rated 0</option>
+                </select>
+              </div>
+
+              <button 
+                type="button"
+                className="filter-toggle-pill-btn"
+                onClick={() => setShowViewAllModal(true)}
+              >
+                <i className="fa-solid fa-sliders" style={{ marginRight: '6px' }}></i> Filters
+              </button>
+            </div>
+
+            <div className="subheader-right">
+              <span className="results-count-text">
+                Showing <strong>{filteredProperties.length}</strong> Luxury Stays in Mahabaleshwar
+              </span>
+            </div>
+          </div>
+          
+          {/* 1. Interactive Map Section FIRST */}
+          <div className="explore-map-container-top" style={{ maxWidth: '1440px', margin: '0 auto 35px auto', padding: '0 20px' }}>
+            <div className="top-map-wrapper" style={{
+              position: 'relative',
+              height: '440px',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+              border: '1px solid rgba(0,0,0,0.08)'
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                zIndex: 999,
+                background: 'rgba(212, 175, 55, 0.95)',
+                color: '#1a1a1a',
+                padding: '8px 20px',
+                borderRadius: '30px',
+                fontWeight: '700',
+                fontSize: '0.88rem',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                backdropFilter: 'blur(8px)'
+              }}>
+                <i className="fa-solid fa-map-location-dot" style={{ marginRight: '6px' }}></i> Explore This Area on Map
+              </div>
+              <div id="leaflet-map" style={{ height: '100%', width: '100%' }}></div>
+            </div>
+          </div>
+
+          {/* 2. Grid of Hotels BELOW THE MAP */}
+          <div className="explore-hotels-container-bottom" style={{ maxWidth: '1440px', margin: '0 auto 60px auto', padding: '0 20px' }}>
+            {filteredProperties.length > 0 ? (
+              <div className="explore-cards-3col-grid">
+                {filteredProperties.map(property => (
+                  <LuxuryPropertyCard 
+                    key={property.id} 
+                    property={property} 
+                    isSelected={selectedPropertyId === property.id}
+                    isHovered={hoveredPropertyId === property.id}
+                    onSelect={selectHotelOnMap}
+                    onHover={setHoveredPropertyId}
+                    onLeave={() => setHoveredPropertyId(null)}
+                    isWishlisted={!!wishlistMap[property.id]}
+                    onToggleWishlist={toggleWishlist}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666', background: '#fff', borderRadius: '20px' }}>
+                <i className="fa-solid fa-hotel" style={{ fontSize: '2.5rem', marginBottom: '12px', color: '#d4af37' }}></i>
+                <h3 style={{ fontSize: '1.4rem', color: '#1a1a1a' }}>No luxury stays matching search</h3>
+                <p style={{ fontSize: '0.9rem', marginTop: '6px' }}>Try searching another property name or selecting a different category filter above.</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* All Available Hotels Detailed Explorer Modal */}
       {showViewAllModal && (
