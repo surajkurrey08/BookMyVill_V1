@@ -8,14 +8,15 @@ router.post('/add', auth, async (req, res) => {
   if (req.user.role !== 'owner') return res.status(403).json({ msg: 'Access denied' });
 
   try {
-    const { name, type, location, price, mapLink, photos, videos } = req.body;
+    const { name, type, location, price, mapLink, amenities, photos, videos } = req.body;
     const newProperty = new Property({
       owner: req.user.id,
       name,
       type,
       location,
-      price: price ? parseInt(price) : 10000,
+      price: price ? Math.max(1, Math.abs(parseInt(price) || 10000)) : 10000,
       mapLink: mapLink || '',
+      amenities: Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map(s => s.trim()).filter(Boolean) : []),
       photos: photos || [],
       videos: videos || [],
       status: 'approved'
@@ -50,6 +51,9 @@ router.get('/all', async (req, res) => {
 // Get single property details
 router.get('/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ msg: 'Invalid property ID format' });
+    }
     const property = await Property.findById(req.params.id).populate('owner', 'name email');
     if (!property) return res.status(404).json({ msg: 'Property not found' });
     res.json(property);
@@ -68,12 +72,13 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ msg: 'Not authorized to update this property' });
     }
 
-    const { name, type, location, price, mapLink, photos, videos, status } = req.body;
+    const { name, type, location, price, mapLink, amenities, photos, videos, status } = req.body;
     if (name) property.name = name;
     if (type) property.type = type;
     if (location) property.location = location;
-    if (price) property.price = parseInt(price);
+    if (price) property.price = Math.max(1, Math.abs(parseInt(price) || 10000));
     if (mapLink !== undefined) property.mapLink = mapLink;
+    if (amenities !== undefined) property.amenities = Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map(s => s.trim()).filter(Boolean) : []);
     if (photos) property.photos = photos;
     if (videos) property.videos = videos;
     if (status && req.user.role === 'admin') property.status = status;

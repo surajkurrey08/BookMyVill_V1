@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import './PropertyDetails.css';
@@ -13,6 +13,25 @@ export const getRawMapLink = (mapLink) => {
     return `https://${trimmed}`;
   }
   return trimmed;
+};
+
+export const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
+export const cleanLocationString = (str) => {
+  if (!str || typeof str !== 'string') return '';
+  return str.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}📍⛰️🏨🏡🚗]+/gu, '').trim();
 };
 
 export const formatGoogleMapsDirectionsUrl = (mapLink, name, location) => {
@@ -29,7 +48,9 @@ export const formatGoogleMapsDirectionsUrl = (mapLink, name, location) => {
     }
   }
 
-  const destinationQuery = location ? `${location}` : (name || 'Mahabaleshwar');
+  const cleanName = cleanLocationString(name);
+  const cleanLoc = cleanLocationString(location);
+  const destinationQuery = cleanLoc ? `${cleanName ? cleanName + ', ' : ''}${cleanLoc}` : (cleanName || 'Mahabaleshwar');
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationQuery)}`;
 };
 
@@ -87,8 +108,27 @@ const PropertyDetails = () => {
     }
   }, [searchParams]);
 
+  const locationState = useLocation();
+
   useEffect(() => {
     const fetchProperty = async () => {
+      // 0. Instant match from card click navigation state
+      if (locationState.state?.property) {
+        const passed = locationState.state.property;
+        if (String(passed.id) === String(id) || String(passed._id) === String(id)) {
+          const photos = Array.isArray(passed.photos) && passed.photos.length > 0
+            ? passed.photos
+            : (passed.image ? [passed.image] : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1200"]);
+          setProperty({
+            ...passed,
+            photos,
+            image: photos[0]
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
       const isPureNumericId = /^\d+$/.test(id) && id.length <= 3;
       if (isPureNumericId) {
         const mockId = parseInt(id, 10);
@@ -110,10 +150,16 @@ const PropertyDetails = () => {
           const data = await response.json();
           const photos = Array.isArray(data.photos) && data.photos.length > 0
             ? data.photos
-            : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1200"];
+            : (data.image ? [data.image] : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1200"]);
 
           setProperty({
             ...data,
+            name: data.name,
+            type: data.type || 'Villa',
+            location: data.location || 'Mahabaleshwar, Maharashtra',
+            price: data.price ? (typeof data.price === 'number' ? `₹${data.price.toLocaleString('en-IN')}` : data.price) : '₹15,000',
+            amenities: Array.isArray(data.amenities) ? data.amenities : [],
+            mapLink: data.mapLink || '',
             photos,
             image: photos[0],
             rating: data.rating || 4.9,
@@ -122,25 +168,29 @@ const PropertyDetails = () => {
               ? data.videos 
               : ["https://assets.mixkit.co/videos/preview/mixkit-luxury-house-with-a-swimming-pool-41481-large.mp4"]
           });
-        } else {
-          const mockItem = mockProperties.find(p => p.id === parseInt(id));
-          if (mockItem) {
-            setProperty({
-              ...mockItem,
-              photos: mockItem.photos || [mockItem.image],
-              image: mockItem.image
-            });
-          }
+          setLoading(false);
+          return;
         }
       } catch (err) {
-        const mockItem = mockProperties.find(p => p.id === parseInt(id));
-        if (mockItem) {
-          setProperty({
-            ...mockItem,
-            photos: mockItem.photos || [mockItem.image],
-            image: mockItem.image
-          });
-        }
+        console.error('Failed to fetch property by ID:', err);
+      }
+
+      // Match mock dataset by strict ID match first, or fallback to deterministic hash index
+      const mockMatch = mockProperties.find(p => String(p.id) === String(id) || String(p._id) === String(id));
+      if (mockMatch) {
+        setProperty({
+          ...mockMatch,
+          photos: mockMatch.photos || [mockMatch.image],
+          image: mockMatch.image
+        });
+      } else {
+        const seedIndex = Math.abs((id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % mockProperties.length;
+        const fallbackItem = mockProperties[seedIndex] || mockProperties[0];
+        setProperty({
+          ...fallbackItem,
+          photos: fallbackItem.photos || [fallbackItem.image],
+          image: fallbackItem.image
+        });
       }
       setLoading(false);
     };
@@ -167,20 +217,26 @@ const PropertyDetails = () => {
 
     if ((!lat || !lon) && property.mapLink) {
       const link = property.mapLink;
-      const atMatch = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-      if (atMatch) {
-        lat = parseFloat(atMatch[1]);
-        lon = parseFloat(atMatch[2]);
+      const pbMatch = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+      if (pbMatch) {
+        lat = parseFloat(pbMatch[1]);
+        lon = parseFloat(pbMatch[2]);
       } else {
-        const qMatch = link.match(/[?&](?:q|query|ll|destination|center)=(-?\d+\.\d+),(-?\d+\.\d+)/i);
-        if (qMatch) {
-          lat = parseFloat(qMatch[1]);
-          lon = parseFloat(qMatch[2]);
+        const atMatch = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+        if (atMatch) {
+          lat = parseFloat(atMatch[1]);
+          lon = parseFloat(atMatch[2]);
         } else {
-          const genMatch = link.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
-          if (genMatch) {
-            lat = parseFloat(genMatch[1]);
-            lon = parseFloat(genMatch[2]);
+          const qMatch = link.match(/[?&](?:q|query|ll|destination|center)=(-?\d+\.\d+),(-?\d+\.\d+)/i);
+          if (qMatch) {
+            lat = parseFloat(qMatch[1]);
+            lon = parseFloat(qMatch[2]);
+          } else {
+            const genMatch = link.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
+            if (genMatch) {
+              lat = parseFloat(genMatch[1]);
+              lon = parseFloat(genMatch[2]);
+            }
           }
         }
       }
@@ -197,22 +253,31 @@ const PropertyDetails = () => {
     if (!lat || !lon) {
       const locLower = (property.location || '').toLowerCase();
       const predefined = {
+        "venna lake": { lat: 17.9312, lon: 73.6589 },
+        "kate's point": { lat: 17.9201, lon: 73.6442 },
+        "kate point": { lat: 17.9201, lon: 73.6442 },
+        "wilson point": { lat: 17.9285, lon: 73.6631 },
+        "lingmala": { lat: 17.9180, lon: 73.6380 },
+        "elphinstone": { lat: 17.9350, lon: 73.6700 },
+        "arthur's seat": { lat: 17.9625, lon: 73.6400 },
+        "lodwick point": { lat: 17.9210, lon: 73.6300 },
+        "parsi point": { lat: 17.9230, lon: 73.8010 },
+        "table land": { lat: 17.9280, lon: 73.8090 },
+        "panchgani": { lat: 17.9238, lon: 73.8050 },
+        "tapola": { lat: 17.7600, lon: 73.6900 },
+        "bhilar": { lat: 17.9050, lon: 73.7750 },
+        "metgutad": { lat: 17.9220, lon: 73.7100 },
+        "khinger": { lat: 17.9150, lon: 73.7900 },
+        "old mahabaleshwar": { lat: 17.9480, lon: 73.6580 },
+        "mahabaleshwar": { lat: 17.9258, lon: 73.6510 },
         "shimla": { lat: 31.1048, lon: 77.1734 },
         "munnar": { lat: 10.0889, lon: 77.0595 },
         "manali": { lat: 32.2396, lon: 77.1887 },
         "gulmarg": { lat: 34.0484, lon: 74.3805 },
         "ooty": { lat: 11.4102, lon: 76.6950 },
         "nainital": { lat: 29.3919, lon: 79.4542 },
-        "mahabaleshwar": { lat: 17.9258, lon: 73.6510 },
-        "panchgani": { lat: 17.9238, lon: 73.8050 },
         "lonavala": { lat: 18.7557, lon: 73.4091 },
-        "pune": { lat: 18.5204, lon: 73.8567 },
-        "pawna": { lat: 18.6878, lon: 73.4832 },
-        "mulshi": { lat: 18.5083, lon: 73.5132 },
-        "lavasa": { lat: 18.4088, lon: 73.5080 },
-        "khandala": { lat: 18.7512, lon: 73.3814 },
-        "baner": { lat: 18.5590, lon: 73.7868 },
-        "kamshet": { lat: 18.7583, lon: 73.5604 }
+        "pune": { lat: 18.5204, lon: 73.8567 }
       };
 
       for (const [key, coords] of Object.entries(predefined)) {
@@ -342,6 +407,10 @@ const PropertyDetails = () => {
         },
         body: JSON.stringify({
           propertyId: property?._id || id,
+          propertyName: property?.name,
+          propertyLocation: property?.location,
+          propertyType: property?.type,
+          propertyImage: property?.image || (property?.photos && property?.photos[0] ? property.photos[0] : ''),
           checkIn: bookingDates.checkIn,
           checkOut: bookingDates.checkOut || bookingDates.checkIn,
           guests: guests,
@@ -408,7 +477,29 @@ const PropertyDetails = () => {
   };
 
   if (loading) return <div className="loading">Loading your luxury experience...</div>;
-  if (!property) return <div className="error">Property not found</div>;
+
+  if (!property) {
+    return (
+      <div className="details-page">
+        <Navbar />
+        <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '80px 20px', color: '#ffffff' }}>
+          <i className="fa-solid fa-hotel" style={{ fontSize: '3.5rem', color: '#d4af37', marginBottom: '20px' }}></i>
+          <h2 style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', margin: '0 0 10px 0' }}>Property Listing Not Found</h2>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: '500px', marginBottom: '24px', fontSize: '0.95rem' }}>
+            The requested stay listing could not be found or has been updated. Explore our collection of luxury Mahabaleshwar villas & resorts.
+          </p>
+          <button 
+            onClick={() => navigate('/explore')} 
+            className="btn-primary" 
+            style={{ background: '#d4af37', color: '#1a1a1a', fontWeight: '700', padding: '12px 32px', borderRadius: '30px', border: 'none', cursor: 'pointer' }}
+          >
+            Explore All Luxury Stays
+          </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const galleryPhotos = (property.photos && property.photos.length > 0)
     ? property.photos
@@ -470,16 +561,51 @@ const PropertyDetails = () => {
     setZoomScale(1);
   };
 
+  const toggleNativeFullscreen = (elementOrRef) => {
+    const elem = elementOrRef || document.documentElement;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {});
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+  };
+
   return (
     <>
       <Navbar />
-      <div className="property-details-page">
+      <div 
+        className="property-details-page"
+        style={{
+          backgroundImage: `linear-gradient(to bottom, rgba(11, 20, 17, 0.75) 0%, rgba(11, 20, 17, 0.94) 100%), url(${galleryPhotos[0] || property.image})`,
+          backgroundAttachment: 'fixed',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         <div className="details-hero" style={{ position: 'relative', overflow: 'hidden', background: '#0d1b1e' }}>
           {activeMediaType === 'photo' ? (
             <img 
               src={galleryPhotos[activePhotoIndex] || galleryPhotos[0]} 
               alt={property.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+              onClick={() => openImageZoom(activePhotoIndex)}
             />
           ) : (
             <video 
@@ -490,6 +616,42 @@ const PropertyDetails = () => {
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           )}
+          
+          {/* Top-Right Native Fullscreen Button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (activeMediaType === 'photo') {
+                openImageZoom(activePhotoIndex);
+              } else {
+                openVideoZoom(property.video || "https://assets.mixkit.co/videos/preview/mixkit-resort-pool-in-a-sunny-day-42845-large.mp4");
+              }
+              toggleNativeFullscreen();
+            }}
+            style={{
+              position: 'absolute',
+              top: '24px',
+              right: '24px',
+              background: 'rgba(27, 67, 50, 0.85)',
+              color: '#d4af37',
+              border: '1.5px solid #d4af37',
+              padding: '10px 20px',
+              borderRadius: '30px',
+              fontWeight: '800',
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              zIndex: 15,
+              backdropFilter: 'blur(8px)',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+            title="Expand image/video to full screen window mode"
+          >
+            <i className="fa-solid fa-expand"></i> Full Screen Window ⛶
+          </button>
+
           <div className="hero-overlay" style={{ pointerEvents: 'none' }}>
             <div className="container" style={{ pointerEvents: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>
@@ -506,11 +668,70 @@ const PropertyDetails = () => {
         <div className="container main-content">
           <div className="details-grid">
             <div className="info-section">
-              {/* Property Photos & Video Tour Showcase in Same Place */}
+              
+              {/* 1. About Villa, Amenities & Host Profile Section FIRST */}
               <div className="description-card glass-morphism">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 12px 0', flexWrap: 'wrap', gap: '10px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.4rem' }}>
-                    <i className="fa-solid fa-photo-film" style={{ color: 'var(--secondary-color)', marginRight: '10px' }}></i>
+                <h3>About this {property.type}</h3>
+                <p>Experience the ultimate luxury at {property.name}. Nestled in the heart of {property.location}, this exquisite {property.type} offers breathtaking views, mountain mist breeze, and premium amenities.</p>
+                
+                <div className="amenities" style={{ marginTop: '30px' }}>
+                  <h4>What this place offers & Provided Resources</h4>
+                  {property.amenities && property.amenities.length > 0 ? (
+                    <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', padding: 0, listStyle: 'none' }}>
+                      {property.amenities.map((item, idx) => (
+                        <li key={idx} style={{ background: 'rgba(212, 175, 55, 0.12)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.3)', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: '#ffffff', fontWeight: '600' }}>
+                          <i className="fa-solid fa-circle-check" style={{ color: '#d4af37' }}></i>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', padding: 0, listStyle: 'none' }}>
+                      <li style={{ background: 'rgba(212, 175, 55, 0.12)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.3)', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: '#ffffff', fontWeight: '600' }}><i className="fa-solid fa-circle-check" style={{ color: '#d4af37' }}></i> Mountain & Valley View</li>
+                      <li style={{ background: 'rgba(212, 175, 55, 0.12)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.3)', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: '#ffffff', fontWeight: '600' }}><i className="fa-solid fa-circle-check" style={{ color: '#d4af37' }}></i> Premium High-Speed Wi-Fi</li>
+                      <li style={{ background: 'rgba(212, 175, 55, 0.12)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.3)', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: '#ffffff', fontWeight: '600' }}><i className="fa-solid fa-circle-check" style={{ color: '#d4af37' }}></i> Private Kitchen & Chef Service</li>
+                      <li style={{ background: 'rgba(212, 175, 55, 0.12)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.3)', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: '#ffffff', fontWeight: '600' }}><i className="fa-solid fa-circle-check" style={{ color: '#d4af37' }}></i> Infinity Pool & Jacuzzi Access</li>
+                      <li style={{ background: 'rgba(212, 175, 55, 0.12)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.3)', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: '#ffffff', fontWeight: '600' }}><i className="fa-solid fa-circle-check" style={{ color: '#d4af37' }}></i> Private Evening Bonfire Pass</li>
+                      <li style={{ background: 'rgba(212, 175, 55, 0.12)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.3)', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: '#ffffff', fontWeight: '600' }}><i className="fa-solid fa-circle-check" style={{ color: '#d4af37' }}></i> Free Valet Parking</li>
+                    </ul>
+                  )}
+                </div>
+
+                {/* Host Profile Inside Description Box */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '18px', marginTop: '35px', paddingTop: '24px', borderTop: '1px solid rgba(212, 175, 55, 0.2)' }}>
+                  <div style={{
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #1b4332 0%, #52b788 100%)',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.4rem',
+                    fontWeight: '700',
+                    border: '2px solid #d4af37',
+                    boxShadow: '0 4px 12px rgba(27, 67, 50, 0.3)'
+                  }}>
+                    {property.owner?.name ? property.owner.name.charAt(0).toUpperCase() : 'H'}
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '1.25rem', color: '#d4af37' }}>
+                      Hosted by {property.owner?.name || 'Verified Luxury Host'}
+                    </h4>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.88rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                      <i className="fa-solid fa-shield-halved" style={{ color: '#d4af37', marginRight: '6px' }}></i>
+                      Verified Stay Provider • 100% Superhost Response Rate
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Photos & HD Video Showcase Gallery BELOW the About Section */}
+              <div className="description-card glass-morphism">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 14px 0', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#d4af37' }}>
+                    <i className="fa-solid fa-photo-film" style={{ color: '#d4af37', marginRight: '10px' }}></i>
                     Photos & HD Video Showcase
                   </h3>
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -518,13 +739,13 @@ const PropertyDetails = () => {
                       type="button" 
                       onClick={() => setActiveMediaType('photo')}
                       style={{
-                        background: activeMediaType === 'photo' ? '#1b4332' : '#e8e8e8',
-                        color: activeMediaType === 'photo' ? '#ffffff' : '#333333',
-                        border: 'none',
-                        padding: '7px 18px',
+                        background: activeMediaType === 'photo' ? '#d4af37' : 'rgba(255, 255, 255, 0.1)',
+                        color: activeMediaType === 'photo' ? '#1a1a1a' : '#ffffff',
+                        border: '1px solid rgba(212, 175, 55, 0.4)',
+                        padding: '8px 18px',
                         borderRadius: '20px',
-                        fontSize: '0.82rem',
-                        fontWeight: '700',
+                        fontSize: '0.85rem',
+                        fontWeight: '800',
                         cursor: 'pointer',
                         transition: 'all 0.25s ease'
                       }}
@@ -535,13 +756,13 @@ const PropertyDetails = () => {
                       type="button" 
                       onClick={() => setActiveMediaType('video')}
                       style={{
-                        background: activeMediaType === 'video' ? '#d4af37' : '#e8e8e8',
-                        color: activeMediaType === 'video' ? '#1a1a1a' : '#333333',
-                        border: 'none',
-                        padding: '7px 18px',
+                        background: activeMediaType === 'video' ? '#d4af37' : 'rgba(255, 255, 255, 0.1)',
+                        color: activeMediaType === 'video' ? '#1a1a1a' : '#ffffff',
+                        border: '1px solid rgba(212, 175, 55, 0.4)',
+                        padding: '8px 18px',
                         borderRadius: '20px',
-                        fontSize: '0.82rem',
-                        fontWeight: '700',
+                        fontSize: '0.85rem',
+                        fontWeight: '800',
                         cursor: 'pointer',
                         transition: 'all 0.25s ease'
                       }}
@@ -550,8 +771,8 @@ const PropertyDetails = () => {
                     </button>
                   </div>
                 </div>
-                <p style={{ margin: '0 0 16px 0', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
-                  Click photos or the video thumbnail below to switch view directly in the top showcase frame
+                <p style={{ margin: '0 0 16px 0', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Select any photo or HD video thumbnail below to switch view directly in the top showcase frame
                 </p>
 
                 <div className="gallery-thumbnails-strip" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
@@ -563,50 +784,38 @@ const PropertyDetails = () => {
                       onClick={() => {
                         setActiveMediaType('photo');
                         setActivePhotoIndex(idx);
+                        openImageZoom(idx);
                       }}
-                      title={`View Photo ${idx + 1}`}
+                      title={`Click to expand Photo #${idx + 1}`}
                       style={{ 
                         cursor: 'pointer', 
                         position: 'relative', 
-                        minWidth: '95px', 
-                        height: '68px', 
-                        borderRadius: '12px', 
+                        minWidth: '105px', 
+                        height: '76px', 
+                        borderRadius: '14px', 
                         overflow: 'hidden', 
                         border: (activeMediaType === 'photo' && activePhotoIndex === idx) ? '3px solid #d4af37' : '2px solid transparent',
-                        boxShadow: (activeMediaType === 'photo' && activePhotoIndex === idx) ? '0 4px 12px rgba(212, 175, 55, 0.4)' : 'none'
+                        boxShadow: (activeMediaType === 'photo' && activePhotoIndex === idx) ? '0 4px 14px rgba(212, 175, 55, 0.5)' : 'none'
                       }}
                     >
                       <img src={photoUrl} alt={`${property.name} view ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <span style={{
-                        position: 'absolute',
-                        bottom: '4px',
-                        right: '4px',
-                        background: 'rgba(0,0,0,0.65)',
-                        color: '#fff',
-                        borderRadius: '50%',
-                        width: '18px',
-                        height: '18px',
-                        fontSize: '0.6rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        📷
-                      </span>
                     </div>
                   ))}
 
-                  {/* Video Thumbnail in Same Place */}
+                  {/* Video Thumbnail in Same Strip */}
                   <div 
                     className={`gallery-thumb-item ${activeMediaType === 'video' ? 'active-thumb' : ''}`}
-                    onClick={() => setActiveMediaType('video')}
+                    onClick={() => {
+                      setActiveMediaType('video');
+                      openVideoZoom(property.video || (property.videos && property.videos[0]) || "https://assets.mixkit.co/videos/preview/mixkit-resort-pool-in-a-sunny-day-42845-large.mp4");
+                    }}
                     title="Play HD Video Tour"
                     style={{ 
                       cursor: 'pointer', 
                       position: 'relative', 
-                      minWidth: '115px', 
-                      height: '68px', 
-                      borderRadius: '12px', 
+                      minWidth: '120px', 
+                      height: '76px', 
+                      borderRadius: '14px', 
                       overflow: 'hidden', 
                       border: activeMediaType === 'video' ? '3px solid #d4af37' : '2px solid #1b4332',
                       background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
@@ -615,60 +824,13 @@ const PropertyDetails = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       color: '#ffffff',
-                      boxShadow: activeMediaType === 'video' ? '0 4px 12px rgba(212, 175, 55, 0.4)' : 'none'
+                      boxShadow: activeMediaType === 'video' ? '0 4px 14px rgba(212, 175, 55, 0.5)' : 'none'
                     }}
                   >
-                    <i className="fa-solid fa-circle-play" style={{ fontSize: '1.4rem', color: '#d4af37' }}></i>
-                    <span style={{ fontSize: '0.68rem', fontWeight: '800', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <i className="fa-solid fa-circle-play" style={{ fontSize: '1.5rem', color: '#d4af37' }}></i>
+                    <span style={{ fontSize: '0.7rem', fontWeight: '800', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       ▶ PLAY VIDEO
                     </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="description-card glass-morphism">
-                <h3>About this {property.type}</h3>
-                <p>Experience the ultimate luxury at {property.name}. Nestled in the heart of {property.location}, this exquisite {property.type} offers breathtaking views, mountain mist breeze, and premium amenities.</p>
-                <div className="amenities">
-                  <h4>What this place offers</h4>
-                  <ul>
-                    <li>⛰️ Mountain & Valley View</li>
-                    <li>📶 Premium High-Speed Wi-Fi</li>
-                    <li>🍳 Private Kitchen & Chef Service</li>
-                    <li>🏊 Infinity Pool & Jacuzzi Access</li>
-                    <li>🔥 Private Evening Bonfire Pass</li>
-                    <li>🚗 Free Valet Parking</li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Host / Provider Profile Card */}
-              <div className="description-card glass-morphism">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-                  <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #1b4332 0%, #52b788 100%)',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.5rem',
-                    fontWeight: '700',
-                    border: '2px solid var(--secondary-color)',
-                    boxShadow: '0 4px 12px rgba(27, 67, 50, 0.3)'
-                  }}>
-                    {property.owner?.name ? property.owner.name.charAt(0).toUpperCase() : 'H'}
-                  </div>
-                  <div>
-                    <h3 style={{ margin: 0, fontSize: '1.35rem', color: 'var(--primary-color)' }}>
-                      Hosted by {property.owner?.name || 'Verified Luxury Host'}
-                    </h3>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                      <i className="fa-solid fa-shield-halved" style={{ color: 'var(--secondary-color)', marginRight: '6px' }}></i>
-                      Verified Stay Provider • 100% Superhost Response Rate
-                    </p>
                   </div>
                 </div>
               </div>
@@ -704,7 +866,7 @@ const PropertyDetails = () => {
                           gap: '6px'
                         }}
                       >
-                        <i className="fa-solid fa-arrow-up-right-from-square" style={{ color: '#d4af37' }}></i> Open Host Map Link ↗
+                        <i className="fa-solid fa-arrow-up-right-from-square" style={{ color: '#d4af37' }}></i> Open Host Map Link
                       </a>
                     )}
 
@@ -726,68 +888,12 @@ const PropertyDetails = () => {
                         boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)'
                       }}
                     >
-                      <i className="fa-solid fa-compass"></i> Live GPS Directions ↗
+                      <i className="fa-solid fa-compass"></i> Live GPS Directions
                     </a>
                   </div>
                 </div>
                 <div className="detail-map-wrapper">
                   <div id="detail-leaflet-map"></div>
-                </div>
-              </div>
-
-              {/* Property Video Tour Section */}
-              <div className="location-map-card glass-morphism" style={{ marginTop: '30px' }}>
-                <h3>
-                  <i className="fa-solid fa-circle-play" style={{ color: 'var(--secondary-color)', marginRight: '10px' }}></i>
-                  Property HD Video Tour & Walkthrough
-                </h3>
-                <p>Take an immersive video tour of {property.name}, infinity pool, and mountain mist views</p>
-                <div style={{ marginTop: '15px' }}>
-                  {(() => {
-                    const videoList = (property.videos && property.videos.length > 0)
-                      ? property.videos
-                      : [
-                          "https://assets.mixkit.co/videos/preview/mixkit-luxury-house-with-a-swimming-pool-41481-large.mp4",
-                          "https://assets.mixkit.co/videos/preview/mixkit-living-room-of-a-modern-house-41482-large.mp4"
-                        ];
-
-                    return (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-                        {videoList.map((vidUrl, idx) => (
-                          <div key={idx} style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 25px rgba(0,0,0,0.15)', background: '#000', position: 'relative' }}>
-                            <video 
-                              controls 
-                              preload="metadata"
-                              poster={galleryPhotos[idx % galleryPhotos.length]}
-                              style={{ width: '100%', height: '240px', objectFit: 'cover', display: 'block' }}
-                            >
-                              <source src={vidUrl} type="video/mp4" />
-                              <source src={vidUrl} type="video/webm" />
-                            </video>
-                            <div style={{ padding: '10px 14px', background: '#1b4332', color: '#ffffff', fontSize: '0.82rem', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span><i className="fa-solid fa-film" style={{ color: '#d4af37', marginRight: '6px' }}></i> Tour Video #{idx + 1}</span>
-                              <button
-                                type="button"
-                                onClick={() => openVideoZoom(vidUrl)}
-                                style={{
-                                  background: '#d4af37',
-                                  color: '#1a1a1a',
-                                  border: 'none',
-                                  padding: '4px 12px',
-                                  borderRadius: '20px',
-                                  fontWeight: '700',
-                                  fontSize: '0.75rem',
-                                  cursor: 'pointer'
-                                }}
-                              >
-                                <i className="fa-solid fa-expand" style={{ marginRight: '4px' }}></i> Fullscreen Zoom
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
                 </div>
               </div>
 
@@ -805,21 +911,22 @@ const PropertyDetails = () => {
                 </div>
 
                 {/* Day & Night Stay Selector Toggle */}
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                   <button 
                     type="button" 
                     onClick={() => setStayType('night')}
                     style={{
                       flex: 1,
-                      padding: '10px 8px',
-                      borderRadius: '12px',
-                      border: stayType === 'night' ? '2px solid #2D433D' : '1px solid #ddd',
+                      padding: '14px 12px',
+                      borderRadius: '16px',
+                      border: stayType === 'night' ? '2.5px solid #2D433D' : '1.5px solid #ddd',
                       background: stayType === 'night' ? '#2D433D' : '#ffffff',
                       color: stayType === 'night' ? '#ffffff' : '#1a1a1a',
-                      fontWeight: '700',
-                      fontSize: '0.82rem',
+                      fontWeight: '800',
+                      fontSize: '0.96rem',
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      boxShadow: stayType === 'night' ? '0 6px 16px rgba(45, 67, 61, 0.3)' : 'none',
+                      transition: 'all 0.25s ease'
                     }}
                   >
                     🌙 Night Stay
@@ -829,15 +936,16 @@ const PropertyDetails = () => {
                     onClick={() => setStayType('day')}
                     style={{
                       flex: 1,
-                      padding: '10px 8px',
-                      borderRadius: '12px',
-                      border: stayType === 'day' ? '2px solid #D4AF37' : '1px solid #ddd',
+                      padding: '14px 12px',
+                      borderRadius: '16px',
+                      border: stayType === 'day' ? '2.5px solid #D4AF37' : '1.5px solid #ddd',
                       background: stayType === 'day' ? '#D4AF37' : '#ffffff',
                       color: stayType === 'day' ? '#1a1a1a' : '#1a1a1a',
-                      fontWeight: '700',
-                      fontSize: '0.82rem',
+                      fontWeight: '800',
+                      fontSize: '0.96rem',
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      boxShadow: stayType === 'day' ? '0 6px 16px rgba(212, 175, 55, 0.4)' : 'none',
+                      transition: 'all 0.25s ease'
                     }}
                   >
                     ☀️ Day Pass
@@ -877,9 +985,9 @@ const PropertyDetails = () => {
                   )}
 
                   {stayType === 'day' && (
-                    <div className="form-group" style={{ background: '#f8f9fa', padding: '12px', borderRadius: '10px', border: '1px solid #e9ecef' }}>
-                      <span style={{ fontSize: '0.78rem', color: '#666', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>Day Slot Hours</span>
-                      <strong style={{ fontSize: '0.95rem', color: '#2D433D' }}>9:00 AM - 6:00 PM (Full Day Pass)</strong>
+                    <div className="form-group" style={{ background: '#f8f9fa', padding: '16px 18px', borderRadius: '14px', border: '1.5px solid #e2e8f0', marginBottom: '22px' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px', marginBottom: '4px' }}>DAY SLOT HOURS</span>
+                      <strong style={{ fontSize: '1.08rem', color: '#2D433D', fontWeight: '800' }}>9:00 AM - 6:00 PM (Full Day Pass)</strong>
                     </div>
                   )}
                   <div className="form-group">
@@ -889,27 +997,30 @@ const PropertyDetails = () => {
                       <option value="2">2 Guests</option>
                       <option value="3">3 Guests</option>
                       <option value="4">4 Guests</option>
+                      <option value="5">5 Guests</option>
+                      <option value="6">6 Guests</option>
+                      <option value="8">8+ Guests (Group Pass)</option>
                     </select>
                   </div>
                   
                   {bookingDates.checkIn && bookingDates.checkOut && (
-                    <div className="price-summary">
+                    <div className="price-summary" style={{ padding: '18px 20px', borderRadius: '16px', margin: '22px 0' }}>
                       <div className="price-row">
-                        <span>Total Amount</span>
-                        <strong>₹{calculateTotalPrice()}</strong>
+                        <span style={{ fontSize: '1.05rem', fontWeight: '700' }}>Total Amount</span>
+                        <strong style={{ fontSize: '1.65rem', fontWeight: '800', color: '#1b4332' }}>₹{calculateTotalPrice()}</strong>
                       </div>
                     </div>
                   )}
 
-                  <div className="booking-actions-group" style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                    <button type="submit" disabled={isProcessing} className="btn-primary" style={{ flex: '2', padding: '12px 20px', borderRadius: '50px' }}>
+                  <div className="booking-actions-group" style={{ display: 'flex', gap: '14px', marginTop: '26px' }}>
+                    <button type="submit" disabled={isProcessing} className="btn-primary" style={{ flex: '1.8', padding: '16px 24px', borderRadius: '50px', fontSize: '1.08rem', fontWeight: '800' }}>
                       {isProcessing ? 'Processing...' : 'Reserve & Pay'}
                     </button>
                     <button 
                       type="button" 
                       onClick={handleResetBookingForm} 
                       className="cancel-booking-form-btn"
-                      style={{ flex: '1', padding: '12px 16px', borderRadius: '50px', cursor: 'pointer' }}
+                      style={{ flex: '1', padding: '16px 20px', borderRadius: '50px', fontSize: '1.02rem', fontWeight: '800', cursor: 'pointer' }}
                     >
                       Cancel
                     </button>
@@ -969,6 +1080,16 @@ const PropertyDetails = () => {
                   Reset
                 </button>
                 <span className="zoom-scale-badge">{Math.round(zoomScale * 100)}%</span>
+
+                <button 
+                  type="button" 
+                  onClick={() => toggleNativeFullscreen()} 
+                  className="zoom-btn" 
+                  style={{ background: '#d4af37', color: '#1a1a1a', borderColor: '#d4af37', fontWeight: '800' }}
+                  title="Toggle Fullscreen Window Mode"
+                >
+                  <i className="fa-solid fa-expand"></i> Fullscreen Window ⛶
+                </button>
               </div>
 
               {lightboxState.type === 'image' && (

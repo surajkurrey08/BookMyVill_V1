@@ -7,15 +7,35 @@ import { API_BASE_URL } from '../../config';
 import { formatGoogleMapsDirectionsUrl, getRawMapLink } from '../PropertyDetails/PropertyDetails';
 
 // Predefined coordinates for common tourist locations to ensure instant response
+// Predefined coordinates for common tourist locations and Mahabaleshwar landmarks
 const LOCATION_COORDINATES = {
+  "Venna Lake": { lat: 17.9312, lon: 73.6589 },
+  "Kate's Point": { lat: 17.9201, lon: 73.6442 },
+  "Kate Point": { lat: 17.9201, lon: 73.6442 },
+  "Wilson Point": { lat: 17.9285, lon: 73.6631 },
+  "Lingmala": { lat: 17.9180, lon: 73.6380 },
+  "Lingmala Waterfall": { lat: 17.9180, lon: 73.6380 },
+  "Elphinstone": { lat: 17.9350, lon: 73.6700 },
+  "Elphinstone Point": { lat: 17.9350, lon: 73.6700 },
+  "Arthur's Seat": { lat: 17.9625, lon: 73.6400 },
+  "Arthur Seat": { lat: 17.9625, lon: 73.6400 },
+  "Lodwick Point": { lat: 17.9210, lon: 73.6300 },
+  "Parsi Point": { lat: 17.9230, lon: 73.8010 },
+  "Table Land": { lat: 17.9280, lon: 73.8090 },
+  "Panchgani": { lat: 17.9238, lon: 73.8050 },
+  "Tapola": { lat: 17.7600, lon: 73.6900 },
+  "Bhilar": { lat: 17.9050, lon: 73.7750 },
+  "Metgutad": { lat: 17.9220, lon: 73.7100 },
+  "Khinger": { lat: 17.9150, lon: 73.7900 },
+  "Old Mahabaleshwar": { lat: 17.9480, lon: 73.6580 },
+  "Mahabaleshwar Market": { lat: 17.9265, lon: 73.6560 },
+  "Mahabaleshwar": { lat: 17.9258, lon: 73.6510 },
   "Shimla": { lat: 31.1048, lon: 77.1734 },
   "Munnar": { lat: 10.0889, lon: 77.0595 },
   "Manali": { lat: 32.2396, lon: 77.1887 },
   "Gulmarg": { lat: 34.0484, lon: 74.3805 },
   "Ooty": { lat: 11.4102, lon: 76.6950 },
   "Nainital": { lat: 29.3919, lon: 79.4542 },
-  "Mahabaleshwar": { lat: 17.9258, lon: 73.6510 },
-  "Panchgani": { lat: 17.9238, lon: 73.8050 },
   "Lonavala": { lat: 18.7557, lon: 73.4091 },
   "Pune": { lat: 18.5204, lon: 73.8567 },
   "Pawna": { lat: 18.6878, lon: 73.4832 },
@@ -41,19 +61,25 @@ const parseMapCoordinates = (prop) => {
   if (prop.mapLink && typeof prop.mapLink === 'string') {
     const link = prop.mapLink;
     
-    // Pattern 1: @17.9258,73.6510
+    // Pattern 1: !3d17.9258!4d73.6510 (Google Maps embed / share format)
+    const pbMatch = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+    if (pbMatch) {
+      return { lat: parseFloat(pbMatch[1]), lon: parseFloat(pbMatch[2]) };
+    }
+
+    // Pattern 2: @17.9258,73.6510
     const atMatch = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
     if (atMatch) {
       return { lat: parseFloat(atMatch[1]), lon: parseFloat(atMatch[2]) };
     }
 
-    // Pattern 2: q=17.9258,73.6510 or query=17.9258,73.6510 or ll=17.9258,73.6510
+    // Pattern 3: q=17.9258,73.6510 or query=17.9258,73.6510 or ll=17.9258,73.6510
     const queryMatch = link.match(/[?&](?:q|query|ll|destination|center)=(-?\d+\.\d+),(-?\d+\.\d+)/i);
     if (queryMatch) {
       return { lat: parseFloat(queryMatch[1]), lon: parseFloat(queryMatch[2]) };
     }
 
-    // Pattern 3: Any lat,lon pair in link
+    // Pattern 4: Any lat,lon pair in link
     const genMatch = link.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
     if (genMatch) {
       return { lat: parseFloat(genMatch[1]), lon: parseFloat(genMatch[2]) };
@@ -172,6 +198,7 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
             </button>
             <Link 
               to={`/property/${property._id || property.id}`} 
+              state={{ property }}
               className="btn-primary" 
               style={{ padding: '9px 22px', fontSize: '0.88rem', fontWeight: '700', borderRadius: '30px', whiteSpace: 'nowrap', background: '#1b4332' }}
               onClick={(e) => e.stopPropagation()}
@@ -251,6 +278,7 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
           </button>
           <Link 
             to={`/property/${property._id || property.id}`} 
+            state={{ property }}
             className="btn-book-now-gold"
             style={{ flex: '1.2', padding: '10px' }}
             onClick={(e) => e.stopPropagation()}
@@ -307,13 +335,17 @@ const PropertyGrid = ({ isHomePage = false }) => {
           const data = await response.json();
           const mappedData = data.map(prop => ({
             id: prop._id,
+            _id: prop._id,
             name: prop.name,
             location: prop.location,
             type: prop.type,
             price: prop.price ? `₹${prop.price.toLocaleString('en-IN')}` : "₹10,000",
             mapLink: prop.mapLink || '',
-            rating: prop.rating || parseFloat((4 + Math.random()).toFixed(1)),
-            reviewsCount: prop.reviewsCount || Math.floor(Math.random() * 120) + 30,
+            amenities: prop.amenities || [],
+            photos: prop.photos || [],
+            videos: prop.videos || [],
+            rating: prop.rating || 4.8,
+            reviewsCount: prop.reviewsCount || 85,
             tag: "New",
             image: prop.photos && prop.photos.length > 0 
               ? (prop.photos[0].startsWith('http') || prop.photos[0].startsWith('data:') ? prop.photos[0] : "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=800")

@@ -15,12 +15,35 @@ const OwnerDashboard = () => {
   // Modals & Forms state
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProperty, setEditingProperty] = useState(null);
+  const PRESET_AMENITIES = [
+    'Private Swimming Pool',
+    'Free High-Speed Wi-Fi',
+    'Mountain & Valley View',
+    'Complimentary Breakfast',
+    'Air Conditioning (AC)',
+    'Free Private Parking',
+    'BBQ & Grilling Setup',
+    'Lawn & Private Garden',
+    '24/7 Power Backup',
+    'Night Bonfire & Campfire',
+    'Personal Chef / Caretaker',
+    'Equipped Kitchen',
+    '24/7 Hot Water',
+    'Pet Friendly Stay',
+    'Indoor Games & Carrom',
+    'CCTV Security'
+  ];
+
+  const [customAmenityInput, setCustomAmenityInput] = useState('');
+
   const [propertyForm, setPropertyForm] = useState({
     name: '',
     type: 'Villa',
     location: 'Mahabaleshwar',
     price: 15000,
-    photos: '',
+    mapLink: '',
+    amenities: [],
+    photos: [],
     videos: ''
   });
 
@@ -123,6 +146,51 @@ const OwnerDashboard = () => {
     }));
   };
 
+  const handleVideoFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
+    try {
+      const base64Videos = await Promise.all(files.map(f => convertFileToBase64(f)));
+      setPropertyForm(prev => ({
+        ...prev,
+        videos: [...(Array.isArray(prev.videos) ? prev.videos : []), ...base64Videos]
+      }));
+    } catch (err) {
+      console.error('Error reading video files:', err);
+    }
+  };
+
+  const handleRemoveVideo = (indexToRemove) => {
+    setPropertyForm(prev => ({
+      ...prev,
+      videos: Array.isArray(prev.videos) ? prev.videos.filter((_, idx) => idx !== indexToRemove) : []
+    }));
+  };
+
+  const handleToggleAmenity = (amenityName) => {
+    setPropertyForm(prev => {
+      const current = prev.amenities || [];
+      const exists = current.includes(amenityName);
+      const updated = exists 
+        ? current.filter(a => a !== amenityName)
+        : [...current, amenityName];
+      return { ...prev, amenities: updated };
+    });
+  };
+
+  const handleAddCustomAmenity = (e) => {
+    e.preventDefault();
+    if (!customAmenityInput.trim()) return;
+    const trimmed = customAmenityInput.trim();
+    if (!propertyForm.amenities?.includes(trimmed)) {
+      setPropertyForm(prev => ({
+        ...prev,
+        amenities: [...(prev.amenities || []), trimmed]
+      }));
+    }
+    setCustomAmenityInput('');
+  };
+
   // Add / Edit Property Submission
   const handleSaveProperty = async (e) => {
     e.preventDefault();
@@ -134,8 +202,9 @@ const OwnerDashboard = () => {
       name: propertyForm.name,
       type: propertyForm.type,
       location: propertyForm.location,
-      price: parseInt(propertyForm.price) || 10000,
+      price: Math.max(1, Math.abs(parseInt(propertyForm.price) || 10000)),
       mapLink: propertyForm.mapLink || '',
+      amenities: propertyForm.amenities || [],
       photos: Array.isArray(propertyForm.photos) ? propertyForm.photos : (propertyForm.photos ? propertyForm.photos.split(',').map(s => s.trim()).filter(Boolean) : []),
       videos: propertyForm.videos ? (Array.isArray(propertyForm.videos) ? propertyForm.videos : propertyForm.videos.split(',').map(s => s.trim()).filter(Boolean)) : []
     };
@@ -164,7 +233,7 @@ const OwnerDashboard = () => {
       setActionSuccess(editingProperty ? 'Property details updated successfully!' : 'Property added successfully!');
       setShowAddModal(false);
       setEditingProperty(null);
-      setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' });
+      setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', amenities: [], photos: [], videos: [] });
       fetchOwnerData(token);
     } catch (err) {
       setError(err.message);
@@ -179,8 +248,9 @@ const OwnerDashboard = () => {
       location: prop.location || 'Mahabaleshwar',
       price: prop.price || 15000,
       mapLink: prop.mapLink || '',
+      amenities: prop.amenities || [],
       photos: prop.photos || [],
-      videos: prop.videos ? prop.videos.join(', ') : ''
+      videos: prop.videos || []
     });
     setShowAddModal(true);
   };
@@ -582,6 +652,17 @@ const OwnerDashboard = () => {
                               )}
                             </div>
 
+                            {prop.amenities && prop.amenities.length > 0 && (
+                              <div className="card-amenities-tags">
+                                {prop.amenities.slice(0, 3).map((am, i) => (
+                                  <span key={i} className="amenity-mini-tag"><i className="fa-solid fa-circle-check"></i> {am}</span>
+                                ))}
+                                {prop.amenities.length > 3 && (
+                                  <span className="amenity-mini-tag count">+{prop.amenities.length - 3} more</span>
+                                )}
+                              </div>
+                            )}
+
                             <div className="price-row">
                               <div className="price-amount-group">
                                 <span className="amount">₹{prop.price?.toLocaleString('en-IN')}</span>
@@ -900,8 +981,13 @@ const OwnerDashboard = () => {
                   <label>Price per Night (₹) *</label>
                   <input 
                     type="number" 
+                    min="1"
+                    onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
                     value={propertyForm.price} 
-                    onChange={(e) => setPropertyForm({ ...propertyForm, price: e.target.value })} 
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : Math.max(1, Math.abs(parseInt(e.target.value) || 1));
+                      setPropertyForm({ ...propertyForm, price: val });
+                    }} 
                     placeholder="15000" 
                     required 
                   />
@@ -930,6 +1016,48 @@ const OwnerDashboard = () => {
                 <small style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '4px', display: 'block' }}>
                   Paste exact Google Maps URL so guests can view live GPS pin & directions on the map.
                 </small>
+              </div>
+
+              {/* Provided Stay Amenities & Resources Checklist */}
+              <div className="form-group">
+                <label>
+                  <i className="fa-solid fa-list-check" style={{ color: 'var(--accent-gold)', marginRight: '6px' }}></i> 
+                  Stay Amenities & Provided Resources ({propertyForm.amenities?.length || 0} Selected)
+                </label>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '-4px', marginBottom: '10px' }}>
+                  Select all resources & amenities provided at your stay for travelers:
+                </p>
+
+                <div className="amenities-selection-grid">
+                  {PRESET_AMENITIES.map((item) => {
+                    const isSelected = propertyForm.amenities?.includes(item);
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        className={`amenity-chip-btn ${isSelected ? 'selected' : ''}`}
+                        onClick={() => handleToggleAmenity(item)}
+                      >
+                        <i className={`fa-solid ${isSelected ? 'fa-square-check' : 'fa-square'}`}></i>
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Custom Resource / Amenity Add Input */}
+                <div className="custom-amenity-input-wrap">
+                  <input
+                    type="text"
+                    placeholder="Add custom resource (e.g. Jacuzzi, Strawberry Farm Tour, Bonfire Gazebo)..."
+                    value={customAmenityInput}
+                    onChange={(e) => setCustomAmenityInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomAmenity(e); } }}
+                  />
+                  <button type="button" className="btn-add-custom-amenity" onClick={handleAddCustomAmenity}>
+                    <i className="fa-solid fa-plus"></i> Add Resource
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">
@@ -970,13 +1098,43 @@ const OwnerDashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>Video Tour URLs (Comma-separated URLs)</label>
-                <input 
-                  type="text" 
-                  value={propertyForm.videos} 
-                  onChange={(e) => setPropertyForm({ ...propertyForm, videos: e.target.value })} 
-                  placeholder="https://assets.mixkit.co/..." 
-                />
+                <label><i className="fa-solid fa-video" style={{ color: 'var(--accent-gold)', marginRight: '6px' }}></i> Property HD Video Tours (Upload Directly from Device)</label>
+                <div className="direct-upload-area">
+                  <input 
+                    type="file" 
+                    accept="video/*" 
+                    multiple 
+                    onChange={handleVideoFileUpload} 
+                    id="property-direct-videos" 
+                    style={{ display: 'none' }}
+                  />
+                  <label htmlFor="property-direct-videos" className="upload-dropzone">
+                    <i className="fa-solid fa-film" style={{ color: 'var(--accent-gold)' }}></i>
+                    <span>Select Video Files from Computer / Mobile</span>
+                    <small>Upload MP4, WEBM, MOV • Multiple videos supported</small>
+                  </label>
+                </div>
+
+                {Array.isArray(propertyForm.videos) && propertyForm.videos.length > 0 && (
+                  <div className="uploaded-thumbnails-grid" style={{ marginTop: '12px' }}>
+                    {propertyForm.videos.map((vid, idx) => (
+                      <div key={idx} className="thumb-item" style={{ height: '90px' }}>
+                        <video src={vid} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <span style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.75)', color: '#d4af37', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '700' }}>
+                          <i className="fa-solid fa-circle-play"></i> Video #{idx + 1}
+                        </span>
+                        <button 
+                          type="button" 
+                          className="btn-remove-photo" 
+                          onClick={() => handleRemoveVideo(idx)}
+                          title="Remove video"
+                        >
+                          <i className="fa-solid fa-xmark"></i>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="modal-footer">

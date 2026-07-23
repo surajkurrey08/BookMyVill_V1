@@ -123,6 +123,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
             location: formData.location,
             price: formData.price ? parseInt(formData.price) : 12000,
             mapLink: formData.mapLink,
+            amenities: formData.amenities || [],
             photos: formData.photos,
             videos: formData.videos,
             description: formData.description
@@ -298,8 +299,13 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                   <label>Expected Price Per Night (₹)</label>
                   <input 
                     type="number" 
+                    min="1"
+                    onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
                     value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : Math.max(1, Math.abs(parseInt(e.target.value) || 1));
+                      setFormData({...formData, price: val});
+                    }}
                     placeholder="12000" 
                   />
                 </div>

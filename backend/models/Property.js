@@ -7,6 +7,7 @@ const PropertySchema = new mongoose.Schema({
   location: { type: String, required: true },
   price: { type: Number, default: 10000 },
   mapLink: { type: String, default: '' },
+  amenities: [{ type: String }],
   photos: [{ type: String }],
   videos: [{ type: String }],
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },

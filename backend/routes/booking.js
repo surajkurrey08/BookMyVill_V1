@@ -40,19 +40,48 @@ router.post('/', auth, async (req, res) => {
       }
     }
 
-    // Handle mock property string IDs (like "1", "2", "3") by finding or creating a mock Property record in MongoDB
+    // Handle property ID resolution to ensure exact hotel name, location and photo are linked
     let validPropertyId = propertyId;
-    if (!mongoose.Types.ObjectId.isValid(propertyId)) {
-      let mockProperty = await Property.findOne({ name: `Mock Property #${propertyId}` });
+    if (mongoose.Types.ObjectId.isValid(propertyId)) {
+      const existingProp = await Property.findById(propertyId);
+      if (!existingProp && req.body.propertyName) {
+        const newProp = new Property({
+          owner: req.user.id,
+          name: req.body.propertyName,
+          type: req.body.propertyType || 'Villa',
+          location: req.body.propertyLocation || 'Mahabaleshwar, Maharashtra',
+          price: totalPrice || 15000,
+          photos: req.body.propertyImage ? [req.body.propertyImage] : [],
+          status: 'approved'
+        });
+        await newProp.save();
+        validPropertyId = newProp._id;
+      }
+    } else {
+      const actualName = req.body.propertyName || `Mahabaleshwar Stay #${propertyId}`;
+      const actualLocation = req.body.propertyLocation || 'Mahabaleshwar, Maharashtra';
+      const actualType = req.body.propertyType || 'Villa';
+      const actualImage = req.body.propertyImage || '';
+
+      let mockProperty = await Property.findOne({ name: actualName });
       if (!mockProperty) {
         mockProperty = new Property({
           owner: req.user.id,
-          name: `Mock Property #${propertyId}`,
-          type: 'Villa',
-          location: 'Mahabaleshwar',
+          name: actualName,
+          type: actualType,
+          location: actualLocation,
           price: totalPrice || 15000,
+          photos: actualImage ? [actualImage] : [],
           status: 'approved'
         });
+        await mockProperty.save();
+      } else {
+        if (actualLocation && mockProperty.location !== actualLocation) {
+          mockProperty.location = actualLocation;
+        }
+        if (actualImage && (!mockProperty.photos || mockProperty.photos.length === 0)) {
+          mockProperty.photos = [actualImage];
+        }
         await mockProperty.save();
       }
       validPropertyId = mockProperty._id;
