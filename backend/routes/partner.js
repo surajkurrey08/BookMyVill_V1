@@ -61,9 +61,32 @@ const handleApply = async (req, res) => {
       }
     }
 
+    // 3. Auto-create/upgrade host User account and generate token
+    const User = require('../models/User');
+    const jwt = require('jsonwebtoken');
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({
+        name: fullName,
+        email,
+        phone: phone || '',
+        password: req.body.password || 'owner123',
+        role: 'owner'
+      });
+      await user.save();
+    } else if (user.role !== 'owner' && user.role !== 'admin') {
+      user.role = 'owner';
+      await user.save();
+    }
+
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
+
     res.status(201).json({ 
-      msg: 'Application submitted successfully! It is currently pending security verification by Admin.', 
-      application 
+      msg: 'Application submitted successfully! Redirecting to Owner Portal...', 
+      application,
+      token,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
   } catch (err) {
     console.error('Partner application error:', err);

@@ -82,7 +82,9 @@ router.get('/partner-applications', auth, adminAuth, async (req, res) => {
     }
     res.json(applications);
   } catch (err) {
-// Submit Partner Application (Public Admin Fallback Route)
+    res.status(500).send('Server error');
+  }
+});
 router.post('/partner-apply', async (req, res) => {
   try {
     const { fullName, email, phone, partnerType, propertyName, propertyType, price, city, govtId, experience, services, message } = req.body;

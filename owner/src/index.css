@@ -1,0 +1,59 @@
+:root {
+  --bg-dark: #0b110f;
+  --bg-card: #131c19;
+  --bg-card-hover: #1b2723;
+  --border-color: #243530;
+  --text-main: #f2ece4;
+  --text-muted: #859690;
+  --accent-gold: #d4af37;
+  --accent-gold-hover: #b89628;
+  --accent-emerald: #102a24;
+  --status-approved: #2ea043;
+  --status-pending: #d97706;
+  --status-rejected: #da3633;
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  transition: all 0.25s ease;
+}
+
+input, textarea, select {
+  font-family: var(--font-body);
+  outline: none;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-gold);
+}

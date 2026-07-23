@@ -127,23 +127,20 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
         });
       }
 
-      setSubmittedMsg('Your Property Owner listing application has been submitted! Status: 🟡 PENDING ADMIN VERIFICATION');
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        propertyName: '',
-        propertyType: 'Villa Estate',
-        location: 'Mahabaleshwar',
-        price: '',
-        description: '',
-        photos: [],
-        videos: []
-      });
-      if (onSuccess) onSuccess();
+      const data = await resPartner.json();
+      if (data.token && data.user) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+
+      setSubmittedMsg('Listing submitted successfully! Moving directly into your Property Owner Dashboard...');
+      
+      setTimeout(() => {
+        window.location.href = 'http://localhost:5175/dashboard';
+      }, 800);
     } catch (err) {
       console.error('Registration error:', err);
-      setSubmittedMsg('Your Property Owner listing application has been submitted! Status: 🟡 PENDING ADMIN VERIFICATION');
+      window.location.href = 'http://localhost:5175/dashboard';
     } finally {
       setIsSubmitting(false);
     }

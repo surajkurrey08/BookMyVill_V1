@@ -48,6 +48,33 @@ const AdminRedirect = () => {
   );
 };
 
+const OwnerRedirect = () => {
+  useEffect(() => {
+    window.location.replace('http://localhost:5175');
+  }, []);
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100vh',
+      backgroundColor: '#0b110f',
+      color: '#f2ece4',
+      fontFamily: 'Inter, sans-serif',
+      textAlign: 'center',
+      padding: '20px'
+    }}>
+      <h2 style={{ fontFamily: 'Outfit, sans-serif', color: '#d4af37', marginBottom: '10px' }}>
+        Redirecting to Property Owner Portal
+      </h2>
+      <p style={{ color: '#859690', fontSize: '0.9rem' }}>
+        Opening your host command center on port 5175...
+      </p>
+    </div>
+  );
+};
+
 const Home = () => {
   return (
     <>
@@ -103,6 +130,8 @@ function App() {
             </>
           } />
           <Route path="/admin" element={<AdminRedirect />} />
+          <Route path="/owner" element={<OwnerRedirect />} />
+          <Route path="/owner-dashboard" element={<OwnerRedirect />} />
           <Route path="/property/:id" element={<PropertyDetails />} />
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/profile" element={<UserProfile />} />

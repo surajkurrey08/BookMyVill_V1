@@ -132,6 +132,53 @@ router.get('/my-bookings', auth, async (req, res) => {
   }
 });
 
+// Get all bookings for all properties belonging to logged in Property Owner
+router.get('/owner', auth, async (req, res) => {
+  try {
+    // Find all properties owned by this user
+    const ownerProperties = await Property.find({ owner: req.user.id });
+    const propertyIds = ownerProperties.map(p => p._id);
+
+    // Find bookings for these properties
+    const bookings = await Booking.find({ property: { $in: propertyIds } })
+      .populate('user', 'name email phone')
+      .populate('property')
+      .sort({ createdAt: -1 });
+
+    res.json(bookings);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error fetching owner bookings');
+  }
+});
+
+// Update booking status (Owner or Admin)
+router.put('/status/:id', auth, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
+      return res.status(400).json({ msg: 'Invalid status' });
+    }
+
+    const booking = await Booking.findById(req.params.id).populate('property');
+    if (!booking) {
+      return res.status(404).json({ msg: 'Booking not found' });
+    }
+
+    // Check if user is owner of the property or admin
+    if (booking.property.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ msg: 'Not authorized to update this booking' });
+    }
+
+    booking.status = status;
+    await booking.save();
+    res.json(booking);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error updating booking status');
+  }
+});
+
 // Get bookings for a specific property (Protected - Owners/Admin only)
 router.get('/property/:propertyId', auth, async (req, res) => {
   try {

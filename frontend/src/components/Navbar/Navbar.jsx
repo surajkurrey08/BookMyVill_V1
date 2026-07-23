@@ -169,6 +169,26 @@ const Navbar = () => {
                       >
                         <i className="fa-solid fa-hotel" style={{ color: '#2b9348' }}></i> Stays Dashboard ↗
                       </Link>
+                      <a 
+                        href="http://localhost:5175" 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setShowProfileDropdown(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '9px 12px',
+                          borderRadius: '10px',
+                          color: '#d4af37',
+                          textDecoration: 'none',
+                          fontSize: '0.85rem',
+                          fontWeight: '700',
+                          background: 'rgba(212, 175, 55, 0.1)'
+                        }}
+                      >
+                        <i className="fa-solid fa-vihara" style={{ color: '#d4af37' }}></i> Host / Owner Portal ↗
+                      </a>
                       {user.role === 'owner' && (
                         <Link 
                           to="/caretaker-apply" 

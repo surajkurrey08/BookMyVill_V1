@@ -57,4 +57,49 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Update property (Protected - Owner or Admin)
+router.put('/:id', auth, async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) return res.status(404).json({ msg: 'Property not found' });
+
+    if (property.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ msg: 'Not authorized to update this property' });
+    }
+
+    const { name, type, location, price, photos, videos, status } = req.body;
+    if (name) property.name = name;
+    if (type) property.type = type;
+    if (location) property.location = location;
+    if (price) property.price = parseInt(price);
+    if (photos) property.photos = photos;
+    if (videos) property.videos = videos;
+    if (status && req.user.role === 'admin') property.status = status;
+
+    await property.save();
+    res.json(property);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error updating property');
+  }
+});
+
+// Delete property (Protected - Owner or Admin)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) return res.status(404).json({ msg: 'Property not found' });
+
+    if (property.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ msg: 'Not authorized to delete this property' });
+    }
+
+    await Property.findByIdAndDelete(req.params.id);
+    res.json({ msg: 'Property deleted successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error deleting property');
+  }
+});
+
 module.exports = router;

@@ -43,7 +43,7 @@ const Register = () => {
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/');
+        navigate('/dashboard');
       } else {
         setErrorMsg(data.msg || data.error || 'Registration failed');
       }
