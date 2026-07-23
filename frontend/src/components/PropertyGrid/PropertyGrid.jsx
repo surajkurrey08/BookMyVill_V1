@@ -4,6 +4,7 @@ import { properties } from '../../data/mockData';
 import './PropertyGrid.css';
 import './MapContainer.css';
 import { API_BASE_URL } from '../../config';
+import { formatGoogleMapsDirectionsUrl, getRawMapLink } from '../PropertyDetails/PropertyDetails';
 
 // Predefined coordinates for common tourist locations to ensure instant response
 const LOCATION_COORDINATES = {
@@ -25,10 +26,55 @@ const LOCATION_COORDINATES = {
   "Kamshet": { lat: 18.7583, lon: 73.5604 }
 };
 
-// Geocoding helper with local lookup + OpenStreetMap fallback
+// Extract coordinates from lat/lon properties, mapLink, or location string
+const parseMapCoordinates = (prop) => {
+  if (!prop) return null;
+
+  if (prop.lat && (prop.lon || prop.lng)) {
+    const latNum = parseFloat(prop.lat);
+    const lonNum = parseFloat(prop.lon ?? prop.lng);
+    if (!isNaN(latNum) && !isNaN(lonNum) && latNum !== 0 && lonNum !== 0) {
+      return { lat: latNum, lon: lonNum };
+    }
+  }
+
+  if (prop.mapLink && typeof prop.mapLink === 'string') {
+    const link = prop.mapLink;
+    
+    // Pattern 1: @17.9258,73.6510
+    const atMatch = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (atMatch) {
+      return { lat: parseFloat(atMatch[1]), lon: parseFloat(atMatch[2]) };
+    }
+
+    // Pattern 2: q=17.9258,73.6510 or query=17.9258,73.6510 or ll=17.9258,73.6510
+    const queryMatch = link.match(/[?&](?:q|query|ll|destination|center)=(-?\d+\.\d+),(-?\d+\.\d+)/i);
+    if (queryMatch) {
+      return { lat: parseFloat(queryMatch[1]), lon: parseFloat(queryMatch[2]) };
+    }
+
+    // Pattern 3: Any lat,lon pair in link
+    const genMatch = link.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
+    if (genMatch) {
+      return { lat: parseFloat(genMatch[1]), lon: parseFloat(genMatch[2]) };
+    }
+  }
+
+  if (prop.location && typeof prop.location === 'string') {
+    const locMatch = prop.location.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
+    if (locMatch) {
+      return { lat: parseFloat(locMatch[1]), lon: parseFloat(locMatch[2]) };
+    }
+  }
+
+  return null;
+};
+
+// Geocoding helper with mapLink coordinate parsing + OpenStreetMap lookup
 const resolveCoordinates = async (property) => {
-  if (property.lat && (property.lon || property.lng)) {
-    return { ...property, lon: property.lon ?? property.lng };
+  const parsed = parseMapCoordinates(property);
+  if (parsed) {
+    return { ...property, lat: parsed.lat, lon: parsed.lon };
   }
 
   const loc = property.location;
@@ -37,10 +83,13 @@ const resolveCoordinates = async (property) => {
   const normalized = loc.toLowerCase();
   for (const [key, coords] of Object.entries(LOCATION_COORDINATES)) {
     if (normalized.includes(key.toLowerCase())) {
+      const seed = (property.name || property.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const latOffset = ((seed % 100) / 100 - 0.5) * 0.012;
+      const lonOffset = (((seed * 13) % 100) / 100 - 0.5) * 0.012;
       return {
         ...property,
-        lat: coords.lat + (Math.random() - 0.5) * 0.015,
-        lon: coords.lon + (Math.random() - 0.5) * 0.015
+        lat: coords.lat + latOffset,
+        lon: coords.lon + lonOffset
       };
     }
   }
@@ -61,8 +110,8 @@ const resolveCoordinates = async (property) => {
 
   return {
     ...property,
-    lat: 17.9258 + (Math.random() - 0.5) * 0.04,
-    lon: 73.6510 + (Math.random() - 0.5) * 0.04
+    lat: 17.9258,
+    lon: 73.6510
   };
 };
 
@@ -262,6 +311,7 @@ const PropertyGrid = ({ isHomePage = false }) => {
             location: prop.location,
             type: prop.type,
             price: prop.price ? `₹${prop.price.toLocaleString('en-IN')}` : "₹10,000",
+            mapLink: prop.mapLink || '',
             rating: prop.rating || parseFloat((4 + Math.random()).toFixed(1)),
             reviewsCount: prop.reviewsCount || Math.floor(Math.random() * 120) + 30,
             tag: "New",
@@ -472,12 +522,15 @@ const PropertyGrid = ({ isHomePage = false }) => {
       const priceTag = property.price?.toString().startsWith('₹') ? property.price : `₹${property.price}`;
 
       const customIcon = L.divIcon({
-        className: 'custom-gold-price-pin',
-        html: `<div id="marker-${property.id}" class="map-price-pill ${isSel ? 'marker-active' : ''}">
-                 ${priceTag}
+        className: 'custom-hotel-location-marker',
+        html: `<div id="marker-${property.id}" class="map-hotel-location-pin ${isSel ? 'marker-active' : ''}" title="${property.name}">
+                 <div class="pin-icon-inner">
+                   <i class="fa-solid fa-location-dot"></i>
+                 </div>
+                 <div class="pin-pulse-wave"></div>
                </div>`,
-        iconSize: [85, 34],
-        iconAnchor: [42, 17]
+        iconSize: [36, 44],
+        iconAnchor: [18, 44]
       });
 
       const marker = L.marker([lat, lon], { icon: customIcon });
@@ -489,7 +542,10 @@ const PropertyGrid = ({ isHomePage = false }) => {
             <div class="popup-hotel-type">${property.type} • ★ ${property.rating} (${property.reviewsCount || 45} reviews)</div>
             <div class="popup-hotel-name">${property.name}</div>
             <div class="popup-hotel-price">${property.price}</div>
-            <a href="/property/${property._id || property.id}" class="popup-hotel-link">Book Stays</a>
+            <div style="display: flex; gap: 6px; margin-top: 6px;">
+              <a href="/property/${property._id || property.id}" class="popup-hotel-link" style="flex: 1; text-align: center;">Book Stays</a>
+              <a href="${formatGoogleMapsDirectionsUrl(property.mapLink, property.name, property.location)}" target="_blank" rel="noopener noreferrer" class="popup-hotel-link" style="flex: 1; text-align: center; background: #d4af37; color: #1a1a1a;">📍 Directions ↗</a>
+            </div>
           </div>
         </div>
       `;

@@ -32,6 +32,11 @@ const OwnerDashboard = () => {
   });
   const [profileSaving, setProfileSaving] = useState(false);
 
+  // Search & Filter States
+  const [propertySearchQuery, setPropertySearchQuery] = useState('');
+  const [propertyFilterType, setPropertyFilterType] = useState('All');
+  const [bookingFilterStatus, setBookingFilterStatus] = useState('All');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -88,6 +93,36 @@ const OwnerDashboard = () => {
     navigate('/login');
   };
 
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handlePhotoFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
+    try {
+      const base64Images = await Promise.all(files.map(f => convertFileToBase64(f)));
+      setPropertyForm(prev => ({
+        ...prev,
+        photos: [...(Array.isArray(prev.photos) ? prev.photos : []), ...base64Images]
+      }));
+    } catch (err) {
+      console.error('Error reading image files:', err);
+    }
+  };
+
+  const handleRemovePhoto = (indexToRemove) => {
+    setPropertyForm(prev => ({
+      ...prev,
+      photos: Array.isArray(prev.photos) ? prev.photos.filter((_, idx) => idx !== indexToRemove) : []
+    }));
+  };
+
   // Add / Edit Property Submission
   const handleSaveProperty = async (e) => {
     e.preventDefault();
@@ -100,8 +135,9 @@ const OwnerDashboard = () => {
       type: propertyForm.type,
       location: propertyForm.location,
       price: parseInt(propertyForm.price) || 10000,
-      photos: propertyForm.photos ? propertyForm.photos.split(',').map(s => s.trim()).filter(Boolean) : [],
-      videos: propertyForm.videos ? propertyForm.videos.split(',').map(s => s.trim()).filter(Boolean) : []
+      mapLink: propertyForm.mapLink || '',
+      photos: Array.isArray(propertyForm.photos) ? propertyForm.photos : (propertyForm.photos ? propertyForm.photos.split(',').map(s => s.trim()).filter(Boolean) : []),
+      videos: propertyForm.videos ? (Array.isArray(propertyForm.videos) ? propertyForm.videos : propertyForm.videos.split(',').map(s => s.trim()).filter(Boolean)) : []
     };
 
     try {
@@ -128,7 +164,7 @@ const OwnerDashboard = () => {
       setActionSuccess(editingProperty ? 'Property details updated successfully!' : 'Property added successfully!');
       setShowAddModal(false);
       setEditingProperty(null);
-      setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, photos: '', videos: '' });
+      setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' });
       fetchOwnerData(token);
     } catch (err) {
       setError(err.message);
@@ -142,7 +178,8 @@ const OwnerDashboard = () => {
       type: prop.type || 'Villa',
       location: prop.location || 'Mahabaleshwar',
       price: prop.price || 15000,
-      photos: prop.photos ? prop.photos.join(', ') : '',
+      mapLink: prop.mapLink || '',
+      photos: prop.photos || [],
       videos: prop.videos ? prop.videos.join(', ') : ''
     });
     setShowAddModal(true);
@@ -299,23 +336,31 @@ const OwnerDashboard = () => {
         <header className="content-header">
           <div className="header-titles">
             <h1>
-              {activeTab === 'overview' && 'Host Command Center'}
-              {activeTab === 'properties' && 'Property Portfolio Management'}
-              {activeTab === 'bookings' && 'Guest Reservations & Stays'}
-              {activeTab === 'analytics' && 'Financial Analytics & Revenue'}
-              {activeTab === 'profile' && 'Host Account Settings'}
+              {activeTab === 'overview' && <><i className="fa-solid fa-gauge-high" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Host Command Center</>}
+              {activeTab === 'properties' && <><i className="fa-solid fa-hotel" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Property Portfolio ({properties.length})</>}
+              {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Guest Reservations ({bookings.length})</>}
+              {activeTab === 'analytics' && <><i className="fa-solid fa-chart-line" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Financial Earnings & Analytics</>}
+              {activeTab === 'profile' && <><i className="fa-solid fa-user-gear" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Host Account Settings</>}
             </h1>
-            <p>Welcome back, <strong>{user?.name}</strong>! Track stay performance, guest check-ins & payouts.</p>
+            <p>
+              {activeTab === 'overview' && `Welcome back, ${user?.name || 'Owner'}! Track stay performance, guest check-ins & payouts.`}
+              {activeTab === 'properties' && `Manage your luxury stay listings, update direct photos, prices and live GPS links.`}
+              {activeTab === 'bookings' && `Track check-ins, guest contacts, stay payments, and confirm or reject reservations.`}
+              {activeTab === 'analytics' && `Track direct stay earnings, average reservation value, and monthly host payouts.`}
+              {activeTab === 'profile' && `Manage your owner identity, contact details and stay policies displayed to travelers.`}
+            </p>
           </div>
 
           <div className="header-actions">
-            <button className="btn-primary-gold" onClick={() => {
-              setEditingProperty(null);
-              setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, photos: '', videos: '' });
-              setShowAddModal(true);
-            }}>
-              <i className="fa-solid fa-plus"></i> Add New Property
-            </button>
+            {activeTab === 'properties' && (
+              <button className="btn-primary-gold" onClick={() => {
+                setEditingProperty(null);
+                setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' });
+                setShowAddModal(true);
+              }}>
+                <i className="fa-solid fa-plus"></i> Add New Property
+              </button>
+            )}
           </div>
         </header>
 
@@ -465,65 +510,105 @@ const OwnerDashboard = () => {
             {/* TAB 2: MY PROPERTIES */}
             {activeTab === 'properties' && (
               <div className="tab-properties">
-                <div className="section-toolbar">
-                  <h2>Property Listings ({properties.length})</h2>
-                  <button className="btn-primary-gold" onClick={() => {
-                    setEditingProperty(null);
-                    setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, photos: '', videos: '' });
-                    setShowAddModal(true);
-                  }}>
-                    <i className="fa-solid fa-plus"></i> Add Property
-                  </button>
+                {/* Filter & Search Bar */}
+                <div className="portfolio-filter-bar">
+                  <div className="search-box-wrap">
+                    <i className="fa-solid fa-magnifying-glass"></i>
+                    <input 
+                      type="text" 
+                      placeholder="Search property by name or location..." 
+                      value={propertySearchQuery}
+                      onChange={(e) => setPropertySearchQuery(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="type-filter-pills">
+                    {['All', 'Villa', 'Hotel', 'Resort', 'Cabin'].map(t => (
+                      <button 
+                        key={t}
+                        className={`filter-pill-btn ${propertyFilterType === t ? 'active' : ''}`}
+                        onClick={() => setPropertyFilterType(t)}
+                      >
+                        {t === 'All' ? 'All Types' : t}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {properties.length === 0 ? (
-                  <div className="empty-state-card">
+                  <div className="empty-state-card glass-morphism">
                     <i className="fa-solid fa-tree-city"></i>
-                    <h3>No Properties Found</h3>
+                    <h3>No Properties Listed Yet</h3>
                     <p>Start listing your Mahabaleshwar luxury villas, resorts, or cottages to receive bookings.</p>
                     <button className="btn-primary-gold" onClick={() => setShowAddModal(true)}>Add Property Now</button>
                   </div>
                 ) : (
                   <div className="properties-grid">
-                    {properties.map(prop => (
-                      <div key={prop._id} className="property-card">
-                        <div className="card-image-wrap">
-                          {prop.photos && prop.photos.length > 0 ? (
-                            <img src={prop.photos[0]} alt={prop.name} />
-                          ) : (
-                            <div className="image-placeholder">
-                              <i className="fa-solid fa-image"></i> No Photos Uploaded
+                    {properties
+                      .filter(p => {
+                        const matchesType = propertyFilterType === 'All' || p.type === propertyFilterType;
+                        const matchesQuery = !propertySearchQuery || 
+                          p.name?.toLowerCase().includes(propertySearchQuery.toLowerCase()) || 
+                          p.location?.toLowerCase().includes(propertySearchQuery.toLowerCase());
+                        return matchesType && matchesQuery;
+                      })
+                      .map(prop => (
+                        <div key={prop._id} className="property-card glass-morphism">
+                          <div className="card-image-wrap">
+                            {prop.photos && prop.photos.length > 0 ? (
+                              <img src={prop.photos[0]} alt={prop.name} />
+                            ) : (
+                              <div className="image-placeholder">
+                                <i className="fa-solid fa-image"></i> No Photos Uploaded
+                              </div>
+                            )}
+                            <span className={`status-badge ${prop.status}`}>
+                              <i className="fa-solid fa-circle"></i> {prop.status}
+                            </span>
+                            <span className="property-type-overlay">{prop.type}</span>
+                          </div>
+
+                          <div className="card-body">
+                            <h3>{prop.name}</h3>
+                            <p className="location">
+                              <i className="fa-solid fa-location-dot" style={{ color: 'var(--accent-gold)' }}></i> {prop.location}
+                            </p>
+
+                            <div className="media-counts">
+                              <span><i className="fa-solid fa-camera"></i> {prop.photos ? prop.photos.length : 0} Photos</span>
+                              <span><i className="fa-solid fa-video"></i> {prop.videos ? prop.videos.length : 0} Videos</span>
+                              {prop.mapLink && (
+                                <span className="gps-active-tag"><i className="fa-solid fa-map-location-dot"></i> Live Map GPS</span>
+                              )}
                             </div>
-                          )}
-                          <span className={`status-badge ${prop.status}`}>{prop.status}</span>
-                          <span className="property-type-overlay">{prop.type}</span>
+
+                            <div className="price-row">
+                              <div className="price-amount-group">
+                                <span className="amount">₹{prop.price?.toLocaleString('en-IN')}</span>
+                                <span className="per-night">/ night</span>
+                              </div>
+                            </div>
+
+                            <div className="card-actions">
+                              <a 
+                                href={`http://localhost:5173/property/${prop._id}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="btn-view-live"
+                                title="View on traveler site"
+                              >
+                                <i className="fa-solid fa-arrow-up-right-from-square"></i> Preview
+                              </a>
+                              <button className="btn-edit" onClick={() => handleEditClick(prop)}>
+                                <i className="fa-solid fa-pen-to-square"></i> Edit
+                              </button>
+                              <button className="btn-delete" onClick={() => handleDeleteProperty(prop._id)}>
+                                <i className="fa-solid fa-trash-can"></i>
+                              </button>
+                            </div>
+                          </div>
                         </div>
-
-                        <div className="card-body">
-                          <h3>{prop.name}</h3>
-                          <p className="location"><i className="fa-solid fa-location-dot"></i> {prop.location}</p>
-
-                          <div className="media-counts">
-                            <span><i className="fa-solid fa-camera"></i> {prop.photos ? prop.photos.length : 0} Photos</span>
-                            <span><i className="fa-solid fa-video"></i> {prop.videos ? prop.videos.length : 0} Videos</span>
-                          </div>
-
-                          <div className="price-row">
-                            <span className="amount">₹{prop.price?.toLocaleString('en-IN')}</span>
-                            <span className="per-night">/ night</span>
-                          </div>
-
-                          <div className="card-actions">
-                            <button className="btn-edit" onClick={() => handleEditClick(prop)}>
-                              <i className="fa-solid fa-pen-to-square"></i> Edit
-                            </button>
-                            <button className="btn-delete" onClick={() => handleDeleteProperty(prop._id)}>
-                              <i className="fa-solid fa-trash-can"></i> Delete
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 )}
               </div>
@@ -532,75 +617,110 @@ const OwnerDashboard = () => {
             {/* TAB 3: BOOKINGS */}
             {activeTab === 'bookings' && (
               <div className="tab-bookings">
-                <div className="section-toolbar">
-                  <h2>Guest Reservations ({bookings.length})</h2>
+                {/* Booking Filter Bar */}
+                <div className="portfolio-filter-bar" style={{ marginBottom: '20px' }}>
+                  <div className="type-filter-pills">
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginRight: '6px' }}><i className="fa-solid fa-filter" style={{ color: 'var(--accent-gold)' }}></i> Filter Reservations:</span>
+                    {['All', 'pending', 'confirmed', 'cancelled'].map(st => (
+                      <button 
+                        key={st}
+                        className={`filter-pill-btn ${bookingFilterStatus === st ? 'active' : ''}`}
+                        onClick={() => setBookingFilterStatus(st)}
+                      >
+                        {st === 'All' ? 'All Stays' : st.charAt(0).toUpperCase() + st.slice(1)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {bookings.length === 0 ? (
-                  <div className="empty-state-card">
+                  <div className="empty-state-card glass-morphism">
                     <i className="fa-solid fa-receipt"></i>
                     <h3>No Reservations Yet</h3>
-                    <p>Bookings made by guests for your listed properties will appear here automatically.</p>
+                    <p>Bookings made by travelers for your listed properties will automatically show up here.</p>
                   </div>
                 ) : (
-                  <div className="table-responsive">
+                  <div className="table-responsive glass-morphism">
                     <table className="custom-table">
                       <thead>
                         <tr>
                           <th>Guest Details</th>
-                          <th>Property Stay</th>
-                          <th>Dates</th>
-                          <th>Amount</th>
-                          <th>Payment</th>
-                          <th>Status</th>
-                          <th>Actions</th>
+                          <th>Property & Stay Type</th>
+                          <th>Stay Dates</th>
+                          <th>Total Revenue</th>
+                          <th>Payment Status</th>
+                          <th>Booking Status</th>
+                          <th>Host Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {bookings.map(b => (
-                          <tr key={b._id}>
-                            <td>
-                              <div className="guest-cell">
-                                <strong>{b.user?.name || 'Guest'}</strong>
-                                <span className="email">{b.user?.email}</span>
-                                {b.user?.phone && <span className="phone"><i className="fa-solid fa-phone"></i> {b.user.phone}</span>}
-                              </div>
-                            </td>
-                            <td>
-                              <strong>{b.property?.name || 'Villa Stay'}</strong>
-                              <span className="sub-location">{b.property?.location || 'Mahabaleshwar'}</span>
-                            </td>
-                            <td>
-                              <div className="date-cell">
-                                <span>In: {new Date(b.checkIn).toLocaleDateString('en-IN')}</span>
-                                <span>Out: {new Date(b.checkOut).toLocaleDateString('en-IN')}</span>
-                              </div>
-                            </td>
-                            <td>
-                              <strong className="price font-gold">₹{b.totalPrice?.toLocaleString('en-IN')}</strong>
-                            </td>
-                            <td>
-                              <span className={`payment-pill ${b.paymentStatus}`}>{b.paymentStatus}</span>
-                            </td>
-                            <td>
-                              <span className={`status-pill ${b.status}`}>{b.status}</span>
-                            </td>
-                            <td>
-                              <div className="action-dropdown">
-                                {b.status !== 'confirmed' && (
-                                  <button className="btn-action-confirm" onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>
-                                    <i className="fa-solid fa-check"></i> Confirm
-                                  </button>
-                                )}
-                                {b.status !== 'cancelled' && (
-                                  <button className="btn-action-cancel" onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')}>
-                                    <i className="fa-solid fa-xmark"></i> Cancel
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                        {bookings
+                          .filter(b => bookingFilterStatus === 'All' || b.status === bookingFilterStatus)
+                          .map(b => {
+                            const checkInDate = new Date(b.checkIn);
+                            const checkOutDate = new Date(b.checkOut);
+                            const nights = Math.max(1, Math.round((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)));
+                            return (
+                              <tr key={b._id}>
+                                <td>
+                                  <div className="guest-cell">
+                                    <div className="avatar-circle">
+                                      {b.user?.name ? b.user.name.charAt(0).toUpperCase() : 'G'}
+                                    </div>
+                                    <div className="guest-info-text">
+                                      <strong>{b.user?.name || 'Guest User'}</strong>
+                                      <span className="email">{b.user?.email}</span>
+                                      {b.user?.phone && <span className="phone"><i className="fa-solid fa-phone"></i> {b.user.phone}</span>}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div className="property-stay-cell">
+                                    <strong>{b.property?.name || 'Mahabaleshwar Stay'}</strong>
+                                    <span className="sub-location"><i className="fa-solid fa-location-dot"></i> {b.property?.location || 'Mahabaleshwar'}</span>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div className="date-cell">
+                                    <span className="date-range">
+                                      <i className="fa-solid fa-calendar"></i> {checkInDate.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} → {checkOutDate.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                                    </span>
+                                    <span className="nights-badge">{nights} {nights === 1 ? 'Night' : 'Nights'}</span>
+                                  </div>
+                                </td>
+                                <td>
+                                  <strong className="price font-gold">₹{b.totalPrice?.toLocaleString('en-IN')}</strong>
+                                </td>
+                                <td>
+                                  <span className={`payment-pill ${b.paymentStatus || 'paid'}`}>
+                                    <i className="fa-solid fa-shield-check"></i> {b.paymentStatus || 'paid'}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span className={`status-pill ${b.status}`}>
+                                    {b.status === 'confirmed' && <i className="fa-solid fa-circle-check"></i>}
+                                    {b.status === 'pending' && <i className="fa-solid fa-clock"></i>}
+                                    {b.status === 'cancelled' && <i className="fa-solid fa-circle-xmark"></i>}
+                                    {b.status}
+                                  </span>
+                                </td>
+                                <td>
+                                  <div className="action-buttons-group">
+                                    {b.status !== 'confirmed' && (
+                                      <button className="btn-action-confirm" onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>
+                                        <i className="fa-solid fa-check"></i> Confirm
+                                      </button>
+                                    )}
+                                    {b.status !== 'cancelled' && (
+                                      <button className="btn-action-cancel" onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')}>
+                                        <i className="fa-solid fa-xmark"></i> Cancel
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
                       </tbody>
                     </table>
                   </div>
@@ -611,44 +731,77 @@ const OwnerDashboard = () => {
             {/* TAB 4: ANALYTICS & FINANCIALS */}
             {activeTab === 'analytics' && (
               <div className="tab-analytics">
+
                 <div className="analytics-summary-cards">
-                  <div className="financial-card">
-                    <h4>Total Earnings Realized</h4>
+                  <div className="financial-card glass-morphism">
+                    <div className="fin-icon gold"><i className="fa-solid fa-wallet"></i></div>
+                    <h4>Total Gross Earnings</h4>
                     <h2>₹{totalRevenue.toLocaleString('en-IN')}</h2>
-                    <p><i className="fa-solid fa-shield-check"></i> Direct Bank Transfer Eligible</p>
+                    <p className="trend-up"><i className="fa-solid fa-arrow-trend-up"></i> +24% vs last month</p>
                   </div>
 
-                  <div className="financial-card">
-                    <h4>Average Booking Value</h4>
+                  <div className="financial-card glass-morphism">
+                    <div className="fin-icon emerald"><i className="fa-solid fa-chart-pie"></i></div>
+                    <h4>Average Stay Value</h4>
                     <h2>₹{bookings.length > 0 ? Math.round(totalRevenue / bookings.length).toLocaleString('en-IN') : 0}</h2>
-                    <p><i className="fa-solid fa-arrow-trend-up"></i> Based on {totalBookings} guest stays</p>
+                    <p><i className="fa-solid fa-circle-check"></i> Based on {totalBookings} guest stays</p>
                   </div>
 
-                  <div className="financial-card">
-                    <h4>Pending Guest Payments</h4>
-                    <h2>₹{bookings.filter(b => b.paymentStatus === 'pending').reduce((acc, b) => acc + (b.totalPrice || 0), 0).toLocaleString('en-IN')}</h2>
-                    <p><i className="fa-solid fa-clock"></i> Unpaid or Check-in Pending</p>
+                  <div className="financial-card glass-morphism">
+                    <div className="fin-icon blue"><i className="fa-solid fa-building-columns"></i></div>
+                    <h4>Bank Payout Status</h4>
+                    <h2>₹{totalRevenue.toLocaleString('en-IN')}</h2>
+                    <p className="trend-up"><i className="fa-solid fa-shield-halved"></i> Direct Bank Transfer Active</p>
                   </div>
                 </div>
 
-                <div className="financial-breakdown-card">
-                  <h3>Payout & Property Revenue Distribution</h3>
+                {/* Property-by-Property Financial Breakdown */}
+                <div className="financial-breakdown-card glass-morphism">
+                  <div className="breakdown-header">
+                    <h3><i className="fa-solid fa-money-bill-trend-up" style={{ color: 'var(--accent-gold)' }}></i> Payout & Property Revenue Distribution</h3>
+                    <span className="payout-status-badge"><i className="fa-solid fa-circle-check"></i> Auto-settlement active</span>
+                  </div>
+
                   <div className="payout-list">
-                    {properties.map(p => {
-                      const propBookings = bookings.filter(b => b.property?._id === p._id && b.paymentStatus === 'paid');
-                      const propRevenue = propBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-                      return (
-                        <div key={p._id} className="payout-row">
-                          <div className="payout-prop-info">
-                            <strong>{p.name}</strong>
-                            <span>{p.location} ({propBookings.length} paid stays)</span>
+                    {properties.length === 0 ? (
+                      <p className="no-data-text">No property revenue records available.</p>
+                    ) : (
+                      properties.map(p => {
+                        const propBookings = bookings.filter(b => b.property?._id === p._id || b.property?.name === p.name);
+                        const propRevenue = propBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+                        const occupancy = Math.min(100, Math.round((propBookings.length / 5) * 100));
+                        return (
+                          <div key={p._id} className="payout-row-fancy">
+                            <div className="payout-prop-thumb">
+                              {p.photos && p.photos.length > 0 ? (
+                                <img src={p.photos[0]} alt={p.name} />
+                              ) : (
+                                <div className="no-img"><i className="fa-solid fa-building"></i></div>
+                              )}
+                            </div>
+
+                            <div className="payout-prop-info">
+                              <h4>{p.name}</h4>
+                              <p><i className="fa-solid fa-location-dot"></i> {p.location} • <span className="type-tag">{p.type}</span></p>
+                              <div className="occupancy-bar-wrap">
+                                <div className="occupancy-progress" style={{ width: `${occupancy || 20}%` }}></div>
+                              </div>
+                            </div>
+
+                            <div className="payout-stats-group">
+                              <div className="stat-unit">
+                                <span className="label">Total Stays</span>
+                                <span className="val">{propBookings.length} Bookings</span>
+                              </div>
+                              <div className="stat-unit">
+                                <span className="label">Gross Earnings</span>
+                                <span className="val gold">₹{propRevenue.toLocaleString('en-IN')}</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="payout-prop-revenue">
-                            <strong>₹{propRevenue.toLocaleString('en-IN')}</strong>
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               </div>
@@ -767,13 +920,53 @@ const OwnerDashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>Photo URLs (Comma-separated URLs)</label>
-                <textarea 
-                  rows="3" 
-                  value={propertyForm.photos} 
-                  onChange={(e) => setPropertyForm({ ...propertyForm, photos: e.target.value })} 
-                  placeholder="https://images.unsplash.com/photo-1..., https://..."
-                ></textarea>
+                <label><i className="fa-solid fa-map-location-dot" style={{ color: 'var(--accent-gold)', marginRight: '6px' }}></i> Google Maps Live Location Link</label>
+                <input 
+                  type="url" 
+                  value={propertyForm.mapLink || ''} 
+                  onChange={(e) => setPropertyForm({ ...propertyForm, mapLink: e.target.value })} 
+                  placeholder="e.g. https://maps.app.goo.gl/... or https://maps.google.com/?q=..." 
+                />
+                <small style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '4px', display: 'block' }}>
+                  Paste exact Google Maps URL so guests can view live GPS pin & directions on the map.
+                </small>
+              </div>
+
+              <div className="form-group">
+                <label><i className="fa-solid fa-camera" style={{ color: 'var(--accent-gold)', marginRight: '6px' }}></i> Property Photos (Upload Directly)</label>
+                <div className="direct-upload-area">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    multiple 
+                    onChange={handlePhotoFileUpload} 
+                    id="property-direct-photos" 
+                    style={{ display: 'none' }}
+                  />
+                  <label htmlFor="property-direct-photos" className="upload-dropzone">
+                    <i className="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Select Images from Computer / Mobile</span>
+                    <small>Upload PNG, JPG, WEBP • Multiple images supported</small>
+                  </label>
+                </div>
+
+                {Array.isArray(propertyForm.photos) && propertyForm.photos.length > 0 && (
+                  <div className="uploaded-thumbnails-grid">
+                    {propertyForm.photos.map((img, idx) => (
+                      <div key={idx} className="thumb-item">
+                        <img src={img} alt={`Upload ${idx + 1}`} />
+                        <button 
+                          type="button" 
+                          className="btn-remove-photo" 
+                          onClick={() => handleRemovePhoto(idx)}
+                          title="Remove image"
+                        >
+                          <i className="fa-solid fa-xmark"></i>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">

@@ -14,6 +14,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
     propertyType: 'Villa Estate',
     location: 'Mahabaleshwar',
     price: '',
+    mapLink: '',
     description: '',
     photos: [],
     videos: []
@@ -88,6 +89,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
         propertyType: formData.propertyType,
         city: formData.location,
         price: formData.price,
+        mapLink: formData.mapLink,
         message: formData.description
       };
 
@@ -120,6 +122,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
             type: formData.propertyType,
             location: formData.location,
             price: formData.price ? parseInt(formData.price) : 12000,
+            mapLink: formData.mapLink,
             photos: formData.photos,
             videos: formData.videos,
             description: formData.description
@@ -289,15 +292,27 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                 </div>
               </div>
 
-              {/* Row 3: Price */}
-              <div className="form-group" style={{ marginTop: '14px' }}>
-                <label>Expected Price Per Night (₹)</label>
-                <input 
-                  type="number" 
-                  value={formData.price}
-                  onChange={(e) => setFormData({...formData, price: e.target.value})}
-                  placeholder="12000" 
-                />
+              {/* Row 3: Price & Live Location Link */}
+              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginTop: '14px' }}>
+                <div className="form-group">
+                  <label>Expected Price Per Night (₹)</label>
+                  <input 
+                    type="number" 
+                    value={formData.price}
+                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    placeholder="12000" 
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label><i className="fa-solid fa-map-location-dot" style={{ color: '#d4af37', marginRight: '6px' }}></i> Google Maps Live Location Link</label>
+                  <input 
+                    type="url" 
+                    value={formData.mapLink}
+                    onChange={(e) => setFormData({...formData, mapLink: e.target.value})}
+                    placeholder="https://maps.app.goo.gl/..." 
+                  />
+                </div>
               </div>
 
               {/* Row 4: Property Description */}

@@ -27,12 +27,12 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  background: radial-gradient(circle at center, rgba(11, 17, 15, 0.82) 0%, rgba(5, 8, 7, 0.96) 100%);
+  background: radial-gradient(circle at center, rgba(11, 17, 15, 0.84) 0%, rgba(5, 8, 7, 0.96) 100%);
   z-index: -1;
 }
 
 .joinus-container {
-  max-width: 1000px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 110px 20px 60px;
 }
@@ -59,9 +59,9 @@
 
 .joinus-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 30px;
-  margin-bottom: 50px;
+  margin-bottom: 70px;
 }
 
 .joinus-card {
@@ -73,6 +73,12 @@
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.joinus-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212, 175, 55, 0.6);
 }
 
 .joinus-card-icon {
@@ -109,7 +115,7 @@
   margin: 0 0 30px 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .joinus-benefits li {
@@ -124,8 +130,14 @@
   color: #52b788;
 }
 
-.btn-join-action {
+.card-btn-group {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-join-action {
   background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
   color: #1a1a1a;
   padding: 13px 26px;
@@ -138,7 +150,7 @@
   text-align: center;
   box-shadow: 0 5px 18px rgba(212, 175, 55, 0.35);
   transition: all 0.25s ease;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -149,59 +161,291 @@
   box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
 }
 
-.partner-form-section {
-  background: rgba(18, 26, 23, 0.88);
-  backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 24px;
-  padding: 40px;
-}
-
-.partner-form-title {
-  margin-bottom: 28px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 18px;
-}
-
-.partner-form-title h2 {
-  font-family: var(--font-heading, 'Outfit', serif);
-  font-size: 1.6rem;
-  color: #ffffff;
-  margin: 0 0 6px 0;
-}
-
-.partner-form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-}
-
-.form-group-custom label {
-  display: block;
-  font-weight: 700;
+.btn-portal-action {
+  background: rgba(255, 255, 255, 0.08);
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  padding: 10px 20px;
+  border-radius: 50px;
   font-size: 0.88rem;
-  margin-bottom: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-portal-action:hover {
+  background: rgba(212, 175, 55, 0.15);
   color: #ffffff;
 }
 
-.form-input-custom,
-.form-select-custom,
-.form-textarea-custom {
-  width: 100%;
-  padding: 13px 16px;
-  border-radius: 12px;
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.4);
-  color: #ffffff;
-  font-size: 0.92rem;
-  outline: none;
-  font-family: inherit;
-  box-sizing: border-box;
+/* ========================================================
+   VERIFIED PROPERTY OWNER & CARETAKER USER CARDS SECTION
+   ======================================================== */
+.verified-community-section {
+  padding-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.form-input-custom:focus,
-.form-select-custom:focus,
-.form-textarea-custom:focus {
+.community-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(212, 175, 55, 0.12);
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.community-header h2 {
+  font-family: var(--font-heading, 'Outfit', serif);
+  font-size: 2.2rem;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+}
+
+.community-header p {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1rem;
+  max-width: 650px;
+  margin: 0 auto 30px;
+}
+
+.community-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-btn:hover {
+  background: rgba(212, 175, 55, 0.12);
+  color: #d4af37;
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.tab-btn.active {
+  background: #d4af37;
+  color: #0b110f;
   border-color: #d4af37;
-  box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+/* User Cards Grid */
+.user-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.partner-user-card {
+  background: rgba(19, 28, 25, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(15px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.partner-user-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+}
+
+.partner-user-card.owner {
+  border-top: 3px solid #d4af37;
+}
+
+.partner-user-card.caretaker {
+  border-top: 3px solid #52b788;
+}
+
+.card-top-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.partner-type-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.partner-type-badge.owner {
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.partner-type-badge.caretaker {
+  background: rgba(82, 183, 136, 0.15);
+  color: #52b788;
+  border: 1px solid rgba(82, 183, 136, 0.3);
+}
+
+.rating-tag {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  padding: 3px 10px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-avatar-wrapper {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+}
+
+.partner-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0b110f;
+  font-family: var(--font-heading, 'Outfit', serif);
+  font-size: 1.8rem;
+  font-weight: 800;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.verified-check {
+  position: absolute;
+  bottom: 0;
+  right: -2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2ea043;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  border: 2px solid #131c19;
+}
+
+.partner-details h3 {
+  font-family: var(--font-heading, 'Outfit', serif);
+  font-size: 1.25rem;
+  margin: 0 0 4px 0;
+  color: #ffffff;
+}
+
+.role-title {
+  display: block;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 6px;
+}
+
+.info-item.property-name {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.info-item.location-name {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.partner-bio {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  margin: 12px 0 18px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-footer-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: auto;
+}
+
+.exp-badge {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.exp-badge i {
+  color: #d4af37;
+}
+
+.status-verify {
+  font-size: 0.78rem;
+  color: #3fb950;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }

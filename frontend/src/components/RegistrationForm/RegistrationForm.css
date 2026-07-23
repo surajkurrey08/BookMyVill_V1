@@ -244,3 +244,23 @@
     gap: 30px;
   }
 }
+
+@media (max-width: 640px) {
+  .registration-section {
+    padding: 90px 16px 40px;
+  }
+
+  .registration-card {
+    padding: 24px 16px;
+    border-radius: 18px;
+  }
+
+  .registration-info h2 {
+    font-size: 2rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}

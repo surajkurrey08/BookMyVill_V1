@@ -8,13 +8,14 @@ router.post('/add', auth, async (req, res) => {
   if (req.user.role !== 'owner') return res.status(403).json({ msg: 'Access denied' });
 
   try {
-    const { name, type, location, price, photos, videos } = req.body;
+    const { name, type, location, price, mapLink, photos, videos } = req.body;
     const newProperty = new Property({
       owner: req.user.id,
       name,
       type,
       location,
       price: price ? parseInt(price) : 10000,
+      mapLink: mapLink || '',
       photos: photos || [],
       videos: videos || [],
       status: 'approved'
@@ -67,11 +68,12 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ msg: 'Not authorized to update this property' });
     }
 
-    const { name, type, location, price, photos, videos, status } = req.body;
+    const { name, type, location, price, mapLink, photos, videos, status } = req.body;
     if (name) property.name = name;
     if (type) property.type = type;
     if (location) property.location = location;
     if (price) property.price = parseInt(price);
+    if (mapLink !== undefined) property.mapLink = mapLink;
     if (photos) property.photos = photos;
     if (videos) property.videos = videos;
     if (status && req.user.role === 'admin') property.status = status;

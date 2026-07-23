@@ -5,7 +5,33 @@ import Footer from '../Footer/Footer';
 import './PropertyDetails.css';
 import '../PropertyGrid/MapContainer.css';
 import { properties as mockProperties } from '../../data/mockData';
-import { API_BASE_URL } from '../../config';
+export const getRawMapLink = (mapLink) => {
+  if (!mapLink || typeof mapLink !== 'string') return '';
+  let trimmed = mapLink.trim();
+  if (!trimmed) return '';
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+    return `https://${trimmed}`;
+  }
+  return trimmed;
+};
+
+export const formatGoogleMapsDirectionsUrl = (mapLink, name, location) => {
+  if (mapLink && typeof mapLink === 'string') {
+    let trimmed = mapLink.trim();
+    if (trimmed) {
+      if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        trimmed = `https://${trimmed}`;
+      }
+      if (trimmed.includes('/dir/')) {
+        return trimmed;
+      }
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(trimmed)}`;
+    }
+  }
+
+  const destinationQuery = location ? `${location}` : (name || 'Mahabaleshwar');
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationQuery)}`;
+};
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -63,11 +89,16 @@ const PropertyDetails = () => {
 
   useEffect(() => {
     const fetchProperty = async () => {
-      const mockId = parseInt(id);
-      if (!isNaN(mockId) && mockId < 100) {
+      const isPureNumericId = /^\d+$/.test(id) && id.length <= 3;
+      if (isPureNumericId) {
+        const mockId = parseInt(id, 10);
         const mockItem = mockProperties.find(p => p.id === mockId);
         if (mockItem) {
-          setProperty({ ...mockItem, photos: [mockItem.image] });
+          setProperty({
+            ...mockItem,
+            photos: mockItem.photos || [mockItem.image],
+            image: mockItem.image
+          });
           setLoading(false);
           return;
         }
@@ -77,14 +108,39 @@ const PropertyDetails = () => {
         const response = await fetch(`${API_BASE_URL}/api/properties/${id}`);
         if (response.ok) {
           const data = await response.json();
-          setProperty(data);
+          const photos = Array.isArray(data.photos) && data.photos.length > 0
+            ? data.photos
+            : ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1200"];
+
+          setProperty({
+            ...data,
+            photos,
+            image: photos[0],
+            rating: data.rating || 4.9,
+            reviewsCount: data.reviewsCount || 85,
+            videos: Array.isArray(data.videos) && data.videos.length > 0 
+              ? data.videos 
+              : ["https://assets.mixkit.co/videos/preview/mixkit-luxury-house-with-a-swimming-pool-41481-large.mp4"]
+          });
         } else {
           const mockItem = mockProperties.find(p => p.id === parseInt(id));
-          if (mockItem) setProperty({ ...mockItem, photos: mockItem.photos || [mockItem.image] });
+          if (mockItem) {
+            setProperty({
+              ...mockItem,
+              photos: mockItem.photos || [mockItem.image],
+              image: mockItem.image
+            });
+          }
         }
       } catch (err) {
         const mockItem = mockProperties.find(p => p.id === parseInt(id));
-        if (mockItem) setProperty({ ...mockItem, photos: mockItem.photos || [mockItem.image] });
+        if (mockItem) {
+          setProperty({
+            ...mockItem,
+            photos: mockItem.photos || [mockItem.image],
+            image: mockItem.image
+          });
+        }
       }
       setLoading(false);
     };
@@ -100,8 +156,43 @@ const PropertyDetails = () => {
 
     const L = window.L;
 
-    let lat = property.lat;
-    let lon = property.lon ?? property.lng;
+    // Helper to parse coordinates from property lat/lon, mapLink, or location text
+    let lat = null;
+    let lon = null;
+
+    if (property.lat && (property.lon || property.lng)) {
+      lat = parseFloat(property.lat);
+      lon = parseFloat(property.lon ?? property.lng);
+    }
+
+    if ((!lat || !lon) && property.mapLink) {
+      const link = property.mapLink;
+      const atMatch = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+      if (atMatch) {
+        lat = parseFloat(atMatch[1]);
+        lon = parseFloat(atMatch[2]);
+      } else {
+        const qMatch = link.match(/[?&](?:q|query|ll|destination|center)=(-?\d+\.\d+),(-?\d+\.\d+)/i);
+        if (qMatch) {
+          lat = parseFloat(qMatch[1]);
+          lon = parseFloat(qMatch[2]);
+        } else {
+          const genMatch = link.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
+          if (genMatch) {
+            lat = parseFloat(genMatch[1]);
+            lon = parseFloat(genMatch[2]);
+          }
+        }
+      }
+    }
+
+    if ((!lat || !lon) && property.location) {
+      const locMatch = property.location.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
+      if (locMatch) {
+        lat = parseFloat(locMatch[1]);
+        lon = parseFloat(locMatch[2]);
+      }
+    }
 
     if (!lat || !lon) {
       const locLower = (property.location || '').toLowerCase();
@@ -584,11 +675,61 @@ const PropertyDetails = () => {
 
               {/* Interactive Location Map Section */}
               <div className="location-map-card glass-morphism">
-                <h3>Where you'll be staying</h3>
-                <p>
-                  <i className="fa-solid fa-location-dot" style={{ color: 'var(--secondary-color)', marginRight: '8px' }}></i> 
-                  {property.location}
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
+                  <div>
+                    <h3 style={{ margin: '0 0 4px 0' }}>Where you'll be staying</h3>
+                    <p style={{ margin: 0 }}>
+                      <i className="fa-solid fa-location-dot" style={{ color: 'var(--secondary-color)', marginRight: '8px' }}></i> 
+                      {property.location}
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    {property.mapLink && (
+                      <a 
+                        href={getRawMapLink(property.mapLink)} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          color: '#ffffff',
+                          border: '1px solid rgba(212, 175, 55, 0.5)',
+                          padding: '10px 16px',
+                          borderRadius: '30px',
+                          fontWeight: '600',
+                          fontSize: '0.85rem',
+                          textDecoration: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <i className="fa-solid fa-arrow-up-right-from-square" style={{ color: '#d4af37' }}></i> Open Host Map Link ↗
+                      </a>
+                    )}
+
+                    <a 
+                      href={formatGoogleMapsDirectionsUrl(property.mapLink, property.name, property.location)} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{
+                        background: 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)',
+                        color: '#1a1a1a',
+                        padding: '10px 18px',
+                        borderRadius: '30px',
+                        fontWeight: '700',
+                        fontSize: '0.88rem',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)'
+                      }}
+                    >
+                      <i className="fa-solid fa-compass"></i> Live GPS Directions ↗
+                    </a>
+                  </div>
+                </div>
                 <div className="detail-map-wrapper">
                   <div id="detail-leaflet-map"></div>
                 </div>

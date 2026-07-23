@@ -406,6 +406,82 @@
   fill: #d4af37;
 }
 
+/* Custom Hotel Location Symbol Pins */
+.custom-hotel-location-marker {
+  background: none !important;
+  border: none !important;
+}
+
+.map-hotel-location-pin {
+  position: relative;
+  width: 36px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 50;
+}
+
+.pin-icon-inner {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #1b4332 0%, #0b110f 100%);
+  border: 2px solid #d4af37;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s ease;
+}
+
+.pin-icon-inner i {
+  transform: rotate(45deg);
+  font-size: 1.05rem;
+  color: #d4af37;
+}
+
+.pin-pulse-wave {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 6px;
+  background: rgba(212, 175, 55, 0.4);
+  border-radius: 50%;
+  animation: pulse-pin-glow 2s infinite ease-out;
+}
+
+.map-hotel-location-pin:hover .pin-icon-inner,
+.map-hotel-location-pin.marker-active .pin-icon-inner {
+  background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+  border-color: #ffffff;
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.8);
+  transform: rotate(-45deg) scale(1.25);
+}
+
+.map-hotel-location-pin:hover .pin-icon-inner i,
+.map-hotel-location-pin.marker-active .pin-icon-inner i {
+  color: #1a1a1a;
+}
+
+@keyframes pulse-pin-glow {
+  0% {
+    width: 12px;
+    height: 5px;
+    opacity: 0.8;
+  }
+  100% {
+    width: 32px;
+    height: 12px;
+    opacity: 0;
+  }
+}
+
 /* Popup design */
 .leaflet-popup-content-wrapper {
   background: white !important;
