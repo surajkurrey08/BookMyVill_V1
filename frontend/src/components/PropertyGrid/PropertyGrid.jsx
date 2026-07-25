@@ -650,12 +650,30 @@ const PropertyGrid = ({ isHomePage = false }) => {
       {isHomePage ? (
         /* HOME PAGE SPLIT VIEW LAYOUT (MATCHING USER'S SCREENSHOT) */
         <>
-          <div className="section-header">
-            <span className="section-subtitle">Our Curated Collection</span>
-            <h2>Explore Exceptional Stays</h2>
+          <div className="section-header" style={{ maxWidth: '1440px', margin: '0 auto 36px auto', padding: '0 20px', textAlign: 'center' }}>
+            <span className="section-subtitle" style={{ letterSpacing: '3px', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '8px', textTransform: 'uppercase', fontSize: '0.85rem' }}>
+              Our Curated Collection
+            </span>
+            <h2 style={{ fontSize: '2.8rem', color: '#1b4332', margin: '0 0 24px 0', fontFamily: 'var(--font-heading)', fontWeight: '700' }}>
+              Explore Exceptional Stays
+            </h2>
             
-            {/* Control Bar: Category Tabs, Search Box, Quick Dropdown */}
-            <div className="map-control-bar">
+            {/* Unified Luxury Control Bar: All Controls & View All Button Centered Together */}
+            <div className="map-control-bar" style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '14px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '60px',
+              padding: '12px 24px',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
+              border: '1px solid rgba(212, 175, 55, 0.3)',
+              margin: '0 auto'
+            }}>
+              {/* Category Tabs */}
               <div className="filter-tabs" style={{ marginBottom: 0 }}>
                 {['All', 'Villa', 'Hotel', 'Cabin', 'Resort'].map(tab => (
                   <button 
@@ -672,7 +690,7 @@ const PropertyGrid = ({ isHomePage = false }) => {
               </div>
 
               {/* Search box */}
-              <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
+              <form onSubmit={handleSearchSubmit} className="search-input-wrapper" style={{ margin: 0 }}>
                 <i className="fa-solid fa-magnifying-glass"></i>
                 <input 
                   type="text" 
@@ -710,6 +728,29 @@ const PropertyGrid = ({ isHomePage = false }) => {
                 <i className="fa-solid fa-hotel" style={{ marginRight: '6px' }}></i>
                 {filteredProperties.length} Stays
               </span>
+
+              {/* Centered View All Stays Button */}
+              <button 
+                onClick={() => navigate('/explore')} 
+                className="btn-primary"
+                style={{
+                  background: 'linear-gradient(135deg, #d4af37 0%, #aa820a 100%)',
+                  color: '#0b110f',
+                  fontWeight: '700',
+                  padding: '9px 22px',
+                  borderRadius: '50px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.88rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 15px rgba(212, 175, 55, 0.4)',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <i className="fa-solid fa-list-check"></i> View All Stays ({resolvedAllProperties.length})
+              </button>
             </div>
           </div>
           

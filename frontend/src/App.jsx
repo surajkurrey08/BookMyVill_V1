@@ -16,6 +16,7 @@ import CaretakerApply from './components/Caretaker/CaretakerApply';
 import Packages from './components/Packages/Packages';
 import JoinUs from './components/JoinUs/JoinUs';
 import AboutUs from './components/AboutUs/AboutUs';
+import CaretakerDashboard from './components/Caretaker/CaretakerDashboard';
 import RegistrationForm from './components/RegistrationForm/RegistrationForm';
 import ExploreStaysPage from './components/ExploreStays/ExploreStaysPage';
 import './App.css';
@@ -136,6 +137,7 @@ function App() {
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/caretaker-apply" element={<CaretakerApply />} />
+          <Route path="/caretaker-dashboard" element={<CaretakerDashboard />} />
           <Route path="/explore" element={<ExploreStaysPage />} />
           <Route path="/explore-stays" element={<ExploreStaysPage />} />
           <Route path="/packages" element={<Packages />} />

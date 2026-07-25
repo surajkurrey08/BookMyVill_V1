@@ -3,16 +3,21 @@
   position: relative;
   color: #ffffff;
   font-family: 'Inter', sans-serif;
-  padding-bottom: 60px;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .joinus-bg {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
-  z-index: -2;
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .joinus-bg img {
@@ -22,19 +27,25 @@
 }
 
 .joinus-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  height: 100%;
+  max-height: 100vh;
   background: radial-gradient(circle at center, rgba(11, 17, 15, 0.84) 0%, rgba(5, 8, 7, 0.96) 100%);
-  z-index: -1;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .joinus-container {
   max-width: 1180px;
   margin: 0 auto;
   padding: 110px 20px 60px;
+  flex: 1;
+  width: 100%;
+  position: relative;
+  z-index: 2;
 }
 
 .joinus-header {

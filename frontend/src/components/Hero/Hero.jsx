@@ -164,7 +164,11 @@ const Hero = () => {
               placeholder="Add guests" 
               className="search-input" 
               value={guests}
-              onChange={(e) => setGuests(e.target.value)}
+              onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
+              onChange={(e) => {
+                const val = e.target.value === '' ? '' : Math.max(1, Math.abs(parseInt(e.target.value) || 1));
+                setGuests(val);
+              }}
             />
           </div>
           <button className="btn-primary search-btn" onClick={handleSearch}>Search</button>

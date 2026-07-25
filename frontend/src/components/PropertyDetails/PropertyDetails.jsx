@@ -1139,8 +1139,8 @@ const PropertyDetails = () => {
             </div>
           </div>
         )}
+        <Footer />
       </div>
-      <Footer />
     </>
   );
 };

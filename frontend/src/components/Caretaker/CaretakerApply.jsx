@@ -218,7 +218,7 @@ const CaretakerApply = () => {
       </div>
 
       <div className="caretaker-container">
-        <div className="caretaker-card">
+        <div className="caretaker-card glass-morphism fade-in">
           <div className="caretaker-title-section">
             <h2>
               <i className="fa-solid fa-shield-halved" style={{ color: '#d4af37' }}></i> Certified Caretaker Application & Verification Form

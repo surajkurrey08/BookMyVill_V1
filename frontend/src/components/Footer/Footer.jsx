@@ -26,17 +26,18 @@ const Footer = () => {
 
         <div className="footer-links">
           <div className="link-group">
-            <h4>Explore Stays</h4>
-            <a href="/#explore">All Destinations</a>
-            <a href="/#explore">Luxury Villas</a>
-            <a href="/#explore">Boutique Hotels</a>
-            <a href="/#explore">Mountain Cabins</a>
-            <a href="/#explore">Exclusive Resorts</a>
+            <h4>Explore & Stay</h4>
+            <Link to="/explore">All Luxury Stays</Link>
+            <Link to="/packages">Holiday Packages</Link>
+            <Link to="/about-us">About Us</Link>
+            <Link to="/join-us">Partner With Us</Link>
           </div>
           <div className="link-group">
-            <h4>Account & Access</h4>
+            <h4>Account & Portals</h4>
             <Link to="/signin">Guest Sign In</Link>
             <Link to="/dashboard">User Dashboard</Link>
+            <Link to="/caretaker-apply">Caretaker Jobs</Link>
+            <Link to="/register-property">List Property</Link>
           </div>
           <div className="link-group">
             <h4>Contact & Support</h4>

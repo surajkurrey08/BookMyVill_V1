@@ -21,9 +21,79 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedMsg, setSubmittedMsg] = useState('');
+  const [errors, setErrors] = useState({});
+  const [showErrorSummary, setShowErrorSummary] = useState(false);
 
   const photoInputRef = useRef(null);
   const videoInputRef = useRef(null);
+
+  const validateField = (name, value, currentPhotos) => {
+    switch (name) {
+      case 'name':
+        if (!value || value.trim().length < 3) {
+          return 'Owner full name is required for verification (minimum 3 characters).';
+        }
+        break;
+      case 'email':
+        if (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+          return 'Please enter a valid email address (e.g. owner@example.com).';
+        }
+        break;
+      case 'phone':
+        const digits = (value || '').replace(/\D/g, '');
+        if (!value || digits.length < 10) {
+          return 'Contact phone number must contain at least 10 digits.';
+        }
+        break;
+      case 'propertyName':
+        if (!value || value.trim().length < 3) {
+          return 'Property / Villa name is required for verification.';
+        }
+        break;
+      case 'propertyType':
+        if (!value) {
+          return 'Please select a property category type.';
+        }
+        break;
+      case 'location':
+        if (!value) {
+          return 'Please select the property location city.';
+        }
+        break;
+      case 'price':
+        if (!value || isNaN(value) || parseInt(value) <= 0) {
+          return 'Expected price per night must be a positive number (min ₹1).';
+        }
+        break;
+      case 'mapLink':
+        if (!value || !/^(https?:\/\/)?([\w\d.-]+)+([\w\d\-._~:/?#[\]@!$&'()*+,;=.]+)?$/i.test(value.trim()) || (!value.includes('http://') && !value.includes('https://'))) {
+          return 'Please provide a valid Google Maps location link starting with https://';
+        }
+        break;
+      case 'description':
+        if (!value || value.trim().length < 15) {
+          return 'Property description must be at least 15 characters explaining room details & amenities.';
+        }
+        break;
+      case 'photos':
+        if (!currentPhotos || currentPhotos.length === 0) {
+          return 'At least 1 high-res property photo is required for security verification.';
+        }
+        break;
+      default:
+        return '';
+    }
+    return '';
+  };
+
+  const handleInputChange = (field, value) => {
+    const updatedData = { ...formData, [field]: value };
+    setFormData(updatedData);
+    if (errors[field]) {
+      const fieldErr = validateField(field, value, updatedData.photos);
+      setErrors(prev => ({ ...prev, [field]: fieldErr }));
+    }
+  };
 
   const convertToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -38,7 +108,12 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
     const files = Array.from(e.target.files);
     try {
       const base64Files = await Promise.all(files.map(file => convertToBase64(file)));
-      setFormData(prev => ({ ...prev, photos: [...prev.photos, ...base64Files] }));
+      const newPhotos = [...formData.photos, ...base64Files];
+      setFormData(prev => ({ ...prev, photos: newPhotos }));
+      if (errors.photos) {
+        const fieldErr = validateField('photos', null, newPhotos);
+        setErrors(prev => ({ ...prev, photos: fieldErr }));
+      }
     } catch (err) {
       console.error('Error converting images:', err);
       alert('Error processing images. Please try again.');
@@ -63,6 +138,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
     if (photoInputRef.current) {
       photoInputRef.current.value = '';
     }
+    setErrors(prev => ({ ...prev, photos: 'At least 1 high-res property photo is required for security verification.' }));
   };
 
   const removeVideos = (e) => {
@@ -76,6 +152,23 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate all fields for property owner verification
+    const newErrors = {};
+    const fieldsToValidate = ['name', 'email', 'phone', 'propertyName', 'propertyType', 'location', 'price', 'mapLink', 'description', 'photos'];
+    fieldsToValidate.forEach(f => {
+      const err = validateField(f, formData[f], formData.photos);
+      if (err) newErrors[f] = err;
+    });
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setShowErrorSummary(true);
+      window.scrollTo({ top: 150, behavior: 'smooth' });
+      return;
+    }
+
+    setShowErrorSummary(false);
     setIsSubmitting(true);
     const token = localStorage.getItem('token');
 
@@ -214,17 +307,37 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
               <p style={{ margin: 0, fontSize: '0.95rem' }}>{submittedMsg}</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
+              {/* TOP VALIDATION SUMMARY ALERT */}
+              {showErrorSummary && Object.keys(errors).length > 0 && (
+                <div className="form-error-banner fade-in">
+                  <h4><i className="fa-solid fa-triangle-exclamation"></i> Host Verification Validation Required</h4>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem' }}>
+                    Please complete and correct the following mandatory verification fields:
+                  </p>
+                  <ul>
+                    {Object.entries(errors).map(([key, errText]) => (
+                      errText ? <li key={key}>{errText}</li> : null
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Row 1: Owner Full Name */}
               <div className="form-group">
                 <label>Owner Full Name *</label>
                 <input 
                   type="text" 
-                  required 
+                  className={errors.name ? 'field-invalid' : ''}
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Enter owner full name" 
                 />
+                {errors.name && (
+                  <span className="form-error-msg">
+                    <i className="fa-solid fa-circle-exclamation"></i> {errors.name}
+                  </span>
+                )}
               </div>
 
               {/* Row 2: Email Address & Contact Phone Number in ONE ROW */}
@@ -233,22 +346,32 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                   <label>Email Address *</label>
                   <input 
                     type="email" 
-                    required 
+                    className={errors.email ? 'field-invalid' : ''}
                     value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="owner@example.com" 
                   />
+                  {errors.email && (
+                    <span className="form-error-msg">
+                      <i className="fa-solid fa-circle-exclamation"></i> {errors.email}
+                    </span>
+                  )}
                 </div>
 
                 <div className="form-group">
                   <label>Contact Phone Number *</label>
                   <input 
                     type="tel" 
-                    required 
+                    className={errors.phone ? 'field-invalid' : ''}
                     value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
                     placeholder="+91 9876543210" 
                   />
+                  {errors.phone && (
+                    <span className="form-error-msg">
+                      <i className="fa-solid fa-circle-exclamation"></i> {errors.phone}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -258,18 +381,24 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                   <label>Property / Villa Name *</label>
                   <input 
                     type="text" 
-                    required 
+                    className={errors.propertyName ? 'field-invalid' : ''}
                     value={formData.propertyName}
-                    onChange={(e) => setFormData({...formData, propertyName: e.target.value})}
+                    onChange={(e) => handleInputChange('propertyName', e.target.value)}
                     placeholder="e.g. Royal Mist Villa" 
                   />
+                  {errors.propertyName && (
+                    <span className="form-error-msg">
+                      <i className="fa-solid fa-circle-exclamation"></i> {errors.propertyName}
+                    </span>
+                  )}
                 </div>
 
                 <div className="form-group">
                   <label>Property Type *</label>
                   <select 
+                    className={errors.propertyType ? 'field-invalid' : ''}
                     value={formData.propertyType}
-                    onChange={(e) => setFormData({...formData, propertyType: e.target.value})}
+                    onChange={(e) => handleInputChange('propertyType', e.target.value)}
                   >
                     <option value="Villa Estate">Villa Estate</option>
                     <option value="Luxury Hotel">Luxury Hotel</option>
@@ -277,57 +406,81 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                     <option value="Mountain Cabin">Mountain Cabin</option>
                     <option value="Eco Cottage">Eco Cottage</option>
                   </select>
+                  {errors.propertyType && (
+                    <span className="form-error-msg">
+                      <i className="fa-solid fa-circle-exclamation"></i> {errors.propertyType}
+                    </span>
+                  )}
                 </div>
 
                 <div className="form-group">
                   <label>Property Location / City *</label>
                   <select 
+                    className={errors.location ? 'field-invalid' : ''}
                     value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
                   >
                     <option value="Mahabaleshwar">Mahabaleshwar</option>
                     <option value="Panchgani">Panchgani</option>
                     <option value="Pune & Outskirts">Pune & Outskirts</option>
                     <option value="Lonavala">Lonavala / Khandala</option>
                   </select>
+                  {errors.location && (
+                    <span className="form-error-msg">
+                      <i className="fa-solid fa-circle-exclamation"></i> {errors.location}
+                    </span>
+                  )}
                 </div>
               </div>
 
               {/* Row 3: Price & Live Location Link */}
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginTop: '14px' }}>
                 <div className="form-group">
-                  <label>Expected Price Per Night (₹)</label>
+                  <label>Expected Price Per Night (₹) *</label>
                   <input 
                     type="number" 
                     min="1"
+                    className={errors.price ? 'field-invalid' : ''}
                     onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
                     value={formData.price}
                     onChange={(e) => {
                       const val = e.target.value === '' ? '' : Math.max(1, Math.abs(parseInt(e.target.value) || 1));
-                      setFormData({...formData, price: val});
+                      handleInputChange('price', val);
                     }}
                     placeholder="12000" 
                   />
+                  {errors.price && (
+                    <span className="form-error-msg">
+                      <i className="fa-solid fa-circle-exclamation"></i> {errors.price}
+                    </span>
+                  )}
                 </div>
 
                 <div className="form-group">
-                  <label><i className="fa-solid fa-map-location-dot" style={{ color: '#d4af37', marginRight: '6px' }}></i> Google Maps Live Location Link</label>
+                  <label><i className="fa-solid fa-map-location-dot" style={{ color: '#d4af37', marginRight: '6px' }}></i> Google Maps Live Location Link *</label>
                   <input 
                     type="url" 
+                    className={errors.mapLink ? 'field-invalid' : ''}
                     value={formData.mapLink}
-                    onChange={(e) => setFormData({...formData, mapLink: e.target.value})}
+                    onChange={(e) => handleInputChange('mapLink', e.target.value)}
                     placeholder="https://maps.app.goo.gl/..." 
                   />
+                  {errors.mapLink && (
+                    <span className="form-error-msg">
+                      <i className="fa-solid fa-circle-exclamation"></i> {errors.mapLink}
+                    </span>
+                  )}
                 </div>
               </div>
 
               {/* Row 4: Property Description */}
               <div className="form-group" style={{ marginTop: '14px' }}>
-                <label>Property Description & Room Details</label>
+                <label>Property Description & Room Details *</label>
                 <textarea 
                   rows="3"
+                  className={errors.description ? 'field-invalid' : ''}
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
                   placeholder="Describe bedrooms, amenities (pool, bonfire, Wi-Fi), and view..." 
                   style={{
                     width: '100%',
@@ -340,18 +493,23 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                     resize: 'vertical'
                   }}
                 ></textarea>
+                {errors.description && (
+                  <span className="form-error-msg">
+                    <i className="fa-solid fa-circle-exclamation"></i> {errors.description}
+                  </span>
+                )}
               </div>
 
               {/* Photo Upload Field */}
               <div className="form-group" style={{ marginTop: '14px' }}>
                 <label>
                   <i className="fa-solid fa-camera" style={{ marginRight: '6px', color: 'var(--primary-color)' }}></i>
-                  Property Photos {formData.photos.length > 0 && `(${formData.photos.length} selected)`}
+                  Property Photos * {formData.photos.length > 0 && `(${formData.photos.length} selected)`}
                 </label>
-                <div className="photo-upload-area">
+                <div className={`photo-upload-area ${errors.photos ? 'field-invalid' : ''}`}>
                   <div className="upload-content">
                     <span className="upload-icon">+</span>
-                    <p>{formData.photos.length > 0 ? `${formData.photos.length} photo(s) selected` : 'Upload property images (JPG, PNG)'}</p>
+                    <p>{formData.photos.length > 0 ? `${formData.photos.length} photo(s) selected` : 'Upload property images (JPG, PNG) - Min 1 required'}</p>
                   </div>
                   <input 
                     type="file" 
@@ -372,6 +530,11 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                     </button>
                   )}
                 </div>
+                {errors.photos && (
+                  <span className="form-error-msg">
+                    <i className="fa-solid fa-circle-exclamation"></i> {errors.photos}
+                  </span>
+                )}
               </div>
 
               {/* Video Upload Field */}
