@@ -189,8 +189,8 @@ const Navbar = () => {
                       >
                         <i className="fa-solid fa-vihara" style={{ color: '#d4af37' }}></i> Host / Owner Portal ↗
                       </a>
-                      <Link 
-                        to="/caretaker-dashboard" 
+                      <a 
+                        href="http://localhost:5176" 
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => setShowProfileDropdown(false)}
@@ -200,15 +200,15 @@ const Navbar = () => {
                           gap: '10px',
                           padding: '9px 12px',
                           borderRadius: '10px',
-                          color: '#1a1a1a',
+                          color: '#52b788',
                           textDecoration: 'none',
                           fontSize: '0.85rem',
-                          fontWeight: '600',
-                          background: 'rgba(0, 0, 0, 0.03)'
+                          fontWeight: '700',
+                          background: 'rgba(82, 183, 136, 0.1)'
                         }}
                       >
-                        <i className="fa-solid fa-clock-user" style={{ color: '#52b788' }}></i> Caretaker Attendance ↗
-                      </Link>
+                        <i className="fa-solid fa-clock-user" style={{ color: '#52b788' }}></i> Caretaker Portal (Port 5176) ↗
+                      </a>
                       {user.role === 'owner' && (
                         <Link 
                           to="/caretaker-apply" 

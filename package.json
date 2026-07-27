@@ -3,8 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm start --prefix backend\" \"npm run dev --prefix admin\" \"npm run dev --prefix owner\"",
-    "start": "concurrently \"npm run dev --prefix frontend\" \"npm start --prefix backend\" \"npm run dev --prefix admin\" \"npm run dev --prefix owner\"",
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm start --prefix backend\" \"npm run dev --prefix admin\" \"npm run dev --prefix owner\" \"npm run dev --prefix caretaker\"",
+    "start": "concurrently \"npm run dev --prefix frontend\" \"npm start --prefix backend\" \"npm run dev --prefix admin\" \"npm run dev --prefix owner\" \"npm run dev --prefix caretaker\"",
     "build": "npm run build --prefix frontend",
     "lint": "npm run lint --prefix frontend",
     "preview": "npm run preview --prefix frontend"
