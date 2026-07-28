@@ -23,10 +23,12 @@ const Navbar = () => {
       } catch (e) {
         setUser(null);
       }
+    } else {
+      setUser(null);
     }
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     const userStr = localStorage.getItem('user');

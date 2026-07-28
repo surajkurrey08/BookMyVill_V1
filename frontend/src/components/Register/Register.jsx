@@ -56,8 +56,9 @@ const Register = () => {
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        const destination = location.state?.from || '/';
-        navigate(destination, { state: { property: location.state?.property } });
+        // Redirect travel user directly to booking page / user dashboard without requiring secondary login
+        const destination = location.state?.from || '/dashboard';
+        navigate(destination, { state: { property: location.state?.property, justRegistered: true } });
       } else {
         setErrorMsg(data.msg || data.error || 'Registration failed');
       }
