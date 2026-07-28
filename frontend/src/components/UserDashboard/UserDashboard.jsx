@@ -141,9 +141,22 @@ const UserDashboard = () => {
   };
 
   const handleLogout = () => {
+    const userStr = localStorage.getItem('user');
+    let isOwner = false;
+    if (userStr) {
+      try {
+        isOwner = JSON.parse(userStr).role === 'owner';
+      } catch (err) {
+        console.warn('User JSON parse error:', err);
+      }
+    }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/signin');
+    if (isOwner) {
+      window.location.href = 'http://localhost:5175/login';
+    } else {
+      navigate('/signin');
+    }
   };
 
   const handleCancelBooking = async (bookingId) => {
@@ -179,20 +192,74 @@ const UserDashboard = () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
+    // Strict 10-digit Indian Mobile Validation
+    const cleanPhone = (caretakerForm.phone || '').trim().replace(/\D/g, '');
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      alert('Contact Phone Number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.');
+      return;
+    }
+
+    // Govt ID Validation based on type
+    const govtType = caretakerForm.govtIdType || 'Aadhaar Card';
+    const cleanGovtId = (caretakerForm.govtId || '').trim();
+
+    if (!cleanGovtId) {
+      alert(`${govtType} number/details are required.`);
+      return;
+    }
+
+    if (govtType === 'Aadhaar Card') {
+      const cleanAadhaar = cleanGovtId.replace(/\D/g, '');
+      if (!/^\d{12}$/.test(cleanAadhaar)) {
+        alert('Aadhaar Card number must be exactly 12 digits (e.g. 123456789012).');
+        return;
+      }
+    } else if (govtType === 'PAN Card') {
+      if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(cleanGovtId.toUpperCase())) {
+        alert('PAN Card must be 10 characters formatted as 5 letters + 4 digits + 1 letter (e.g. ABCDE1234F).');
+        return;
+      }
+    } else if (govtType === 'Driving License') {
+      if (!/^[A-Z0-9]{10,16}$/i.test(cleanGovtId)) {
+        alert('Driving License number must be 10 to 16 alphanumeric characters (e.g. MH1220230012345).');
+        return;
+      }
+    } else if (govtType === 'Voter ID Card') {
+      if (!/^[A-Z]{3}[0-9]{7}$/i.test(cleanGovtId)) {
+        alert('Voter ID Card format must be 3 letters followed by 7 digits (e.g. ABC1234567).');
+        return;
+      }
+    }
+
     try {
+      const payload = {
+        ...caretakerForm,
+        phone: cleanPhone,
+        govtId: `${govtType}: ${cleanGovtId.toUpperCase()}`
+      };
+
       const response = await fetch(`${API_BASE_URL}/api/caretaker/apply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-auth-token': token
         },
-        body: JSON.stringify(caretakerForm)
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
       if (response.ok) {
         alert('Caretaker Application Submitted Successfully! Status: Certified Property Caretaker');
         setShowCaretakerModal(false);
+        setCaretakerForm({
+          propertyName: '',
+          phone: '',
+          experience: '3+ Years',
+          services: ['Guest Check-in', 'Maintenance', 'Housekeeping'],
+          govtIdType: 'Aadhaar Card',
+          govtId: '',
+          bio: ''
+        });
         fetchCaretakerApps(token);
       } else {
         alert(data.msg || 'Application failed');
@@ -286,6 +353,91 @@ const UserDashboard = () => {
     setShowEditProfileModal(false);
   };
 
+  const handleDownloadReceiptFile = (booking) => {
+    if (!booking) return;
+
+    const receiptId = String(booking._id).slice(-6).toUpperCase();
+    const propertyName = booking.property?.name || 'Luxury Stay';
+    const location = booking.property?.location || 'Mahabaleshwar';
+    const guestName = booking.user?.name || user?.name || 'Guest User';
+    const guestEmail = booking.user?.email || user?.email || 'guest@example.com';
+    const checkIn = new Date(booking.checkIn).toLocaleDateString();
+    const checkOut = new Date(booking.checkOut).toLocaleDateString();
+    const totalPrice = booking.totalPrice;
+    const status = booking.status;
+    const paymentStatus = booking.paymentStatus || 'paid';
+    const txnId = booking.razorpayOrderId || `TXN_${String(booking._id).slice(-8)}`;
+    const hostEmail = booking.property?.owner?.email || booking.property?.ownerEmail || 'propertysangli@gmail.com';
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Receipt #${receiptId} - Mahabaleshwar Luxury Stays</title>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; margin: 40px; color: #1a1a1a; background: #ffffff; }
+    .container { max-width: 650px; margin: 0 auto; border: 2px solid #1b4332; border-radius: 16px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%); color: #ffffff; padding: 24px; border-radius: 12px; text-align: center; margin-bottom: 24px; }
+    .header h1 { margin: 0; color: #ffd700; font-size: 24px; letter-spacing: 1px; }
+    .header p { margin: 6px 0 0 0; font-size: 14px; opacity: 0.9; }
+    .badge { display: inline-block; background: #e8f5e9; color: #1b4332; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .item label { display: block; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 4px; }
+    .item strong { font-size: 15px; color: #0f172a; }
+    .price-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 24px; }
+    .price-box span { font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: bold; }
+    .price-box strong { font-size: 28px; color: #2d6a4f; display: block; margin-top: 4px; }
+    .support-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 18px; font-size: 13px; color: #166534; margin-bottom: 20px; }
+    .footer { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 24px; border-top: 1px dashed #cbd5e1; paddingTop: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Mahabaleshwar Luxury Stays</h1>
+      <p>Official Stay Reservation Receipt</p>
+    </div>
+    <div style="text-align: center;">
+      <span class="badge">Receipt #${receiptId}</span>
+    </div>
+    <div class="grid">
+      <div class="item"><label>Property Name</label><strong>${propertyName}</strong></div>
+      <div class="item"><label>City Location</label><strong>${location}</strong></div>
+      <div class="item"><label>Guest Name</label><strong>${guestName}</strong></div>
+      <div class="item"><label>Guest Email</label><strong>${guestEmail}</strong></div>
+      <div class="item"><label>Check In</label><strong>${checkIn} (12:00 PM)</strong></div>
+      <div class="item"><label>Check Out</label><strong>${checkOut} (11:00 AM)</strong></div>
+      <div class="item"><label>Booking Status</label><strong>${status.toUpperCase()} (${paymentStatus})</strong></div>
+      <div class="item"><label>Transaction ID</label><strong>${txnId}</strong></div>
+    </div>
+    <div class="price-box">
+      <span>Total Paid Amount</span>
+      <strong>₹${totalPrice}</strong>
+    </div>
+    <div class="support-box">
+      <strong>Property Host Contact:</strong> ${hostEmail}<br>
+      <strong>24/7 Helpline:</strong> +91 1800-266-STAY | support@mahabaleshwarstays.com<br>
+      <em>For any stay assistance, modifications, or emergency queries, contact your host or helpline above.</em>
+    </div>
+    <div class="footer">
+      Official Receipt generated by Mahabaleshwar Luxury Stays. Wish you a wonderful stay!
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Booking_Receipt_${receiptId}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const activeBookings = bookings.filter(
     (b) => b.status !== 'cancelled' && new Date(b.checkOut) >= new Date()
   );
@@ -312,49 +464,85 @@ const UserDashboard = () => {
           
           return (
             <div key={booking._id} className="booking-list-item glass-morphism">
+              {/* COL 1: PROPERTY THUMBNAIL & STATUS BADGE */}
               <div className="booking-list-image">
                 <img src={propertyImg} alt={booking.property?.name} />
                 <div className={`booking-status-badge ${booking.status}`}>
                   {booking.status}
                 </div>
+                <div className="booking-type-badge">
+                  {booking.property?.type || 'Luxury Stay'}
+                </div>
               </div>
               
+              {/* COL 2: MAIN DETAILS, HOST HELPLINE, DATES & REFUND */}
               <div className="booking-list-details">
                 <div className="booking-list-header">
                   <h2>{booking.property?.name || 'Luxury Stay'}</h2>
                   <p className="location"><i className="fas fa-map-marker-alt"></i> {booking.property?.location || 'Mahabaleshwar'}</p>
-                  {selectedPropertyId !== 'personal' && booking.user && (
-                    <div className="guest-info">
-                      <span className="guest-label">Guest:</span> {booking.user.name} ({booking.user.email})
-                    </div>
-                  )}
                 </div>
-                
+
+                {/* HOST CONTACT & SUPPORT DESK CARD BADGE */}
+                <div className="host-contact-card-badge">
+                  <span><i className="fa-solid fa-user-shield"></i> Host: <strong>{booking.property?.owner?.email || booking.property?.ownerEmail || 'propertysangli@gmail.com'}</strong></span>
+                  <span className="helpline-text"><i className="fa-solid fa-headset"></i> Helpline: +91 1800-266-STAY</span>
+                </div>
+
+                {/* CHECK-IN & CHECK-OUT DATES */}
                 <div className="booking-list-dates">
                   <div className="date-item">
-                    <span>Check In</span>
+                    <span>CHECK IN (12:00 PM)</span>
                     <strong>{new Date(booking.checkIn).toLocaleDateString()}</strong>
                   </div>
                   <div className="date-divider"></div>
                   <div className="date-item">
-                    <span>Check Out</span>
+                    <span>CHECK OUT (11:00 AM)</span>
                     <strong>{new Date(booking.checkOut).toLocaleDateString()}</strong>
                   </div>
                 </div>
+
+                {/* CANCELLATION & REFUND BADGES */}
+                {booking.status === 'cancelled' && (
+                  <div className="cancellation-status-stack">
+                    <div className="cancel-reason-badge">
+                      <i className="fa-solid fa-circle-info"></i>
+                      <span>Reason: {booking.actionHistory && booking.actionHistory.length > 0 ? (booking.actionHistory[booking.actionHistory.length - 1].reason || 'Booking cancelled') : 'Cancelled by host/user'}</span>
+                    </div>
+                    {booking.paymentStatus === 'paid' && (
+                      <div className="refund-info-badge">
+                        <i className="fa-solid fa-rotate-left"></i>
+                        <span>Refund Initiated: ₹{booking.refundAmount || booking.totalPrice} to original source (3-5 days)</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
+              {/* COL 3: PRICE SUMMARY & FULL-WIDTH ACTION BUTTONS */}
               <div className="booking-list-right">
-                <div className="total-price">
-                  <span>Total Price</span>
-                  <strong>₹{booking.totalPrice}</strong>
+                <div className="total-price-box">
+                  <span className="price-label">TOTAL STAY PRICE</span>
+                  <strong className="price-amount">₹{booking.totalPrice}</strong>
+                  <span className="payment-tag">{booking.paymentStatus === 'paid' ? 'PAID ✅' : 'PENDING 🟡'}</span>
                 </div>
-                <div className="action-buttons">
+
+                <div className="action-buttons-stack">
                   <button 
-                    className="view-details-btn"
+                    className="view-details-btn download-btn"
                     onClick={() => setActiveReceiptBooking(booking)}
                   >
-                    <i className="fa-solid fa-file-invoice" style={{ marginRight: '6px' }}></i>
-                    View Receipt
+                    <i className="fa-solid fa-file-pdf"></i>
+                    Download / View Receipt
+                  </button>
+                  <button 
+                    className="view-details-btn print-btn"
+                    onClick={() => {
+                      setActiveReceiptBooking(booking);
+                      setTimeout(() => window.print(), 350);
+                    }}
+                  >
+                    <i className="fa-solid fa-print"></i>
+                    Print Receipt
                   </button>
                   {selectedPropertyId === 'personal' && !isHistoryOrCancelled && booking.status !== 'cancelled' && (
                     (() => {
@@ -364,7 +552,7 @@ const UserDashboard = () => {
                           onClick={() => handleCancelBooking(booking._id)} 
                           className="cancel-booking-btn"
                         >
-                          Cancel Stay
+                          <i className="fa-solid fa-ban"></i> Cancel Stay
                         </button>
                       ) : (
                         <span className="policy-expired">Policy Expired</span>
@@ -493,11 +681,15 @@ const UserDashboard = () => {
 
               <div className="receipt-details-grid">
                 <div className="receipt-detail-item">
-                  <label>Property</label>
+                  <label>Property Name</label>
                   <strong>{activeReceiptBooking.property?.name || 'Luxury Stay'}</strong>
                 </div>
                 <div className="receipt-detail-item">
-                  <label>Location</label>
+                  <label>Property Category</label>
+                  <strong>{activeReceiptBooking.property?.type || 'Villa Estate'}</strong>
+                </div>
+                <div className="receipt-detail-item">
+                  <label>City Location</label>
                   <strong>{activeReceiptBooking.property?.location || 'Mahabaleshwar'}</strong>
                 </div>
                 <div className="receipt-detail-item">
@@ -509,16 +701,22 @@ const UserDashboard = () => {
                   <strong>{activeReceiptBooking.user?.email || user?.email || 'guest@example.com'}</strong>
                 </div>
                 <div className="receipt-detail-item">
-                  <label>Check In</label>
-                  <strong>{new Date(activeReceiptBooking.checkIn).toLocaleDateString()}</strong>
+                  <label>Stay Duration</label>
+                  <strong>
+                    {Math.max(1, Math.round((new Date(activeReceiptBooking.checkOut) - new Date(activeReceiptBooking.checkIn)) / (1000 * 60 * 60 * 24)))} Night(s)
+                  </strong>
                 </div>
                 <div className="receipt-detail-item">
-                  <label>Check Out</label>
-                  <strong>{new Date(activeReceiptBooking.checkOut).toLocaleDateString()}</strong>
+                  <label>Check In Time</label>
+                  <strong>{new Date(activeReceiptBooking.checkIn).toLocaleDateString()} (12:00 PM)</strong>
+                </div>
+                <div className="receipt-detail-item">
+                  <label>Check Out Time</label>
+                  <strong>{new Date(activeReceiptBooking.checkOut).toLocaleDateString()} (11:00 AM)</strong>
                 </div>
                 <div className="receipt-detail-item">
                   <label>Booking Status</label>
-                  <strong style={{ color: '#2d6a4f', textTransform: 'capitalize' }}>
+                  <strong style={{ color: activeReceiptBooking.status === 'confirmed' ? '#2d6a4f' : activeReceiptBooking.status === 'cancelled' ? '#d62828' : '#d4af37', textTransform: 'capitalize' }}>
                     {activeReceiptBooking.status} ({activeReceiptBooking.paymentStatus || 'paid'})
                   </strong>
                 </div>
@@ -533,9 +731,98 @@ const UserDashboard = () => {
                 <strong>₹{activeReceiptBooking.totalPrice}</strong>
               </div>
 
-              <div className="receipt-actions">
-                <button onClick={() => window.print()} className="print-receipt-btn">
-                  <i className="fa-solid fa-print"></i> Print / Download Receipt
+              {/* PROPERTY OWNER & HELP SUPPORT HANDLER SECTION */}
+              <div className="receipt-support-section" style={{ marginTop: '20px', padding: '16px 20px', background: '#f8fafc', borderRadius: '14px', border: '1px solid #e2e8f0', textAlign: 'left' }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <i className="fa-solid fa-headset" style={{ color: '#d4af37' }}></i> Host Contact & Support Handler
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.85rem' }}>
+                  <div>
+                    <span style={{ color: '#64748b', fontSize: '0.73rem', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>Property Host</span>
+                    <strong style={{ color: '#1e293b' }}>{activeReceiptBooking.property?.owner?.name || activeReceiptBooking.property?.ownerEmail || 'Mahabaleshwar Hospitality Host'}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748b', fontSize: '0.73rem', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>Host Contact Email</span>
+                    <strong style={{ color: '#0284c7' }}>{activeReceiptBooking.property?.owner?.email || activeReceiptBooking.property?.ownerEmail || 'propertysangli@gmail.com'}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748b', fontSize: '0.73rem', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>24/7 Helpline</span>
+                    <strong style={{ color: '#16a34a' }}>+91 1800-266-STAY</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748b', fontSize: '0.73rem', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>Support Desk</span>
+                    <strong style={{ color: '#475569' }}>support@mahabaleshwarstays.com</strong>
+                  </div>
+                </div>
+                <div style={{ marginTop: '10px', fontSize: '0.78rem', color: '#64748b', fontStyle: 'italic', borderTop: '1px dashed #cbd5e1', paddingTop: '8px' }}>
+                  <i className="fa-solid fa-circle-question" style={{ color: '#d4af37', marginRight: '4px' }}></i> Have questions or stay issues? Contact your property host or emergency helpline above.
+                </div>
+              </div>
+
+              {/* PAYMENT REFUND DETAILS BOX */}
+              {activeReceiptBooking.status === 'cancelled' && (
+                <div className="receipt-refund-box" style={{ marginTop: '20px', padding: '16px 20px', background: '#f0fdf4', borderRadius: '14px', border: '1px solid #bbf7d0', textAlign: 'left' }}>
+                  <h4 style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: '#15803d', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <i className="fa-solid fa-arrow-rotate-left"></i> Payment Refund & Settlement
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.85rem' }}>
+                    <div>
+                      <span style={{ color: '#166534', fontSize: '0.73rem', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>Refund Status</span>
+                      <strong style={{ color: '#16a34a' }}>{activeReceiptBooking.refundStatus === 'initiated' ? 'Initiated (Processing)' : 'Initiated'}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#166534', fontSize: '0.73rem', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>Refund Amount</span>
+                      <strong style={{ color: '#15803d' }}>₹{activeReceiptBooking.refundAmount || activeReceiptBooking.totalPrice}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#166534', fontSize: '0.73rem', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>Refund Destination</span>
+                      <strong style={{ color: '#334155' }}>Original Source (UPI/Card/Bank)</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#166534', fontSize: '0.73rem', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>Estimated Credit</span>
+                      <strong style={{ color: '#334155' }}>3-5 Business Days</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ACTION AUDIT LOG / ACTIVITY HISTORY */}
+              <div className="receipt-audit-history" style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed #e0e0e0', textAlign: 'left' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '0.98rem', color: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <i className="fa-solid fa-list-check" style={{ color: '#d4af37' }}></i> Action Audit & Activity History
+                </h4>
+                {(!activeReceiptBooking.actionHistory || activeReceiptBooking.actionHistory.length === 0) ? (
+                  <div style={{ background: '#f8f9fa', padding: '12px 16px', borderRadius: '10px', fontSize: '0.85rem', color: '#6c757d' }}>
+                    <div style={{ fontWeight: '700', color: '#2b2b2b' }}>Initial Stay Reservation</div>
+                    <div style={{ marginTop: '2px' }}><strong>By Whom:</strong> Traveler ({activeReceiptBooking.user?.email || 'User'})</div>
+                    <div><strong>Target User:</strong> Property Host & System</div>
+                    <div><strong>Why:</strong> Standard stay booking initialized</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {activeReceiptBooking.actionHistory.map((log, index) => (
+                      <div key={index} style={{ background: '#f8f9fa', padding: '12px 16px', borderRadius: '10px', borderLeft: '4px solid #d4af37' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <strong style={{ color: '#1a1a1a', fontSize: '0.88rem' }}>{log.action}</strong>
+                          <span style={{ fontSize: '0.75rem', color: '#6c757d' }}>{new Date(log.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div style={{ fontSize: '0.82rem', color: '#495057', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <div><strong>By Whom:</strong> {log.performedBy}</div>
+                          <div><strong>Target User:</strong> {log.targetUser}</div>
+                          {log.reason && <div><strong>Why:</strong> {log.reason}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="receipt-actions" style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button onClick={() => window.print()} className="print-receipt-btn" style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)', color: '#ffffff', border: 'none', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <i className="fa-solid fa-print"></i> Print Receipt
+                </button>
+                <button onClick={() => handleDownloadReceiptFile(activeReceiptBooking)} className="download-receipt-btn" style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)', color: '#1a1a1a', border: 'none', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <i className="fa-solid fa-download"></i> Download Receipt File (.html / .pdf)
                 </button>
                 <button 
                   onClick={() => setActiveReceiptBooking(null)} 
@@ -581,15 +868,24 @@ const UserDashboard = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                 <div className="form-group">
-                  <label style={{ display: 'block', fontWeight: '700', marginBottom: '6px', color: '#1a1a1a' }}>Contact Phone Number</label>
+                  <label style={{ display: 'block', fontWeight: '700', marginBottom: '6px', color: '#1a1a1a' }}>Contact Phone (10 Digits)</label>
                   <input 
                     type="tel" 
                     required
-                    placeholder="+91 9876543210"
+                    maxLength={10}
+                    placeholder="e.g. 9876543210"
                     value={caretakerForm.phone}
-                    onChange={(e) => setCaretakerForm({ ...caretakerForm, phone: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setCaretakerForm({ ...caretakerForm, phone: val });
+                    }}
                     style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #ccc', fontSize: '0.95rem' }}
                   />
+                  {caretakerForm.phone && caretakerForm.phone.length > 0 && caretakerForm.phone.length !== 10 && (
+                    <small style={{ color: '#dc2626', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>
+                      Phone number must be exactly 10 digits ({caretakerForm.phone.length}/10)
+                    </small>
+                  )}
                 </div>
                 <div className="form-group">
                   <label style={{ display: 'block', fontWeight: '700', marginBottom: '6px', color: '#1a1a1a' }}>Experience Years</label>
@@ -605,16 +901,58 @@ const UserDashboard = () => {
                 </div>
               </div>
 
-              <div className="form-group">
-                <label style={{ display: 'block', fontWeight: '700', marginBottom: '6px', color: '#1a1a1a' }}>Government ID / License No.</label>
-                <input 
-                  type="text" 
-                  placeholder="Aadhaar / Driving License / PAN No."
-                  value={caretakerForm.govtId}
-                  onChange={(e) => setCaretakerForm({ ...caretakerForm, govtId: e.target.value })}
-                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #ccc', fontSize: '0.95rem' }}
-                  required
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <div className="form-group">
+                  <label style={{ display: 'block', fontWeight: '700', marginBottom: '6px', color: '#1a1a1a' }}>Govt Verification ID Type</label>
+                  <select 
+                    value={caretakerForm.govtIdType || 'Aadhaar Card'}
+                    onChange={(e) => setCaretakerForm({ ...caretakerForm, govtIdType: e.target.value, govtId: '' })}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #ccc', fontSize: '0.95rem' }}
+                  >
+                    <option value="Aadhaar Card">Aadhaar Card (12 Digits)</option>
+                    <option value="PAN Card">PAN Card (10 Alphanumeric)</option>
+                    <option value="Driving License">Driving License</option>
+                    <option value="Voter ID Card">Voter ID Card</option>
+                    <option value="Property License">Property License / Utility Bill</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label style={{ display: 'block', fontWeight: '700', marginBottom: '6px', color: '#1a1a1a' }}>
+                    {caretakerForm.govtIdType === 'PAN Card' ? 'PAN Number (10 Chars)' : caretakerForm.govtIdType === 'Aadhaar Card' || !caretakerForm.govtIdType ? 'Aadhaar Number (12 Digits)' : 'ID Number / License No.'}
+                  </label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder={
+                      caretakerForm.govtIdType === 'PAN Card' ? 'e.g. ABCDE1234F' :
+                      caretakerForm.govtIdType === 'Driving License' ? 'e.g. MH1220230012345' :
+                      caretakerForm.govtIdType === 'Voter ID Card' ? 'e.g. ABC1234567' :
+                      caretakerForm.govtIdType === 'Property License' ? 'e.g. LIC-987654' :
+                      'e.g. 123456789012'
+                    }
+                    maxLength={
+                      caretakerForm.govtIdType === 'Aadhaar Card' || !caretakerForm.govtIdType ? 12 :
+                      caretakerForm.govtIdType === 'PAN Card' || caretakerForm.govtIdType === 'Voter ID Card' ? 10 : 16
+                    }
+                    value={caretakerForm.govtId}
+                    onChange={(e) => {
+                      let val = e.target.value;
+                      if (caretakerForm.govtIdType === 'Aadhaar Card' || !caretakerForm.govtIdType) {
+                        val = val.replace(/\D/g, '').slice(0, 12);
+                      } else {
+                        val = val.toUpperCase().slice(0, 16);
+                      }
+                      setCaretakerForm({ ...caretakerForm, govtId: val });
+                    }}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #ccc', fontSize: '0.95rem' }}
+                  />
+                  {(caretakerForm.govtIdType === 'Aadhaar Card' || !caretakerForm.govtIdType) && caretakerForm.govtId && caretakerForm.govtId.length !== 12 && (
+                    <small style={{ color: '#dc2626', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>
+                      Aadhaar number must be exactly 12 digits ({caretakerForm.govtId.length}/12)
+                    </small>
+                  )}
+                </div>
               </div>
 
               <div className="form-group">

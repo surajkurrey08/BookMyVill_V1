@@ -4,7 +4,7 @@ import { properties } from '../../data/mockData';
 import './PropertyGrid.css';
 import './MapContainer.css';
 import { API_BASE_URL } from '../../config';
-import { formatGoogleMapsDirectionsUrl, getRawMapLink } from '../PropertyDetails/PropertyDetails';
+import { formatGoogleMapsDirectionsUrl } from '../../utils/locationUtils';
 
 // Predefined coordinates for common tourist locations to ensure instant response
 // Predefined coordinates for common tourist locations and Mahabaleshwar landmarks
@@ -43,6 +43,16 @@ const LOCATION_COORDINATES = {
   "Lavasa": { lat: 18.4088, lon: 73.5080 },
   "Khandala": { lat: 18.7512, lon: 73.3814 },
   "Baner": { lat: 18.5590, lon: 73.7868 },
+  "Shivajinagar": { lat: 18.5314, lon: 73.8446 },
+  "Balewadi": { lat: 18.5793, lon: 73.7712 },
+  "Wakad": { lat: 18.5985, lon: 73.7635 },
+  "Kshitij": { lat: 18.5630, lon: 73.7800 },
+  "Orchid": { lat: 18.5793, lon: 73.7712 },
+  "Sayaji": { lat: 18.5985, lon: 73.7635 },
+  "Bloom": { lat: 18.5775, lon: 73.7745 },
+  "Townhouse": { lat: 18.5760, lon: 73.7730 },
+  "AUHTEL": { lat: 18.5745, lon: 73.7760 },
+  "Balewadi High Street": { lat: 18.5775, lon: 73.7745 },
   "Kamshet": { lat: 18.7583, lon: 73.5604 }
 };
 
@@ -143,9 +153,35 @@ const resolveCoordinates = async (property) => {
 
 // Horizontal card for the Home Page split view next to the map (Matching User's Screenshot)
 const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover, onLeave }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const rawPriceNum = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '10000');
   const numericPrice = `₹${rawPriceNum.toLocaleString('en-IN')}`;
-  const originalPrice = `₹${Math.round(rawPriceNum * 1.22).toLocaleString('en-IN')}`;
+
+  const handleBookNow = (e) => {
+    if (e) e.stopPropagation();
+    const token = localStorage.getItem('token');
+    const propertyId = property._id || property.id;
+    
+    const searchParams = new URLSearchParams(location.search);
+    const qCheckIn = searchParams.get('checkIn');
+    const qCheckOut = searchParams.get('checkOut');
+    const qGuests = searchParams.get('guests');
+
+    const query = new URLSearchParams();
+    if (qCheckIn) query.append('checkIn', qCheckIn);
+    if (qCheckOut) query.append('checkOut', qCheckOut);
+    if (qGuests) query.append('guests', qGuests);
+    query.append('autoBook', 'true');
+
+    const targetUrl = `/property/${propertyId}?${query.toString()}`;
+
+    if (!token) {
+      navigate('/signin', { state: { from: targetUrl, property } });
+    } else {
+      navigate(targetUrl, { state: { property } });
+    }
+  };
 
   return (
     <div 
@@ -181,9 +217,7 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
           <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#1a1a1a', fontFamily: 'var(--font-heading)' }}>
             {numericPrice} <span style={{ fontSize: '0.82rem', color: '#666', fontWeight: '500' }}>/night</span>
           </span>
-        </div>
-
-        <div className="split-card-footer" style={{ marginTop: 'auto', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+             <div className="split-card-footer" style={{ marginTop: 'auto', borderTop: '1px solid #eee', paddingTop: '10px' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
             <button 
               type="button" 
@@ -196,17 +230,16 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
             >
               <i className="fa-solid fa-location-crosshairs" style={{ color: '#d4af37' }}></i> Find on Map
             </button>
-            <Link 
-              to={`/property/${property._id || property.id}`} 
-              state={{ property }}
+            <button 
+              type="button"
               className="btn-primary" 
-              style={{ padding: '9px 22px', fontSize: '0.88rem', fontWeight: '700', borderRadius: '30px', whiteSpace: 'nowrap', background: '#1b4332' }}
-              onClick={(e) => e.stopPropagation()}
+              style={{ padding: '9px 22px', fontSize: '0.88rem', fontWeight: '700', borderRadius: '30px', whiteSpace: 'nowrap', background: '#1b4332', border: 'none', cursor: 'pointer' }}
+              onClick={handleBookNow}
             >
               Book Stays
-            </Link>
+            </button>
           </div>
-        </div>
+        </div>       </div>
       </div>
     </div>
   );
@@ -214,9 +247,35 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
 
 // Redesigned Luxury Property Card for standalone Explore page
 const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover, onLeave, isWishlisted, onToggleWishlist }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const rawPriceNum = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '10000');
   const numericPrice = `₹${rawPriceNum.toLocaleString('en-IN')}`;
-  const originalPrice = `₹${Math.round(rawPriceNum * 1.22).toLocaleString('en-IN')}`;
+
+  const handleBookNow = (e) => {
+    if (e) e.stopPropagation();
+    const token = localStorage.getItem('token');
+    const propertyId = property._id || property.id;
+
+    const searchParams = new URLSearchParams(location.search);
+    const qCheckIn = searchParams.get('checkIn');
+    const qCheckOut = searchParams.get('checkOut');
+    const qGuests = searchParams.get('guests');
+
+    const query = new URLSearchParams();
+    if (qCheckIn) query.append('checkIn', qCheckIn);
+    if (qCheckOut) query.append('checkOut', qCheckOut);
+    if (qGuests) query.append('guests', qGuests);
+    query.append('autoBook', 'true');
+
+    const targetUrl = `/property/${propertyId}?${query.toString()}`;
+
+    if (!token) {
+      navigate('/signin', { state: { from: targetUrl, property } });
+    } else {
+      navigate(targetUrl, { state: { property } });
+    }
+  };
 
   return (
     <div 
@@ -276,15 +335,14 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
           >
             <i className="fa-solid fa-location-crosshairs" style={{ color: '#d4af37' }}></i> Map Pin
           </button>
-          <Link 
-            to={`/property/${property._id || property.id}`} 
-            state={{ property }}
+          <button 
+            type="button"
             className="btn-book-now-gold"
-            style={{ flex: '1.2', padding: '10px' }}
-            onClick={(e) => e.stopPropagation()}
+            style={{ flex: '1.2', padding: '10px', border: 'none', cursor: 'pointer' }}
+            onClick={handleBookNow}
           >
             Book Now
-          </Link>
+          </button>
         </div>
       </div>
     </div>
@@ -525,7 +583,9 @@ const PropertyGrid = ({ isHomePage = false }) => {
       if (mapRef.current) {
         try {
           mapRef.current.remove();
-        } catch (e) {}
+        } catch (err) {
+          console.warn('Map removal error:', err);
+        }
         mapRef.current = null;
       }
     };
@@ -551,7 +611,6 @@ const PropertyGrid = ({ isHomePage = false }) => {
       if (!lat || !lon) return;
 
       const isSel = selectedPropertyId === property.id;
-      const priceTag = property.price?.toString().startsWith('₹') ? property.price : `₹${property.price}`;
 
       const customIcon = L.divIcon({
         className: 'custom-hotel-location-marker',
@@ -575,8 +634,8 @@ const PropertyGrid = ({ isHomePage = false }) => {
             <div class="popup-hotel-name">${property.name}</div>
             <div class="popup-hotel-price">${property.price}</div>
             <div style="display: flex; gap: 6px; margin-top: 6px;">
-              <a href="/property/${property._id || property.id}" class="popup-hotel-link" style="flex: 1; text-align: center;">Book Stays</a>
-              <a href="${formatGoogleMapsDirectionsUrl(property.mapLink, property.name, property.location)}" target="_blank" rel="noopener noreferrer" class="popup-hotel-link" style="flex: 1; text-align: center; background: #d4af37; color: #1a1a1a;">📍 Directions ↗</a>
+              <a href="/property/${property._id || property.id}" class="popup-hotel-link popup-book-stay-link" style="flex: 1; text-align: center;">Book Stays</a>
+              <a href="${formatGoogleMapsDirectionsUrl(property.mapLink, property.name, property.location)}" target="_blank" rel="noopener noreferrer" class="popup-hotel-link" style="flex: 1; text-align: center; background: #d4af37; color: #1a1a1a;">Directions</a>
             </div>
           </div>
         </div>
@@ -585,6 +644,25 @@ const PropertyGrid = ({ isHomePage = false }) => {
       marker.bindPopup(popupContent, {
         closeButton: false,
         offset: L.point(0, -10)
+      });
+
+      marker.on('popupopen', () => {
+        const popupElement = marker.getPopup().getElement();
+        if (popupElement) {
+          const bookBtn = popupElement.querySelector('.popup-book-stay-link');
+          if (bookBtn) {
+            bookBtn.onclick = (e) => {
+              e.preventDefault();
+              const token = localStorage.getItem('token');
+              const propertyId = property._id || property.id;
+              if (!token) {
+                navigate('/signin', { state: { from: `/property/${propertyId}`, property } });
+              } else {
+                navigate(`/property/${propertyId}`, { state: { property } });
+              }
+            };
+          }
+        }
       });
 
       marker.on('mouseover', () => {

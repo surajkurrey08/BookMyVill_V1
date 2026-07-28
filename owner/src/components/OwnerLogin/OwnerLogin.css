@@ -89,29 +89,67 @@
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
-.input-with-icon i {
+.input-with-icon > i {
   position: absolute;
   left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--text-muted);
   font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .input-with-icon input {
   width: 100%;
-  padding: 12px 14px 12px 42px;
+  padding: 12px 42px 12px 42px;
   background: rgba(11, 17, 15, 0.7);
   border: 1px solid var(--border-color);
   border-radius: 10px;
   color: var(--text-main);
   font-size: 0.95rem;
   transition: all 0.25s ease;
+  box-sizing: border-box;
 }
 
 .input-with-icon input:focus {
   border-color: var(--accent-gold);
   box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: color 0.2s ease;
+}
+
+.toggle-password-btn i {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  color: inherit !important;
+  font-size: 1rem !important;
+}
+
+.toggle-password-btn:hover {
+  color: var(--accent-gold);
 }
 
 .btn-owner-submit {

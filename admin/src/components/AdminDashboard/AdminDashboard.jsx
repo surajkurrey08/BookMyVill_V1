@@ -660,15 +660,15 @@ const AdminDashboard = () => {
                                   <button 
                                     className="btn-table btn-view" 
                                     onClick={() => handleOpenDetails(prop, 'property')}
-                                    style={{ background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', color: '#ffffff', border: '1px solid #38bdf8', padding: '8px 18px', borderRadius: '20px', cursor: 'pointer', fontWeight: '700', boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)', marginRight: '6px' }}
+                                    style={{ background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', color: '#ffffff', border: '1px solid #38bdf8', padding: '6px 12px', borderRadius: '16px', cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)' }}
                                   >
-                                    <i className="fa-solid fa-eye" style={{ marginRight: '6px' }}></i> View Details
+                                    <i className="fa-solid fa-eye" style={{ marginRight: '4px' }}></i> View Details
                                   </button>
                                   <button className="btn-table btn-price" onClick={() => {
                                     const p = prompt('Update pricing for ' + prop.name + ':', prop.price);
                                     if (p && !isNaN(p)) handleUpdatePrice(prop._id, p);
-                                  }} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff', padding: '8px 14px', borderRadius: '20px', cursor: 'pointer', fontWeight: '600' }}>
-                                    <i className="fa-solid fa-tag"></i> Price
+                                  }} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff', padding: '6px 10px', borderRadius: '16px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}>
+                                    <i className="fa-solid fa-tag" style={{ marginRight: '4px' }}></i> Price
                                   </button>
                                 </div>
                               </td>
@@ -742,26 +742,26 @@ const AdminDashboard = () => {
                         data.bookings.map(booking => (
                           <tr key={booking._id}>
                             <td>
-                              <div className="user-cell">
-                                <strong>{booking.user?.name || 'Unknown'}</strong>
-                                <span className="owner-email">{booking.user?.email}</span>
+                              <div className="user-cell" style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-start' }}>
+                                <strong style={{ color: '#ffffff', fontSize: '0.92rem', display: 'block', whiteSpace: 'nowrap' }}>{booking.user?.name || 'Guest User'}</strong>
+                                <span className="owner-email" style={{ color: '#d4af37', fontSize: '0.78rem', display: 'block', opacity: '0.9' }}>{booking.user?.email || 'N/A'}</span>
                               </div>
                             </td>
                             <td>
-                              <div className="property-cell">
-                                <span className="property-title">{booking.property?.name || 'Deleted Property'}</span>
-                                <span className="property-type">{booking.property?.location || ''}</span>
+                              <div className="property-cell" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <span className="property-title" style={{ fontWeight: '700', color: '#ffffff' }}>{booking.property?.name || 'Deleted Property'}</span>
+                                <span className="property-type" style={{ fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.6)' }}>{booking.property?.location || ''}</span>
                               </div>
                             </td>
                             <td>{new Date(booking.checkIn).toLocaleDateString()}</td>
                             <td>{new Date(booking.checkOut).toLocaleDateString()}</td>
-                            <td className="price-cell font-gold">₹{booking.totalPrice?.toLocaleString('en-IN')}</td>
+                            <td className="price-cell font-gold" style={{ fontWeight: '700' }}>₹{booking.totalPrice?.toLocaleString('en-IN')}</td>
                             <td>
-                              <div className="status-cell">
-                                <span className={`status-badge ${booking.status}`}>
+                              <div className="status-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
+                                <span className={`status-badge ${booking.status}`} style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: '700' }}>
                                   {booking.status}
                                 </span>
-                                <span className={`payment-badge ${booking.paymentStatus}`}>
+                                <span className={`payment-badge ${booking.paymentStatus}`} style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: '700' }}>
                                   {booking.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
                                 </span>
                               </div>

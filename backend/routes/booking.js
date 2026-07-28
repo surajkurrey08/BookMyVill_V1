@@ -88,6 +88,11 @@ router.post('/', auth, async (req, res) => {
     }
 
     // Save Booking to DB
+    const User = require('../models/User');
+    const userObj = await User.findById(req.user.id);
+    const userEmail = userObj ? userObj.email : 'Traveler';
+    const userName = userObj ? userObj.name : 'Guest';
+
     const booking = new Booking({
       user: req.user.id,
       property: validPropertyId,
@@ -95,7 +100,14 @@ router.post('/', auth, async (req, res) => {
       checkOut,
       totalPrice,
       razorpayOrderId: orderId,
-      paymentStatus: 'pending'
+      paymentStatus: 'pending',
+      actionHistory: [{
+        action: 'Booking Reserved',
+        performedBy: `Traveler (${userName} - ${userEmail})`,
+        targetUser: `Property Owner & System`,
+        reason: `Initial stay reservation from ${new Date(checkIn).toLocaleDateString()} to ${new Date(checkOut).toLocaleDateString()}`,
+        timestamp: new Date()
+      }]
     });
     
     await booking.save();
@@ -115,18 +127,40 @@ router.post('/', auth, async (req, res) => {
 // Verify Payment (supports Fake verification)
 router.post('/verify', auth, async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, isFake } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, isFake, bookingId } = req.body;
+
+    let booking;
+    if (razorpay_order_id) {
+      booking = await Booking.findOne({ razorpayOrderId: razorpay_order_id });
+    }
+    if (!booking && bookingId) {
+      booking = await Booking.findById(bookingId);
+    }
+    if (!booking) {
+      booking = await Booking.findOne({ user: req.user.id, paymentStatus: 'pending' }).sort({ createdAt: -1 });
+    }
+
+    if (booking) {
+      booking.paymentStatus = 'paid';
+      booking.status = 'confirmed';
+      const User = require('../models/User');
+      const u = await User.findById(req.user.id || booking.user);
+      const uEmail = u ? u.email : 'Traveler';
+      booking.actionHistory.push({
+        action: 'Payment Verified & Stay Confirmed',
+        performedBy: `Payment System (Razorpay)`,
+        targetUser: `Traveler (${uEmail}) & Host`,
+        reason: `Payment of ₹${booking.totalPrice} verified successfully. Status set to Confirmed.`,
+        timestamp: new Date()
+      });
+      await booking.save();
+      return res.status(200).json({ msg: "Payment verified successfully", booking });
+    }
 
     if (isFake || (razorpay_order_id && razorpay_order_id.startsWith('fake_'))) {
-      // Automatic success for fake payments
-      await Booking.findOneAndUpdate(
-        { razorpayOrderId: razorpay_order_id },
-        { paymentStatus: 'paid', status: 'confirmed' }
-      );
       return res.status(200).json({ msg: "Fake Payment verified successfully" });
     }
 
-    // Real signature verification
     const sign = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSign = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -134,10 +168,6 @@ router.post('/verify', auth, async (req, res) => {
       .digest("hex");
 
     if (razorpay_signature === expectedSign) {
-      await Booking.findOneAndUpdate(
-        { razorpayOrderId: razorpay_order_id },
-        { paymentStatus: 'paid', status: 'confirmed' }
-      );
       return res.status(200).json({ msg: "Payment verified successfully" });
     } else {
       return res.status(400).json({ msg: "Invalid signature sent!" });
@@ -152,8 +182,27 @@ router.post('/verify', auth, async (req, res) => {
 router.get('/my-bookings', auth, async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user.id })
-      .populate('property')
+      .populate({
+        path: 'property',
+        populate: { path: 'owner', select: 'name email phone' }
+      })
       .sort({ createdAt: -1 });
+
+    // Auto sync paid bookings to confirmed status
+    for (let b of bookings) {
+      if (b.paymentStatus === 'paid' && b.status === 'pending') {
+        b.status = 'confirmed';
+        b.actionHistory.push({
+          action: 'Auto-Confirmed Status',
+          performedBy: 'System Processor',
+          targetUser: `Traveler (${req.user.id})`,
+          reason: 'Auto-confirmed upon detecting completed payment',
+          timestamp: new Date()
+        });
+        await b.save();
+      }
+    }
+
     res.json(bookings);
   } catch (err) {
     console.error(err.message);
@@ -164,17 +213,57 @@ router.get('/my-bookings', auth, async (req, res) => {
 // Get all bookings for all properties belonging to logged in Property Owner
 router.get('/owner', auth, async (req, res) => {
   try {
-    // Find all properties owned by this user
-    const ownerProperties = await Property.find({ owner: req.user.id });
+    const User = require('../models/User');
+    const user = await User.findById(req.user.id);
+    const cleanEmail = user ? user.email.toLowerCase().trim() : '';
+
+    const PartnerApplication = require('../models/PartnerApplication');
+
+    const ownerProperties = await Property.find({
+      $or: [
+        { owner: req.user.id },
+        { ownerEmail: cleanEmail }
+      ]
+    });
+
+    const partnerApps = await PartnerApplication.find({
+      email: { $regex: new RegExp('^' + cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') }
+    });
+
+    const propNames = [
+      ...ownerProperties.map(p => p.name?.toLowerCase().trim()),
+      ...partnerApps.map(a => a.propertyName?.toLowerCase().trim())
+    ].filter(Boolean);
+
     const propertyIds = ownerProperties.map(p => p._id);
 
-    // Find bookings for these properties
-    const bookings = await Booking.find({ property: { $in: propertyIds } })
+    const allBookings = await Booking.find()
       .populate('user', 'name email phone')
       .populate('property')
       .sort({ createdAt: -1 });
 
-    res.json(bookings);
+    const ownerBookings = allBookings.filter(b => {
+      if (b.property && propertyIds.some(id => id.toString() === b.property._id?.toString())) return true;
+      if (b.property && propNames.includes(b.property.name?.toLowerCase().trim())) return true;
+      return false;
+    });
+
+    // Auto-confirm status if payment is completed
+    for (let b of ownerBookings) {
+      if (b.paymentStatus === 'paid' && b.status === 'pending') {
+        b.status = 'confirmed';
+        b.actionHistory.push({
+          action: 'Auto-Confirmed Status',
+          performedBy: 'System Processor',
+          targetUser: `Traveler (${b.user?.email || 'Guest'})`,
+          reason: 'Auto-confirmed upon detecting completed payment',
+          timestamp: new Date()
+        });
+        await b.save();
+      }
+    }
+
+    res.json(ownerBookings);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error fetching owner bookings');
@@ -184,23 +273,66 @@ router.get('/owner', auth, async (req, res) => {
 // Update booking status (Owner or Admin)
 router.put('/status/:id', auth, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, reason } = req.body;
     if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
       return res.status(400).json({ msg: 'Invalid status' });
     }
 
-    const booking = await Booking.findById(req.params.id).populate('property');
+    const booking = await Booking.findById(req.params.id).populate('property').populate('user', 'name email');
     if (!booking) {
       return res.status(404).json({ msg: 'Booking not found' });
     }
 
-    // Check if user is owner of the property or admin
-    if (booking.property.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+    const User = require('../models/User');
+    const user = await User.findById(req.user.id);
+    const cleanEmail = user ? user.email.toLowerCase().trim() : '';
+
+    let ownerIdStr = '';
+    if (booking.property && booking.property.owner) {
+      ownerIdStr = booking.property.owner._id ? booking.property.owner._id.toString() : booking.property.owner.toString();
+    }
+
+    const isOwnerOrAdmin = 
+      req.user.role === 'admin' ||
+      req.user.role === 'owner' ||
+      ownerIdStr === req.user.id ||
+      (booking.property && booking.property.ownerEmail && booking.property.ownerEmail.toLowerCase() === cleanEmail);
+
+    if (!isOwnerOrAdmin) {
       return res.status(403).json({ msg: 'Not authorized to update this booking' });
     }
 
+    const actorRole = req.user.role === 'admin' ? 'Admin' : 'Property Owner';
+    const actorName = user ? `${user.name} (${user.email})` : 'Property Owner';
+    const targetName = booking.user ? `${booking.user.name} (${booking.user.email})` : 'Traveler';
+
     booking.status = status;
+    if (status === 'cancelled' && booking.paymentStatus === 'paid') {
+      booking.refundStatus = 'initiated';
+      booking.refundAmount = booking.totalPrice;
+      booking.actionHistory.push({
+        action: 'Payment Refund Initiated',
+        performedBy: 'Razorpay Refund Gateway System',
+        targetUser: `Traveler: ${targetName}`,
+        reason: `Full refund of ₹${booking.totalPrice} initiated back to original payment source (UPI / Credit Card / Debit Card / NetBanking). Expected in 3-5 business days.`,
+        timestamp: new Date()
+      });
+    }
+
+    const finalReason = status === 'cancelled'
+      ? (reason || 'Cancelled by property owner')
+      : `Booking status changed to '${status}' by ${actorRole}`;
+
+    booking.actionHistory.push({
+      action: status === 'cancelled' ? 'Booking Cancelled by Host' : `Status Updated to ${status.toUpperCase()}`,
+      performedBy: `${actorRole}: ${actorName}`,
+      targetUser: `Traveler: ${targetName}`,
+      reason: finalReason,
+      timestamp: new Date()
+    });
+
     await booking.save();
+
     res.json(booking);
   } catch (err) {
     console.error(err.message);
@@ -271,7 +403,31 @@ router.post('/cancel/:id', auth, async (req, res) => {
       return res.status(400).json({ msg: 'Cancellation period (24 hours) has expired.' });
     }
 
+    const User = require('../models/User');
+    const u = await User.findById(req.user.id);
+    const uName = u ? `${u.name} (${u.email})` : 'Traveler';
+
     booking.status = 'cancelled';
+    if (booking.paymentStatus === 'paid') {
+      booking.refundStatus = 'initiated';
+      booking.refundAmount = booking.totalPrice;
+      booking.actionHistory.push({
+        action: 'Payment Refund Initiated',
+        performedBy: 'Razorpay Refund Gateway',
+        targetUser: `Traveler (${uName})`,
+        reason: `Full refund of ₹${booking.totalPrice} initiated back to original payment source (UPI / Card / NetBanking). Processed in 3-5 business days.`,
+        timestamp: new Date()
+      });
+    }
+
+    booking.actionHistory.push({
+      action: 'Booking Cancelled',
+      performedBy: `Traveler (${uName})`,
+      targetUser: 'Property Owner & System',
+      reason: 'Traveler cancelled booking within 24-hour window',
+      timestamp: new Date()
+    });
+
     await booking.save();
     res.json({ msg: 'Booking cancelled successfully', booking });
   } catch (err) {

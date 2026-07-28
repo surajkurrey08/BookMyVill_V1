@@ -29,11 +29,24 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
+    const userStr = localStorage.getItem('user');
+    let isOwner = false;
+    if (userStr) {
+      try {
+        isOwner = JSON.parse(userStr).role === 'owner';
+      } catch (err) {
+        console.warn('User JSON parse error:', err);
+      }
+    }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
-    navigate('/');
-    window.location.reload();
+    if (isOwner) {
+      window.location.href = 'http://localhost:5175/login';
+    } else {
+      navigate('/');
+      window.location.reload();
+    }
   };
 
   const scrollToSection = (id) => {
@@ -63,7 +76,7 @@ const Navbar = () => {
             <Link to="/" onClick={() => scrollToSection('home')}>Home</Link>
             <Link to="/explore">Explore Stays</Link>
             <Link to="/packages">Packages</Link>
-            <Link to="/join-us">Join Us</Link>
+            {(!user || (user.role !== 'user' && user.role !== 'traveller')) && <Link to="/join-us">Join Us</Link>}
             <Link to="/about-us">About Us</Link>
           </nav>
 
@@ -169,46 +182,50 @@ const Navbar = () => {
                       >
                         <i className="fa-solid fa-hotel" style={{ color: '#2b9348' }}></i> Stays Dashboard ↗
                       </Link>
-                      <a 
-                        href="http://localhost:5175" 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => setShowProfileDropdown(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          padding: '9px 12px',
-                          borderRadius: '10px',
-                          color: '#d4af37',
-                          textDecoration: 'none',
-                          fontSize: '0.85rem',
-                          fontWeight: '700',
-                          background: 'rgba(212, 175, 55, 0.1)'
-                        }}
-                      >
-                        <i className="fa-solid fa-vihara" style={{ color: '#d4af37' }}></i> Host / Owner Portal ↗
-                      </a>
-                      <a 
-                        href="http://localhost:5176" 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => setShowProfileDropdown(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          padding: '9px 12px',
-                          borderRadius: '10px',
-                          color: '#52b788',
-                          textDecoration: 'none',
-                          fontSize: '0.85rem',
-                          fontWeight: '700',
-                          background: 'rgba(82, 183, 136, 0.1)'
-                        }}
-                      >
-                        <i className="fa-solid fa-clock-user" style={{ color: '#52b788' }}></i> Caretaker Portal (Port 5176) ↗
-                      </a>
+                      {user.role === 'owner' && (
+                        <a 
+                          href="http://localhost:5175" 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setShowProfileDropdown(false)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '9px 12px',
+                            borderRadius: '10px',
+                            color: '#d4af37',
+                            textDecoration: 'none',
+                            fontSize: '0.85rem',
+                            fontWeight: '700',
+                            background: 'rgba(212, 175, 55, 0.1)'
+                          }}
+                        >
+                          <i className="fa-solid fa-vihara" style={{ color: '#d4af37' }}></i> Host / Owner Portal ↗
+                        </a>
+                      )}
+                      {user.role === 'caretaker' && (
+                        <a 
+                          href="http://localhost:5176" 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setShowProfileDropdown(false)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '9px 12px',
+                            borderRadius: '10px',
+                            color: '#52b788',
+                            textDecoration: 'none',
+                            fontSize: '0.85rem',
+                            fontWeight: '700',
+                            background: 'rgba(82, 183, 136, 0.1)'
+                          }}
+                        >
+                          <i className="fa-solid fa-clock-user" style={{ color: '#52b788' }}></i> Caretaker Portal ↗
+                        </a>
+                      )}
                       {user.role === 'owner' && (
                         <Link 
                           to="/caretaker-apply" 

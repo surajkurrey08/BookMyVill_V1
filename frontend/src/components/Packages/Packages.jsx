@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import './Packages.css';
@@ -10,6 +10,7 @@ import pkg3 from '../../assets/hillstationhome (4).jpg';
 import pkg4 from '../../assets/panchgani.jpg';
 
 const Packages = () => {
+  const navigate = useNavigate();
   const [maxPrice, setMaxPrice] = useState(50000);
   const [activeBadgeFilter, setActiveBadgeFilter] = useState('All');
   const [sortOrder, setSortOrder] = useState('low-high');
@@ -68,6 +69,84 @@ const Packages = () => {
       status: 'Filling Fast',
       count: '4 Rooms Available',
       image: pkg4
+    },
+    {
+      id: 5,
+      propertyId: 13,
+      hotelName: 'Bloom Hotel - Balewadi',
+      title: 'Balewadi High Street Executive Getaway',
+      badge: 'Corporate Special',
+      duration: '2 Days / 1 Night',
+      price: '₹8,999',
+      numericPrice: 8999,
+      status: 'Available',
+      count: '6 Executive Suites Left',
+      image: pkg1
+    },
+    {
+      id: 6,
+      propertyId: 11,
+      hotelName: 'Sayaji Hotel Pune',
+      title: 'Wakad & Baner Business Luxury Staycation',
+      badge: 'Luxury Staycation',
+      duration: '3 Days / 2 Nights',
+      price: '₹16,800',
+      numericPrice: 16800,
+      status: 'Filling Fast',
+      count: '3 Deluxe Rooms Left',
+      image: pkg2
+    },
+    {
+      id: 7,
+      propertyId: 8,
+      hotelName: 'Lonavala Valley Eco Resort',
+      title: 'Lonavala Monsoon Waterfall & Cliff Retreat',
+      badge: 'Adventure',
+      duration: '3 Days / 2 Nights',
+      price: '₹22,500',
+      numericPrice: 22500,
+      status: 'Available',
+      count: '4 Eco Villas Available',
+      image: pkg3
+    },
+    {
+      id: 8,
+      propertyId: 9,
+      hotelName: 'Khandala Crest Heritage Hotel',
+      title: 'Khandala Heritage Peak & Sunrise Experience',
+      badge: 'Best Seller',
+      duration: '3 Days / 2 Nights',
+      price: '₹27,999',
+      numericPrice: 27999,
+      status: 'Limited Suites',
+      count: '2 Heritage Suites Left',
+      image: pkg4
+    },
+    {
+      id: 9,
+      propertyId: 12,
+      hotelName: 'Panchgani Mist Retreat',
+      title: 'Panchgani Valley Strawberry & Sunset Escape',
+      badge: 'Weekend Special',
+      duration: '2 Days / 1 Night',
+      price: '₹12,999',
+      numericPrice: 12999,
+      status: 'Available',
+      count: '5 Hillside Rooms Left',
+      image: pkg1
+    },
+    {
+      id: 10,
+      propertyId: 7,
+      hotelName: 'Shivajinagar Executive Heritage Hotel',
+      title: 'Central Pune Heritage & City Experience',
+      badge: 'Family Special',
+      duration: '2 Days / 1 Night',
+      price: '₹11,800',
+      numericPrice: 11800,
+      status: 'Available',
+      count: '4 Suites Available',
+      image: pkg2
     }
   ];
 
@@ -116,7 +195,7 @@ const Packages = () => {
           {/* Right side: Category Filters + Search Functionality */}
           <div className="packages-top-controls">
             <div className="category-pill-group">
-              {['All', 'Best Seller', 'Family Special', 'Adventure', 'Weekend Special'].map(tab => (
+              {['All', 'Best Seller', 'Family Special', 'Adventure', 'Weekend Special', 'Corporate Special', 'Luxury Staycation'].map(tab => (
                 <button 
                   key={tab}
                   className={`category-pill-btn ${activeBadgeFilter === tab ? 'active' : ''}`}
@@ -208,12 +287,21 @@ const Packages = () => {
                       <span className="price-amount">{pkg.price}</span>
                     </div>
 
-                    <Link 
-                      to={`/property/${pkg.propertyId}`} 
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const token = localStorage.getItem('token');
+                        if (!token) {
+                          navigate('/signin', { state: { from: `/property/${pkg.propertyId}` } });
+                        } else {
+                          navigate(`/property/${pkg.propertyId}`);
+                        }
+                      }}
                       className="btn-view-details"
+                      style={{ border: 'none', cursor: 'pointer' }}
                     >
                       View Details & Availability <i className="fa-solid fa-arrow-right"></i>
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './SignIn.css';
 import { API_BASE_URL } from '../../config';
 
@@ -9,6 +9,7 @@ const SignIn = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +23,8 @@ const SignIn = () => {
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/');
+        const destination = location.state?.from || '/';
+        navigate(destination, { state: { property: location.state?.property } });
       } else {
         alert(data.msg || 'Login failed');
       }
@@ -78,6 +80,27 @@ const SignIn = () => {
           <h2>Welcome Back</h2>
           <p>Sign in to your luxury experience</p>
         </div>
+
+        {location.state?.from && (
+          <div style={{
+            background: 'rgba(212, 175, 55, 0.18)',
+            border: '1px solid #d4af37',
+            color: '#ffffff',
+            padding: '12px 18px',
+            borderRadius: '14px',
+            marginBottom: '20px',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px'
+          }}>
+            <i className="fa-solid fa-user-lock" style={{ color: '#d4af37', fontSize: '1.1rem' }}></i>
+            Please sign in to proceed with your hotel booking
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="signin-form">
           <div className="form-group">

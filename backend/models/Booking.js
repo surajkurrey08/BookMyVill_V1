@@ -36,6 +36,22 @@ const BookingSchema = new mongoose.Schema({
   razorpayOrderId: {
     type: String
   },
+  refundStatus: {
+    type: String,
+    enum: ['none', 'initiated', 'processed', 'failed'],
+    default: 'none'
+  },
+  refundAmount: {
+    type: Number,
+    default: 0
+  },
+  actionHistory: [{
+    action: { type: String, required: true },
+    performedBy: { type: String, required: true },
+    targetUser: { type: String, required: true },
+    reason: { type: String, default: '' },
+    timestamp: { type: Date, default: Date.now }
+  }],
   createdAt: {
     type: Date,
     default: Date.now

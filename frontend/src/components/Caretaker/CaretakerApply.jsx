@@ -36,7 +36,9 @@ const CaretakerApply = () => {
           email: prev.email || u.email || '',
           phone: prev.phone || u.phone || ''
         }));
-      } catch (e) {}
+      } catch (err) {
+        console.warn('Failed to parse user state:', err);
+      }
     }
     if (token) {
       fetchMyApplications(token);
@@ -70,19 +72,35 @@ const CaretakerApply = () => {
     }
 
     if (name === 'phone') {
-      const cleanPhone = trimmed.replace(/[\s-]/g, '');
+      const cleanPhone = trimmed.replace(/\D/g, '');
       if (!cleanPhone) {
         error = 'Contact Phone Number is required.';
-      } else if (!/^\+?[0-9]{10,12}$/.test(cleanPhone)) {
-        error = 'Please enter a valid 10 to 12 digit phone number.';
+      } else if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+        error = 'Phone number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.';
       }
     }
 
     if (name === 'govtId') {
+      const govtType = form.govtIdType || 'Aadhaar Card';
       if (!trimmed) {
-        error = 'ID Proof is required for verification.';
-      } else if (trimmed.length < 3) {
-        error = 'ID Proof must be at least 3 characters.';
+        error = `${govtType} details are required for verification.`;
+      } else if (govtType === 'Aadhaar Card') {
+        const cleanAadhaar = trimmed.replace(/\D/g, '');
+        if (!/^\d{12}$/.test(cleanAadhaar)) {
+          error = 'Aadhaar number must be exactly 12 digits (e.g. 123456789012).';
+        }
+      } else if (govtType === 'PAN Card') {
+        if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(trimmed.toUpperCase())) {
+          error = 'PAN must be 10 characters (5 letters + 4 digits + 1 letter, e.g. ABCDE1234F).';
+        }
+      } else if (govtType === 'Driving License') {
+        if (!/^[A-Z0-9]{10,16}$/i.test(trimmed)) {
+          error = 'Driving License must be 10-16 alphanumeric characters.';
+        }
+      } else if (govtType === 'Voter ID Card') {
+        if (!/^[A-Z]{3}[0-9]{7}$/i.test(trimmed)) {
+          error = 'Voter ID must be 3 letters + 7 digits (e.g. ABC1234567).';
+        }
       }
     }
 
@@ -333,36 +351,82 @@ const CaretakerApply = () => {
               <div className="caretaker-field-group">
                 <label className="caretaker-label">
                   <span>
-                    <i className="fa-solid fa-phone caretaker-icon"></i> Contact Phone <span style={{ color: '#ff6b6b' }}>*</span>
+                    <i className="fa-solid fa-phone caretaker-icon"></i> Contact Phone (10 Digits) <span style={{ color: '#ff6b6b' }}>*</span>
                   </span>
                   {errors.phone && <span className="caretaker-field-error">{errors.phone}</span>}
                 </label>
                 <input
                   type="tel"
+                  maxLength={10}
                   className={`caretaker-input ${errors.phone ? 'has-error' : ''}`}
-                  placeholder="+91 9876543210"
+                  placeholder="e.g. 9876543210"
                   value={form.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    handleChange('phone', val);
+                  }}
                   required
                 />
               </div>
             </div>
 
-            {/* Row 3: ID Proof, Experience & Location */}
+            {/* Row 3: Govt ID Type & ID Proof Number */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
               <div className="caretaker-field-group">
                 <label className="caretaker-label">
                   <span>
-                    <i className="fa-solid fa-id-card caretaker-icon"></i> ID Proof <span style={{ color: '#ff6b6b' }}>*</span>
+                    <i className="fa-solid fa-id-card caretaker-icon"></i> Govt ID Type <span style={{ color: '#ff6b6b' }}>*</span>
+                  </span>
+                </label>
+                <select
+                  className="caretaker-select"
+                  value={form.govtIdType || 'Aadhaar Card'}
+                  onChange={(e) => {
+                    setForm({ ...form, govtIdType: e.target.value, govtId: '' });
+                    setErrors({ ...errors, govtId: '' });
+                  }}
+                >
+                  <option value="Aadhaar Card">Aadhaar Card (12 Digits)</option>
+                  <option value="PAN Card">PAN Card (10 Alphanumeric)</option>
+                  <option value="Driving License">Driving License</option>
+                  <option value="Voter ID Card">Voter ID Card</option>
+                  <option value="Property License">Property License / Utility Bill</option>
+                </select>
+              </div>
+
+              <div className="caretaker-field-group">
+                <label className="caretaker-label">
+                  <span>
+                    <i className="fa-solid fa-fingerprint caretaker-icon"></i> 
+                    {form.govtIdType === 'PAN Card' ? 'PAN Number (10 Chars)' : form.govtIdType === 'Aadhaar Card' || !form.govtIdType ? 'Aadhaar Number (12 Digits)' : 'ID Number / License No.'} 
+                    <span style={{ color: '#ff6b6b' }}> *</span>
                   </span>
                   {errors.govtId && <span className="caretaker-field-error">{errors.govtId}</span>}
                 </label>
                 <input
                   type="text"
                   className={`caretaker-input ${errors.govtId ? 'has-error' : ''}`}
-                  placeholder="Enter ID Proof Number"
+                  placeholder={
+                    form.govtIdType === 'PAN Card' ? 'e.g. ABCDE1234F' :
+                    form.govtIdType === 'Driving License' ? 'e.g. MH1220230012345' :
+                    form.govtIdType === 'Voter ID Card' ? 'e.g. ABC1234567' :
+                    form.govtIdType === 'Property License' ? 'e.g. LIC-987654' :
+                    'e.g. 123456789012'
+                  }
+                  maxLength={
+                    form.govtIdType === 'Aadhaar Card' || !form.govtIdType ? 12 :
+                    form.govtIdType === 'PAN Card' || form.govtIdType === 'Voter ID Card' ? 10 : 16
+                  }
                   value={form.govtId}
-                  onChange={(e) => handleChange('govtId', e.target.value)}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (form.govtIdType === 'Aadhaar Card' || !form.govtIdType) {
+                      val = val.replace(/\D/g, '').slice(0, 12);
+                    } else {
+                      val = val.toUpperCase().slice(0, 16);
+                    }
+                    handleChange('govtId', val);
+                  }}
                   required
                 />
               </div>

@@ -5,54 +5,8 @@ import Footer from '../Footer/Footer';
 import './PropertyDetails.css';
 import '../PropertyGrid/MapContainer.css';
 import { properties as mockProperties } from '../../data/mockData';
-export const getRawMapLink = (mapLink) => {
-  if (!mapLink || typeof mapLink !== 'string') return '';
-  let trimmed = mapLink.trim();
-  if (!trimmed) return '';
-  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
-    return `https://${trimmed}`;
-  }
-  return trimmed;
-};
-
-export const loadRazorpayScript = () => {
-  return new Promise((resolve) => {
-    if (window.Razorpay) {
-      resolve(true);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-};
-
-export const cleanLocationString = (str) => {
-  if (!str || typeof str !== 'string') return '';
-  return str.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}📍⛰️🏨🏡🚗]+/gu, '').trim();
-};
-
-export const formatGoogleMapsDirectionsUrl = (mapLink, name, location) => {
-  if (mapLink && typeof mapLink === 'string') {
-    let trimmed = mapLink.trim();
-    if (trimmed) {
-      if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
-        trimmed = `https://${trimmed}`;
-      }
-      if (trimmed.includes('/dir/')) {
-        return trimmed;
-      }
-      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(trimmed)}`;
-    }
-  }
-
-  const cleanName = cleanLocationString(name);
-  const cleanLoc = cleanLocationString(location);
-  const destinationQuery = cleanLoc ? `${cleanName ? cleanName + ', ' : ''}${cleanLoc}` : (cleanName || 'Mahabaleshwar');
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationQuery)}`;
-};
+import { API_BASE_URL } from '../../config';
+import { getRawMapLink, formatGoogleMapsDirectionsUrl } from '../../utils/locationUtils';
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -76,6 +30,7 @@ const PropertyDetails = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingData, setPendingData] = useState(null);
   const [stayType, setStayType] = useState('night');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('upi');
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [activeMediaType, setActiveMediaType] = useState('photo'); // 'photo' or 'video'
 
@@ -88,6 +43,8 @@ const PropertyDetails = () => {
   const [zoomScale, setZoomScale] = useState(1);
 
   const mapRef = useRef(null);
+
+  const autoBookTriggeredRef = useRef(false);
 
   useEffect(() => {
     const qCheckIn = searchParams.get('checkIn');
@@ -107,6 +64,83 @@ const PropertyDetails = () => {
       }
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!property || loading || autoBookTriggeredRef.current) return;
+
+    const autoBook = searchParams.get('autoBook');
+    if (autoBook === 'true') {
+      autoBookTriggeredRef.current = true;
+      const token = localStorage.getItem('token');
+      if (token) {
+        let cIn = bookingDates.checkIn || searchParams.get('checkIn') || getTodayDateString();
+        let cOut = bookingDates.checkOut || searchParams.get('checkOut');
+        if (!cOut) {
+          const nextDay = new Date(cIn);
+          nextDay.setDate(nextDay.getDate() + 1);
+          const yyyy = nextDay.getFullYear();
+          const mm = String(nextDay.getMonth() + 1).padStart(2, '0');
+          const dd = String(nextDay.getDate()).padStart(2, '0');
+          cOut = `${yyyy}-${mm}-${dd}`;
+        }
+        setBookingDates({ checkIn: cIn, checkOut: cOut });
+
+        setTimeout(() => {
+          triggerPaymentForAutoBook(cIn, cOut);
+        }, 200);
+      }
+    }
+  }, [property, loading, searchParams]);
+
+  const triggerPaymentForAutoBook = async (cIn, cOut) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const priceValue = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '15000');
+    let total = priceValue;
+    if (cIn && cOut && stayType !== 'day') {
+      const start = new Date(cIn);
+      const end = new Date(cOut);
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+      total = priceValue * diffDays;
+    } else if (stayType === 'day') {
+      total = Math.round(priceValue * 0.55);
+    }
+
+    try {
+      setIsProcessing(true);
+      const response = await fetch(`${API_BASE_URL}/api/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        body: JSON.stringify({
+          propertyId: property?._id || id,
+          propertyName: property?.name,
+          propertyLocation: property?.location,
+          propertyType: property?.type,
+          propertyImage: property?.image || (property?.photos && property?.photos[0] ? property.photos[0] : ''),
+          checkIn: cIn,
+          checkOut: cOut || cIn,
+          guests: guests,
+          totalPrice: total,
+          isFake: true 
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data) {
+        setPendingData(data);
+        setShowFakeModal(true);
+      }
+    } catch (err) {
+      console.error('Auto payment initiation error:', err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const locationState = useLocation();
 
@@ -386,8 +420,7 @@ const PropertyDetails = () => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please sign in to book your stay.');
-      navigate('/signin');
+      navigate('/signin', { state: { from: `/property/${property?._id || id}` } });
       return;
     }
 
@@ -888,7 +921,7 @@ const PropertyDetails = () => {
                         boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)'
                       }}
                     >
-                      <i className="fa-solid fa-compass"></i> Live GPS Directions
+                      Directions
                     </a>
                   </div>
                 </div>
@@ -1032,31 +1065,155 @@ const PropertyDetails = () => {
           </div>
         </div>
 
-        {/* Fake Payment Modal */}
+        {/* Multi-Option Payment Gateway Modal */}
         {showFakeModal && (
-          <div className="fake-payment-overlay">
-            <div className="fake-payment-modal glass-morphism">
-              <div className="modal-header">
-                <h3>Secure Checkout</h3>
-                <p>Simulation Mode</p>
+          <div className="fake-payment-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '20px 10px', boxSizing: 'border-box', overflowY: 'auto' }}>
+            <div className="fake-payment-modal glass-morphism" style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: '24px', padding: '24px', background: 'linear-gradient(145deg, #1b262c 0%, #0f171e 100%)', border: '1px solid rgba(212, 175, 55, 0.4)', color: '#ffffff', boxSizing: 'border-box' }}>
+              <div className="modal-header" style={{ marginBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                <div>
+                  <h3 style={{ fontSize: '1.5rem', color: '#ffd700', margin: 0, fontFamily: 'Cormorant Garamond, serif' }}>Select Payment Method</h3>
+                  <p style={{ margin: '4px 0 0 0', opacity: 0.8, fontSize: '0.88rem' }}>Choose your preferred payment gateway option</p>
+                </div>
+                <button onClick={() => setShowFakeModal(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.6rem', cursor: 'pointer' }}>×</button>
               </div>
-              <div className="modal-body">
-                <div className="payment-summary">
-                  <p>Property: <strong>{property.name}</strong></p>
-                  <p>Amount to Pay: <strong className="amount">₹{calculateTotalPrice()}</strong></p>
-                </div>
-                <div className="fake-card-info">
-                  <div className="fake-card-graphic">
-                    <div className="chip"></div>
-                    <p className="card-number">**** **** **** 1234</p>
-                    <p className="card-holder">LUXURY MEMBER</p>
+
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto', flex: 1, paddingRight: '6px', maxHeight: 'calc(90vh - 80px)' }}>
+                <div className="payment-summary" style={{ background: 'rgba(255,255,255,0.05)', padding: '16px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '0.9rem', color: '#e0e0e0' }}>Property Stay:</span>
+                    <strong style={{ color: '#fff', fontSize: '1rem' }}>{property.name}</strong>
                   </div>
-                  <p className="sim-hint">This is a simulated payment gateway for testing.</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                    <span style={{ fontSize: '0.9rem', color: '#e0e0e0' }}>Total Amount Payable:</span>
+                    <strong style={{ color: '#52b788', fontSize: '1.3rem' }}>₹{calculateTotalPrice()}</strong>
+                  </div>
                 </div>
-                <button onClick={confirmFakePayment} disabled={isProcessing} className="btn-primary pay-btn">
-                  {isProcessing ? 'Verifying...' : 'Pay Now'}
-                </button>
-                <button onClick={() => setShowFakeModal(false)} className="btn-text cancel-btn">Cancel</button>
+
+                {/* Multiple Payment Options List */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <label style={{ fontSize: '0.88rem', fontWeight: '700', color: '#d4af37', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Available Payment Modes:</label>
+                  
+                  <div className="payment-options-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {/* Option 1: UPI */}
+                    <div 
+                      onClick={() => setSelectedPaymentMethod('upi')} 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '14px 18px',
+                        borderRadius: '16px',
+                        border: selectedPaymentMethod === 'upi' ? '2px solid #52b788' : '1px solid rgba(255,255,255,0.15)',
+                        background: selectedPaymentMethod === 'upi' ? 'rgba(82, 183, 136, 0.15)' : 'rgba(255,255,255,0.04)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <i className="fa-solid fa-mobile-screen-button" style={{ fontSize: '1.4rem', color: '#52b788' }}></i>
+                        <div>
+                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.95rem' }}>UPI Instant Payment</strong>
+                          <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>Google Pay, PhonePe, Paytm, BHIM UPI</span>
+                        </div>
+                      </div>
+                      <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'upi'} onChange={() => {}} style={{ accentColor: '#52b788', width: '18px', height: '18px', cursor: 'pointer' }} />
+                    </div>
+
+                    {/* Option 2: Cards */}
+                    <div 
+                      onClick={() => setSelectedPaymentMethod('card')} 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '14px 18px',
+                        borderRadius: '16px',
+                        border: selectedPaymentMethod === 'card' ? '2px solid #52b788' : '1px solid rgba(255,255,255,0.15)',
+                        background: selectedPaymentMethod === 'card' ? 'rgba(82, 183, 136, 0.15)' : 'rgba(255,255,255,0.04)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <i className="fa-solid fa-credit-card" style={{ fontSize: '1.4rem', color: '#38bdf8' }}></i>
+                        <div>
+                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.95rem' }}>Credit / Debit Cards</strong>
+                          <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>Visa, MasterCard, RuPay, Maestro</span>
+                        </div>
+                      </div>
+                      <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'card'} onChange={() => {}} style={{ accentColor: '#52b788', width: '18px', height: '18px', cursor: 'pointer' }} />
+                    </div>
+
+                    {/* Option 3: Net Banking */}
+                    <div 
+                      onClick={() => setSelectedPaymentMethod('netbanking')} 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '14px 18px',
+                        borderRadius: '16px',
+                        border: selectedPaymentMethod === 'netbanking' ? '2px solid #52b788' : '1px solid rgba(255,255,255,0.15)',
+                        background: selectedPaymentMethod === 'netbanking' ? 'rgba(82, 183, 136, 0.15)' : 'rgba(255,255,255,0.04)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <i className="fa-solid fa-building-columns" style={{ fontSize: '1.4rem', color: '#d4af37' }}></i>
+                        <div>
+                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.95rem' }}>Net Banking</strong>
+                          <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>HDFC, SBI, ICICI, Axis & all major Indian banks</span>
+                        </div>
+                      </div>
+                      <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'netbanking'} onChange={() => {}} style={{ accentColor: '#52b788', width: '18px', height: '18px', cursor: 'pointer' }} />
+                    </div>
+
+                    {/* Option 4: Pay at Check-In */}
+                    <div 
+                      onClick={() => setSelectedPaymentMethod('pay_at_hotel')} 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '14px 18px',
+                        borderRadius: '16px',
+                        border: selectedPaymentMethod === 'pay_at_hotel' ? '2px solid #52b788' : '1px solid rgba(255,255,255,0.15)',
+                        background: selectedPaymentMethod === 'pay_at_hotel' ? 'rgba(82, 183, 136, 0.15)' : 'rgba(255,255,255,0.04)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <i className="fa-solid fa-hotel" style={{ fontSize: '1.4rem', color: '#f43f5e' }}></i>
+                        <div>
+                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.95rem' }}>Pay at Check-In / Hotel</strong>
+                          <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>Pay 20% Token now, balance on stay check-in</span>
+                        </div>
+                      </div>
+                      <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'pay_at_hotel'} onChange={() => {}} style={{ accentColor: '#52b788', width: '18px', height: '18px', cursor: 'pointer' }} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ACTION BUTTONS INSIDE SCROLLABLE MODAL BODY */}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '8px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
+                  <button 
+                    onClick={confirmFakePayment} 
+                    disabled={isProcessing} 
+                    className="btn-primary pay-btn" 
+                    style={{ flex: 1, padding: '14px 20px', borderRadius: '50px', background: 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)', color: '#1a1a1a', border: 'none', fontWeight: '800', fontSize: '1rem', cursor: isProcessing ? 'not-allowed' : 'pointer' }}
+                  >
+                    {isProcessing ? 'Verifying Payment...' : `Pay ₹${calculateTotalPrice()} via ${selectedPaymentMethod === 'upi' ? 'UPI' : selectedPaymentMethod === 'card' ? 'Card' : selectedPaymentMethod === 'netbanking' ? 'NetBanking' : 'Hotel Check-In'}`}
+                  </button>
+                  <button 
+                    onClick={() => setShowFakeModal(false)} 
+                    className="btn-text cancel-btn" 
+                    style={{ padding: '14px 22px', borderRadius: '50px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)', cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -91,22 +91,35 @@ router.post('/partner-apply', async (req, res) => {
     if (!fullName || !email || !phone) {
       return res.status(400).json({ msg: 'Full name, email, and phone number are required.' });
     }
-    const application = new PartnerApplication({
-      fullName,
-      email,
-      phone,
-      partnerType: partnerType || 'Property Owner',
-      propertyName: propertyName || 'N/A',
-      propertyType: propertyType || 'Villa',
-      price: price || '',
-      city: city || 'Mahabaleshwar',
-      govtId: govtId || '',
-      experience: experience || '',
-      services: services || '',
-      message: message || '',
-      status: 'pending'
-    });
-    await application.save();
+    let application = await PartnerApplication.findOne({ email: email.toLowerCase().trim() });
+    if (application) {
+      application.fullName = fullName;
+      application.phone = phone;
+      application.partnerType = partnerType || application.partnerType;
+      application.propertyName = propertyName || application.propertyName;
+      application.propertyType = propertyType || application.propertyType;
+      application.price = price || application.price;
+      application.city = city || application.city;
+      application.message = message || application.message;
+      await application.save();
+    } else {
+      application = new PartnerApplication({
+        fullName,
+        email: email.toLowerCase().trim(),
+        phone,
+        partnerType: partnerType || 'Property Owner',
+        propertyName: propertyName || 'N/A',
+        propertyType: propertyType || 'Villa',
+        price: price || '',
+        city: city || 'Mahabaleshwar',
+        govtId: govtId || '',
+        experience: experience || '',
+        services: services || '',
+        message: message || '',
+        status: 'pending'
+      });
+      await application.save();
+    }
 
     if ((partnerType === 'Property Owner' || partnerType === 'Villa Host') && propertyName && propertyName !== 'N/A') {
       try {
@@ -146,9 +159,66 @@ router.put('/partner-application/:id/status', auth, adminAuth, async (req, res) 
       application = { _id: id, status };
     }
     
+    let approvedUser = null;
+    // Create/Enable Owner Credentials IF AND ONLY IF Admin accepted the matching email
+    if (status === 'approved' && application && application.email) {
+      try {
+        approvedUser = await User.findOne({ email: application.email.toLowerCase().trim() });
+        if (!approvedUser) {
+          const bcrypt = require('bcryptjs');
+          const salt = await bcrypt.genSalt(10);
+          const hashedPassword = await bcrypt.hash('owner123', salt);
+          approvedUser = new User({
+            name: application.fullName,
+            email: application.email.toLowerCase().trim(),
+            phone: application.phone || '',
+            password: hashedPassword,
+            role: 'owner'
+          });
+          await approvedUser.save();
+          console.log(`Created new owner credentials for accepted email: ${application.email}`);
+        } else {
+          approvedUser.role = 'owner';
+          await approvedUser.save();
+          console.log(`Updated user role to owner for accepted email: ${application.email}`);
+        }
+      } catch (userErr) {
+        console.error('Error creating owner credentials for accepted email:', userErr);
+      }
+    }
+
     if (application && application.propertyName && application.propertyName !== 'N/A') {
       try {
-        await Property.updateMany({ name: application.propertyName }, { status });
+        const parseUserPrice = (val, fallback = 10000) => {
+          if (val === undefined || val === null || val === '') return fallback;
+          if (typeof val === 'number') return isNaN(val) || val <= 0 ? fallback : val;
+          const num = parseInt(val.toString().replace(/[^0-9]/g, ''), 10);
+          return isNaN(num) || num <= 0 ? fallback : num;
+        };
+
+        let prop = await Property.findOne({ name: application.propertyName });
+        const numericPrice = parseUserPrice(application.price, 10000);
+        if (prop) {
+          prop.status = status;
+          if (approvedUser) prop.owner = approvedUser._id;
+          if (numericPrice) prop.price = numericPrice;
+          await prop.save();
+        } else if (status === 'approved') {
+          prop = new Property({
+            name: application.propertyName,
+            type: application.propertyType || 'Villa',
+            location: application.city || 'Mahabaleshwar',
+            price: numericPrice,
+            mapLink: application.mapLink || '',
+            amenities: ['Private Pool', 'Valley View', 'Wi-Fi', 'Garden'],
+            photos: application.photos || [],
+            videos: application.videos || [],
+            status: 'approved',
+            owner: approvedUser ? approvedUser._id : undefined
+          });
+          await prop.save();
+          console.log(`Created and approved new property record for Explore Stays: ${application.propertyName}`);
+        }
       } catch (pErr) {
         console.error('Error syncing property status:', pErr);
       }
@@ -211,7 +281,29 @@ router.put('/property/:id/status', auth, adminAuth, async (req, res) => {
     const { status } = req.body;
     const id = req.params.id;
     if (id.startsWith('dummy-')) return res.json({ _id: id, status });
-    const property = await Property.findByIdAndUpdate(id, { status }, { new: true });
+
+    let property = await Property.findByIdAndUpdate(id, { status }, { new: true });
+
+    if (!property) {
+      const partnerApp = await PartnerApplication.findByIdAndUpdate(id, { status }, { new: true });
+      if (partnerApp && partnerApp.propertyName && partnerApp.propertyName !== 'N/A') {
+        const approvedUser = await User.findOne({ email: (partnerApp.email || '').toLowerCase().trim() });
+        property = new Property({
+          name: partnerApp.propertyName,
+          type: partnerApp.propertyType || 'Villa',
+          location: partnerApp.city || 'Mahabaleshwar',
+          price: partnerApp.price ? (typeof partnerApp.price === 'number' ? partnerApp.price : parseInt(partnerApp.price) || 12000) : 12000,
+          mapLink: partnerApp.mapLink || '',
+          amenities: ['Private Pool', 'Valley View', 'Wi-Fi', 'Garden'],
+          photos: partnerApp.photos || [],
+          videos: partnerApp.videos || [],
+          status: status,
+          owner: approvedUser ? approvedUser._id : undefined
+        });
+        await property.save();
+      }
+    }
+
     res.json(property || { _id: id, status });
   } catch (err) {
     res.json({ _id: req.params.id, status: req.body.status });

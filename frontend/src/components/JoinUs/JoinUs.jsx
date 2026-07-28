@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import './JoinUs.css';
@@ -7,12 +7,25 @@ import bgImage from '../../assets/hillstationhome (1).jpg';
 import { API_BASE_URL } from '../../config';
 
 const JoinUs = () => {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [livePartners, setLivePartners] = useState([]);
 
   useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        if (u && (u.role === 'user' || u.role === 'traveller')) {
+          navigate('/dashboard');
+          return;
+        }
+      } catch (err) {
+        console.warn('User JSON parse error:', err);
+      }
+    }
     fetchLivePartners();
-  }, []);
+  }, [navigate]);
 
   const fetchLivePartners = async () => {
     try {
@@ -109,20 +122,22 @@ const JoinUs = () => {
     }
   ];
 
-  // Combine live partners from DB if available
-  const mappedLivePartners = livePartners.map((lp, idx) => ({
-    id: lp._id || `live-${idx}`,
-    type: lp.partnerType === 'Caretaker' ? 'caretaker' : 'owner',
-    name: lp.fullName,
-    role: lp.partnerType === 'Caretaker' ? 'Certified Caretaker' : 'Verified Property Owner',
-    property: lp.propertyName && lp.propertyName !== 'N/A' ? lp.propertyName : (lp.partnerType === 'Caretaker' ? 'Assigned Villa' : 'Mahabaleshwar Stay'),
-    location: lp.city || 'Mahabaleshwar',
-    rating: '5.0 ★',
-    experience: lp.experience || 'Verified Partner',
-    badge: lp.status === 'approved' ? 'Verified Member' : 'Pending Verification',
-    avatarColor: lp.partnerType === 'Caretaker' ? '#52b788' : '#d4af37',
-    bio: lp.message || (lp.partnerType === 'Caretaker' ? 'Certified caretaker for luxury stays in Mahabaleshwar.' : 'Verified property host in Mahabaleshwar.')
-  }));
+  // Combine live partners from DB if available (Approved by Admin only)
+  const mappedLivePartners = livePartners
+    .filter(lp => !lp.status || lp.status === 'approved')
+    .map((lp, idx) => ({
+      id: lp._id || `live-${idx}`,
+      type: lp.partnerType === 'Caretaker' ? 'caretaker' : 'owner',
+      name: lp.fullName,
+      role: lp.partnerType === 'Caretaker' ? 'Certified Caretaker' : 'Verified Property Owner',
+      property: lp.propertyName && lp.propertyName !== 'N/A' ? lp.propertyName : (lp.partnerType === 'Caretaker' ? 'Assigned Villa' : 'Mahabaleshwar Stay'),
+      location: lp.city || 'Mahabaleshwar',
+      rating: '5.0 ★',
+      experience: lp.experience || 'Verified Partner',
+      badge: 'Approved Host',
+      avatarColor: lp.partnerType === 'Caretaker' ? '#52b788' : '#d4af37',
+      bio: lp.message || (lp.partnerType === 'Caretaker' ? 'Certified caretaker for luxury stays in Mahabaleshwar.' : 'Verified property host in Mahabaleshwar.')
+    }));
 
   const allPartners = [...defaultPartners, ...mappedLivePartners];
 
@@ -265,7 +280,9 @@ const JoinUs = () => {
 
                   <div className="card-footer-info">
                     <span className="exp-badge"><i className="fa-solid fa-award"></i> {partner.experience}</span>
-                    <span className="status-verify"><i className="fa-solid fa-circle-check"></i> Verified</span>
+                    <span className="status-verify" style={{ background: 'rgba(82, 183, 136, 0.18)', color: '#52b788', border: '1px solid #52b788', padding: '4px 10px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <i className="fa-solid fa-circle-check" style={{ color: '#d4af37' }}></i> Approved & Verified
+                    </span>
                   </div>
                 </div>
               </div>

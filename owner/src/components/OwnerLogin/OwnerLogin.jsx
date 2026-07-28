@@ -11,6 +11,7 @@ const OwnerLogin = () => {
     phone: '',
     password: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -131,13 +132,21 @@ const OwnerLogin = () => {
             <div className="input-with-icon">
               <i className="fa-solid fa-lock"></i>
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 name="password" 
                 value={formData.password} 
                 onChange={handleChange} 
                 placeholder="••••••••" 
                 required 
               />
+              <button 
+                type="button" 
+                className="toggle-password-btn" 
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? "Hide Password" : "Show Password"}
+              >
+                <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+              </button>
             </div>
           </div>
 

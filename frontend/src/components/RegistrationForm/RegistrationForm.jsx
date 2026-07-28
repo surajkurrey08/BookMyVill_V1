@@ -29,22 +29,28 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
 
   const validateField = (name, value, currentPhotos) => {
     switch (name) {
-      case 'name':
-        if (!value || value.trim().length < 3) {
+      case 'name': {
+        const trimmedName = (value || '').trim();
+        if (!trimmedName || trimmedName.length < 3) {
           return 'Owner full name is required for verification (minimum 3 characters).';
         }
+        if (/\d/.test(trimmedName) || !/^[a-zA-Z\s.'-]+$/.test(trimmedName)) {
+          return 'Owner full name cannot contain numbers or numeric digits. Please enter alphabetic letters only.';
+        }
         break;
+      }
       case 'email':
         if (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
           return 'Please enter a valid email address (e.g. owner@example.com).';
         }
         break;
-      case 'phone':
+      case 'phone': {
         const digits = (value || '').replace(/\D/g, '');
         if (!value || digits.length < 10) {
           return 'Contact phone number must contain at least 10 digits.';
         }
         break;
+      }
       case 'propertyName':
         if (!value || value.trim().length < 3) {
           return 'Property / Villa name is required for verification.';
@@ -173,6 +179,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
     const token = localStorage.getItem('token');
 
     try {
+      const cleanPrice = formData.price ? parseInt(formData.price.toString().replace(/[^0-9]/g, ''), 10) : 10000;
       const payload = {
         fullName: formData.name,
         email: formData.email,
@@ -181,9 +188,11 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
         propertyName: formData.propertyName,
         propertyType: formData.propertyType,
         city: formData.location,
-        price: formData.price,
+        price: isNaN(cleanPrice) || cleanPrice <= 0 ? 10000 : cleanPrice,
         mapLink: formData.mapLink,
-        message: formData.description
+        message: formData.description,
+        photos: formData.photos,
+        videos: formData.videos
       };
 
       // 1. Submit for Partner / Security Admin Approval
@@ -214,7 +223,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
             name: formData.propertyName,
             type: formData.propertyType,
             location: formData.location,
-            price: formData.price ? parseInt(formData.price) : 12000,
+            price: isNaN(cleanPrice) || cleanPrice <= 0 ? 10000 : cleanPrice,
             mapLink: formData.mapLink,
             amenities: formData.amenities || [],
             photos: formData.photos,
@@ -224,20 +233,11 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
         });
       }
 
-      const data = await resPartner.json();
-      if (data.token && data.user) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-
-      setSubmittedMsg('Listing submitted successfully! Moving directly into your Property Owner Dashboard...');
-      
-      setTimeout(() => {
-        window.location.href = 'http://localhost:5175/dashboard';
-      }, 800);
+      // Do NOT set tokens or log in unauthenticated users without password creation and admin approval
+      setSubmittedMsg('Property listing submitted successfully! Your application is currently pending Admin Approval. Once the Admin accepts your property, you will be able to set your password and log in to the Property Owner Portal.');
     } catch (err) {
       console.error('Registration error:', err);
-      window.location.href = 'http://localhost:5175/dashboard';
+      setSubmittedMsg('Property listing submitted successfully! Your application is currently pending Admin Approval. Once the Admin accepts your property, you will be able to log in.');
     } finally {
       setIsSubmitting(false);
     }

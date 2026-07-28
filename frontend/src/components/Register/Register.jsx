@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../SignIn/SignIn.css';
 import { API_BASE_URL } from '../../config';
 
@@ -16,10 +16,23 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Clear old user session credentials for fresh user creation
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+
+    const trimmedName = (formData.name || '').trim();
+    if (/\d/.test(trimmedName) || !/^[a-zA-Z\s.'-]+$/.test(trimmedName)) {
+      setErrorMsg('Full name cannot contain numbers or numeric digits. Please enter alphabetic letters only.');
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setErrorMsg('Passwords do not match. Please re-enter your password.');
@@ -43,7 +56,8 @@ const Register = () => {
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/dashboard');
+        const destination = location.state?.from || '/';
+        navigate(destination, { state: { property: location.state?.property } });
       } else {
         setErrorMsg(data.msg || data.error || 'Registration failed');
       }

@@ -3,6 +3,13 @@ const router = express.Router();
 const PartnerApplication = require('../models/PartnerApplication');
 const Property = require('../models/Property');
 
+const parseUserPrice = (val, fallback = 10000) => {
+  if (val === undefined || val === null || val === '') return fallback;
+  if (typeof val === 'number') return isNaN(val) || val <= 0 ? fallback : val;
+  const num = parseInt(val.toString().replace(/[^0-9]/g, ''), 10);
+  return isNaN(num) || num <= 0 ? fallback : num;
+};
+
 const handleApply = async (req, res) => {
   try {
     const { 
@@ -24,24 +31,42 @@ const handleApply = async (req, res) => {
       return res.status(400).json({ msg: 'Full name, email, and phone number are required.' });
     }
 
-    // 1. Save Partner Application in DB
-    const application = new PartnerApplication({
-      fullName,
-      email,
-      phone,
-      partnerType: partnerType || 'Property Owner',
-      propertyName: propertyName || 'N/A',
-      propertyType: propertyType || 'Villa',
-      price: price || '',
-      city: city || 'Mahabaleshwar',
-      govtId: govtId || '',
-      experience: experience || '',
-      services: services || '',
-      message: message || '',
-      status: 'pending'
-    });
+    if (/\d/.test(fullName.trim()) || !/^[a-zA-Z\s.'-]+$/.test(fullName.trim())) {
+      return res.status(400).json({ msg: 'Property owner name cannot contain numbers. Please enter alphabetic letters only.' });
+    }
 
-    await application.save();
+    const numericPrice = parseUserPrice(price, 10000);
+
+    // 1. Check if an application with this email already exists and update it
+    let application = await PartnerApplication.findOne({ email: email.toLowerCase().trim() });
+    if (application) {
+      application.fullName = fullName;
+      application.phone = phone;
+      application.partnerType = partnerType || application.partnerType;
+      application.propertyName = propertyName || application.propertyName;
+      application.propertyType = propertyType || application.propertyType;
+      application.price = price ? numericPrice : application.price;
+      application.city = city || application.city;
+      application.message = message || application.message;
+      await application.save();
+    } else {
+      application = new PartnerApplication({
+        fullName,
+        email: email.toLowerCase().trim(),
+        phone,
+        partnerType: partnerType || 'Property Owner',
+        propertyName: propertyName || 'N/A',
+        propertyType: propertyType || 'Villa',
+        price: numericPrice,
+        city: city || 'Mahabaleshwar',
+        govtId: govtId || '',
+        experience: experience || '',
+        services: services || '',
+        message: message || '',
+        status: 'pending'
+      });
+      await application.save();
+    }
 
     // 2. If Property Owner, also create a pending Property record in DB
     if ((partnerType === 'Property Owner' || partnerType === 'Villa Host') && propertyName && propertyName !== 'N/A') {
@@ -50,7 +75,7 @@ const handleApply = async (req, res) => {
           name: propertyName,
           type: propertyType || 'Villa',
           location: city || 'Mahabaleshwar',
-          price: price ? parseInt(price) : 12000,
+          price: numericPrice,
           photos: [],
           videos: [],
           status: 'pending'
@@ -61,32 +86,9 @@ const handleApply = async (req, res) => {
       }
     }
 
-    // 3. Auto-create/upgrade host User account and generate token
-    const User = require('../models/User');
-    const jwt = require('jsonwebtoken');
-    let user = await User.findOne({ email });
-
-    if (!user) {
-      user = new User({
-        name: fullName,
-        email,
-        phone: phone || '',
-        password: req.body.password || 'owner123',
-        role: 'owner'
-      });
-      await user.save();
-    } else if (user.role !== 'owner' && user.role !== 'admin') {
-      user.role = 'owner';
-      await user.save();
-    }
-
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
-
     res.status(201).json({ 
-      msg: 'Application submitted successfully! Redirecting to Owner Portal...', 
-      application,
-      token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      msg: 'Property application submitted successfully! Your credentials will be created once the Admin accepts your property matching your email address.', 
+      application
     });
   } catch (err) {
     console.error('Partner application error:', err);

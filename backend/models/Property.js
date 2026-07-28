@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const PropertySchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   name: { type: String, required: true },
-  type: { type: String, enum: ['Villa', 'Hotel', 'Cabin', 'Resort'], default: 'Villa' },
+  type: { type: String, default: 'Villa' },
   location: { type: String, required: true },
   price: { type: Number, default: 10000 },
   mapLink: { type: String, default: '' },
