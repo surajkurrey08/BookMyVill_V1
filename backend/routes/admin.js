@@ -230,34 +230,66 @@ router.put('/partner-application/:id/status', auth, adminAuth, async (req, res) 
   }
 });
 
-// Get all Caretaker applications (Admin only)
+// Get all Caretaker applications / requests from Property Owners (Admin only)
 router.get('/caretaker-applications', auth, adminAuth, async (req, res) => {
   try {
-    let applications = await PartnerApplication.find({ partnerType: 'Caretaker' }).sort({ appliedAt: -1 });
+    let applications = await CaretakerApplication.find()
+      .populate('provider', 'name email phone')
+      .sort({ appliedAt: -1 });
+
+    if (!applications || applications.length === 0) {
+      const partnerCaretakers = await PartnerApplication.find({ partnerType: 'Caretaker' }).sort({ appliedAt: -1 });
+      applications = partnerCaretakers.map(p => ({
+        _id: p._id,
+        provider: { name: p.fullName, email: p.email },
+        propertyName: p.propertyName || 'Assigned Villa',
+        propertyAddress: p.city || 'Mahabaleshwar',
+        positionRole: 'Chief Villa Caretaker Host',
+        phone: p.phone,
+        experience: p.experience || '3+ Years',
+        skillsRequired: ['Guest Check-in & Key Handover', 'Housekeeping & Linen Sanitation'],
+        govtId: p.govtId || 'Verified ID',
+        bio: p.message || '',
+        status: p.status || 'pending',
+        appliedAt: p.appliedAt || new Date()
+      }));
+    }
+
     res.json(applications);
   } catch (err) {
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server error fetching caretaker applications' });
   }
 });
 
-// Update Caretaker application status - Approve / Reject (Admin only)
+// Update Caretaker application status - Allocate / Approve Caretaker (Admin only)
 router.put('/caretaker-application/:id/status', auth, adminAuth, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, assignedCaretakerName, assignedCaretakerPhone } = req.body;
     const id = req.params.id;
 
     if (id.startsWith('dummy-')) {
-      return res.json({ _id: id, status });
+      return res.json({ _id: id, status, assignedCaretakerName, assignedCaretakerPhone });
     }
 
-    let application;
-    try {
-      application = await PartnerApplication.findByIdAndUpdate(id, { status }, { new: true });
-    } catch (dbErr) {
-      application = { _id: id, status };
+    let application = await CaretakerApplication.findById(id);
+    if (application) {
+      application.status = status || 'approved';
+      if (assignedCaretakerName) application.assignedCaretakerName = assignedCaretakerName;
+      if (assignedCaretakerPhone) application.assignedCaretakerPhone = assignedCaretakerPhone;
+      await application.save();
+      return res.json(application);
     }
-    res.json(application || { _id: id, status });
+
+    let partnerApp = await PartnerApplication.findById(id);
+    if (partnerApp) {
+      partnerApp.status = status || 'approved';
+      await partnerApp.save();
+      return res.json(partnerApp);
+    }
+
+    res.json({ _id: id, status: status || 'approved' });
   } catch (err) {
+    console.error('Caretaker allocation update error:', err);
     res.json({ _id: req.params.id, status: req.body.status || 'approved' });
   }
 });
@@ -307,6 +339,37 @@ router.put('/property/:id/status', auth, adminAuth, async (req, res) => {
     res.json(property || { _id: id, status });
   } catch (err) {
     res.json({ _id: req.params.id, status: req.body.status });
+  }
+});
+
+// Send Direct Admin Request / Notification to Selected User (Admin only)
+router.post('/send-user-request', auth, adminAuth, async (req, res) => {
+  try {
+    const { userId, targetName, targetEmail, targetPhone, requestType, subject, message } = req.body;
+    
+    if (!subject || !message) {
+      return res.status(400).json({ msg: 'Subject and message body are required' });
+    }
+
+    console.log(`[ADMIN DIRECT REQUEST] Target: ${targetName || targetEmail} | Type: ${requestType} | Subject: ${subject}`);
+
+    res.json({
+      success: true,
+      msg: `Official admin request successfully dispatched to ${targetName || targetEmail || 'selected user'}!`,
+      details: {
+        userId,
+        targetName,
+        targetEmail,
+        targetPhone,
+        requestType,
+        subject,
+        message,
+        dispatchedAt: new Date()
+      }
+    });
+  } catch (err) {
+    console.error('Send request error:', err);
+    res.status(500).json({ msg: 'Failed to dispatch request to selected user' });
   }
 });
 

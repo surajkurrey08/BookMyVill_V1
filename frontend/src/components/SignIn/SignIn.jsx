@@ -8,11 +8,13 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg('');
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
@@ -26,11 +28,11 @@ const SignIn = () => {
         const destination = location.state?.from || '/';
         navigate(destination, { state: { property: location.state?.property } });
       } else {
-        alert(data.msg || 'Login failed');
+        setErrorMsg(data.msg || 'Login failed');
       }
     } catch (err) {
       console.error('Login error:', err);
-      alert('Connection to server failed');
+      setErrorMsg('Connection to server failed');
     }
   };
 
@@ -99,6 +101,24 @@ const SignIn = () => {
           }}>
             <i className="fa-solid fa-user-lock" style={{ color: '#d4af37', fontSize: '1.1rem' }}></i>
             Please sign in to proceed with your hotel booking
+          </div>
+        {errorMsg && (
+          <div style={{
+            background: 'rgba(239, 71, 111, 0.18)',
+            border: '1px solid #ef476f',
+            color: '#ff6b6b',
+            padding: '12px 18px',
+            borderRadius: '14px',
+            marginBottom: '20px',
+            fontSize: '0.88rem',
+            fontWeight: '600',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}>
+            <i className="fa-solid fa-circle-exclamation"></i> {errorMsg}
           </div>
         )}
 

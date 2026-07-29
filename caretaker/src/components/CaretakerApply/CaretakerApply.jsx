@@ -56,13 +56,33 @@ const CaretakerApply = () => {
     let error = '';
     const trimmed = (value || '').trim();
 
-    if (name === 'fullName' && !trimmed) error = 'Full Name is required.';
-    if (name === 'email' && !trimmed) error = 'Email Address is required.';
+    if (name === 'fullName') {
+      if (!trimmed) {
+        error = 'Full Name is required.';
+      } else if (/\d/.test(trimmed)) {
+        error = 'Full Name cannot contain numbers or numeric digits. Please enter alphabetic letters only.';
+      } else if (!/^[a-zA-Z\s.'-]+$/.test(trimmed)) {
+        error = 'Full Name can only contain letters, spaces, and hyphens/dots.';
+      } else if (trimmed.length < 2) {
+        error = 'Full Name must be at least 2 characters.';
+      }
+    }
+
+    if (name === 'email') {
+      if (!trimmed) {
+        error = 'Email Address is required.';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        error = 'Please enter a valid email address (e.g. name@example.com).';
+      }
+    }
 
     if (name === 'phone') {
-      const cleanPhone = trimmed.replace(/[\s-]/g, '');
-      if (!cleanPhone) error = 'Contact Phone Number is required.';
-      else if (!/^\+?[0-9]{10,12}$/.test(cleanPhone)) error = 'Please enter a valid 10 to 12 digit phone number.';
+      const cleanPhone = trimmed.replace(/\D/g, '');
+      if (!cleanPhone) {
+        error = 'Contact Phone Number is required.';
+      } else if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+        error = 'Please enter a valid 10-digit mobile phone number starting with 6, 7, 8, or 9.';
+      }
     }
 
     if (name === 'govtId') {
@@ -139,7 +159,7 @@ const CaretakerApply = () => {
         setErrors({});
         if (token) fetchMyApplications(token);
       } else {
-        alert(data.msg || 'Submission failed');
+        setErrors({ general: data.msg || 'Submission failed' });
       }
     } catch (err) {
       setSuccessMsg('🎉 Caretaker Security Verification Form Submitted! Status: 🟡 PENDING ADMIN VERIFICATION');
@@ -202,18 +222,35 @@ const CaretakerApply = () => {
           )}
 
           <form onSubmit={handleSubmit} noValidate>
-            <div className="caretaker-field-group">
-              <label className="caretaker-label">
-                <span><i className="fa-solid fa-user caretaker-icon"></i> Caretaker Full Name *</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Enter full legal name"
-                value={form.fullName}
-                onChange={(e) => handleChange('fullName', e.target.value)}
-                className={`caretaker-input ${errors.fullName ? 'has-error' : ''}`}
-              />
-              {errors.fullName && <div className="error-msg">{errors.fullName}</div>}
+            {/* Mid-Size 2-Column Form Grid */}
+            <div className="form-grid-2">
+              <div className="caretaker-field-group">
+                <label className="caretaker-label">
+                  <span><i className="fa-solid fa-user caretaker-icon"></i> Caretaker Full Name *</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter full legal name"
+                  value={form.fullName}
+                  onChange={(e) => handleChange('fullName', e.target.value)}
+                  className={`caretaker-input ${errors.fullName ? 'has-error' : ''}`}
+                />
+                {errors.fullName && <div className="error-msg">{errors.fullName}</div>}
+              </div>
+
+              <div className="caretaker-field-group">
+                <label className="caretaker-label">
+                  <span><i className="fa-solid fa-phone caretaker-icon"></i> Contact Mobile *</span>
+                </label>
+                <input
+                  type="tel"
+                  placeholder="+91 9876543210"
+                  value={form.phone}
+                  onChange={(e) => handleChange('phone', e.target.value)}
+                  className={`caretaker-input ${errors.phone ? 'has-error' : ''}`}
+                />
+                {errors.phone && <div className="error-msg">{errors.phone}</div>}
+              </div>
             </div>
 
             <div className="form-grid-2">
@@ -233,37 +270,23 @@ const CaretakerApply = () => {
 
               <div className="caretaker-field-group">
                 <label className="caretaker-label">
-                  <span><i className="fa-solid fa-phone caretaker-icon"></i> Contact Phone *</span>
-                </label>
-                <input
-                  type="tel"
-                  placeholder="+91 9876543210"
-                  value={form.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  className={`caretaker-input ${errors.phone ? 'has-error' : ''}`}
-                />
-                {errors.phone && <div className="error-msg">{errors.phone}</div>}
-              </div>
-            </div>
-
-            <div className="form-grid-3">
-              <div className="caretaker-field-group">
-                <label className="caretaker-label">
-                  <span><i className="fa-solid fa-id-card caretaker-icon"></i> ID Proof *</span>
+                  <span><i className="fa-solid fa-id-card caretaker-icon"></i> Government ID Proof *</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Enter ID Proof Number"
+                  placeholder="Enter Aadhaar / PAN / License No."
                   value={form.govtId}
                   onChange={(e) => handleChange('govtId', e.target.value)}
                   className={`caretaker-input ${errors.govtId ? 'has-error' : ''}`}
                 />
                 {errors.govtId && <div className="error-msg">{errors.govtId}</div>}
               </div>
+            </div>
 
+            <div className="form-grid-2">
               <div className="caretaker-field-group">
                 <label className="caretaker-label">
-                  <span><i className="fa-solid fa-briefcase caretaker-icon"></i> Experience</span>
+                  <span><i className="fa-solid fa-briefcase caretaker-icon"></i> Experience Level</span>
                 </label>
                 <select
                   value={form.experience}
@@ -308,11 +331,11 @@ const CaretakerApply = () => {
 
             <div className="caretaker-field-group">
               <label className="caretaker-label">
-                <span><i className="fa-solid fa-align-left caretaker-icon"></i> Caretaker Background & Experience Details *</span>
+                <span><i className="fa-solid fa-pen-to-square caretaker-icon"></i> Caretaker Proposal & Background Details *</span>
               </label>
               <textarea
-                rows="4"
-                placeholder="Share details about past villa management background, residential address, culinary skills, and availability..."
+                rows="3"
+                placeholder="Describe your property host experience, previous stay management, key capabilities..."
                 value={form.bio}
                 onChange={(e) => handleChange('bio', e.target.value)}
                 className={`caretaker-textarea ${errors.bio ? 'has-error' : ''}`}

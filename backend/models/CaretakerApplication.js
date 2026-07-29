@@ -11,12 +11,17 @@ const CaretakerApplicationSchema = new mongoose.Schema({
     ref: 'Property'
   },
   propertyName: { type: String, required: true },
+  propertyAddress: { type: String, default: 'Mahabaleshwar, Satara' },
+  positionRole: { type: String, default: 'Chief Villa Caretaker Host' },
   phone: { type: String, required: true },
   experience: { type: String, required: true },
+  skillsRequired: [{ type: String }],
   services: [{ type: String }],
   govtId: { type: String },
   bio: { type: String },
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
+  assignedCaretakerName: { type: String, default: '' },
+  assignedCaretakerPhone: { type: String, default: '' },
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   appliedAt: { type: Date, default: Date.now }
 });
 

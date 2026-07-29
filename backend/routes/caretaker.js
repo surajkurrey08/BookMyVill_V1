@@ -8,15 +8,18 @@ const Attendance = require('../models/Attendance');
 // Apply for Caretaker (Owners/Providers only)
 router.post('/apply', auth, async (req, res) => {
   try {
-    const { propertyId, propertyName, phone, experience, services, govtId, bio } = req.body;
+    const { propertyId, propertyName, propertyAddress, positionRole, phone, experience, skillsRequired, services, govtId, bio } = req.body;
 
     const application = new CaretakerApplication({
       provider: req.user.id,
       property: propertyId || null,
       propertyName: propertyName || 'All Managed Properties',
+      propertyAddress: propertyAddress || 'Mahabaleshwar, Satara',
+      positionRole: positionRole || 'Chief Villa Caretaker Host',
       phone: phone || 'N/A',
-      experience: experience || '3+ Years',
-      services: services || ['Guest Check-in', 'Maintenance'],
+      experience: experience || '3 - 5 Years',
+      skillsRequired: skillsRequired || (services || ['Guest Check-in & Key Handover']),
+      services: services || (skillsRequired || ['Guest Check-in & Key Handover']),
       govtId: govtId || '',
       bio: bio || '',
       status: 'pending' // Pending security approval by Admin
@@ -33,7 +36,10 @@ router.post('/apply', auth, async (req, res) => {
 // Get provider's caretaker applications
 router.get('/my-applications', auth, async (req, res) => {
   try {
-    const applications = await CaretakerApplication.find({ provider: req.user.id }).sort({ appliedAt: -1 });
+    let applications = await CaretakerApplication.find({ provider: req.user.id }).sort({ appliedAt: -1 });
+    if (!applications || applications.length === 0) {
+      applications = await CaretakerApplication.find().sort({ appliedAt: -1 });
+    }
     res.json(applications);
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });

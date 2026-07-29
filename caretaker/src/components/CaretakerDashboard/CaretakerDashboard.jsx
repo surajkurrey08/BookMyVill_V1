@@ -351,6 +351,19 @@ const CaretakerDashboard = () => {
     setTimeout(() => setWifiCopied(false), 3000);
   };
 
+  const openWhatsAppCaretakerToOwner = (contactName, contactPhone) => {
+    const caretakerName = profileData.name || user?.name || 'Suresh Patil';
+    const name = contactName || estateInfo.ownerName || 'Property Owner';
+    const phone = contactPhone || estateInfo.ownerPhone;
+    const propertyName = estateInfo.name || 'Royal Mist Villa Estate';
+
+    const msg = `Hello ${name},\n\nI am ${caretakerName}, your allocated caretaker for *${propertyName}*. Reaching out regarding estate management, maintenance and guest check-in updates.\n- Sent via Mahabaleshwar Caretaker Portal`;
+
+    let cleanPhone = phone.replace(/[^0-9]/g, '');
+    if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+    window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
   const completedCount = duties.filter(d => d.completed).length;
   const progressPercent = duties.length > 0 ? Math.round((completedCount / duties.length) * 100) : 0;
 
@@ -637,17 +650,40 @@ const CaretakerDashboard = () => {
 
                     <div className="emergency-contacts-list">
                       {estateInfo.emergencyContacts.map((contact, idx) => (
-                        <div key={idx} className="em-contact-item glass-subcard">
-                          <div className="em-icon">
-                            <i className={`fa-solid ${contact.icon}`}></i>
+                        <div key={idx} className="em-contact-item glass-subcard" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div className="em-icon">
+                              <i className={`fa-solid ${contact.icon}`}></i>
+                            </div>
+                            <div className="em-info">
+                              <span className="em-role">{contact.role}</span>
+                              <h4 className="em-name">{contact.name}</h4>
+                              <a href={`tel:${contact.phone}`} className="em-phone">
+                                <i className="fa-solid fa-phone"></i> {contact.phone}
+                              </a>
+                            </div>
                           </div>
-                          <div className="em-info">
-                            <span className="em-role">{contact.role}</span>
-                            <h4 className="em-name">{contact.name}</h4>
-                            <a href={`tel:${contact.phone}`} className="em-phone">
-                              <i className="fa-solid fa-phone"></i> {contact.phone}
-                            </a>
-                          </div>
+                          {contact.role === 'Property Owner' && (
+                            <button 
+                              onClick={() => openWhatsAppCaretakerToOwner(contact.name, contact.phone)}
+                              style={{
+                                background: '#25D366',
+                                color: '#ffffff',
+                                border: 'none',
+                                padding: '6px 14px',
+                                borderRadius: '18px',
+                                fontWeight: '800',
+                                fontSize: '0.78rem',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                boxShadow: '0 4px 10px rgba(37, 211, 102, 0.3)'
+                              }}
+                            >
+                              <i className="fa-brands fa-whatsapp"></i> WhatsApp Owner
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>

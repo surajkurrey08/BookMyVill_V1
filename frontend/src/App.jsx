@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Lenis from 'lenis';
 import Navbar from './components/Navbar/Navbar';
 import Hero from './components/Hero/Hero';
@@ -22,10 +22,125 @@ import ExploreStaysPage from './components/ExploreStays/ExploreStaysPage';
 import './App.css';
 import 'lenis/dist/lenis.css';
 
+const AccessRestrictedModal = ({ title, message }) => {
+  const navigate = useNavigate();
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '80vh',
+      backgroundColor: '#0b110f',
+      color: '#f2ece4',
+      textAlign: 'center',
+      padding: '40px 20px'
+    }}>
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.04)',
+        border: '1px solid rgba(212, 175, 55, 0.3)',
+        borderRadius: '24px',
+        padding: '40px 30px',
+        maxWidth: '520px',
+        width: '100%',
+        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)'
+      }}>
+        <div style={{
+          width: '70px',
+          height: '70px',
+          borderRadius: '50%',
+          background: 'rgba(239, 68, 68, 0.15)',
+          border: '1px solid rgba(239, 68, 68, 0.4)',
+          color: '#ef4444',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '2rem',
+          margin: '0 auto 20px auto'
+        }}>
+          <i className="fa-solid fa-user-lock"></i>
+        </div>
+
+        <span style={{
+          display: 'inline-block',
+          fontSize: '0.75rem',
+          fontWeight: '700',
+          color: '#d4af37',
+          letterSpacing: '2px',
+          textTransform: 'uppercase',
+          marginBottom: '8px'
+        }}>
+          Traveler Account Access Limit
+        </span>
+
+        <h2 style={{ fontFamily: 'Outfit, sans-serif', color: '#ffffff', marginBottom: '12px', fontSize: '1.6rem' }}>
+          {title || 'Restricted Portal Access'}
+        </h2>
+
+        <p style={{ color: '#a3b18a', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '28px' }}>
+          {message || 'Your account is registered as a Traveler / Guest User with limited access. Admin, Owner Host, and Caretaker Command Centers require partner credentials.'}
+        </p>
+
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <button 
+            onClick={() => navigate('/dashboard')}
+            style={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#ffffff',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '12px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <i className="fa-solid fa-suitcase"></i> Go to Guest Dashboard
+          </button>
+          <button 
+            onClick={() => navigate('/explore')}
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              color: '#ffffff',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              padding: '12px 20px',
+              borderRadius: '12px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              fontSize: '0.9rem'
+            }}
+          >
+            Explore Stays
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AdminRedirect = () => {
+  const userStr = localStorage.getItem('user');
+  let isTraveler = false;
+  if (userStr) {
+    try {
+      const u = JSON.parse(userStr);
+      if (u.role === 'user' || u.role === 'traveller') isTraveler = true;
+    } catch (e) {}
+  }
+
   useEffect(() => {
-    window.location.replace('http://localhost:5174');
-  }, []);
+    if (!isTraveler) {
+      window.location.replace('http://localhost:5174');
+    }
+  }, [isTraveler]);
+
+  if (isTraveler) {
+    return <AccessRestrictedModal title="Admin Command Center Restricted" message="Your account is registered as a Traveler / Guest user with limited access. Admin command access requires system administrator credentials." />;
+  }
+
   return (
     <div style={{
       display: 'flex',
@@ -50,9 +165,25 @@ const AdminRedirect = () => {
 };
 
 const OwnerRedirect = () => {
+  const userStr = localStorage.getItem('user');
+  let isTraveler = false;
+  if (userStr) {
+    try {
+      const u = JSON.parse(userStr);
+      if (u.role === 'user' || u.role === 'traveller') isTraveler = true;
+    } catch (e) {}
+  }
+
   useEffect(() => {
-    window.location.replace('http://localhost:5175');
-  }, []);
+    if (!isTraveler) {
+      window.location.replace('http://localhost:5175');
+    }
+  }, [isTraveler]);
+
+  if (isTraveler) {
+    return <AccessRestrictedModal title="Property Owner Portal Restricted" message="Your account is registered as a Traveler / Guest user with limited access. Host dashboard access requires approved property owner credentials." />;
+  }
+
   return (
     <div style={{
       display: 'flex',
@@ -74,6 +205,19 @@ const OwnerRedirect = () => {
       </p>
     </div>
   );
+};
+
+const ProtectedCaretakerDashboard = () => {
+  const userStr = localStorage.getItem('user');
+  if (userStr) {
+    try {
+      const u = JSON.parse(userStr);
+      if (u.role === 'user' || u.role === 'traveller') {
+        return <AccessRestrictedModal title="Caretaker Command Center Restricted" message="Your account is registered as a Traveler / Guest user with limited access. Caretaker dashboard access requires caretaker host credentials." />;
+      }
+    } catch (e) {}
+  }
+  return <CaretakerDashboard />;
 };
 
 const Home = () => {
@@ -137,7 +281,7 @@ function App() {
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/caretaker-apply" element={<CaretakerApply />} />
-          <Route path="/caretaker-dashboard" element={<CaretakerDashboard />} />
+          <Route path="/caretaker-dashboard" element={<ProtectedCaretakerDashboard />} />
           <Route path="/explore" element={<ExploreStaysPage />} />
           <Route path="/explore-stays" element={<ExploreStaysPage />} />
           <Route path="/packages" element={<Packages />} />

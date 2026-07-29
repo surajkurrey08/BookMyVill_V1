@@ -184,21 +184,39 @@
   font-style: italic;
 }
 
+/* Main Area Styles */
+.admin-main {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100vh;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
 /* Data Table Card Styles */
 .data-table-card {
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  padding: 10px;
+  padding: 0;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .table-responsive {
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
   width: 100%;
-  table-layout: auto;
+  min-width: 700px;
   border-collapse: collapse;
   text-align: left;
   font-family: var(--font-body);
@@ -237,9 +255,11 @@ tr:hover td {
 /* Summary Metrics Header Bar */
 .admin-metrics-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .metric-card {
@@ -248,12 +268,13 @@ tr:hover td {
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: 16px;
-  padding: 20px;
+  padding: 18px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   transition: transform 0.25s ease, border-color 0.25s ease;
+  min-width: 0;
 }
 
 .metric-card:hover {

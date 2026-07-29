@@ -27,6 +27,33 @@ const OwnerLogin = () => {
     setLoading(true);
     setError('');
 
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      setError('Please enter a valid email address (e.g. owner@example.com).');
+      setLoading(false);
+      return;
+    }
+
+    if (isRegistering) {
+      const trimmedName = (formData.name || '').trim();
+      if (!trimmedName || trimmedName.length < 2) {
+        setError('Full Name is required and must be at least 2 characters long.');
+        setLoading(false);
+        return;
+      }
+      if (/\d/.test(trimmedName) || !/^[a-zA-Z\s.'-]+$/.test(trimmedName)) {
+        setError('Full Name cannot contain numbers or numeric digits. Please enter alphabetic letters only.');
+        setLoading(false);
+        return;
+      }
+
+      const cleanPhone = (formData.phone || '').trim().replace(/\D/g, '');
+      if (!cleanPhone || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+        setError('Phone number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.');
+        setLoading(false);
+        return;
+      }
+    }
+
     const endpoint = isRegistering ? `${API_BASE_URL}/auth/register` : `${API_BASE_URL}/auth/login`;
     const payload = isRegistering 
       ? { ...formData, role: 'owner' } 

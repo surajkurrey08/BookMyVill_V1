@@ -493,6 +493,10 @@
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: capitalize;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .status-badge.approved, .status-pill.confirmed, .payment-pill.paid {

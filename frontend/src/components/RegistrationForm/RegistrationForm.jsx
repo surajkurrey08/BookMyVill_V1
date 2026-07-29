@@ -122,7 +122,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
       }
     } catch (err) {
       console.error('Error converting images:', err);
-      alert('Error processing images. Please try again.');
+      setErrors(prev => ({ ...prev, photos: 'Error processing image files. Please try another image.' }));
     }
   };
 
@@ -133,7 +133,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
       setFormData(prev => ({ ...prev, videos: [...prev.videos, ...base64Files] }));
     } catch (err) {
       console.error('Error converting video files:', err);
-      alert('Error processing video files. Please try again.');
+      setErrors(prev => ({ ...prev, videos: 'Error processing video files. Please try another video.' }));
     }
   };
 
@@ -283,11 +283,26 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
         
         <div className="registration-card glass-morphism fade-in" style={{ maxWidth: '850px', width: '100%' }}>
           <div style={{ marginBottom: '20px' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(212, 175, 55, 0.15)',
+              border: '1px solid rgba(212, 175, 55, 0.4)',
+              color: '#d4af37',
+              padding: '4px 12px',
+              borderRadius: '20px',
+              fontSize: '0.78rem',
+              fontWeight: '700',
+              marginBottom: '10px'
+            }}>
+              <i className="fa-solid fa-crown"></i> Property Owner Partner Account (Host Role)
+            </div>
             <h3 style={{ fontSize: '1.8rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '10px', margin: '0 0 6px 0' }}>
               <i className="fa-solid fa-hotel" style={{ color: '#d4af37' }}></i> Property Owner Listing Form
             </h3>
             <p style={{ color: 'rgba(255, 255, 255, 0.7)', margin: 0, fontSize: '0.92rem' }}>
-              List your villa, resort or hotel for admin security evaluation and verification.
+              List your villa, resort or hotel for admin security evaluation and property owner host verification.
             </p>
           </div>
 

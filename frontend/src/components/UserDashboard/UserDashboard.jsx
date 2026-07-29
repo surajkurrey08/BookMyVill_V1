@@ -24,6 +24,11 @@ const UserDashboard = () => {
     phone: '',
     bio: ''
   });
+  const [caretakerFormError, setCaretakerFormError] = useState('');
+  const [caretakerFormSuccess, setCaretakerFormSuccess] = useState('');
+  const [profileFormError, setProfileFormError] = useState('');
+  const [profileFormSuccess, setProfileFormSuccess] = useState('');
+  const [bookingNotice, setBookingNotice] = useState('');
   const [caretakerForm, setCaretakerForm] = useState({
     propertyName: '',
     phone: '',
@@ -66,7 +71,6 @@ const UserDashboard = () => {
 
   const handleAuthError = (resData, status) => {
     if (status === 401 || resData?.msg?.includes('token') || resData?.msg?.includes('authorization')) {
-      alert('Session expired. Please sign in again.');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       navigate('/signin');
@@ -176,26 +180,29 @@ const UserDashboard = () => {
       const data = await response.json();
       
       if (response.ok) {
-        alert('Booking cancelled successfully.');
+        setBookingNotice('Booking cancelled successfully.');
+        setTimeout(() => setBookingNotice(''), 4000);
         fetchBookings(selectedPropertyId, token);
       } else {
-        alert(data.msg || 'Cancellation failed.');
+        setBookingNotice(data.msg || 'Cancellation failed.');
       }
     } catch (err) {
       console.error('Cancellation error:', err);
-      alert('Network error. Please try again.');
+      setBookingNotice('Network error. Please try again.');
     }
   };
 
   const handleCaretakerSubmit = async (e) => {
     e.preventDefault();
+    setCaretakerFormError('');
+    setCaretakerFormSuccess('');
     const token = localStorage.getItem('token');
     if (!token) return;
 
     // Strict 10-digit Indian Mobile Validation
     const cleanPhone = (caretakerForm.phone || '').trim().replace(/\D/g, '');
     if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
-      alert('Contact Phone Number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.');
+      setCaretakerFormError('Contact Phone Number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.');
       return;
     }
 
@@ -204,29 +211,29 @@ const UserDashboard = () => {
     const cleanGovtId = (caretakerForm.govtId || '').trim();
 
     if (!cleanGovtId) {
-      alert(`${govtType} number/details are required.`);
+      setCaretakerFormError(`${govtType} number/details are required.`);
       return;
     }
 
     if (govtType === 'Aadhaar Card') {
       const cleanAadhaar = cleanGovtId.replace(/\D/g, '');
       if (!/^\d{12}$/.test(cleanAadhaar)) {
-        alert('Aadhaar Card number must be exactly 12 digits (e.g. 123456789012).');
+        setCaretakerFormError('Aadhaar Card number must be exactly 12 digits (e.g. 123456789012).');
         return;
       }
     } else if (govtType === 'PAN Card') {
       if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(cleanGovtId.toUpperCase())) {
-        alert('PAN Card must be 10 characters formatted as 5 letters + 4 digits + 1 letter (e.g. ABCDE1234F).');
+        setCaretakerFormError('PAN Card must be 10 characters formatted as 5 letters + 4 digits + 1 letter (e.g. ABCDE1234F).');
         return;
       }
     } else if (govtType === 'Driving License') {
       if (!/^[A-Z0-9]{10,16}$/i.test(cleanGovtId)) {
-        alert('Driving License number must be 10 to 16 alphanumeric characters (e.g. MH1220230012345).');
+        setCaretakerFormError('Driving License number must be 10 to 16 alphanumeric characters (e.g. MH1220230012345).');
         return;
       }
     } else if (govtType === 'Voter ID Card') {
       if (!/^[A-Z]{3}[0-9]{7}$/i.test(cleanGovtId)) {
-        alert('Voter ID Card format must be 3 letters followed by 7 digits (e.g. ABC1234567).');
+        setCaretakerFormError('Voter ID Card format must be 3 letters followed by 7 digits (e.g. ABC1234567).');
         return;
       }
     }
@@ -249,8 +256,11 @@ const UserDashboard = () => {
 
       const data = await response.json();
       if (response.ok) {
-        alert('Caretaker Application Submitted Successfully! Status: Certified Property Caretaker');
-        setShowCaretakerModal(false);
+        setCaretakerFormSuccess('Caretaker Application Submitted Successfully! Status: Certified Property Caretaker');
+        setTimeout(() => {
+          setCaretakerFormSuccess('');
+          setShowCaretakerModal(false);
+        }, 2500);
         setCaretakerForm({
           propertyName: '',
           phone: '',
@@ -262,10 +272,10 @@ const UserDashboard = () => {
         });
         fetchCaretakerApps(token);
       } else {
-        alert(data.msg || 'Application failed');
+        setCaretakerFormError(data.msg || 'Application failed');
       }
     } catch (err) {
-      alert('Network Error: Could not submit caretaker application');
+      setCaretakerFormError('Network Error: Could not submit caretaker application');
     }
   };
 
@@ -303,6 +313,8 @@ const UserDashboard = () => {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
+    setProfileFormError('');
+    setProfileFormSuccess('');
     const errors = validateProfileForm(profileForm);
     setProfileErrors(errors);
     if (Object.keys(errors).length > 0) return;
@@ -330,14 +342,20 @@ const UserDashboard = () => {
         const updatedUser = { ...user, name: data.name, phone: data.phone, bio: data.bio };
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
-        alert('Profile details updated successfully!');
-        setShowEditProfileModal(false);
+        setProfileFormSuccess('Profile details updated successfully!');
+        setTimeout(() => {
+          setProfileFormSuccess('');
+          setShowEditProfileModal(false);
+        }, 2000);
       } else {
-        alert(data.msg || 'Failed to update profile');
+        setProfileFormError(data.msg || 'Failed to update profile');
       }
     } catch (err) {
-      alert('Network Error: Could not update profile');
+      setProfileFormError('Network Error: Could not update profile');
     } finally {
+      setIsSavingProfile(false);
+    }
+  }; finally {
       setIsSavingProfile(false);
     }
   };

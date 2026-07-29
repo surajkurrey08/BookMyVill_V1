@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// Owner Dashboard Component - Mahabaleshwar Luxury Stays
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config';
 import './OwnerDashboard.css';
@@ -82,17 +83,34 @@ const OwnerDashboard = () => {
 
   // Caretaker Application State
   const [showCaretakerModal, setShowCaretakerModal] = useState(false);
+  const [viewingCaretakerApp, setViewingCaretakerApp] = useState(null);
   const [caretakerApps, setCaretakerApps] = useState([]);
   const [submittingCaretaker, setSubmittingCaretaker] = useState(false);
   const [caretakerForm, setCaretakerForm] = useState({
     propertyId: '',
     propertyName: '',
+    propertyAddress: '',
+    positionRole: 'Chief Villa Caretaker Host',
     phone: '',
-    experience: '3+ Years',
-    services: ['Guest Check-in', 'Maintenance', 'Housekeeping', '24/7 Security'],
+    experience: '3 - 5 Years',
+    skillsRequired: ['Guest Check-in & Key Handover', 'Housekeeping & Linen Sanitation', '24/7 Gate & Estate Security'],
+    govtIdType: 'Aadhaar Card',
     govtId: '',
     bio: ''
   });
+
+  const openWhatsAppOwnerToCaretaker = (app) => {
+    const caretakerPhone = app?.assignedCaretakerPhone || '+91 98901 23456';
+    const caretakerName = app?.assignedCaretakerName || 'Suresh Pawar (Certified Caretaker)';
+    const ownerName = user?.name || 'Property Owner';
+    const propertyName = app?.propertyName || 'Villa Estate';
+
+    const msg = `Hello ${caretakerName},\n\nI am ${ownerName}, owner of *${propertyName}*. Reaching out regarding caretaker services & property management.\n- Sent via Mahabaleshwar Owner Portal`;
+
+    let cleanPhone = caretakerPhone.replace(/[^0-9]/g, '');
+    if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+    window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`, '_blank');
+  };
 
   const fetchOwnerData = async (token) => {
     setLoading(true);
@@ -138,9 +156,15 @@ const OwnerDashboard = () => {
 
   const handleCaretakerSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
+    const rawToken = localStorage.getItem('token');
+    const token = rawToken ? rawToken.replace(/^["']|["']$/g, '').trim() : '';
     setError('');
     setActionSuccess('');
+
+    if (!token) {
+      setError('Session expired. Please sign in again to submit a caretaker application.');
+      return;
+    }
 
     // Strict 10-digit Indian Mobile Validation
     const cleanPhone = (caretakerForm.phone || '').trim().replace(/\D/g, '');
@@ -187,6 +211,7 @@ const OwnerDashboard = () => {
       const payload = {
         ...caretakerForm,
         phone: cleanPhone,
+        services: caretakerForm.skillsRequired || ['Guest Check-in', 'Maintenance'],
         govtId: `${govtType}: ${cleanGovtId.toUpperCase()}`
       };
 
@@ -194,7 +219,8 @@ const OwnerDashboard = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-auth-token': token
+          'x-auth-token': token,
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
@@ -319,14 +345,37 @@ const OwnerDashboard = () => {
     setError('');
     setActionSuccess('');
 
+    const trimmedPropName = (propertyForm.name || '').trim();
+    if (!trimmedPropName || trimmedPropName.length < 3) {
+      setError('Property / Villa Name is required and must be at least 3 characters.');
+      return;
+    }
+
+    const priceNum = Number(propertyForm.price);
+    if (!propertyForm.price || isNaN(priceNum) || priceNum <= 0) {
+      setError('Expected price per night must be a valid positive number (min ₹1).');
+      return;
+    }
+
+    if (propertyForm.mapLink && !/^(https?:\/\/)?([\w\d.-]+)+([\w\d\-._~:/?#[\]@!$&'()*+,;=.]+)?$/i.test(propertyForm.mapLink.trim())) {
+      setError('Please provide a valid Google Maps location link starting with http:// or https://');
+      return;
+    }
+
+    const photoList = Array.isArray(propertyForm.photos) ? propertyForm.photos : (propertyForm.photos ? propertyForm.photos.split(',').map(s => s.trim()).filter(Boolean) : []);
+    if (!photoList || photoList.length === 0) {
+      setError('At least 1 high-resolution property photo is required.');
+      return;
+    }
+
     const payload = {
-      name: propertyForm.name,
+      name: trimmedPropName,
       type: propertyForm.type,
       location: propertyForm.location,
       price: Math.max(1, Math.abs(parseInt(propertyForm.price) || 10000)),
       mapLink: propertyForm.mapLink || '',
       amenities: propertyForm.amenities || [],
-      photos: Array.isArray(propertyForm.photos) ? propertyForm.photos : (propertyForm.photos ? propertyForm.photos.split(',').map(s => s.trim()).filter(Boolean) : []),
+      photos: photoList,
       videos: propertyForm.videos ? (Array.isArray(propertyForm.videos) ? propertyForm.videos : propertyForm.videos.split(',').map(s => s.trim()).filter(Boolean)) : []
     };
 
@@ -430,10 +479,26 @@ const OwnerDashboard = () => {
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
-    setProfileSaving(true);
     setError('');
     setActionSuccess('');
 
+    const trimmedName = (profileForm.name || '').trim();
+    if (!trimmedName || trimmedName.length < 3) {
+      setError('Owner Name is required and must be at least 3 characters.');
+      return;
+    }
+    if (/\d/.test(trimmedName) || !/^[a-zA-Z\s.'-]+$/.test(trimmedName)) {
+      setError('Owner Name cannot contain numbers or digits. Please enter alphabetic letters only.');
+      return;
+    }
+
+    const cleanPhone = (profileForm.phone || '').trim().replace(/\D/g, '');
+    if (!cleanPhone || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+      setError('Phone number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.');
+      return;
+    }
+
+    setProfileSaving(true);
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE_URL}/auth/profile`, {
@@ -566,11 +631,6 @@ const OwnerDashboard = () => {
                 setShowAddModal(true);
               }}>
                 <i className="fa-solid fa-plus"></i> Add New Property
-              </button>
-            )}
-            {activeTab === 'caretakers' && (
-              <button className="btn-primary-gold" onClick={() => setShowCaretakerModal(true)}>
-                <i className="fa-solid fa-user-plus"></i> Apply for Caretaker
               </button>
             )}
           </div>
@@ -962,6 +1022,10 @@ const OwnerDashboard = () => {
                       </tbody>
                     </table>
                   </div>
+                )}
+              </div>
+            )}
+
             {/* TAB: CARETAKERS */}
             {activeTab === 'caretakers' && (
               <div className="tab-caretakers">
@@ -989,28 +1053,39 @@ const OwnerDashboard = () => {
                   <div className="empty-state-card glass-morphism">
                     <i className="fa-solid fa-user-shield"></i>
                     <h3>No Caretaker Applications Submitted</h3>
-                    <p>Apply for a dedicated property caretaker to manage check-ins, guest support, and property maintenance.</p>
-                    <button className="btn-primary-gold" onClick={() => setShowCaretakerModal(true)}>Apply for Caretaker Now</button>
+                    <p>Apply for a dedicated property caretaker using the '+ Request Caretaker Assignment' button above to manage check-ins, guest support, and property maintenance.</p>
                   </div>
                 ) : (
                   <div className="table-responsive glass-morphism" style={{ borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
                     <table className="custom-table">
                       <thead>
                         <tr>
-                          <th>Target Property</th>
-                          <th>Contact Phone</th>
-                          <th>Required Experience</th>
-                          <th>Requested Services</th>
-                          <th>Govt ID / Verification</th>
+                          <th>Property & Address</th>
+                          <th>Exact Position</th>
+                          <th>Phone</th>
+                          <th>Experience Required</th>
                           <th>Application Status</th>
                           <th>Applied Date</th>
+                          <th style={{ textAlign: 'center' }}>Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         {caretakerApps.map((app) => (
                           <tr key={app._id}>
                             <td>
-                              <strong style={{ color: '#fff', fontSize: '0.95rem' }}>{app.propertyName || 'All Managed Properties'}</strong>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <strong style={{ color: '#fff', fontSize: '0.95rem' }}>{app.propertyName || 'All Managed Properties'}</strong>
+                                <span style={{ color: '#94a3b8', fontSize: '0.8rem', marginTop: '2px' }}>
+                                  <i className="fa-solid fa-location-dot" style={{ color: '#d4af37', marginRight: '4px' }}></i>
+                                  {app.propertyAddress || app.city || 'Mahabaleshwar, Satara'}
+                                </span>
+                              </div>
+                            </td>
+                            <td>
+                              <span style={{ color: '#ffd700', fontWeight: '700', fontSize: '0.88rem' }}>
+                                <i className="fa-solid fa-user-tag" style={{ marginRight: '5px' }}></i>
+                                {app.positionRole || 'Chief Caretaker Host'}
+                              </span>
                             </td>
                             <td>
                               <span style={{ color: '#52b788', fontWeight: '700' }}><i className="fa-solid fa-phone" style={{ marginRight: '6px' }}></i>{app.phone}</span>
@@ -1019,22 +1094,57 @@ const OwnerDashboard = () => {
                               <span style={{ color: '#38bdf8', fontWeight: '600' }}>{app.experience}</span>
                             </td>
                             <td>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                {Array.isArray(app.services) && app.services.map((svc, i) => (
-                                  <span key={i} style={{ background: 'rgba(212, 175, 55, 0.15)', color: '#ffd700', border: '1px solid rgba(212, 175, 55, 0.3)', padding: '2px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700' }}>{svc}</span>
-                                ))}
-                              </div>
-                            </td>
-                            <td>
-                              <span style={{ color: '#cbd5e1', fontSize: '0.85rem' }}>{app.govtId || 'Provided'}</span>
-                            </td>
-                            <td>
-                              <span className={`status-pill ${app.status}`} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '800', textTransform: 'uppercase' }}>
+                              <span className={`status-pill ${app.status}`} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '800', textTransform: 'uppercase', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                                 {app.status === 'pending' ? '🟡 Pending Approval' : app.status === 'approved' ? '🟢 Caretaker Assigned' : app.status}
                               </span>
                             </td>
                             <td>
                               <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{new Date(app.appliedAt).toLocaleDateString('en-IN')}</span>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
+                                <button 
+                                  onClick={() => setViewingCaretakerApp(app)}
+                                  style={{
+                                    background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(179, 143, 40, 0.35) 100%)',
+                                    border: '1px solid #d4af37',
+                                    color: '#ffd700',
+                                    padding: '7px 14px',
+                                    borderRadius: '20px',
+                                    fontWeight: '700',
+                                    fontSize: '0.8rem',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    boxShadow: '0 4px 12px rgba(212, 175, 55, 0.2)'
+                                  }}
+                                >
+                                  <i className="fa-solid fa-eye"></i> View Details
+                                </button>
+                                {app.status === 'approved' && (
+                                  <button 
+                                    onClick={() => openWhatsAppOwnerToCaretaker(app)}
+                                    title="Chat with Allocated Caretaker on WhatsApp"
+                                    style={{
+                                      background: '#25D366',
+                                      color: '#ffffff',
+                                      border: 'none',
+                                      padding: '7px 14px',
+                                      borderRadius: '20px',
+                                      fontWeight: '800',
+                                      fontSize: '0.8rem',
+                                      cursor: 'pointer',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '5px',
+                                      boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)'
+                                    }}
+                                  >
+                                    <i className="fa-brands fa-whatsapp"></i> WhatsApp
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -1399,32 +1509,139 @@ const OwnerDashboard = () => {
             </div>
 
             <form onSubmit={handleCaretakerSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div className="form-group">
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Select Property for Caretaker Assignment</label>
-                <select 
-                  value={caretakerForm.propertyName}
-                  onChange={(e) => {
-                    const selectedProp = properties.find(p => p.name === e.target.value);
-                    setCaretakerForm({
-                      ...caretakerForm,
-                      propertyName: e.target.value,
-                      propertyId: selectedProp ? selectedProp._id : ''
-                    });
-                  }}
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
-                  required
-                >
-                  <option value="" style={{ background: '#1b262c', color: '#fff' }}>Select a Property...</option>
-                  <option value="All Managed Stays" style={{ background: '#1b262c', color: '#fff' }}>All My Managed Properties</option>
-                  {properties.map(p => (
-                    <option key={p._id} value={p.name} style={{ background: '#1b262c', color: '#fff' }}>{p.name} ({p.location})</option>
-                  ))}
-                </select>
-              </div>
-
+              
+              {/* Property Selection & Address */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div className="form-group">
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Host Contact Phone (10 Digits)</label>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
+                    <i className="fa-solid fa-hotel" style={{ marginRight: '6px' }}></i> Target Property Name *
+                  </label>
+                  <select 
+                    value={caretakerForm.propertyName}
+                    onChange={(e) => {
+                      const selectedProp = properties.find(p => p.name === e.target.value);
+                      setCaretakerForm({
+                        ...caretakerForm,
+                        propertyName: e.target.value,
+                        propertyId: selectedProp ? selectedProp._id : '',
+                        propertyAddress: selectedProp ? (selectedProp.location || 'Mahabaleshwar, Satara') : caretakerForm.propertyAddress
+                      });
+                    }}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                    required
+                  >
+                    <option value="" style={{ background: '#1b262c', color: '#fff' }}>Select a Property...</option>
+                    <option value="All Managed Stays" style={{ background: '#1b262c', color: '#fff' }}>All My Managed Properties</option>
+                    {properties.map(p => (
+                      <option key={p._id} value={p.name} style={{ background: '#1b262c', color: '#fff' }}>{p.name} ({p.location})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
+                    <i className="fa-solid fa-location-dot" style={{ marginRight: '6px' }}></i> Property Address / Location *
+                  </label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="e.g. Metgutad, Panchgani-Mahabaleshwar Highway"
+                    value={caretakerForm.propertyAddress}
+                    onChange={(e) => setCaretakerForm({ ...caretakerForm, propertyAddress: e.target.value })}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                  />
+                </div>
+              </div>
+
+              {/* Exact Position & Experience Required */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
+                    <i className="fa-solid fa-user-tag" style={{ marginRight: '6px' }}></i> Exact Position / Staff Role Required *
+                  </label>
+                  <select 
+                    value={caretakerForm.positionRole}
+                    onChange={(e) => setCaretakerForm({ ...caretakerForm, positionRole: e.target.value })}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                  >
+                    <option value="Chief Villa Caretaker Host" style={{ background: '#1b262c', color: '#fff' }}>Chief Villa Caretaker Host</option>
+                    <option value="Senior Estate Manager & Host" style={{ background: '#1b262c', color: '#fff' }}>Senior Estate Manager & Host</option>
+                    <option value="Housekeeping & Linen Supervisor" style={{ background: '#1b262c', color: '#fff' }}>Housekeeping & Linen Supervisor</option>
+                    <option value="Culinary Chef & Dining Host" style={{ background: '#1b262c', color: '#fff' }}>Culinary Chef & Dining Host</option>
+                    <option value="Maintenance & Electrical Technician" style={{ background: '#1b262c', color: '#fff' }}>Maintenance & Electrical Technician</option>
+                    <option value="Night Gate & Security Officer" style={{ background: '#1b262c', color: '#fff' }}>Night Gate & Security Officer</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
+                    <i className="fa-solid fa-award" style={{ marginRight: '6px' }}></i> Caretaker Experience Required *
+                  </label>
+                  <select 
+                    value={caretakerForm.experience}
+                    onChange={(e) => setCaretakerForm({ ...caretakerForm, experience: e.target.value })}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                  >
+                    <option value="1 - 3 Years" style={{ background: '#1b262c', color: '#fff' }}>1 - 3 Years (Junior Staff)</option>
+                    <option value="3 - 5 Years" style={{ background: '#1b262c', color: '#fff' }}>3 - 5 Years (Experienced Caretaker)</option>
+                    <option value="5+ Years" style={{ background: '#1b262c', color: '#fff' }}>5+ Years (Senior Villa Manager)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Required Skills Picker */}
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
+                  <i className="fa-solid fa-list-check" style={{ marginRight: '6px' }}></i> Required Skills & Duties (Click to toggle)
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
+                  {[
+                    'Guest Check-in & Key Handover',
+                    'Maharashtrian & Multi-cuisine Cooking',
+                    'Housekeeping & Linen Sanitation',
+                    'Pool Water Filtration & Chemical Check',
+                    'Diesel Generator & Electrical Maintenance',
+                    '24/7 Gate & Security Supervision'
+                  ].map(skill => {
+                    const isSelected = (caretakerForm.skillsRequired || []).includes(skill);
+                    return (
+                      <button
+                        type="button"
+                        key={skill}
+                        onClick={() => {
+                          const currentSkills = caretakerForm.skillsRequired || [];
+                          const newSkills = isSelected
+                            ? currentSkills.filter(s => s !== skill)
+                            : [...currentSkills, skill];
+                          setCaretakerForm({ ...caretakerForm, skillsRequired: newSkills });
+                        }}
+                        style={{
+                          background: isSelected ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.06)',
+                          border: isSelected ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.15)',
+                          color: isSelected ? '#10b981' : '#cbd5e1',
+                          padding: '6px 12px',
+                          borderRadius: '20px',
+                          fontSize: '0.8rem',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <i className={`fa-solid ${isSelected ? 'fa-circle-check' : 'fa-circle'}`}></i>
+                        {skill}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Contact Phone & Verification Details */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Host Phone (10 Digits)</label>
                   <input 
                     type="tel"
                     required
@@ -1439,43 +1656,28 @@ const OwnerDashboard = () => {
                   />
                   {caretakerForm.phone && caretakerForm.phone.length > 0 && caretakerForm.phone.length !== 10 && (
                     <small style={{ color: '#f87171', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>
-                      Phone number must be exactly 10 digits ({caretakerForm.phone.length}/10)
+                      Must be 10 digits ({caretakerForm.phone.length}/10)
                     </small>
                   )}
                 </div>
-                <div className="form-group">
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Caretaker Experience Required</label>
-                  <select 
-                    value={caretakerForm.experience}
-                    onChange={(e) => setCaretakerForm({ ...caretakerForm, experience: e.target.value })}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
-                  >
-                    <option value="1-3 Years" style={{ background: '#1b262c', color: '#fff' }}>1 - 3 Years</option>
-                    <option value="3-5 Years" style={{ background: '#1b262c', color: '#fff' }}>3 - 5 Years</option>
-                    <option value="5+ Years" style={{ background: '#1b262c', color: '#fff' }}>5+ Years (Senior Villa Manager)</option>
-                  </select>
-                </div>
-              </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div className="form-group">
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Govt Verification ID Type</label>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Verification ID Type</label>
                   <select 
                     value={caretakerForm.govtIdType || 'Aadhaar Card'}
                     onChange={(e) => setCaretakerForm({ ...caretakerForm, govtIdType: e.target.value, govtId: '' })}
                     style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
                   >
                     <option value="Aadhaar Card" style={{ background: '#1b262c', color: '#fff' }}>Aadhaar Card (12 Digits)</option>
-                    <option value="PAN Card" style={{ background: '#1b262c', color: '#fff' }}>PAN Card (10 Alphanumeric)</option>
+                    <option value="PAN Card" style={{ background: '#1b262c', color: '#fff' }}>PAN Card (10 Chars)</option>
                     <option value="Driving License" style={{ background: '#1b262c', color: '#fff' }}>Driving License</option>
                     <option value="Voter ID Card" style={{ background: '#1b262c', color: '#fff' }}>Voter ID Card</option>
-                    <option value="Property License" style={{ background: '#1b262c', color: '#fff' }}>Property License / Utility Bill</option>
                   </select>
                 </div>
 
                 <div className="form-group">
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
-                    {caretakerForm.govtIdType === 'PAN Card' ? 'PAN Number (10 Chars)' : caretakerForm.govtIdType === 'Aadhaar Card' || !caretakerForm.govtIdType ? 'Aadhaar Number (12 Digits)' : 'ID Number / License No.'}
+                    {caretakerForm.govtIdType === 'PAN Card' ? 'PAN (10 Chars)' : caretakerForm.govtIdType === 'Aadhaar Card' || !caretakerForm.govtIdType ? 'Aadhaar (12 Digits)' : 'ID Number'}
                   </label>
                   <input 
                     type="text"
@@ -1483,13 +1685,10 @@ const OwnerDashboard = () => {
                     placeholder={
                       caretakerForm.govtIdType === 'PAN Card' ? 'e.g. ABCDE1234F' :
                       caretakerForm.govtIdType === 'Driving License' ? 'e.g. MH1220230012345' :
-                      caretakerForm.govtIdType === 'Voter ID Card' ? 'e.g. ABC1234567' :
-                      caretakerForm.govtIdType === 'Property License' ? 'e.g. LIC-987654' :
                       'e.g. 123456789012'
                     }
                     maxLength={
-                      caretakerForm.govtIdType === 'Aadhaar Card' || !caretakerForm.govtIdType ? 12 :
-                      caretakerForm.govtIdType === 'PAN Card' || caretakerForm.govtIdType === 'Voter ID Card' ? 10 : 16
+                      caretakerForm.govtIdType === 'Aadhaar Card' || !caretakerForm.govtIdType ? 12 : 16
                     }
                     value={caretakerForm.govtId}
                     onChange={(e) => {
@@ -1503,16 +1702,11 @@ const OwnerDashboard = () => {
                     }}
                     style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
                   />
-                  {(caretakerForm.govtIdType === 'Aadhaar Card' || !caretakerForm.govtIdType) && caretakerForm.govtId && caretakerForm.govtId.length !== 12 && (
-                    <small style={{ color: '#f87171', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>
-                      Aadhaar number must be exactly 12 digits ({caretakerForm.govtId.length}/12)
-                    </small>
-                  )}
                 </div>
               </div>
 
               <div className="form-group">
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Special Instructions & Caretaker Notes</label>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Special Instructions & Staff Notes</label>
                 <textarea 
                   rows="3"
                   placeholder="Mention guest check-in preferences, key handling rules, maintenance needs, or special staff requirements..."
@@ -1539,6 +1733,183 @@ const OwnerDashboard = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW CARETAKER DETAILS CARD MODAL */}
+      {viewingCaretakerApp && (
+        <div className="modal-overlay">
+          <div className="modal-content glass-morphism" style={{ maxWidth: '650px', width: '100%', padding: '28px', borderRadius: '24px', background: 'linear-gradient(145deg, #1b262c 0%, #0f171e 100%)', border: '1px solid rgba(212, 175, 55, 0.4)', color: '#ffffff', boxShadow: '0 25px 60px rgba(0,0,0,0.75)' }}>
+            
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+              <div>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(212, 175, 55, 0.15)', color: '#ffd700', border: '1px solid rgba(212, 175, 55, 0.3)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', marginBottom: '8px' }}>
+                  <i className="fa-solid fa-shield-halved"></i> Caretaker Application Record
+                </span>
+                <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1.5rem', fontFamily: 'Outfit, sans-serif' }}>
+                  {viewingCaretakerApp.propertyName || 'All Managed Properties'}
+                </h3>
+              </div>
+              <button onClick={() => setViewingCaretakerApp(null)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.8rem', cursor: 'pointer', opacity: 0.8 }}>×</button>
+            </div>
+
+            {/* Content Body Grid */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              
+              {/* Status Banner */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', padding: '14px 18px' }}>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700' }}>Application Status</span>
+                  <strong style={{ fontSize: '1rem', color: viewingCaretakerApp.status === 'approved' ? '#52b788' : '#ffd700', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                    {viewingCaretakerApp.status === 'approved' ? '🟢 Caretaker Allocated & Assigned' : '🟡 Pending Admin Allocation'}
+                  </strong>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700' }}>Date Submitted</span>
+                  <span style={{ fontSize: '0.9rem', color: '#cbd5e1', fontWeight: '600' }}>
+                    {new Date(viewingCaretakerApp.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+              </div>
+
+              {/* Allocated Caretaker Staff Banner */}
+              {viewingCaretakerApp.status === 'approved' && (
+                <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.25) 100%)', border: '1px solid #10b981', borderRadius: '16px', padding: '16px 20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#10b981', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
+                        <i className="fa-solid fa-user-shield"></i>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#52b788', letterSpacing: '1px', textTransform: 'uppercase', display: 'block' }}>Admin Allocated Caretaker</span>
+                        <strong style={{ fontSize: '1.1rem', color: '#ffffff', display: 'block', marginTop: '2px' }}>
+                          {viewingCaretakerApp.assignedCaretakerName || 'Suresh Pawar (Certified Caretaker)'}
+                        </strong>
+                        <span style={{ fontSize: '0.88rem', color: '#ffd700', fontWeight: '700', marginTop: '2px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <i className="fa-solid fa-phone"></i> Contact Mobile: {viewingCaretakerApp.assignedCaretakerPhone || '+91 98901 23456'}
+                        </span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => openWhatsAppOwnerToCaretaker(viewingCaretakerApp)}
+                      style={{
+                        background: '#25D366',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '10px 18px',
+                        borderRadius: '24px',
+                        fontWeight: '800',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)'
+                      }}
+                    >
+                      <i className="fa-brands fa-whatsapp" style={{ fontSize: '1.1rem' }}></i> Chat on WhatsApp
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Grid Details */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
+                    <i className="fa-solid fa-location-dot" style={{ marginRight: '6px' }}></i> Property Address & Location
+                  </span>
+                  <p style={{ margin: 0, color: '#f2ece4', fontSize: '0.92rem', fontWeight: '600' }}>
+                    {viewingCaretakerApp.propertyAddress || viewingCaretakerApp.city || 'Mahabaleshwar, Satara'}
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
+                    <i className="fa-solid fa-user-tag" style={{ marginRight: '6px' }}></i> Required Position / Role
+                  </span>
+                  <p style={{ margin: 0, color: '#ffd700', fontSize: '0.92rem', fontWeight: '700' }}>
+                    {viewingCaretakerApp.positionRole || 'Chief Villa Caretaker Host'}
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
+                    <i className="fa-solid fa-phone" style={{ marginRight: '6px' }}></i> Host Contact Phone
+                  </span>
+                  <p style={{ margin: 0, color: '#52b788', fontSize: '0.92rem', fontWeight: '700' }}>
+                    {viewingCaretakerApp.phone}
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
+                    <i className="fa-solid fa-award" style={{ marginRight: '6px' }}></i> Caretaker Experience
+                  </span>
+                  <p style={{ margin: 0, color: '#38bdf8', fontSize: '0.92rem', fontWeight: '700' }}>
+                    {viewingCaretakerApp.experience}
+                  </p>
+                </div>
+              </div>
+
+              {/* Govt ID Verification Details */}
+              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
+                  <i className="fa-solid fa-id-card" style={{ marginRight: '6px' }}></i> Govt ID Verification Details
+                </span>
+                <p style={{ margin: 0, color: '#ffffff', fontSize: '0.92rem', fontWeight: '600' }}>
+                  {viewingCaretakerApp.govtId || 'Provided & Verified by Admin'}
+                </p>
+              </div>
+
+              {/* Required Skills & Duties Tags */}
+              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '8px' }}>
+                  <i className="fa-solid fa-list-check" style={{ marginRight: '6px' }}></i> Required Skills & Duties
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {(Array.isArray(viewingCaretakerApp.skillsRequired) && viewingCaretakerApp.skillsRequired.length > 0 ? viewingCaretakerApp.skillsRequired : viewingCaretakerApp.services || []).map((svc, i) => (
+                    <span key={i} style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <i className="fa-solid fa-check"></i> {svc}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Special Notes */}
+              {viewingCaretakerApp.bio && (
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
+                    <i className="fa-solid fa-note-sticky" style={{ marginRight: '6px' }}></i> Special Instructions & Staff Notes
+                  </span>
+                  <p style={{ margin: 0, color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.5', fontStyle: 'italic' }}>
+                    "{viewingCaretakerApp.bio}"
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button 
+                onClick={() => setViewingCaretakerApp(null)}
+                style={{
+                  background: 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)',
+                  color: '#1a1a1a',
+                  border: 'none',
+                  padding: '10px 26px',
+                  borderRadius: '30px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Close Details Card
+              </button>
+            </div>
           </div>
         </div>
       )}

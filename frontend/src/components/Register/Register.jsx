@@ -29,8 +29,24 @@ const Register = () => {
     setErrorMsg('');
 
     const trimmedName = (formData.name || '').trim();
+    if (!trimmedName || trimmedName.length < 2) {
+      setErrorMsg('Full name is required and must be at least 2 characters long.');
+      return;
+    }
     if (/\d/.test(trimmedName) || !/^[a-zA-Z\s.'-]+$/.test(trimmedName)) {
       setErrorMsg('Full name cannot contain numbers or numeric digits. Please enter alphabetic letters only.');
+      return;
+    }
+
+    const trimmedEmail = (formData.email || '').trim();
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setErrorMsg('Please enter a valid email address (e.g. user@example.com).');
+      return;
+    }
+
+    const cleanPhone = (formData.phone || '').trim().replace(/\D/g, '');
+    if (!cleanPhone || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+      setErrorMsg('Phone number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9.');
       return;
     }
 
@@ -117,8 +133,28 @@ const Register = () => {
             <span className="logo-text">MAHABLESHWAR</span>
             <span className="logo-subtext">LUXURY RETREATS</span>
           </div>
-          <h2>Join the Bliss</h2>
-          <p>Create your luxury member account</p>
+          <h2>Join as a Traveler</h2>
+          <p>Create your luxury guest member account</p>
+
+          <div style={{
+            background: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: '12px',
+            padding: '10px 14px',
+            marginTop: '14px',
+            fontSize: '0.82rem',
+            color: '#a3b18a',
+            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+          }}>
+            <i className="fa-solid fa-suitcase" style={{ color: '#10b981', fontSize: '1.1rem' }}></i>
+            <div>
+              <strong style={{ color: '#ffffff', display: 'block' }}>Traveler & Guest Account (Limited Access)</strong>
+              <span>Provides access to explore luxury stays, reserve bookings, and manage personal stay history.</span>
+            </div>
+          </div>
         </div>
 
         {errorMsg && (

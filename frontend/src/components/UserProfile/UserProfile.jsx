@@ -54,8 +54,10 @@ const UserProfile = () => {
         error = 'Full Name must be at least 3 characters.';
       } else if (trimmed.length > 50) {
         error = 'Full Name cannot exceed 50 characters.';
+      } else if (/\d/.test(trimmed)) {
+        error = 'Full Name cannot contain numbers or numeric digits. Please enter alphabetic letters only.';
       } else if (!/^[a-zA-Z\s.'-]+$/.test(trimmed)) {
-        error = 'Full Name can only contain letters and spaces.';
+        error = 'Full Name can only contain letters, spaces, and hyphens/dots.';
       }
     }
 
@@ -63,16 +65,16 @@ const UserProfile = () => {
       if (!trimmed) {
         error = 'Email Address is required.';
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-        error = 'Please enter a valid email address.';
+        error = 'Please enter a valid email address (e.g. user@example.com).';
       }
     }
 
     if (name === 'phone') {
-      const cleanPhone = trimmed.replace(/[\s-]/g, '');
+      const cleanPhone = trimmed.replace(/\D/g, '');
       if (!cleanPhone) {
         error = 'Phone Number is required.';
-      } else if (!/^\+?[0-9]{10,12}$/.test(cleanPhone)) {
-        error = 'Please enter a valid 10 to 12 digit phone number.';
+      } else if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+        error = 'Please enter a valid 10-digit mobile phone number starting with 6, 7, 8, or 9.';
       }
     }
 
@@ -141,11 +143,11 @@ const UserProfile = () => {
         setSaveSuccessMsg('Profile details updated and saved successfully!');
         setTimeout(() => setSaveSuccessMsg(''), 4000);
       } else {
-        alert(data.msg || 'Failed to update profile');
+        setErrors(prev => ({ ...prev, general: data.msg || 'Failed to update profile' }));
       }
     } catch (err) {
       console.error('Save profile error:', err);
-      alert('Network Error: Could not update profile');
+      setErrors(prev => ({ ...prev, general: 'Network Error: Could not update profile' }));
     } finally {
       setIsSaving(false);
     }

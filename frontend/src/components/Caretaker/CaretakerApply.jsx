@@ -63,12 +63,24 @@ const CaretakerApply = () => {
     let error = '';
     const trimmed = (value || '').trim();
 
-    if (name === 'fullName' && !trimmed) {
-      error = 'Full Name is required.';
+    if (name === 'fullName') {
+      if (!trimmed) {
+        error = 'Full Name is required.';
+      } else if (/\d/.test(trimmed)) {
+        error = 'Full Name cannot contain numbers or numeric digits. Please enter alphabetic letters only.';
+      } else if (!/^[a-zA-Z\s.'-]+$/.test(trimmed)) {
+        error = 'Full Name can only contain letters, spaces, and hyphens/dots.';
+      } else if (trimmed.length < 2) {
+        error = 'Full Name must be at least 2 characters long.';
+      }
     }
 
-    if (name === 'email' && !trimmed) {
-      error = 'Email Address is required.';
+    if (name === 'email') {
+      if (!trimmed) {
+        error = 'Email Address is required.';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        error = 'Please enter a valid email address (e.g. name@example.com).';
+      }
     }
 
     if (name === 'phone') {
@@ -206,7 +218,7 @@ const CaretakerApply = () => {
         setErrors({});
         if (token) fetchMyApplications(token);
       } else {
-        alert(data.msg || 'Submission failed');
+        setErrors({ general: data.msg || 'Submission failed' });
       }
     } catch (err) {
       console.error('Caretaker submit error:', err);
@@ -238,6 +250,21 @@ const CaretakerApply = () => {
       <div className="caretaker-container">
         <div className="caretaker-card glass-morphism fade-in">
           <div className="caretaker-title-section">
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(16, 185, 129, 0.15)',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
+              color: '#10b981',
+              padding: '4px 12px',
+              borderRadius: '20px',
+              fontSize: '0.78rem',
+              fontWeight: '700',
+              marginBottom: '10px'
+            }}>
+              <i className="fa-solid fa-user-shield"></i> Caretaker Host Partner Account (Staff & Host Role)
+            </div>
             <h2>
               <i className="fa-solid fa-shield-halved" style={{ color: '#d4af37' }}></i> Certified Caretaker Application & Verification Form
             </h2>

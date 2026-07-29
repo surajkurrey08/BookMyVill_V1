@@ -93,7 +93,7 @@ const Hero = () => {
       
       navigate(`/explore?${queryParams.toString()}`);
     } else {
-      alert('Please select a location to search.');
+      navigate('/explore');
     }
   };
 
@@ -116,9 +116,9 @@ const Hero = () => {
         <h1>Your Luxury Escape <br /> Above the Clouds</h1>
         <p>Book exclusive hotels, private villas, and boutique cabins in the most breathtaking hill stations.</p>
         
-        <div className="search-bar-container glass-morphism">
+        <div className="search-bar-container">
           <div className="search-field">
-            <label>Trip Location</label>
+            <label>TRIP LOCATION</label>
             <select 
               className="search-select" 
               value={selectedLocation} 
@@ -132,10 +132,10 @@ const Hero = () => {
           </div>
 
           <div className="search-field">
-            <label>Check-in</label>
+            <label>CHECK-IN</label>
             <input 
               type="date" 
-              className="search-input" 
+              className="search-input date-input" 
               value={checkIn}
               min={getTodayDateString()}
               onChange={(e) => {
@@ -146,22 +146,24 @@ const Hero = () => {
               }}
             />
           </div>
+
           <div className="search-field">
-            <label>Check-out</label>
+            <label>CHECK-OUT</label>
             <input 
               type="date" 
-              className="search-input" 
+              className="search-input date-input" 
               value={checkOut}
               min={checkIn || getTodayDateString()}
               onChange={(e) => setCheckOut(e.target.value)}
             />
           </div>
+
           <div className="search-field">
-            <label>Guests</label>
+            <label>GUESTS</label>
             <input 
               type="number" 
               min="1" 
-              placeholder="Add guests" 
+              placeholder="1" 
               className="search-input" 
               value={guests}
               onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
@@ -171,7 +173,8 @@ const Hero = () => {
               }}
             />
           </div>
-          <button className="btn-primary search-btn" onClick={handleSearch}>Search</button>
+
+          <button className="search-btn" onClick={handleSearch}>Search</button>
         </div>
       </div>
     </section>

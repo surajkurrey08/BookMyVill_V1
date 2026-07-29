@@ -29,6 +29,7 @@ const PropertyDetails = () => {
   const [showFakeModal, setShowFakeModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingData, setPendingData] = useState(null);
+  const [bookingNotice, setBookingNotice] = useState({ type: '', msg: '' });
   const [stayType, setStayType] = useState('night');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('upi');
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
@@ -88,13 +89,21 @@ const PropertyDetails = () => {
         setTimeout(() => {
           triggerPaymentForAutoBook(cIn, cOut);
         }, 200);
+      } else {
+        // Unauthenticated user trying to autoBook! Forward to signin IMMEDIATELY before payment modal!
+        const currentUrl = `/property/${property?._id || id}${window.location.search}`;
+        navigate('/signin', { state: { from: currentUrl, property } });
       }
     }
   }, [property, loading, searchParams]);
 
   const triggerPaymentForAutoBook = async (cIn, cOut) => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      const currentUrl = `/property/${property?._id || id}${window.location.search}`;
+      navigate('/signin', { state: { from: currentUrl, property } });
+      return;
+    }
 
     const priceValue = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '15000');
     let total = priceValue;
@@ -131,6 +140,15 @@ const PropertyDetails = () => {
       });
 
       const data = await response.json();
+
+      if (response.status === 401 || (data && data.msg === 'Token is not valid')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        const currentUrl = `/property/${property?._id || id}${window.location.search}`;
+        navigate('/signin', { state: { from: currentUrl, property } });
+        return;
+      }
+
       if (response.ok && data) {
         setPendingData(data);
         setShowFakeModal(true);
@@ -417,16 +435,18 @@ const PropertyDetails = () => {
   };
 
   const handleBookingStart = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const token = localStorage.getItem('token');
+    const currentUrl = `/property/${property?._id || id}${window.location.search}`;
+
     if (!token) {
-      navigate('/signin', { state: { from: `/property/${property?._id || id}` } });
+      navigate('/signin', { state: { from: currentUrl, property } });
       return;
     }
 
     const total = calculateTotalPrice();
     if (total <= 0) {
-      alert('Please select valid check-in and check-out dates.');
+      setBookingNotice({ type: 'error', msg: 'Please select valid check-in and check-out dates.' });
       return;
     }
 
@@ -453,6 +473,14 @@ const PropertyDetails = () => {
       });
 
       const data = await response.json();
+
+      if (response.status === 401 || (data && (data.msg === 'Token is not valid' || data.msg === 'No token, authorization denied'))) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/signin', { state: { from: currentUrl, property } });
+        return;
+      }
+
       if (!response.ok) throw new Error(data.msg || 'Booking failed');
 
       setPendingData(data);
@@ -460,7 +488,7 @@ const PropertyDetails = () => {
         setShowFakeModal(true);
       }, 100);
     } catch (err) {
-      alert(err.message);
+      setBookingNotice({ type: 'error', msg: err.message });
     } finally {
       setIsProcessing(false);
     }
@@ -468,13 +496,13 @@ const PropertyDetails = () => {
 
   const confirmFakePayment = async () => {
     if (!pendingData) {
-      alert('Session lost. Please refresh and try again.');
+      setBookingNotice({ type: 'error', msg: 'Session lost. Please refresh and try again.' });
       setShowFakeModal(false);
       return;
     }
 
     if (!pendingData.order_id) {
-      alert('Order ID missing. Please try reserving again.');
+      setBookingNotice({ type: 'error', msg: 'Order ID missing. Please try reserving again.' });
       setShowFakeModal(false);
       return;
     }
@@ -496,13 +524,15 @@ const PropertyDetails = () => {
 
       const resData = await response.json();
       if (response.ok) {
-        alert('Payment Successful! (Simulated)');
-        navigate('/dashboard');
+        setBookingNotice({ type: 'success', msg: 'Payment Successful! Your reservation has been confirmed.' });
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
       } else {
-        alert(`Payment simulation failed: ${resData.msg || 'Unknown error'}`);
+        setBookingNotice({ type: 'error', msg: `Payment simulation failed: ${resData.msg || 'Unknown error'}` });
       }
     } catch (err) {
-      alert('Network Error: Could not reach the server.');
+      setBookingNotice({ type: 'error', msg: 'Network Error: Could not reach the server.' });
     } finally {
       setIsProcessing(false);
       setShowFakeModal(false);

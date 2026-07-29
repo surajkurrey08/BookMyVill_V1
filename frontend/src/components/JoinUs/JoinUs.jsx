@@ -12,20 +12,8 @@ const JoinUs = () => {
   const [livePartners, setLivePartners] = useState([]);
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const u = JSON.parse(userStr);
-        if (u && (u.role === 'user' || u.role === 'traveller')) {
-          navigate('/dashboard');
-          return;
-        }
-      } catch (err) {
-        console.warn('User JSON parse error:', err);
-      }
-    }
     fetchLivePartners();
-  }, [navigate]);
+  }, []);
 
   const fetchLivePartners = async () => {
     try {

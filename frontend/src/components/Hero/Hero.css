@@ -46,9 +46,9 @@
   height: 100%;
   background: linear-gradient(
     to bottom,
-    rgba(0,0,0,0.4) 0%,
-    rgba(0,0,0,0.2) 50%,
-    rgba(0,0,0,0.6) 100%
+    rgba(0,0,0,0.45) 0%,
+    rgba(0,0,0,0.25) 50%,
+    rgba(0,0,0,0.65) 100%
   );
   z-index: 1;
 }
@@ -57,48 +57,55 @@
   text-align: center;
   color: var(--white);
   z-index: 2;
-  max-width: 900px;
+  max-width: 1050px;
   padding: 0 20px;
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 .hero-tagline {
   display: block;
-  font-size: 1rem;
+  font-size: 0.95rem;
   letter-spacing: 4px;
   text-transform: uppercase;
-  margin-bottom: 20px;
-  font-weight: 500;
+  margin-bottom: 18px;
+  font-weight: 600;
   color: var(--secondary-color);
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.45);
 }
 
 .hero h1 {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  line-height: 1.1;
-  margin-bottom: 25px;
-  text-shadow: 0 4px 10px rgba(0,0,0,0.3), 0 0 20px rgba(255,255,255,0.2);
+  font-size: clamp(2.5rem, 5.5vw, 4.2rem);
+  line-height: 1.12;
+  margin-bottom: 20px;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 25px rgba(255,255,255,0.25);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
 }
 
 .hero p {
-  font-size: 1.2rem;
-  margin-bottom: 40px;
-  opacity: 0.9;
-  max-width: 600px;
+  font-size: 1.15rem;
+  margin-bottom: 35px;
+  opacity: 0.92;
+  max-width: 680px;
   margin-left: auto;
   margin-right: auto;
+  line-height: 1.5;
+  color: #f1ece4;
 }
 
+/* Off-white Pill Hotel Search Bar Card */
 .search-bar-container {
   display: flex;
   align-items: center;
-  padding: 8px;
-  border-radius: 100px;
-  gap: 0;
+  background-color: #f2ece4;
+  border-radius: 60px;
+  padding: 8px 10px 8px 26px;
   width: 100%;
-  max-width: 1050px;
+  max-width: 1020px;
   margin: 0 auto;
-  background: var(--white);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
 }
 
 .search-field {
@@ -106,21 +113,25 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 12px 14px;
-  border-right: 1px solid rgba(0,0,0,0.1);
+  padding: 6px 18px 6px 10px;
+  border-right: 1px solid rgba(45, 67, 61, 0.18);
+  box-sizing: border-box;
+  text-align: left;
 }
 
 .search-field:last-of-type {
   border-right: none;
+  padding-right: 15px;
 }
 
 .search-field label {
   font-size: 0.68rem;
   font-weight: 800;
-  color: var(--primary-color);
+  color: #3b5249;
   text-transform: uppercase;
-  margin-bottom: 2px;
-  letter-spacing: 1px;
+  margin-bottom: 4px;
+  letter-spacing: 0.8px;
+  font-family: 'Inter', sans-serif;
 }
 
 .search-input, .search-select {
@@ -128,46 +139,101 @@
   border: none;
   outline: none;
   width: 100%;
-  font-size: 0.85rem;
-  color: #1a1a1a !important;
-  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1a2622 !important;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
   padding: 0;
   cursor: pointer;
 }
 
+.search-input::placeholder {
+  color: #5c6e66;
+  font-weight: 600;
+}
+
 .search-select option {
   background-color: #ffffff !important;
-  color: #1a1a1a !important;
+  color: #1a2622 !important;
+  font-weight: 600;
+  padding: 10px;
 }
 
 .search-select {
   appearance: none;
   -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233b5249' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  padding-right: 20px;
 }
 
-.search-select:disabled {
-  color: rgba(0, 0, 0, 0.45) !important;
-  opacity: 1 !important;
-  cursor: not-allowed;
+.date-input {
+  color: #1a2622 !important;
+  font-weight: 700;
 }
 
+.date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  filter: invert(25%) sepia(15%) saturate(800%) hue-rotate(115deg) brightness(90%) contrast(85%);
+  transition: opacity 0.2s ease;
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Warm Mustard Gold Capsule Search Button */
 .search-btn {
-  padding: 18px 40px !important;
-  border-radius: 100px !important;
+  background: linear-gradient(135deg, #d4af37 0%, #c59b27 100%);
+  color: #1b241e !important;
+  border: none;
+  border-radius: 50px !important;
+  padding: 16px 42px !important;
   font-size: 1rem;
-  margin-left: 10px;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 18px rgba(197, 155, 39, 0.35);
+  margin-left: 6px;
+  white-space: nowrap;
 }
 
-@media (max-width: 768px) {
+.search-btn:hover {
+  background: linear-gradient(135deg, #e5be42 0%, #d4a82b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(197, 155, 39, 0.5);
+}
+
+.search-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 868px) {
   .search-bar-container {
     flex-direction: column;
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 20px;
+    gap: 12px;
   }
   
   .search-field {
     border-right: none;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(45, 67, 61, 0.15);
     padding: 10px 0;
+    width: 100%;
+  }
+
+  .search-field:last-of-type {
+    border-bottom: none;
+  }
+
+  .search-btn {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 10px;
+    padding: 14px 20px !important;
   }
 }

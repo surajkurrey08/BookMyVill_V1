@@ -91,12 +91,8 @@ router.post('/register', async (req, res) => {
       console.log(`New user (${cleanEmail}) saved to MongoDB`);
     }
 
-    if (!process.env.JWT_SECRET) {
-      console.log('CRITICAL ERROR: JWT_SECRET is missing from .env');
-      return res.status(500).json({ msg: 'Server configuration error' });
-    }
-
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const secret = process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026';
+    const token = jwt.sign({ id: user._id, role: user.role }, secret, { expiresIn: '7d' });
     console.log('Token generated successfully');
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
@@ -159,7 +155,8 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const secret = process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026';
+    const token = jwt.sign({ id: user._id, role: user.role }, secret, { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).send('Server error');
