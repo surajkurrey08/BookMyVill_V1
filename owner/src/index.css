@@ -42,18 +42,24 @@ input, textarea, select {
   outline: none;
 }
 
-/* Custom Scrollbars */
+/* Invisible Scrollbars Globally Across All Browsers & Containers */
+html, body, div, section, main, aside, nav, table, textarea, select, form, iframe, * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
+  background: transparent !important;
 }
-::-webkit-scrollbar-track {
-  background: var(--bg-dark);
-}
+
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
+  background: transparent !important;
+  border: none !important;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-gold);
+
+::-webkit-scrollbar-track {
+  background: transparent !important;
 }

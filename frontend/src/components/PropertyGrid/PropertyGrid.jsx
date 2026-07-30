@@ -160,7 +160,7 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
 
   const handleBookNow = (e) => {
     if (e) e.stopPropagation();
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const propertyId = property._id || property.id;
     
     const searchParams = new URLSearchParams(location.search);
@@ -254,7 +254,7 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
 
   const handleBookNow = (e) => {
     if (e) e.stopPropagation();
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const propertyId = property._id || property.id;
 
     const searchParams = new URLSearchParams(location.search);
@@ -653,7 +653,7 @@ const PropertyGrid = ({ isHomePage = false }) => {
           if (bookBtn) {
             bookBtn.onclick = (e) => {
               e.preventDefault();
-              const token = localStorage.getItem('token');
+              const token = sessionStorage.getItem('token') || localStorage.getItem('token');
               const propertyId = property._id || property.id;
               if (!token) {
                 navigate('/signin', { state: { from: `/property/${propertyId}`, property } });

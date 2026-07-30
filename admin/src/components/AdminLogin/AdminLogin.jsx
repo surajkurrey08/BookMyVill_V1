@@ -12,8 +12,8 @@ const AdminLogin = () => {
 
   useEffect(() => {
     // If already logged in, redirect to dashboard
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
     if (token && userStr) {
       try {
         const user = JSON.parse(userStr);
@@ -21,6 +21,7 @@ const AdminLogin = () => {
           navigate('/dashboard');
         }
       } catch (e) {
+        sessionStorage.clear();
         localStorage.clear();
       }
     }
@@ -42,8 +43,10 @@ const AdminLogin = () => {
 
       if (response.ok) {
         if (data.user && data.user.role === 'admin') {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
+          sessionStorage.setItem('token', data.token);
+          sessionStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
           navigate('/dashboard');
         } else {
           setError('Access Denied. This portal is restricted to Administrators only.');

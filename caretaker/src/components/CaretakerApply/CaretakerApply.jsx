@@ -20,8 +20,8 @@ const CaretakerApply = () => {
   const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
     if (userStr) {
       try {
         const u = JSON.parse(userStr);
@@ -123,7 +123,7 @@ const CaretakerApply = () => {
     if (Object.keys(formErrors).length > 0) return;
 
     setIsSubmitting(true);
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/caretaker/apply`, {

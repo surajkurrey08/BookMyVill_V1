@@ -158,7 +158,7 @@ const CaretakerDashboard = () => {
 
   // Fetch Attendance & Load Local Storage User
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
     if (storedUser) {
       try {
         const u = JSON.parse(storedUser);
@@ -342,7 +342,7 @@ const CaretakerDashboard = () => {
     e.preventDefault();
     setProfileMsg('✅ Caretaker Profile Details Updated Successfully!');
     const updatedUser = { ...user, name: profileData.name, phone: profileData.phone, email: profileData.email };
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    sessionStorage.setItem('user', JSON.stringify(updatedUser));
     setUser(updatedUser);
     setTimeout(() => setProfileMsg(''), 4000);
   };

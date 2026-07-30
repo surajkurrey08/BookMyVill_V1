@@ -20,6 +20,8 @@ const Register = () => {
 
   useEffect(() => {
     // Clear old user session credentials for fresh user creation
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   }, []);
@@ -70,8 +72,10 @@ const Register = () => {
 
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         // Redirect travel user directly to booking page / user dashboard without requiring secondary login
         const destination = location.state?.from || '/dashboard';
         navigate(destination, { state: { property: location.state?.property, justRegistered: true } });

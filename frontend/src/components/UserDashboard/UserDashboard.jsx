@@ -40,8 +40,8 @@ const UserDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+    const userData = sessionStorage.getItem('user') || localStorage.getItem('user');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
     if (!userData || !token) {
       navigate('/signin');
@@ -71,6 +71,8 @@ const UserDashboard = () => {
 
   const handleAuthError = (resData, status) => {
     if (status === 401 || resData?.msg?.includes('token') || resData?.msg?.includes('authorization')) {
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       navigate('/signin');
@@ -121,7 +123,7 @@ const UserDashboard = () => {
 
   const fetchBookings = async (target, token) => {
     setLoading(true);
-    const apiToken = token || localStorage.getItem('token');
+    const apiToken = token || sessionStorage.getItem('token') || localStorage.getItem('token');
     if (!apiToken) return;
 
     let url = `${API_BASE_URL}/api/bookings/my-bookings`;
@@ -145,7 +147,7 @@ const UserDashboard = () => {
   };
 
   const handleLogout = () => {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
     let isOwner = false;
     if (userStr) {
       try {
@@ -154,6 +156,8 @@ const UserDashboard = () => {
         console.warn('User JSON parse error:', err);
       }
     }
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     if (isOwner) {
@@ -168,7 +172,7 @@ const UserDashboard = () => {
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     try {
       const response = await fetch(`${API_BASE_URL}/api/bookings/cancel/${bookingId}`, {
         method: 'POST',
@@ -196,7 +200,7 @@ const UserDashboard = () => {
     e.preventDefault();
     setCaretakerFormError('');
     setCaretakerFormSuccess('');
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     if (!token) return;
 
     // Strict 10-digit Indian Mobile Validation
@@ -319,7 +323,7 @@ const UserDashboard = () => {
     setProfileErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     if (!token) return;
 
     setIsSavingProfile(true);
@@ -341,7 +345,7 @@ const UserDashboard = () => {
       if (response.ok) {
         const updatedUser = { ...user, name: data.name, phone: data.phone, bio: data.bio };
         setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        sessionStorage.setItem('user', JSON.stringify(updatedUser));
         setProfileFormSuccess('Profile details updated successfully!');
         setTimeout(() => {
           setProfileFormSuccess('');
@@ -351,11 +355,7 @@ const UserDashboard = () => {
         setProfileFormError(data.msg || 'Failed to update profile');
       }
     } catch (err) {
-      setProfileFormError('Network Error: Could not update profile');
     } finally {
-      setIsSavingProfile(false);
-    }
-  }; finally {
       setIsSavingProfile(false);
     }
   };

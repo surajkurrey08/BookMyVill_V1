@@ -23,8 +23,10 @@ const SignIn = () => {
       });
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         const destination = location.state?.from || '/';
         navigate(destination, { state: { property: location.state?.property } });
       } else {
@@ -102,6 +104,7 @@ const SignIn = () => {
             <i className="fa-solid fa-user-lock" style={{ color: '#d4af37', fontSize: '1.1rem' }}></i>
             Please sign in to proceed with your hotel booking
           </div>
+        )}
         {errorMsg && (
           <div style={{
             background: 'rgba(239, 71, 111, 0.18)',

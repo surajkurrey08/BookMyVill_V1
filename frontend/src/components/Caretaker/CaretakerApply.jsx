@@ -25,8 +25,8 @@ const CaretakerApply = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
     if (userStr) {
       try {
         const u = JSON.parse(userStr);
@@ -151,7 +151,7 @@ const CaretakerApply = () => {
 
     if (Object.keys(formErrors).length > 0) return;
 
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     setIsSubmitting(true);
 
     try {

@@ -19,6 +19,7 @@ import AboutUs from './components/AboutUs/AboutUs';
 import CaretakerDashboard from './components/Caretaker/CaretakerDashboard';
 import RegistrationForm from './components/RegistrationForm/RegistrationForm';
 import ExploreStaysPage from './components/ExploreStays/ExploreStaysPage';
+import AiAssistant from './components/AiAssistant/AiAssistant';
 import './App.css';
 import 'lenis/dist/lenis.css';
 
@@ -122,7 +123,7 @@ const AccessRestrictedModal = ({ title, message }) => {
 };
 
 const AdminRedirect = () => {
-  const userStr = localStorage.getItem('user');
+  const userStr = sessionStorage.getItem('user');
   let isTraveler = false;
   if (userStr) {
     try {
@@ -138,7 +139,7 @@ const AdminRedirect = () => {
   }, [isTraveler]);
 
   if (isTraveler) {
-    return <AccessRestrictedModal title="Admin Command Center Restricted" message="Your account is registered as a Traveler / Guest user with limited access. Admin command access requires system administrator credentials." />;
+    return <AccessRestrictedModal title="Admin Command Center Restricted" message="Your account is registered as a Traveler / Guest user with limited access. Admin command access requires administrator credentials." />;
   }
 
   return (
@@ -165,7 +166,7 @@ const AdminRedirect = () => {
 };
 
 const OwnerRedirect = () => {
-  const userStr = localStorage.getItem('user');
+  const userStr = sessionStorage.getItem('user');
   let isTraveler = false;
   if (userStr) {
     try {
@@ -208,7 +209,7 @@ const OwnerRedirect = () => {
 };
 
 const ProtectedCaretakerDashboard = () => {
-  const userStr = localStorage.getItem('user');
+  const userStr = sessionStorage.getItem('user');
   if (userStr) {
     try {
       const u = JSON.parse(userStr);
@@ -289,6 +290,7 @@ function App() {
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/about" element={<AboutUs />} />
         </Routes>
+        <AiAssistant />
       </div>
     </Router>
   );

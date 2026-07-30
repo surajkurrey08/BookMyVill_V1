@@ -76,8 +76,10 @@ const OwnerLogin = () => {
         throw new Error('Access denied: Account is not registered as a Property Owner host.');
       }
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
 
       navigate('/dashboard');
     } catch (err) {

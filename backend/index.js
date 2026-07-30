@@ -33,7 +33,7 @@ async function seedAdminUser() {
     if (!adminExists) {
       console.log('No admin user found. Creating default admin...');
       const defaultAdmin = new User({
-        name: 'System Admin',
+        name: 'Administrator',
         email: adminEmail,
         password: 'admin123',
         role: 'admin'

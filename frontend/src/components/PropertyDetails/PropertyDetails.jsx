@@ -72,7 +72,7 @@ const PropertyDetails = () => {
     const autoBook = searchParams.get('autoBook');
     if (autoBook === 'true') {
       autoBookTriggeredRef.current = true;
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token') || localStorage.getItem('token');
       if (token) {
         let cIn = bookingDates.checkIn || searchParams.get('checkIn') || getTodayDateString();
         let cOut = bookingDates.checkOut || searchParams.get('checkOut');
@@ -98,7 +98,7 @@ const PropertyDetails = () => {
   }, [property, loading, searchParams]);
 
   const triggerPaymentForAutoBook = async (cIn, cOut) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     if (!token) {
       const currentUrl = `/property/${property?._id || id}${window.location.search}`;
       navigate('/signin', { state: { from: currentUrl, property } });
@@ -142,6 +142,8 @@ const PropertyDetails = () => {
       const data = await response.json();
 
       if (response.status === 401 || (data && data.msg === 'Token is not valid')) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         const currentUrl = `/property/${property?._id || id}${window.location.search}`;
@@ -436,7 +438,7 @@ const PropertyDetails = () => {
 
   const handleBookingStart = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const currentUrl = `/property/${property?._id || id}${window.location.search}`;
 
     if (!token) {
@@ -475,6 +477,8 @@ const PropertyDetails = () => {
       const data = await response.json();
 
       if (response.status === 401 || (data && (data.msg === 'Token is not valid' || data.msg === 'No token, authorization denied'))) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         navigate('/signin', { state: { from: currentUrl, property } });
@@ -508,7 +512,7 @@ const PropertyDetails = () => {
     }
 
     setIsProcessing(true);
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     try {
       const response = await fetch(`${API_BASE_URL}/api/bookings/verify`, {
         method: 'POST',

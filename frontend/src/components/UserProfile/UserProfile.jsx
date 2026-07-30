@@ -20,8 +20,8 @@ const UserProfile = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+    const userData = sessionStorage.getItem('user') || localStorage.getItem('user');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
     if (!userData || !token) {
       navigate('/signin');
@@ -117,7 +117,7 @@ const UserProfile = () => {
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     if (!token) return;
 
     setIsSaving(true);
@@ -139,7 +139,7 @@ const UserProfile = () => {
       if (response.ok) {
         const updatedUser = { ...user, name: data.name, phone: data.phone, bio: data.bio };
         setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        sessionStorage.setItem('user', JSON.stringify(updatedUser));
         setSaveSuccessMsg('Profile details updated and saved successfully!');
         setTimeout(() => setSaveSuccessMsg(''), 4000);
       } else {

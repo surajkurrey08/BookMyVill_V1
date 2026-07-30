@@ -181,6 +181,10 @@
   max-width: calc(100vw - 280px);
 }
 
+.owner-dashboard-layout.sidebar-hidden .owner-main-content {
+  margin-left: 0 !important;
+}
+
 .content-header {
   display: flex;
   align-items: center;

@@ -290,7 +290,7 @@ const Packages = () => {
                     <button 
                       type="button"
                       onClick={() => {
-                        const token = localStorage.getItem('token');
+                        const token = sessionStorage.getItem('token') || localStorage.getItem('token');
                         if (!token) {
                           navigate('/signin', { state: { from: `/property/${pkg.propertyId}` } });
                         } else {

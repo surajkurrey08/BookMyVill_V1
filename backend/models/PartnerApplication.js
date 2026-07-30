@@ -22,6 +22,11 @@ const PartnerApplicationSchema = new mongoose.Schema({
     enum: ['pending', 'approved', 'rejected'], 
     default: 'pending' 
   },
+  caretakerStatus: { 
+    type: String, 
+    enum: ['pending', 'approved', 'rejected'], 
+    default: 'pending' 
+  },
   appliedAt: { type: Date, default: Date.now }
 });
 

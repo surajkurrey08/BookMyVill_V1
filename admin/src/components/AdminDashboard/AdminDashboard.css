@@ -3,6 +3,11 @@
   grid-template-columns: 280px 1fr;
   min-height: 100vh;
   background-color: var(--bg-color);
+  transition: grid-template-columns 0.3s ease;
+}
+
+.admin-dashboard-container.sidebar-hidden {
+  grid-template-columns: 1fr;
 }
 
 /* Sidebar Styles */
@@ -40,32 +45,32 @@
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  border-radius: 8px;
-  color: var(--text-secondary);
+  padding: 11px 16px;
+  color: #94a3b8;
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 500;
   background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  border-radius: 0;
   text-align: left;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
 }
 
-.nav-item i {
-  font-size: 1.1rem;
-  width: 20px;
-}
-
-.nav-item:hover, .nav-item.active {
-  color: var(--text-primary);
+.nav-item:hover {
+  color: #ffffff;
   background: rgba(255, 255, 255, 0.04);
 }
 
 .nav-item.active {
-  border-left: 3px solid var(--secondary-color);
+  color: #d4af37;
+  font-weight: 700;
   background: rgba(212, 175, 55, 0.08);
-  color: var(--secondary-color);
+  border-left: 3px solid #d4af37;
+  box-shadow: none;
 }
 
 .sidebar-footer {

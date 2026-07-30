@@ -282,9 +282,9 @@ router.put('/caretaker-application/:id/status', auth, adminAuth, async (req, res
 
     let partnerApp = await PartnerApplication.findById(id);
     if (partnerApp) {
-      partnerApp.status = status || 'approved';
+      partnerApp.caretakerStatus = status || 'approved';
       await partnerApp.save();
-      return res.json(partnerApp);
+      return res.json({ ...partnerApp.toObject(), status: partnerApp.caretakerStatus });
     }
 
     res.json({ _id: id, status: status || 'approved' });
@@ -334,9 +334,25 @@ router.put('/property/:id/status', auth, adminAuth, async (req, res) => {
         });
         await property.save();
       }
+    } else {
+      await PartnerApplication.findOneAndUpdate({ propertyName: property.name }, { status });
     }
 
     res.json(property || { _id: id, status });
+  } catch (err) {
+    res.json({ _id: req.params.id, status: req.body.status });
+  }
+});
+
+// Update user status - Approve / Reject / Block (Admin only)
+router.put('/user/:id/status', auth, adminAuth, async (req, res) => {
+  try {
+    const { status } = req.body; // 'approved', 'rejected', or 'active'
+    const id = req.params.id;
+    if (id.startsWith('dummy-')) return res.json({ _id: id, status });
+
+    const user = await User.findByIdAndUpdate(id, { status }, { new: true }).select('-password');
+    res.json(user || { _id: id, status });
   } catch (err) {
     res.json({ _id: req.params.id, status: req.body.status });
   }

@@ -12,6 +12,9 @@ const OwnerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
+  const [isSidebarHidden, setIsSidebarHidden] = useState(false);
+  const [isCardsHidden, setIsCardsHidden] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Modals & Forms state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -64,8 +67,8 @@ const OwnerDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+    const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     if (!userStr || !token) {
       navigate('/login');
       return;
@@ -115,7 +118,7 @@ const OwnerDashboard = () => {
   const fetchOwnerData = async (token) => {
     setLoading(true);
     setError('');
-    const authToken = token || localStorage.getItem('token');
+    const authToken = token || sessionStorage.getItem('token') || localStorage.getItem('token');
 
     try {
       // 1. Fetch Owner Properties
@@ -156,7 +159,7 @@ const OwnerDashboard = () => {
 
   const handleCaretakerSubmit = async (e) => {
     e.preventDefault();
-    const rawToken = localStorage.getItem('token');
+    const rawToken = sessionStorage.getItem('token') || localStorage.getItem('token');
     const token = rawToken ? rawToken.replace(/^["']|["']$/g, '').trim() : '';
     setError('');
     setActionSuccess('');
@@ -258,6 +261,7 @@ const OwnerDashboard = () => {
   };
 
   const handleLogout = () => {
+    sessionStorage.clear();
     localStorage.clear();
     navigate('/login', { replace: true });
     window.location.href = '/login';
@@ -341,7 +345,7 @@ const OwnerDashboard = () => {
   // Add / Edit Property Submission
   const handleSaveProperty = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     setError('');
     setActionSuccess('');
 
@@ -427,7 +431,7 @@ const OwnerDashboard = () => {
 
   const handleDeleteProperty = async (id) => {
     if (!window.confirm('Are you sure you want to remove this property listing?')) return;
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE_URL}/properties/${id}`, {
         method: 'DELETE',
@@ -446,7 +450,7 @@ const OwnerDashboard = () => {
   };
 
   const handleUpdateBookingStatus = async (bookingId, newStatus) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     let cancelReason = '';
 
     if (newStatus === 'cancelled') {
@@ -499,7 +503,7 @@ const OwnerDashboard = () => {
     }
 
     setProfileSaving(true);
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: 'PUT',
@@ -515,7 +519,7 @@ const OwnerDashboard = () => {
 
       const updatedUser = { ...user, name: data.name, phone: data.phone, bio: data.bio };
       setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      sessionStorage.setItem('user', JSON.stringify(updatedUser));
       setActionSuccess('Host profile updated successfully!');
     } catch (err) {
       setError(err.message);
@@ -530,139 +534,275 @@ const OwnerDashboard = () => {
   const totalRevenue = bookings.reduce((sum, b) => b.paymentStatus === 'paid' ? sum + (b.totalPrice || 0) : sum, 0);
   const pendingBookings = bookings.filter(b => b.status === 'pending').length;
 
+  const handleTabChange = (tabName) => {
+    setActiveTab(tabName);
+    setPropertySearchQuery('');
+    setPropertyFilterType('All');
+    setBookingFilterStatus('All');
+  };
+
   return (
-    <div className="owner-dashboard-container">
-      {/* Sidebar Navigation */}
-      <aside className="owner-sidebar">
-        <div className="sidebar-brand">
-          <div className="brand-logo">
-            <i className="fa-solid fa-house-user"></i>
-          </div>
-          <div className="brand-text">
-            <h2>Mahabaleshwar</h2>
-            <span>Property Owner Portal</span>
-          </div>
+    <div className="owner-dashboard-wrapper">
+      {/* STATIC HEADER WITH LOGO BRANDING */}
+      <div style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        background: 'rgba(9, 14, 13, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(212, 175, 55, 0.25)',
+        padding: '12px 28px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '12px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+      }}>
+        {/* LOGO BRANDING */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{
+            color: '#d4af37',
+            fontFamily: "'Playfair Display', 'Cinzel', 'Outfit', serif",
+            fontSize: '1.25rem',
+            fontWeight: '800',
+            letterSpacing: '2.5px',
+            lineHeight: '1.1',
+            textTransform: 'uppercase',
+            textShadow: '0 0 10px rgba(212, 175, 55, 0.2)'
+          }}>
+            MAHABLESHWAR
+          </span>
+          <span style={{
+            color: '#52b788',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '0.68rem',
+            fontWeight: '700',
+            letterSpacing: '3.5px',
+            textTransform: 'uppercase',
+            opacity: 0.9
+          }}>
+            PROPERTY OWNER PORTAL
+          </span>
         </div>
 
-        <div className="user-profile-badge">
-          <div className="avatar">{user?.name ? user.name.charAt(0).toUpperCase() : 'H'}</div>
-          <div className="user-info">
-            <h4>{user?.name || 'Property Host'}</h4>
-            <span className="role-tag"><i className="fa-solid fa-shield-halved"></i> Verified Host</span>
+      </div>
+
+      {/* SLIDE-OUT MENU DRAWER OVERLAY & PANEL */}
+      {isDrawerOpen && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 99999,
+            transition: 'opacity 0.3s ease'
+          }}
+          onClick={() => setIsDrawerOpen(false)}
+        />
+      )}
+
+      <aside
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: isDrawerOpen ? 0 : '-340px',
+          width: '300px',
+          height: '100vh',
+          background: 'linear-gradient(180deg, #0d1613 0%, #08110e 100%)',
+          borderRight: '1px solid rgba(212, 175, 55, 0.35)',
+          zIndex: 100000,
+          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '24px',
+          boxShadow: '10px 0 30px rgba(0, 0, 0, 0.6)'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          <div>
+            <h3 style={{ margin: 0, color: '#d4af37', fontFamily: 'Outfit, serif', fontSize: '1.1rem', letterSpacing: '1px' }}>MAHABLESHWAR</h3>
+            <span style={{ fontSize: '0.65rem', color: '#52b788', letterSpacing: '2px', fontWeight: '700' }}>PROPERTY OWNER DRAWER</span>
           </div>
+          <button 
+            onClick={() => setIsDrawerOpen(false)}
+            style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: '1.5rem', cursor: 'pointer', opacity: 0.8 }}
+          >
+            ×
+          </button>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="nav-menu" style={{ display: 'flex', flexDirection: 'column', gap: '10px', flexGrow: 1 }}>
           <button 
             className={`nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
+            onClick={() => { handleTabChange('overview'); setIsDrawerOpen(false); }}
           >
-            <i className="fa-solid fa-chart-line"></i> Dashboard Overview
+            <i className="fa-solid fa-gauge-high"></i> Host Command Center
           </button>
           <button 
             className={`nav-btn ${activeTab === 'properties' ? 'active' : ''}`}
-            onClick={() => setActiveTab('properties')}
+            onClick={() => { handleTabChange('properties'); setIsDrawerOpen(false); }}
           >
-            <i className="fa-solid fa-building-user"></i> My Properties ({totalProperties})
+            <i className="fa-solid fa-hotel"></i> Property Portfolio ({properties.length})
           </button>
           <button 
             className={`nav-btn ${activeTab === 'bookings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('bookings')}
+            onClick={() => { handleTabChange('bookings'); setIsDrawerOpen(false); }}
           >
-            <i className="fa-solid fa-calendar-check"></i> Guest Bookings ({totalBookings})
-          </button>
-          <button 
-            className={`nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
-            onClick={() => setActiveTab('analytics')}
-          >
-            <i className="fa-solid fa-wallet"></i> Earnings & Financials
+            <i className="fa-solid fa-calendar-check"></i> Guest Bookings ({bookings.length})
           </button>
           <button 
             className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
-            onClick={() => setActiveTab('caretakers')}
+            onClick={() => { handleTabChange('caretakers'); setIsDrawerOpen(false); }}
           >
             <i className="fa-solid fa-user-shield"></i> Caretaker Requests ({caretakerApps.length})
           </button>
           <button 
             className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
-            onClick={() => setActiveTab('profile')}
+            onClick={() => { handleTabChange('profile'); setIsDrawerOpen(false); }}
           >
             <i className="fa-solid fa-user-gear"></i> Host Profile Settings
           </button>
         </nav>
 
-        <div className="sidebar-footer">
-          <a href="http://localhost:5173" className="main-site-btn" target="_blank" rel="noreferrer">
-            <i className="fa-solid fa-globe"></i> View Main Site
-          </a>
-          <button className="logout-btn" onClick={handleLogout}>
+        <div className="sidebar-footer" style={{ paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button className="logout-btn" onClick={() => { setIsDrawerOpen(false); handleLogout(); }}>
             <i className="fa-solid fa-right-from-bracket"></i> Sign Out
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="owner-main-content">
-        <header className="content-header">
-          <div className="header-titles">
-            <h1>
-              {activeTab === 'overview' && <><i className="fa-solid fa-gauge-high" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Host Command Center</>}
-              {activeTab === 'properties' && <><i className="fa-solid fa-hotel" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Property Portfolio ({properties.length})</>}
-              {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Guest Reservations ({bookings.length})</>}
-              {activeTab === 'caretakers' && <><i className="fa-solid fa-user-shield" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Property Caretaker Applications ({caretakerApps.length})</>}
-              {activeTab === 'analytics' && <><i className="fa-solid fa-chart-line" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Financial Earnings & Analytics</>}
-              {activeTab === 'profile' && <><i className="fa-solid fa-user-gear" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Host Account Settings</>}
-            </h1>
-            <p>
-              {activeTab === 'overview' && `Welcome back, ${user?.name || 'Owner'}! Track stay performance, guest check-ins & payouts.`}
-              {activeTab === 'properties' && `Manage your luxury stay listings, update direct photos, prices and live GPS links.`}
-              {activeTab === 'bookings' && `Track check-ins, guest contacts, stay payments, and confirm or reject reservations.`}
-              {activeTab === 'caretakers' && `Apply and assign caretakers for your properties, manage guest check-in staff & maintenance.`}
-              {activeTab === 'analytics' && `Track direct stay earnings, average reservation value, and monthly host payouts.`}
-              {activeTab === 'profile' && `Manage your owner identity, contact details and stay policies displayed to travelers.`}
-            </p>
-          </div>
+      <div className={`owner-dashboard-layout ${isSidebarHidden ? 'sidebar-hidden' : ''}`}>
+        {/* Sidebar Navigation */}
+        {!isSidebarHidden && (
+          <aside className="owner-sidebar">
+            <div className="owner-profile-mini">
+              <div className="avatar-circle font-outfit">
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'O'}
+              </div>
+              <div className="user-info">
+                <h4>{user?.name || 'Property Host'}</h4>
+                <span className="role-tag"><i className="fa-solid fa-shield-halved"></i> Verified Host</span>
+              </div>
+            </div>
 
-          <div className="header-actions">
-            {activeTab === 'properties' && (
-              <button className="btn-primary-gold" onClick={() => {
-                setEditingProperty(null);
-                setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' });
-                setShowAddModal(true);
-              }}>
-                <i className="fa-solid fa-plus"></i> Add New Property
+            <nav className="sidebar-nav">
+              <button 
+                className={`nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
+                onClick={() => handleTabChange('overview')}
+              >
+                <i className="fa-solid fa-chart-line"></i> Dashboard Overview
               </button>
-            )}
-          </div>
-        </header>
+              <button 
+                className={`nav-btn ${activeTab === 'properties' ? 'active' : ''}`}
+                onClick={() => handleTabChange('properties')}
+              >
+                <i className="fa-solid fa-building-user"></i> My Properties ({totalProperties})
+              </button>
+              <button 
+                className={`nav-btn ${activeTab === 'bookings' ? 'active' : ''}`}
+                onClick={() => handleTabChange('bookings')}
+              >
+                <i className="fa-solid fa-calendar-check"></i> Guest Bookings ({totalBookings})
+              </button>
+              <button 
+                className={`nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+                onClick={() => handleTabChange('analytics')}
+              >
+                <i className="fa-solid fa-wallet"></i> Earnings & Financials
+              </button>
+              <button 
+                className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
+                onClick={() => handleTabChange('caretakers')}
+              >
+                <i className="fa-solid fa-user-shield"></i> Caretaker Requests ({caretakerApps.length})
+              </button>
+              <button 
+                className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
+                onClick={() => handleTabChange('profile')}
+              >
+                <i className="fa-solid fa-user-gear"></i> Host Profile Settings
+              </button>
+            </nav>
 
-        {/* Global Notifications */}
-        {actionSuccess && (
-          <div className="alert-box success">
-            <i className="fa-solid fa-circle-check"></i> {actionSuccess}
-            <button onClick={() => setActionSuccess('')}><i className="fa-solid fa-xmark"></i></button>
-          </div>
+            <div className="sidebar-footer">
+              <a href="http://localhost:5173" className="main-site-btn" target="_blank" rel="noreferrer">
+                <i className="fa-solid fa-globe"></i> View Main Site
+              </a>
+              <button className="logout-btn" onClick={handleLogout}>
+                <i className="fa-solid fa-right-from-bracket"></i> Sign Out
+              </button>
+            </div>
+          </aside>
         )}
 
-        {error && (
-          <div className="alert-box error">
-            <i className="fa-solid fa-circle-exclamation"></i> {error}
-            <button onClick={() => setError('')}><i className="fa-solid fa-xmark"></i></button>
-          </div>
-        )}
+        {/* Main Content Area */}
+        <main className="owner-main-content">
+          <header className="content-header">
+            <div className="header-titles">
+              <h1>
+                {activeTab === 'overview' && <><i className="fa-solid fa-gauge-high" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Host Command Center</>}
+                {activeTab === 'properties' && <><i className="fa-solid fa-hotel" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Property Portfolio ({properties.length})</>}
+                {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Guest Reservations ({bookings.length})</>}
+                {activeTab === 'caretakers' && <><i className="fa-solid fa-user-shield" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Property Caretaker Applications ({caretakerApps.length})</>}
+                {activeTab === 'analytics' && <><i className="fa-solid fa-chart-line" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Financial Earnings & Analytics</>}
+                {activeTab === 'profile' && <><i className="fa-solid fa-user-gear" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Host Account Settings</>}
+              </h1>
+              <p>
+                {activeTab === 'overview' && `Welcome back, ${user?.name || 'Owner'}! Track stay performance, guest check-ins & payouts.`}
+                {activeTab === 'properties' && `Manage your luxury stay listings, update direct photos, prices and live GPS links.`}
+                {activeTab === 'bookings' && `Track check-ins, guest contacts, stay payments, and confirm or reject reservations.`}
+                {activeTab === 'caretakers' && `Apply and assign caretakers for your properties, manage guest check-in staff & maintenance.`}
+                {activeTab === 'analytics' && `Track direct stay earnings, average reservation value, and monthly host payouts.`}
+                {activeTab === 'profile' && `Manage your owner identity, contact details and stay policies displayed to travelers.`}
+              </p>
+            </div>
 
-        {loading ? (
-          <div className="loading-spinner-container">
-            <i className="fa-solid fa-circle-notch fa-spin"></i>
-            <p>Syncing property records & reservations...</p>
-          </div>
-        ) : (
-          <>
-            {/* TAB 1: OVERVIEW */}
-            {activeTab === 'overview' && (
-              <div className="tab-overview">
-                {/* Stats Cards Grid */}
-                <div className="stats-grid">
+            <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              {activeTab === 'properties' && (
+                <button className="btn-primary-gold" onClick={() => {
+                  setEditingProperty(null);
+                  setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' });
+                  setShowAddModal(true);
+                }}>
+                  <i className="fa-solid fa-plus"></i> Add New Property
+                </button>
+              )}
+            </div>
+          </header>
+
+          {/* Global Notifications */}
+          {actionSuccess && (
+            <div className="alert-box success">
+              <i className="fa-solid fa-circle-check"></i> {actionSuccess}
+              <button onClick={() => setActionSuccess('')}><i className="fa-solid fa-xmark"></i></button>
+            </div>
+          )}
+
+          {error && (
+            <div className="alert-box error">
+              <i className="fa-solid fa-circle-exclamation"></i> {error}
+              <button onClick={() => setError('')}><i className="fa-solid fa-xmark"></i></button>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="loading-spinner-container">
+              <i className="fa-solid fa-circle-notch fa-spin"></i>
+              <p>Syncing property records & reservations...</p>
+            </div>
+          ) : (
+            <>
+              {/* TAB 1: OVERVIEW */}
+              {activeTab === 'overview' && (
+                <div className="tab-overview">
+                  {/* Stats Cards Grid - Only rendered when Cards are not hidden */}
+                  {!isCardsHidden && (
+                    <div className="stats-grid">
                   <div className="stat-card">
                     <div className="stat-icon gold"><i className="fa-solid fa-vihara"></i></div>
                     <div className="stat-info">
@@ -695,10 +835,10 @@ const OwnerDashboard = () => {
                     <div className="stat-info">
                       <span className="stat-label">Host Status</span>
                       <h3 className="stat-value font-gold">Verified</h3>
-                      <span className="stat-sub">Superhost Badge Active</span>
                     </div>
                   </div>
                 </div>
+              )}
 
                 {/* Quick Content Section */}
                 <div className="overview-sections-grid">
@@ -1106,21 +1246,21 @@ const OwnerDashboard = () => {
                                 <button 
                                   onClick={() => setViewingCaretakerApp(app)}
                                   style={{
-                                    background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(179, 143, 40, 0.35) 100%)',
-                                    border: '1px solid #d4af37',
-                                    color: '#ffd700',
+                                    background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                                    border: '1px solid #38bdf8',
+                                    color: '#ffffff',
                                     padding: '7px 14px',
                                     borderRadius: '20px',
-                                    fontWeight: '700',
+                                    fontWeight: '800',
                                     fontSize: '0.8rem',
                                     cursor: 'pointer',
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '6px',
-                                    boxShadow: '0 4px 12px rgba(212, 175, 55, 0.2)'
+                                    boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)'
                                   }}
                                 >
-                                  <i className="fa-solid fa-eye"></i> View Details
+                                  <i className="fa-solid fa-user-shield"></i> View Caretaker Details
                                 </button>
                                 {app.status === 'approved' && (
                                   <button 
@@ -1913,6 +2053,7 @@ const OwnerDashboard = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

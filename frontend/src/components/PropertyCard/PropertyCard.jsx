@@ -7,7 +7,7 @@ const PropertyCard = ({ property }) => {
 
   const handleBookNow = (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const propertyId = property._id || property.id;
     
     const searchParams = new URLSearchParams(location.search);

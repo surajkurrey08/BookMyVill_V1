@@ -5,8 +5,8 @@ import OwnerDashboard from './components/OwnerDashboard/OwnerDashboard';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  const userStr = localStorage.getItem('user');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
 
   if (!token || !userStr) {
     return <Navigate to="/login" replace />;
@@ -15,10 +15,12 @@ const ProtectedRoute = ({ children }) => {
   try {
     const user = JSON.parse(userStr);
     if (user.role !== 'owner' && user.role !== 'admin') {
+      sessionStorage.clear();
       localStorage.clear();
       return <Navigate to="/login" replace />;
     }
   } catch (e) {
+    sessionStorage.clear();
     localStorage.clear();
     return <Navigate to="/login" replace />;
   }

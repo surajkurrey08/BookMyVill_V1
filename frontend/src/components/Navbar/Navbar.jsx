@@ -4,19 +4,37 @@ import './Navbar.css';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isNavHidden, setIsNavHidden] = useState(false);
+  const [menuMode, setMenuMode] = useState(() => localStorage.getItem('navbarMode') || 'auto-hide');
   const [user, setUser] = useState(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    let lastScrollY = window.scrollY;
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
+      const currentScrollY = window.scrollY;
+      setIsScrolled(currentScrollY > 30);
+
+      if (menuMode === 'auto-hide') {
+        if (currentScrollY > 100 && currentScrollY > lastScrollY) {
+          setIsNavHidden(true);
+        } else {
+          setIsNavHidden(false);
+        }
+      } else {
+        setIsNavHidden(false);
+      }
+
+      lastScrollY = currentScrollY;
     };
+
     window.addEventListener('scroll', handleScroll);
 
     // Check for user session
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user');
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
@@ -28,10 +46,17 @@ const Navbar = () => {
     }
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [location.pathname]);
+  }, [location.pathname, menuMode]);
+
+  const toggleMenuMode = () => {
+    const nextMode = menuMode === 'auto-hide' ? 'static' : 'auto-hide';
+    setMenuMode(nextMode);
+    localStorage.setItem('navbarMode', nextMode);
+    setIsNavHidden(false);
+  };
 
   const handleLogout = () => {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     let isOwner = false;
     if (userStr) {
       try {
@@ -40,6 +65,8 @@ const Navbar = () => {
         console.warn('User JSON parse error:', err);
       }
     }
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
@@ -64,7 +91,7 @@ const Navbar = () => {
 
   return (
     <>
-      <header className={`navbar-header ${isScrolled ? 'scrolled' : ''}`}>
+      <header className={`navbar-header ${isScrolled ? 'scrolled' : ''} ${isNavHidden ? 'hidden-nav' : ''}`}>
         <div className="navbar-container">
           <Link to="/" className="logo-link">
             <div className="logo">

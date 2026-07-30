@@ -176,7 +176,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
 
     setShowErrorSummary(false);
     setIsSubmitting(true);
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
     try {
       const cleanPrice = formData.price ? parseInt(formData.price.toString().replace(/[^0-9]/g, ''), 10) : 10000;
