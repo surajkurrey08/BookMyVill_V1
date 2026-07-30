@@ -1,10 +1,10 @@
 === Nginx Config Files ===
 total 8
-drwxr-xr-x 2 root root 4096 Jul 28 08:31 .
+drwxr-xr-x 2 root root 4096 Jul 30 11:37 .
 drwxr-xr-x 8 root root 4096 Jul 22 06:29 ..
 lrwxrwxrwx 1 root root   42 Jul 19 17:54 admin-shiftride -> /etc/nginx/sites-available/admin-shiftride
 lrwxrwxrwx 1 root root   38 Jun  1 09:58 itjobx.conf -> /etc/nginx/sites-available/itjobx.conf
-lrwxrwxrwx 1 root root   39 Jul 28 08:31 lonavala.fun -> /etc/nginx/sites-available/lonavala.fun
+lrwxrwxrwx 1 root root   39 Jul 30 11:37 lonavala.fun -> /etc/nginx/sites-available/lonavala.fun
 lrwxrwxrwx 1 root root   42 Jul 24 07:55 mydoctor.family -> /etc/nginx/sites-available/mydoctor.family
 lrwxrwxrwx 1 root root   37 Jun  2 08:01 punarmilan -> /etc/nginx/sites-available/punarmilan
 lrwxrwxrwx 1 root root   36 Jun  1 09:52 shiftride -> /etc/nginx/sites-available/shiftride
@@ -88,8 +88,8 @@ assets
 index.html
 
 /var/www/lonavala.fun/admin/assets:
-index-BKfRXk5T.js
-index-ym9Odxoj.css
+index-BuAgdx6N.css
+index-V0PmikRR.js
 mahableshwarview-DsV-wUe4.jpg
 
 /var/www/lonavala.fun/backend:
@@ -2874,8 +2874,8 @@ hillstationhome (1)-CPdc08mk.jpg
 hillstationhome (2)-pkfY_wg4.jpg
 hillstationhome (3)-COGwGD8E.jpg
 hillstationhome (4)-CcKTt4FZ.jpg
-index-GUZkqIpC.css
-index-kW2sQA-I.js
+index-BfEUIPFK.css
+index-BgNMxy4X.js
 krishnabai-temple-mahabaleshwar-maharashtra-1-attr-nearby-CVbiuSVQ.jpg
 mahableshwarview-DsV-wUe4.jpg
 morarji-castle--BN1oJhdY.jpg
