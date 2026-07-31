@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import Lenis from 'lenis';
 import Navbar from './components/Navbar/Navbar';
 import Hero from './components/Hero/Hero';
-import Features from './components/Features/Features';
 import Destinations from './components/Destinations/Destinations';
 import PropertyGrid from './components/PropertyGrid/PropertyGrid';
 import Footer from './components/Footer/Footer';
@@ -227,7 +226,6 @@ const Home = () => {
       <Navbar />
       <main>
         <Hero />
-        <Features />
         <Destinations />
         <PropertyGrid isHomePage={true} />
       </main>

@@ -936,18 +936,42 @@ const PropertyGrid = ({ isHomePage = false }) => {
                 ))}
               </div>
 
-              <form onSubmit={handleSearchSubmit} className="explore-search-form">
-                <input 
-                  type="text" 
-                  placeholder="Search location or property..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="explore-search-input"
-                />
-                <button type="submit" className="explore-search-btn" title="Search">
-                  <i className="fa-solid fa-magnifying-glass"></i>
-                </button>
-              </form>
+              <div className="explore-search-dropdown-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '290px' }}>
+                <form onSubmit={handleSearchSubmit} className="explore-search-form" style={{ width: '100%', margin: 0 }}>
+                  <input 
+                    type="text" 
+                    placeholder="Search location or property..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="explore-search-input"
+                  />
+                  <button type="submit" className="explore-search-btn" title="Search">
+                    <i className="fa-solid fa-magnifying-glass"></i>
+                  </button>
+                </form>
+
+                {/* Quick Find Hotel on Map Dropdown Below Search Bar */}
+                <select 
+                  className="hotel-quick-select explore-hotel-select"
+                  value={selectedPropertyId || ''}
+                  onChange={(e) => {
+                    const selectedId = e.target.value;
+                    if (selectedId) {
+                      const targetProp = resolvedAllProperties.find(p => String(p.id) === String(selectedId));
+                      if (targetProp) {
+                        selectHotelOnMap(targetProp);
+                      }
+                    } else {
+                      setSelectedPropertyId(null);
+                    }
+                  }}
+                >
+                  <option value="">Find Hotel on Map...</option>
+                  {filteredProperties.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.location.split(',')[0]})</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 

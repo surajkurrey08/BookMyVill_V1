@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Hero.css';
 import { API_BASE_URL } from '../../config';
@@ -9,6 +9,22 @@ import bg2 from '../../assets/hillstationhome (2).jpg';
 import bg3 from '../../assets/hillstationhome (3).jpg';
 import bg4 from '../../assets/hillstationhome (4).jpg';
 
+const popularDestinations = [
+  { name: 'Mahabaleshwar', famous: 'Arthur\'s Seat, Wilson Point, Venna Lake', image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Panchgani', famous: 'Table Land, Sydney Point, Parsi Point', image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Lonavala', famous: 'Tiger\'s Leap, Bhushi Dam, Lion\'s Point', image: 'https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Khandala', famous: 'Duke\'s Nose, Rajmachi Point', image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Matheran', famous: 'Panorama Point, Echo Point, Louisa Point', image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Igatpuri', famous: 'Kalsubai Peak, Camel Valley, Ghatandevi', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Bhandardara', famous: 'Arthur Lake, Wilson Dam, Randha Falls', image: 'https://images.unsplash.com/photo-1510312305653-8ed496efae75?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Chikhaldara', famous: 'Hurricane Point, Prospect Point, Devi Point', image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Toranmal', famous: 'Yashavant Lake, Lotus Lake, Sita Khai', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Jawhar', famous: 'Jai Vilas Palace, Dabhosa Falls', image: 'https://images.unsplash.com/photo-1434394354979-a235cd36269d?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Panhala', famous: 'Sunset Point, Tabak Udyan, Sajja Kothi', image: 'https://images.unsplash.com/photo-1586375300773-8384e3e4916f?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Kaas Plateau', famous: 'Kaas Lake, Flower Valley', image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400&auto=format&fit=crop&q=80' },
+  { name: 'Amboli', famous: 'Amboli Falls, Sunset Point', image: 'https://images.unsplash.com/photo-1511497584788-876761c11969?w=400&auto=format&fit=crop&q=80' }
+];
+
 const Hero = () => {
   const images = [bg1, bg2, bg3, bg4];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -18,6 +34,7 @@ const Hero = () => {
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('1');
   const navigate = useNavigate();
+  const destScrollRef = useRef(null);
 
   useEffect(() => {
     // Fetch registered hotels and merge with mock data
@@ -64,15 +81,16 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, [images.length]);
 
-  // Extract unique locations sorted alphabetically
+  // Extract unique locations including popular districts
   const uniqueLocations = Array.from(
-    new Set(
-      hotels.map(h => {
+    new Set([
+      ...hotels.map(h => {
         if (!h.location) return '';
         const parts = h.location.split(',');
         return parts[0].trim();
-      }).filter(Boolean)
-    )
+      }).filter(Boolean),
+      ...popularDestinations.map(d => d.name)
+    ])
   ).sort();
 
   const getTodayDateString = () => {
@@ -95,6 +113,23 @@ const Hero = () => {
     } else {
       navigate('/explore');
     }
+  };
+
+  const handleScroll = (direction) => {
+    if (destScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -350 : 350;
+      destScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const handleSelectDest = (destName) => {
+    setSelectedLocation(destName);
+    const queryParams = new URLSearchParams();
+    queryParams.append('search', destName);
+    if (checkIn) queryParams.append('checkIn', checkIn);
+    if (checkOut) queryParams.append('checkOut', checkOut);
+    if (guests) queryParams.append('guests', guests);
+    navigate(`/explore?${queryParams.toString()}`);
   };
 
   return (
@@ -176,9 +211,50 @@ const Hero = () => {
 
           <button className="search-btn" onClick={handleSearch}>Search</button>
         </div>
+
+        {/* Popular Hill Stations Circle Images Slider */}
+        <div className="hero-destinations-wrapper">
+          <div className="hero-destinations-header">
+            <span className="destinations-label">Explore Top Hill Stations</span>
+            <div className="dest-scroll-arrows">
+              <button 
+                className="dest-arrow-btn" 
+                onClick={() => handleScroll('left')} 
+                aria-label="Scroll Left"
+              >
+                ‹
+              </button>
+              <button 
+                className="dest-arrow-btn" 
+                onClick={() => handleScroll('right')} 
+                aria-label="Scroll Right"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+
+          <div className="hero-destinations-scroll" ref={destScrollRef}>
+            {popularDestinations.map((dest, idx) => (
+              <div 
+                key={idx} 
+                className={`circle-dest-card ${selectedLocation === dest.name ? 'active' : ''}`}
+                onClick={() => handleSelectDest(dest.name)}
+                title={`${dest.name} (${dest.famous})`}
+              >
+                <div className="circle-img-box">
+                  <img src={dest.image} alt={dest.name} loading="lazy" />
+                </div>
+                <span className="circle-dest-name">{dest.name}</span>
+                <span className="circle-dest-spots">{dest.famous}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
 };
 
 export default Hero;
+

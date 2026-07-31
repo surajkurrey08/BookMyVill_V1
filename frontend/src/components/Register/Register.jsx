@@ -139,26 +139,6 @@ const Register = () => {
           </div>
           <h2>Join as a Traveler</h2>
           <p>Create your luxury guest member account</p>
-
-          <div style={{
-            background: 'rgba(16, 185, 129, 0.12)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: '12px',
-            padding: '10px 14px',
-            marginTop: '14px',
-            fontSize: '0.82rem',
-            color: '#a3b18a',
-            textAlign: 'left',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}>
-            <i className="fa-solid fa-suitcase" style={{ color: '#10b981', fontSize: '1.1rem' }}></i>
-            <div>
-              <strong style={{ color: '#ffffff', display: 'block' }}>Traveler & Guest Account (Limited Access)</strong>
-              <span>Provides access to explore luxury stays, reserve bookings, and manage personal stay history.</span>
-            </div>
-          </div>
         </div>
 
         {errorMsg && (

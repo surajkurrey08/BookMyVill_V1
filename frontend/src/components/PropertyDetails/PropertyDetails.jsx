@@ -31,7 +31,15 @@ const PropertyDetails = () => {
   const [pendingData, setPendingData] = useState(null);
   const [bookingNotice, setBookingNotice] = useState({ type: '', msg: '' });
   const [stayType, setStayType] = useState('night');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('upi');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('card');
+  const [cardDetails, setCardDetails] = useState({
+    number: '',
+    name: '',
+    expiry: '',
+    cvv: ''
+  });
+  const [upiId, setUpiId] = useState('');
+  const [selectedBank, setSelectedBank] = useState('HDFC Bank');
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [activeMediaType, setActiveMediaType] = useState('photo'); // 'photo' or 'video'
 
@@ -42,6 +50,25 @@ const PropertyDetails = () => {
     index: 0
   });
   const [zoomScale, setZoomScale] = useState(1);
+
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || '';
+    const parts = [];
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    return parts.length ? parts.join(' ') : value;
+  };
+
+  const formatExpiry = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (v.length >= 2) {
+      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
+    }
+    return v;
+  };
 
   const mapRef = useRef(null);
 
@@ -509,6 +536,27 @@ const PropertyDetails = () => {
       setBookingNotice({ type: 'error', msg: 'Order ID missing. Please try reserving again.' });
       setShowFakeModal(false);
       return;
+    }
+
+    if (selectedPaymentMethod === 'card') {
+      const cleanNum = cardDetails.number.replace(/\s+/g, '');
+      if (!cleanNum || cleanNum.length < 15) {
+        setBookingNotice({ type: 'error', msg: 'Please enter a valid 16-digit credit/debit card number.' });
+        return;
+      }
+      if (!cardDetails.expiry || cardDetails.expiry.length < 5) {
+        setBookingNotice({ type: 'error', msg: 'Please enter valid card expiry date (MM/YY).' });
+        return;
+      }
+      if (!cardDetails.cvv || cardDetails.cvv.length < 3) {
+        setBookingNotice({ type: 'error', msg: 'Please enter a valid 3-digit CVV code.' });
+        return;
+      }
+    } else if (selectedPaymentMethod === 'upi') {
+      if (!upiId.trim() || !upiId.includes('@')) {
+        setBookingNotice({ type: 'error', msg: 'Please enter a valid UPI ID (e.g. name@upi or 9876543210@paytm).' });
+        return;
+      }
     }
 
     setIsProcessing(true);
@@ -1101,153 +1149,250 @@ const PropertyDetails = () => {
 
         {/* Multi-Option Payment Gateway Modal */}
         {showFakeModal && (
-          <div className="fake-payment-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '20px 10px', boxSizing: 'border-box', overflowY: 'auto' }}>
-            <div className="fake-payment-modal glass-morphism" style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: '24px', padding: '24px', background: 'linear-gradient(145deg, #1b262c 0%, #0f171e 100%)', border: '1px solid rgba(212, 175, 55, 0.4)', color: '#ffffff', boxSizing: 'border-box' }}>
-              <div className="modal-header" style={{ marginBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+          <div className="fake-payment-overlay">
+            <div className="fake-payment-modal">
+              <div className="payment-modal-header">
                 <div>
-                  <h3 style={{ fontSize: '1.5rem', color: '#ffd700', margin: 0, fontFamily: 'Cormorant Garamond, serif' }}>Select Payment Method</h3>
-                  <p style={{ margin: '4px 0 0 0', opacity: 0.8, fontSize: '0.88rem' }}>Choose your preferred payment gateway option</p>
+                  <h3>Payment Gateway Checkout</h3>
+                  <p><i className="fa-solid fa-lock" style={{ color: '#52b788', marginRight: '4px' }}></i> 256-Bit SSL Encrypted & PCI-DSS Compliant Payment</p>
                 </div>
-                <button onClick={() => setShowFakeModal(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.6rem', cursor: 'pointer' }}>×</button>
+                <button onClick={() => setShowFakeModal(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.6rem', cursor: 'pointer', lineHeight: 1 }}>×</button>
               </div>
 
-              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto', flex: 1, paddingRight: '6px', maxHeight: 'calc(90vh - 80px)' }}>
-                <div className="payment-summary" style={{ background: 'rgba(255,255,255,0.05)', padding: '16px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
+              <div className="payment-modal-body">
+                {/* Summary */}
+                <div className="payment-summary-box">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '0.9rem', color: '#e0e0e0' }}>Property Stay:</span>
-                    <strong style={{ color: '#fff', fontSize: '1rem' }}>{property.name}</strong>
+                    <span style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)' }}>Property Stay:</span>
+                    <strong style={{ color: '#ffd700', fontSize: '0.98rem' }}>{property.name}</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                    <span style={{ fontSize: '0.9rem', color: '#e0e0e0' }}>Total Amount Payable:</span>
-                    <strong style={{ color: '#52b788', fontSize: '1.3rem' }}>₹{calculateTotalPrice()}</strong>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)' }}>Total Amount Payable:</span>
+                    <strong style={{ color: '#52b788', fontSize: '1.35rem', fontWeight: '800' }}>₹{calculateTotalPrice().toLocaleString('en-IN')}</strong>
                   </div>
                 </div>
 
-                {/* Multiple Payment Options List */}
+                {/* Select Payment Mode */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <label style={{ fontSize: '0.88rem', fontWeight: '700', color: '#d4af37', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Available Payment Modes:</label>
-                  
-                  <div className="payment-options-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {/* Option 1: UPI */}
-                    <div 
-                      onClick={() => setSelectedPaymentMethod('upi')} 
+                  <label style={{ fontSize: '0.82rem', fontWeight: '700', color: '#d4af37', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Choose Payment Option:</label>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    {/* Mode 1: Credit / Debit Card */}
+                    <div
+                      onClick={() => setSelectedPaymentMethod('card')}
+                      className="payment-mode-card"
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '14px 18px',
-                        borderRadius: '16px',
+                        border: selectedPaymentMethod === 'card' ? '2px solid #d4af37' : '1px solid rgba(255,255,255,0.15)',
+                        background: selectedPaymentMethod === 'card' ? 'rgba(212, 175, 55, 0.18)' : 'rgba(255,255,255,0.04)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <i className="fa-solid fa-credit-card" style={{ fontSize: '1.2rem', color: '#38bdf8' }}></i>
+                        <div>
+                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.88rem' }}>Credit / Debit Card</strong>
+                          <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)' }}>Visa, MasterCard, RuPay</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Mode 2: UPI */}
+                    <div
+                      onClick={() => setSelectedPaymentMethod('upi')}
+                      className="payment-mode-card"
+                      style={{
                         border: selectedPaymentMethod === 'upi' ? '2px solid #52b788' : '1px solid rgba(255,255,255,0.15)',
-                        background: selectedPaymentMethod === 'upi' ? 'rgba(82, 183, 136, 0.15)' : 'rgba(255,255,255,0.04)',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
+                        background: selectedPaymentMethod === 'upi' ? 'rgba(82, 183, 136, 0.18)' : 'rgba(255,255,255,0.04)'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <i className="fa-solid fa-mobile-screen-button" style={{ fontSize: '1.4rem', color: '#52b788' }}></i>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <i className="fa-solid fa-mobile-screen-button" style={{ fontSize: '1.2rem', color: '#52b788' }}></i>
                         <div>
-                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.95rem' }}>UPI Instant Payment</strong>
-                          <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>Google Pay, PhonePe, Paytm, BHIM UPI</span>
+                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.88rem' }}>UPI Instant Pay</strong>
+                          <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)' }}>GPay, PhonePe, Paytm</span>
                         </div>
                       </div>
-                      <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'upi'} onChange={() => {}} style={{ accentColor: '#52b788', width: '18px', height: '18px', cursor: 'pointer' }} />
                     </div>
 
-                    {/* Option 2: Cards */}
-                    <div 
-                      onClick={() => setSelectedPaymentMethod('card')} 
+                    {/* Mode 3: Net Banking */}
+                    <div
+                      onClick={() => setSelectedPaymentMethod('netbanking')}
+                      className="payment-mode-card"
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '14px 18px',
-                        borderRadius: '16px',
-                        border: selectedPaymentMethod === 'card' ? '2px solid #52b788' : '1px solid rgba(255,255,255,0.15)',
-                        background: selectedPaymentMethod === 'card' ? 'rgba(82, 183, 136, 0.15)' : 'rgba(255,255,255,0.04)',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
+                        border: selectedPaymentMethod === 'netbanking' ? '2px solid #d4af37' : '1px solid rgba(255,255,255,0.15)',
+                        background: selectedPaymentMethod === 'netbanking' ? 'rgba(82, 183, 136, 0.18)' : 'rgba(255,255,255,0.04)'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <i className="fa-solid fa-credit-card" style={{ fontSize: '1.4rem', color: '#38bdf8' }}></i>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <i className="fa-solid fa-building-columns" style={{ fontSize: '1.2rem', color: '#d4af37' }}></i>
                         <div>
-                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.95rem' }}>Credit / Debit Cards</strong>
-                          <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>Visa, MasterCard, RuPay, Maestro</span>
+                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.88rem' }}>Net Banking</strong>
+                          <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)' }}>All Major Banks</span>
                         </div>
                       </div>
-                      <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'card'} onChange={() => {}} style={{ accentColor: '#52b788', width: '18px', height: '18px', cursor: 'pointer' }} />
                     </div>
 
-                    {/* Option 3: Net Banking */}
-                    <div 
-                      onClick={() => setSelectedPaymentMethod('netbanking')} 
+                    {/* Mode 4: Pay at Check-In */}
+                    <div
+                      onClick={() => setSelectedPaymentMethod('pay_at_hotel')}
+                      className="payment-mode-card"
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '14px 18px',
-                        borderRadius: '16px',
-                        border: selectedPaymentMethod === 'netbanking' ? '2px solid #52b788' : '1px solid rgba(255,255,255,0.15)',
-                        background: selectedPaymentMethod === 'netbanking' ? 'rgba(82, 183, 136, 0.15)' : 'rgba(255,255,255,0.04)',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
+                        border: selectedPaymentMethod === 'pay_at_hotel' ? '2px solid #f43f5e' : '1px solid rgba(255,255,255,0.15)',
+                        background: selectedPaymentMethod === 'pay_at_hotel' ? 'rgba(244, 63, 94, 0.18)' : 'rgba(255,255,255,0.04)'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <i className="fa-solid fa-building-columns" style={{ fontSize: '1.4rem', color: '#d4af37' }}></i>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <i className="fa-solid fa-hotel" style={{ fontSize: '1.2rem', color: '#f43f5e' }}></i>
                         <div>
-                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.95rem' }}>Net Banking</strong>
-                          <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>HDFC, SBI, ICICI, Axis & all major Indian banks</span>
+                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.88rem' }}>Pay at Hotel</strong>
+                          <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)' }}>Pay Token Now</span>
                         </div>
                       </div>
-                      <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'netbanking'} onChange={() => {}} style={{ accentColor: '#52b788', width: '18px', height: '18px', cursor: 'pointer' }} />
-                    </div>
-
-                    {/* Option 4: Pay at Check-In */}
-                    <div 
-                      onClick={() => setSelectedPaymentMethod('pay_at_hotel')} 
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '14px 18px',
-                        borderRadius: '16px',
-                        border: selectedPaymentMethod === 'pay_at_hotel' ? '2px solid #52b788' : '1px solid rgba(255,255,255,0.15)',
-                        background: selectedPaymentMethod === 'pay_at_hotel' ? 'rgba(82, 183, 136, 0.15)' : 'rgba(255,255,255,0.04)',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <i className="fa-solid fa-hotel" style={{ fontSize: '1.4rem', color: '#f43f5e' }}></i>
-                        <div>
-                          <strong style={{ display: 'block', color: '#fff', fontSize: '0.95rem' }}>Pay at Check-In / Hotel</strong>
-                          <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>Pay 20% Token now, balance on stay check-in</span>
-                        </div>
-                      </div>
-                      <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'pay_at_hotel'} onChange={() => {}} style={{ accentColor: '#52b788', width: '18px', height: '18px', cursor: 'pointer' }} />
                     </div>
                   </div>
                 </div>
 
-                {/* ACTION BUTTONS INSIDE SCROLLABLE MODAL BODY */}
-                <div style={{ display: 'flex', gap: '12px', marginTop: '8px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
-                  <button 
-                    onClick={confirmFakePayment} 
-                    disabled={isProcessing} 
-                    className="btn-primary pay-btn" 
-                    style={{ flex: 1, padding: '14px 20px', borderRadius: '50px', background: 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)', color: '#1a1a1a', border: 'none', fontWeight: '800', fontSize: '1rem', cursor: isProcessing ? 'not-allowed' : 'pointer' }}
-                  >
-                    {isProcessing ? 'Verifying Payment...' : `Pay ₹${calculateTotalPrice()} via ${selectedPaymentMethod === 'upi' ? 'UPI' : selectedPaymentMethod === 'card' ? 'Card' : selectedPaymentMethod === 'netbanking' ? 'NetBanking' : 'Hotel Check-In'}`}
-                  </button>
-                  <button 
-                    onClick={() => setShowFakeModal(false)} 
-                    className="btn-text cancel-btn" 
-                    style={{ padding: '14px 22px', borderRadius: '50px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)', cursor: 'pointer' }}
-                  >
-                    Cancel
-                  </button>
-                </div>
+                {/* DYNAMIC FORM SECTION */}
+                {selectedPaymentMethod === 'card' && (
+                  <div className="card-form-wrapper" style={{ marginTop: '4px' }}>
+                    {/* Live Virtual Credit Card */}
+                    <div className="virtual-credit-card">
+                      <div className="card-top-row">
+                        <div className="card-emv-chip"></div>
+                        <span className="card-brand-logo">
+                          {cardDetails.number.startsWith('4') ? 'VISA' : cardDetails.number.startsWith('5') ? 'MasterCard' : cardDetails.number.startsWith('6') ? 'RuPay' : 'CARD'}
+                        </span>
+                      </div>
+                      <div className="card-number-display">
+                        {cardDetails.number || '•••• •••• •••• ••••'}
+                      </div>
+                      <div className="card-bottom-row">
+                        <div className="card-holder-text">
+                          <span className="card-label">CARD HOLDER</span>
+                          <span className="card-val">{cardDetails.name || 'TRAVELER NAME'}</span>
+                        </div>
+                        <div className="card-expiry-text">
+                          <span className="card-label">EXPIRES</span>
+                          <span className="card-val">{cardDetails.expiry || 'MM/YY'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Inputs */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                      <input
+                        type="text"
+                        placeholder="Card Number (e.g. 4111 2222 3333 4444)"
+                        maxLength={19}
+                        value={cardDetails.number}
+                        onChange={(e) => setCardDetails(prev => ({ ...prev, number: formatCardNumber(e.target.value) }))}
+                        className="payment-input-field"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Cardholder Name (as on card)"
+                        value={cardDetails.name}
+                        onChange={(e) => setCardDetails(prev => ({ ...prev, name: e.target.value.toUpperCase() }))}
+                        className="payment-input-field"
+                      />
+                      <div className="card-input-grid">
+                        <input
+                          type="text"
+                          placeholder="Expiry (MM/YY)"
+                          maxLength={5}
+                          value={cardDetails.expiry}
+                          onChange={(e) => setCardDetails(prev => ({ ...prev, expiry: formatExpiry(e.target.value) }))}
+                          className="payment-input-field"
+                        />
+                        <input
+                          type="password"
+                          placeholder="CVV / CVC"
+                          maxLength={4}
+                          value={cardDetails.cvv}
+                          onChange={(e) => setCardDetails(prev => ({ ...prev, cvv: e.target.value.replace(/[^0-9]/g, '') }))}
+                          className="payment-input-field"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedPaymentMethod === 'upi' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {['Google Pay', 'PhonePe', 'Paytm', 'BHIM UPI'].map(app => (
+                        <button
+                          key={app}
+                          type="button"
+                          onClick={() => setUpiId(`user@${app.toLowerCase().replace(/[^a-z]/g, '')}`)}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '16px',
+                            background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            color: '#fff',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            fontWeight: '600'
+                          }}
+                        >
+                          ⚡ {app}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Enter Virtual Payment Address (e.g. 9876543210@paytm)"
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                      className="payment-input-field"
+                    />
+                  </div>
+                )}
+
+                {selectedPaymentMethod === 'netbanking' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+                    <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)' }}>Select Primary Indian Bank:</label>
+                    <select
+                      value={selectedBank}
+                      onChange={(e) => setSelectedBank(e.target.value)}
+                      className="payment-input-field"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <option value="HDFC Bank">HDFC Bank</option>
+                      <option value="State Bank of India">State Bank of India (SBI)</option>
+                      <option value="ICICI Bank">ICICI Bank</option>
+                      <option value="Axis Bank">Axis Bank</option>
+                      <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+                    </select>
+                  </div>
+                )}
+
+                {selectedPaymentMethod === 'pay_at_hotel' && (
+                  <div style={{ background: 'rgba(244, 63, 94, 0.1)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(244, 63, 94, 0.3)', marginTop: '8px' }}>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#ff6b6b', fontWeight: '700' }}>
+                      📍 Pay 20% Token Amount (₹{Math.round(calculateTotalPrice() * 0.2).toLocaleString('en-IN')}) now to confirm your slot. The remaining balance will be settled directly at the property desk upon check-in.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* GUARANTEED FIXED STICKY FOOTER ACTION BUTTONS */}
+              <div className="payment-modal-footer">
+                <button
+                  onClick={confirmFakePayment}
+                  disabled={isProcessing}
+                  className="btn-primary pay-btn"
+                  style={{ flex: 1, padding: '14px 20px', borderRadius: '50px', background: 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)', color: '#1a1a1a', border: 'none', fontWeight: '800', fontSize: '1rem', cursor: isProcessing ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)' }}
+                >
+                  {isProcessing ? 'Verifying Payment...' : `Pay ₹${calculateTotalPrice().toLocaleString('en-IN')} & Confirm`}
+                </button>
+                <button
+                  onClick={() => setShowFakeModal(false)}
+                  className="btn-text cancel-btn"
+                  style={{ padding: '14px 22px', borderRadius: '50px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', fontWeight: '700' }}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
