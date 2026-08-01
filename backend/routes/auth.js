@@ -168,6 +168,92 @@ router.get('/login', (req, res) => {
   res.json({ msg: 'Authentication endpoint active. Submit a POST request with email and password to log in.' });
 });
 
+// Step 1: Request 6-Digit OTP for Secure Password Reset
+router.post('/request-otp', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ msg: 'Please provide your registered email address.' });
+    }
+
+    const cleanEmail = (email || '').toLowerCase().trim();
+    const user = await User.findOne({ 
+      email: { $regex: new RegExp('^' + cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') } 
+    });
+
+    if (!user) {
+      return res.status(404).json({ msg: 'No account found with this email address. Please check your email or register.' });
+    }
+
+    // Generate secure 6-digit OTP code
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiryTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes validity
+
+    user.resetOtp = generatedOtp;
+    user.resetOtpExpires = expiryTime;
+    await user.save();
+
+    console.log(`🔑 [SECURITY OTP GENERATED] For ${cleanEmail}: OTP is [ ${generatedOtp} ] (Expires in 15 mins)`);
+
+    res.json({
+      success: true,
+      msg: `Verification OTP generated for ${cleanEmail}! Use OTP: ${generatedOtp}`,
+      otp: generatedOtp
+    });
+  } catch (err) {
+    console.error('Error generating reset OTP:', err);
+    res.status(500).json({ msg: 'Server error generating verification code.', error: err.message });
+  }
+});
+
+// Step 2: Verify 6-Digit OTP & Reset Password Securely
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email, otpCode, newPassword, confirmPassword } = req.body;
+    if (!email || !otpCode || !newPassword) {
+      return res.status(400).json({ msg: 'Please enter your email, 6-digit verification code, and new password.' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ msg: 'Password must be at least 6 characters long.' });
+    }
+
+    if (confirmPassword && newPassword !== confirmPassword) {
+      return res.status(400).json({ msg: 'New password and confirmation password do not match.' });
+    }
+
+    const cleanEmail = (email || '').toLowerCase().trim();
+    const user = await User.findOne({ 
+      email: { $regex: new RegExp('^' + cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') } 
+    });
+
+    if (!user) {
+      return res.status(404).json({ msg: 'No account found with this email address.' });
+    }
+
+    // Verify OTP code security & Expiry
+    if (!user.resetOtp || user.resetOtp.trim() !== otpCode.trim()) {
+      return res.status(400).json({ msg: 'Invalid verification OTP code. Please check the code or request a new one.' });
+    }
+
+    if (!user.resetOtpExpires || new Date() > new Date(user.resetOtpExpires)) {
+      return res.status(400).json({ msg: 'Verification OTP code has expired. Please click "Resend Code".' });
+    }
+
+    // OTP Verified! Update user password and clear OTP
+    user.password = newPassword;
+    user.resetOtp = null;
+    user.resetOtpExpires = null;
+    await user.save();
+
+    console.log(`✅ [SECURE PASSWORD RESET SUCCESSFUL] For user: ${cleanEmail}`);
+    res.json({ success: true, msg: 'Password verified & reset successfully! You can now log in.' });
+  } catch (err) {
+    console.error('Error resetting password:', err);
+    res.status(500).json({ msg: 'Server error while resetting password.', error: err.message });
+  }
+});
+
 const auth = require('../middleware/auth');
 
 // Update User/Provider Profile

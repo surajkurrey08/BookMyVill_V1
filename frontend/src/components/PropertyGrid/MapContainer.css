@@ -251,8 +251,9 @@
   width: 100%;
   padding: 10px 16px 10px 42px;
   border-radius: 30px;
-  border: 1px solid rgba(45, 67, 61, 0.2);
-  background: #fdfcf9;
+  border: none;
+  outline: none;
+  background: transparent;
   font-family: inherit;
   font-size: 0.95rem;
   color: var(--text-primary);
@@ -261,8 +262,7 @@
 
 .search-location-input:focus {
   outline: none;
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+  box-shadow: none;
 }
 
 .viewport-checkbox-label {

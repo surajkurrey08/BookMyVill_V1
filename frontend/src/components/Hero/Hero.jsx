@@ -115,12 +115,9 @@ const Hero = () => {
     }
   };
 
-  const handleScroll = (direction) => {
-    if (destScrollRef.current) {
-      const scrollAmount = direction === 'left' ? -350 : 350;
-      destScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftState, setScrollLeftState] = useState(0);
 
   const handleSelectDest = (destName) => {
     setSelectedLocation(destName);
@@ -130,6 +127,40 @@ const Hero = () => {
     if (checkOut) queryParams.append('checkOut', checkOut);
     if (guests) queryParams.append('guests', guests);
     navigate(`/explore?${queryParams.toString()}`);
+  };
+
+  const handleScroll = (direction) => {
+    if (destScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -350 : 350;
+      destScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const handleWheel = (e) => {
+    if (destScrollRef.current) {
+      if (e.deltaY !== 0) {
+        destScrollRef.current.scrollLeft += e.deltaY * 1.2;
+      }
+    }
+  };
+
+  const handleMouseDown = (e) => {
+    if (!destScrollRef.current) return;
+    setIsMouseDown(true);
+    setStartX(e.pageX - destScrollRef.current.offsetLeft);
+    setScrollLeftState(destScrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeaveOrUp = () => {
+    setIsMouseDown(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isMouseDown || !destScrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - destScrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.8;
+    destScrollRef.current.scrollLeft = scrollLeftState - walk;
   };
 
   return (
@@ -212,29 +243,25 @@ const Hero = () => {
           <button className="search-btn" onClick={handleSearch}>Search</button>
         </div>
 
-        {/* Popular Hill Stations Circle Images Slider */}
-        <div className="hero-destinations-wrapper">
-          <div className="hero-destinations-header">
-            <span className="destinations-label">Explore Top Hill Stations</span>
-            <div className="dest-scroll-arrows">
-              <button 
-                className="dest-arrow-btn" 
-                onClick={() => handleScroll('left')} 
-                aria-label="Scroll Left"
-              >
-                ‹
-              </button>
-              <button 
-                className="dest-arrow-btn" 
-                onClick={() => handleScroll('right')} 
-                aria-label="Scroll Right"
-              >
-                ›
-              </button>
-            </div>
-          </div>
+        {/* Interactive Circle Hill Stations Scroll Bar Below Search Bar */}
+        <div className="hero-destinations-outer">
+          <button 
+            className="circle-scroll-arrow left-arrow" 
+            onClick={() => handleScroll('left')} 
+            aria-label="Scroll Left"
+          >
+            ‹
+          </button>
 
-          <div className="hero-destinations-scroll" ref={destScrollRef}>
+          <div 
+            className={`hero-destinations-scroll ${isMouseDown ? 'dragging' : ''}`} 
+            ref={destScrollRef}
+            onWheel={handleWheel}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeaveOrUp}
+            onMouseUp={handleMouseLeaveOrUp}
+            onMouseMove={handleMouseMove}
+          >
             {popularDestinations.map((dest, idx) => (
               <div 
                 key={idx} 
@@ -250,6 +277,14 @@ const Hero = () => {
               </div>
             ))}
           </div>
+
+          <button 
+            className="circle-scroll-arrow right-arrow" 
+            onClick={() => handleScroll('right')} 
+            aria-label="Scroll Right"
+          >
+            ›
+          </button>
         </div>
       </div>
     </section>
@@ -257,4 +292,5 @@ const Hero = () => {
 };
 
 export default Hero;
+
 

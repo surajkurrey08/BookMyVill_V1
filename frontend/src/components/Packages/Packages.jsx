@@ -15,6 +15,7 @@ const Packages = () => {
   const [activeBadgeFilter, setActiveBadgeFilter] = useState('All');
   const [sortOrder, setSortOrder] = useState('low-high');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedView, setSelectedView] = useState('All');
   const [showFilterModal, setShowFilterModal] = useState(false);
 
   const packageList = [
@@ -61,82 +62,43 @@ const Packages = () => {
       id: 4,
       propertyId: 2,
       hotelName: 'Venna Lake Resort',
-      title: 'Weekend Panchgani Luxury Escape',
+      title: 'Lakeside Serenity & Boating Package',
       badge: 'Weekend Special',
       duration: '2 Days / 1 Night',
       price: '₹14,500',
       numericPrice: 14500,
-      status: 'Filling Fast',
+      status: 'Available',
       count: '4 Rooms Available',
       image: pkg4
     },
     {
       id: 5,
-      propertyId: 13,
-      hotelName: 'Bloom Hotel - Balewadi',
-      title: 'Balewadi High Street Executive Getaway',
+      propertyId: 5,
+      hotelName: 'Kshitij An Apartment Hotel',
+      title: 'Business & Highway Executive Package',
       badge: 'Corporate Special',
-      duration: '2 Days / 1 Night',
-      price: '₹8,999',
-      numericPrice: 8999,
+      duration: '3 Days / 2 Nights',
+      price: '₹12,999',
+      numericPrice: 12999,
       status: 'Available',
-      count: '6 Executive Suites Left',
+      count: '6 Rooms Available',
       image: pkg1
     },
     {
       id: 6,
-      propertyId: 11,
-      hotelName: 'Sayaji Hotel Pune',
-      title: 'Wakad & Baner Business Luxury Staycation',
+      propertyId: 6,
+      hotelName: 'The Orchid Balewadi',
+      title: 'Luxury Spa & Gourmet Weekend Staycation',
       badge: 'Luxury Staycation',
-      duration: '3 Days / 2 Nights',
-      price: '₹16,800',
-      numericPrice: 16800,
-      status: 'Filling Fast',
-      count: '3 Deluxe Rooms Left',
-      image: pkg2
-    },
-    {
-      id: 7,
-      propertyId: 8,
-      hotelName: 'Lonavala Valley Eco Resort',
-      title: 'Lonavala Monsoon Waterfall & Cliff Retreat',
-      badge: 'Adventure',
-      duration: '3 Days / 2 Nights',
-      price: '₹22,500',
-      numericPrice: 22500,
-      status: 'Available',
-      count: '4 Eco Villas Available',
+      duration: '2 Days / 1 Night',
+      price: '₹16,500',
+      numericPrice: 16500,
+      status: 'Limited Suites',
+      count: '2 Suites Left',
       image: pkg3
     },
     {
-      id: 8,
-      propertyId: 9,
-      hotelName: 'Khandala Crest Heritage Hotel',
-      title: 'Khandala Heritage Peak & Sunrise Experience',
-      badge: 'Best Seller',
-      duration: '3 Days / 2 Nights',
-      price: '₹27,999',
-      numericPrice: 27999,
-      status: 'Limited Suites',
-      count: '2 Heritage Suites Left',
-      image: pkg4
-    },
-    {
-      id: 9,
-      propertyId: 12,
-      hotelName: 'Panchgani Mist Retreat',
-      title: 'Panchgani Valley Strawberry & Sunset Escape',
-      badge: 'Weekend Special',
-      duration: '2 Days / 1 Night',
-      price: '₹12,999',
-      numericPrice: 12999,
-      status: 'Available',
-      count: '5 Hillside Rooms Left',
-      image: pkg1
-    },
-    {
-      id: 10,
+      id: 7,
       propertyId: 7,
       hotelName: 'Shivajinagar Executive Heritage Hotel',
       title: 'Central Pune Heritage & City Experience',
@@ -150,7 +112,7 @@ const Packages = () => {
     }
   ];
 
-  // Filter & Sort Packages dynamically based on maxPrice, badge category, search query, and sort option
+  // Filter & Sort Packages dynamically based on maxPrice, selectedView, badge category, search query, and sort option
   const filteredPackages = useMemo(() => {
     let result = packageList.filter(pkg => {
       const matchesPrice = pkg.numericPrice <= maxPrice;
@@ -158,7 +120,19 @@ const Packages = () => {
       const matchesSearch = !searchQuery || 
         pkg.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         pkg.hotelName.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesPrice && matchesBadge && matchesSearch;
+
+      let matchesView = true;
+      if (selectedView !== 'All') {
+        const text = (pkg.title + ' ' + pkg.hotelName).toLowerCase();
+        const key = selectedView.toLowerCase().replace(' view', '');
+        if (key === 'lake') matchesView = text.includes('lake') || text.includes('venna') || text.includes('boating');
+        else if (key === 'mountain') matchesView = text.includes('mountain') || text.includes('peak') || text.includes('trek') || text.includes('point');
+        else if (key === 'valley') matchesView = text.includes('valley') || text.includes('mistwood');
+        else if (key === 'forest') matchesView = text.includes('heritage') || text.includes('manor');
+        else matchesView = text.includes(key);
+      }
+
+      return matchesPrice && matchesBadge && matchesSearch && matchesView;
     });
 
     if (sortOrder === 'low-high') {
@@ -168,7 +142,7 @@ const Packages = () => {
     }
 
     return result;
-  }, [packageList, maxPrice, activeBadgeFilter, searchQuery, sortOrder]);
+  }, [packageList, maxPrice, activeBadgeFilter, searchQuery, sortOrder, selectedView]);
 
   const handleSearchSubmit = (e) => {
     if (e) e.preventDefault();
@@ -184,70 +158,95 @@ const Packages = () => {
       </div>
 
       <div className="packages-container">
-        {/* Top Header Row (Matching Reference Screenshot Layout) */}
-        <div className="packages-header-container">
-          <div className="packages-title-box">
-            <h2>
-              Curated <span className="gold-text">Luxury</span> Packages
-            </h2>
+        {/* Unified Luxury Control Card for Packages Page */}
+        <div className="packages-unified-card" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '16px',
+          background: 'rgba(255, 255, 255, 0.88)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: '28px',
+          padding: '20px 30px',
+          boxShadow: '0 12px 35px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(212, 175, 55, 0.35)',
+          margin: '0 auto 35px auto',
+          width: 'fit-content',
+          maxWidth: '95%'
+        }}>
+          {/* Title Header Centered */}
+          <h2 style={{ fontSize: '1.95rem', margin: 0, fontFamily: 'var(--font-heading, serif)', color: '#0f382c', fontWeight: '800', textAlign: 'center', letterSpacing: '0.5px' }}>
+            Curated <span style={{ color: '#d4af37' }}>Luxury</span> Packages
+          </h2>
+
+          {/* Row 1: Category Pills Options */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            {['All', 'Best Seller', 'Family Special', 'Adventure', 'Weekend Special', 'Corporate Special', 'Luxury Staycation'].map(tab => (
+              <button 
+                key={tab}
+                className={`filter-btn ${activeBadgeFilter === tab ? 'active' : ''}`}
+                onClick={() => setActiveBadgeFilter(tab)}
+                style={{
+                  padding: '7px 16px',
+                  borderRadius: '25px',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  transition: 'all 0.25s ease',
+                  border: activeBadgeFilter === tab ? 'none' : '1px solid #c8d3cc',
+                  background: activeBadgeFilter === tab ? 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)' : '#f4f6f4',
+                  color: activeBadgeFilter === tab ? '#ffffff' : '#1b4332',
+                  boxShadow: activeBadgeFilter === tab ? '0 4px 14px rgba(27, 67, 50, 0.3)' : '0 2px 5px rgba(0,0,0,0.02)'
+                }}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
 
-          {/* Right side: Category Filters + Search Functionality */}
-          <div className="packages-top-controls">
-            <div className="category-pill-group">
-              {['All', 'Best Seller', 'Family Special', 'Adventure', 'Weekend Special', 'Corporate Special', 'Luxury Staycation'].map(tab => (
-                <button 
-                  key={tab}
-                  className={`category-pill-btn ${activeBadgeFilter === tab ? 'active' : ''}`}
-                  onClick={() => setActiveBadgeFilter(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            <form onSubmit={handleSearchSubmit} className="packages-search-form">
+          {/* Row 2: Search Bar, Sort Dropdown & Filters Button (Placed Below Options) */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '14px',
+            flexWrap: 'wrap',
+            width: '100%'
+          }}>
+            {/* Search Input Box */}
+            <form onSubmit={handleSearchSubmit} style={{ margin: 0, width: '260px', position: 'relative', border: '1px solid #d4af37', borderRadius: '30px', background: '#fdfbf7', padding: '0' }}>
+              <i className="fa-solid fa-magnifying-glass" style={{ color: '#d4af37', position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.85rem' }}></i>
               <input 
                 type="text" 
                 placeholder="Search package or hotel..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="packages-search-input"
+                style={{ border: 'none', outline: 'none', background: 'transparent', padding: '7px 14px 7px 36px', fontSize: '0.85rem', fontWeight: '600', color: '#1b4332', width: '100%', boxShadow: 'none' }}
               />
-              <button type="submit" className="packages-search-btn" title="Search">
-                <i className="fa-solid fa-magnifying-glass"></i>
-              </button>
             </form>
-          </div>
-        </div>
 
-        {/* Sub-Header Row: Price Sort Dropdown & Filters Button (Matching Reference Screenshot) */}
-        <div className="packages-subheader-controls">
-          <div className="subheader-left">
-            <div className="sort-dropdown-wrapper">
-              <select
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
-                className="sort-dropdown-btn"
-              >
-                <option value="low-high">Price: Low to High ⌵</option>
-                <option value="high-low">Price: High to Low 0</option>
-              </select>
-            </div>
-
+            {/* Filters Button */}
             <button 
               type="button"
               className="filter-toggle-pill-btn"
               onClick={() => setShowFilterModal(true)}
+              style={{
+                background: '#ffffff',
+                border: '1px solid #c8d3cc',
+                color: '#1b4332',
+                fontWeight: '700',
+                padding: '7px 18px',
+                borderRadius: '30px',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
             >
-              <i className="fa-solid fa-sliders" style={{ marginRight: '6px' }}></i> Filters
+              <i className="fa-solid fa-sliders" style={{ color: '#d4af37' }}></i> Filters
             </button>
-          </div>
-
-          <div className="subheader-right">
-            <span className="results-count-text">
-              Showing <strong>{filteredPackages.length}</strong> Luxury Packages in Mahabaleshwar
-            </span>
           </div>
         </div>
 
@@ -336,6 +335,35 @@ const Packages = () => {
             </div>
 
             <div className="pkg-modal-body">
+              {/* Section 1: View Functionality */}
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', fontSize: '0.88rem', fontWeight: '700', color: '#1a1a1a', marginBottom: '8px' }}>
+                  🏞️ Scenic View / Location Type:
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {['All', 'Lake View', 'Mountain View', 'Valley View'].map(v => (
+                    <button 
+                      key={v}
+                      type="button"
+                      onClick={() => setSelectedView(v)}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        fontSize: '0.82rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        border: selectedView === v ? 'none' : '1px solid #c8d3cc',
+                        background: selectedView === v ? '#1b4332' : '#f4f6f4',
+                        color: selectedView === v ? '#ffffff' : '#1b4332'
+                      }}
+                    >
+                      {v === 'All' ? '✨ Any View' : (v === 'Lake View' ? '🌊 Lake View' : v === 'Mountain View' ? '⛰️ Mountain View' : '🏞️ Valley View')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section 2: Pricing Slider */}
               <div className="price-slider-box" style={{ background: '#f9f9f9', color: '#1a1a1a', border: '1px solid #eee' }}>
                 <div className="slider-label-row" style={{ color: '#1a1a1a' }}>
                   <span>Filter by Max Budget:</span>
@@ -361,7 +389,7 @@ const Packages = () => {
                 </div>
               </div>
 
-              <div className="price-preset-box" style={{ marginTop: '20px' }}>
+              <div className="price-preset-box" style={{ marginTop: '18px' }}>
                 <span className="preset-label" style={{ color: '#444' }}>Quick Budget Presets:</span>
                 <div className="preset-buttons-group">
                   <button 
@@ -401,11 +429,11 @@ const Packages = () => {
             </div>
 
             <div className="pkg-modal-footer">
-              <button onClick={() => setMaxPrice(50000)} className="btn-outline" style={{ padding: '8px 18px', borderRadius: '20px' }}>
+              <button onClick={() => { setMaxPrice(50000); setSelectedView('All'); }} className="btn-outline" style={{ padding: '8px 18px', borderRadius: '20px' }}>
                 Reset
               </button>
               <button onClick={() => setShowFilterModal(false)} className="btn-primary" style={{ padding: '8px 24px', borderRadius: '20px' }}>
-                Apply Budget Filter
+                Apply Filters ({filteredPackages.length} Packages)
               </button>
             </div>
           </div>

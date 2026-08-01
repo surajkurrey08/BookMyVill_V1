@@ -9,6 +9,8 @@ const UserSchema = new mongoose.Schema({
   status: { type: String, enum: ['approved', 'rejected', 'pending', 'active'], default: 'active' },
   phone: { type: String, default: '' },
   bio: { type: String, default: '' },
+  resetOtp: { type: String, default: null },
+  resetOtpExpires: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now }
 });
 

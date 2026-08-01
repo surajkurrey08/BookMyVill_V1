@@ -32,18 +32,26 @@
 }
 
 .filter-btn {
-  padding: 8px 24px;
+  padding: 8px 20px;
   border-radius: 30px;
-  background: white;
-  border: 1px solid #e0e0e0;
-  font-weight: 500;
-  color: var(--text-secondary);
+  background: #f4f6f4;
+  border: 1px solid #c8d3cc;
+  font-weight: 700;
+  color: #1b4332 !important;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.filter-btn:hover {
+  background: #e2e8e4;
+  border-color: #1b4332;
 }
 
 .filter-btn.active {
-  background: var(--primary-color);
-  color: var(--white);
-  border-color: var(--primary-color);
+  background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%) !important;
+  color: #ffffff !important;
+  border-color: #1b4332 !important;
+  box-shadow: 0 4px 14px rgba(27, 67, 50, 0.35);
 }
 
 .grid-container {
