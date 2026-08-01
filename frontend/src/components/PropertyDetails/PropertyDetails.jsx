@@ -451,18 +451,32 @@ const PropertyDetails = () => {
     setStayType('night');
   };
 
+  // Auto-switch to Day Pass if Check-in and Check-out are on the exact same date
+  useEffect(() => {
+    if (bookingDates.checkIn && bookingDates.checkOut && bookingDates.checkIn === bookingDates.checkOut) {
+      if (stayType !== 'day') {
+        setStayType('day');
+      }
+    }
+  }, [bookingDates.checkIn, bookingDates.checkOut, stayType]);
+
   const calculateTotalPrice = () => {
     if (!bookingDates.checkIn || !property) return 0;
     const priceValue = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '15000');
     
-    if (stayType === 'day') {
-      return Math.round(priceValue * 0.55); // Day pass at 55% rate
+    const isSameDate = bookingDates.checkIn && bookingDates.checkOut && bookingDates.checkIn === bookingDates.checkOut;
+
+    if (stayType === 'day' || isSameDate) {
+      return Math.round(priceValue * 0.55); // Same date -> Automatically calculated as Day Pass (55% rate)
     }
 
     if (!bookingDates.checkOut) return priceValue;
     const start = new Date(bookingDates.checkIn);
     const end = new Date(bookingDates.checkOut);
-    const diffTime = Math.abs(end - start);
+    const diffTime = end.getTime() - start.getTime();
+    if (diffTime <= 0) {
+      return Math.round(priceValue * 0.55); // Same date or same day -> Day pass rate
+    }
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
     return priceValue * diffDays;
   };
