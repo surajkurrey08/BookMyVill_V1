@@ -358,6 +358,19 @@ router.put('/user/:id/status', auth, adminAuth, async (req, res) => {
   }
 });
 
+// Remove User from Database (Admin only)
+router.delete('/user/:id', auth, adminAuth, async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (id.startsWith('dummy-')) return res.json({ success: true, msg: 'Dummy user removed', _id: id });
+    const deletedUser = await User.findByIdAndDelete(id);
+    if (!deletedUser) return res.status(404).json({ msg: 'User not found' });
+    res.json({ success: true, msg: 'User successfully removed from database', deletedUser });
+  } catch (err) {
+    res.status(500).json({ msg: 'Failed to remove user from database', error: err.message });
+  }
+});
+
 // Send Direct Admin Request / Notification to Selected User (Admin only)
 router.post('/send-user-request', auth, adminAuth, async (req, res) => {
   try {

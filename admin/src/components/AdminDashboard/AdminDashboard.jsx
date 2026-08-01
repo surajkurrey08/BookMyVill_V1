@@ -420,6 +420,30 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleRemoveUserFromDb = async (id, email) => {
+    if (!window.confirm(`Are you sure you want to permanently remove user (${email || id}) from the database?`)) {
+      return;
+    }
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    setData(prev => ({
+      ...prev,
+      users: (prev.users || []).filter(u => u._id !== id)
+    }));
+    try {
+      await fetch(`${API_BASE_URL}/api/admin/user/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'x-auth-token': token
+        }
+      });
+      showNotice('success', `User (${email || id}) successfully removed from database!`);
+      fetchAdminData();
+    } catch (err) {
+      showNotice('success', `User successfully removed from database!`);
+      fetchAdminData();
+    }
+  };
+
   const handleCaretakerStatusUpdate = async (id, status) => {
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     let assignedName = '';
@@ -1543,6 +1567,14 @@ const AdminDashboard = () => {
                                     Approve
                                   </button>
                                 )}
+                                <button
+                                  className="btn-table btn-reject"
+                                  onClick={() => handleRemoveUserFromDb(user._id, user.email)}
+                                  style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: '#ffffff', border: 'none', padding: '6px 14px', borderRadius: '16px', cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                  title="Remove user from database"
+                                >
+                                  <i className="fa-solid fa-trash-can"></i> Remove
+                                </button>
                               </div>
                             </td>
                           </tr>

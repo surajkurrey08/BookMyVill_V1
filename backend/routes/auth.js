@@ -82,8 +82,11 @@ router.post('/register', async (req, res) => {
         await user.save();
         console.log(`Approved owner (${cleanEmail}) password set/updated successfully in MongoDB`);
       } else {
-        console.log('User already exists');
-        return res.status(400).json({ msg: 'User already exists' });
+        console.log(`Removing existing user (${cleanEmail}) from database for new user call`);
+        await User.deleteOne({ _id: user._id });
+        user = new User({ name, email: cleanEmail, phone: phone || '', password, role });
+        await user.save();
+        console.log(`New user (${cleanEmail}) saved to MongoDB after removing previous database record`);
       }
     } else {
       user = new User({ name, email: cleanEmail, phone: phone || '', password, role });
@@ -101,6 +104,27 @@ router.post('/register', async (req, res) => {
     console.error('Error Message:', err.message);
     console.error('Stack Trace:', err.stack);
     res.status(500).json({ msg: 'Server error', error: err.message });
+  }
+});
+
+// Remove User from Database by ID or Email (New User / Reset Call)
+router.delete('/user/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    let deletedUser;
+    if (id.includes('@')) {
+      deletedUser = await User.findOneAndDelete({ email: id.toLowerCase().trim() });
+    } else {
+      deletedUser = await User.findByIdAndDelete(id);
+    }
+    if (!deletedUser) {
+      return res.status(404).json({ msg: 'User not found in database' });
+    }
+    console.log(`User (${deletedUser.email}) successfully removed from database`);
+    res.json({ success: true, msg: 'User removed from database successfully', user: deletedUser });
+  } catch (err) {
+    console.error('Error removing user from database:', err);
+    res.status(500).json({ msg: 'Failed to remove user from database', error: err.message });
   }
 });
 

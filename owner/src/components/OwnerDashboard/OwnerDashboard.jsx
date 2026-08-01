@@ -102,6 +102,176 @@ const OwnerDashboard = () => {
     bio: ''
   });
 
+  // Caretaker Daily Tasks & Guest Requirements State (Synced with Caretaker Dashboard)
+  const [ownerDuties, setOwnerDuties] = useState(() => {
+    const saved = localStorage.getItem('caretaker_daily_duties');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { id: 1, title: 'Pool Water Filtration & Chemical Inspection', time: '07:30 AM', category: 'Maintenance', completed: true, priority: 'High', assignedBy: 'Property Owner' },
+      { id: 2, title: 'Fresh Bed Linen & Bath Towels Replacement', time: '09:00 AM', category: 'Housekeeping', completed: true, priority: 'Medium', assignedBy: 'Property Owner' },
+      { id: 3, title: 'Guest Welcome Drinks & Key Handover Prep', time: '11:30 AM', category: 'Guest Care', completed: false, priority: 'High', assignedBy: 'Property Owner' },
+      { id: 4, title: 'Lawn Bonfire Wood Setup & Firepit Inspection', time: '05:00 PM', category: 'Amenities', completed: false, priority: 'Low', assignedBy: 'Property Owner' },
+      { id: 5, title: 'Diesel Generator & Power Backup Check', time: '07:00 PM', category: 'Safety', completed: false, priority: 'High', assignedBy: 'Property Owner' }
+    ];
+  });
+
+  const [ownerGuestReqs, setOwnerGuestReqs] = useState(() => {
+    const saved = localStorage.getItem('caretaker_guest_arrivals');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      {
+        id: 'B-8091',
+        guestName: 'Rajesh Sharma',
+        phone: '+91 98234 56789',
+        rooms: '3 BHK Royal Villa',
+        checkIn: '01:00 PM',
+        checkOut: '28 Jul 2026',
+        guestsCount: 6,
+        status: 'Arriving Today',
+        specialRequests: [
+          { label: 'Welcome Drinks Prepared', done: true },
+          { label: 'Extra Linen Pack Provided', done: true },
+          { label: 'Pool Heated & Cleaned', done: false }
+        ]
+      },
+      {
+        id: 'B-8094',
+        guestName: 'Priya Kulkarni',
+        phone: '+91 97654 32109',
+        rooms: 'Luxury Penthouse Suite',
+        checkIn: '03:30 PM',
+        checkOut: '30 Jul 2026',
+        guestsCount: 4,
+        status: 'Confirmed',
+        specialRequests: [
+          { label: 'Baby Cot Installed', done: false },
+          { label: 'BBQ Firepit Wood Arranged', done: false }
+        ]
+      },
+      {
+        id: 'B-8102',
+        guestName: 'Anil Deshmukh',
+        phone: '+91 99887 76655',
+        rooms: 'Valley View Cottage 2',
+        checkIn: '05:00 PM',
+        checkOut: '29 Jul 2026',
+        guestsCount: 2,
+        status: 'In Transit',
+        specialRequests: [
+          { label: 'Candlelight Dinner Prep', done: false }
+        ]
+      }
+    ];
+  });
+
+  const [ownerInventory, setOwnerInventory] = useState(() => {
+    const saved = localStorage.getItem('caretaker_stock_inventory');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { id: 'INV-1', item: 'Fresh Linen & Pillow Covers', category: 'Housekeeping', qty: 28, unit: 'Sets', status: 'In Stock', minQty: 10 },
+      { id: 'INV-2', item: 'Luxury Bath Towels', category: 'Housekeeping', qty: 45, unit: 'Pieces', status: 'In Stock', minQty: 15 },
+      { id: 'INV-3', item: 'Mineral Water Bottled Cases', category: 'Guest Care', qty: 4, unit: 'Boxes', status: 'Low Stock', minQty: 5 },
+      { id: 'INV-4', item: 'Bonfire Dry Firewood', category: 'Amenities', qty: 2, unit: 'Bundles', status: 'Low Stock', minQty: 3 },
+      { id: 'INV-5', item: 'Commercial LPG Cylinder', category: 'Kitchen', qty: 1, unit: 'Units', status: 'Reorder Needed', minQty: 2 }
+    ];
+  });
+
+  // Modals and Form States for Owner Caretaker Task Assignment
+  const [showAddTaskModalOwner, setShowAddTaskModalOwner] = useState(false);
+  const [showAddReqModalOwner, setShowAddReqModalOwner] = useState(false);
+  const [newOwnerTask, setNewOwnerTask] = useState({
+    title: '',
+    category: 'Housekeeping',
+    time: '10:00 AM',
+    priority: 'High'
+  });
+  const [newOwnerGuestReq, setNewOwnerGuestReq] = useState({
+    guestId: 'B-8091',
+    label: ''
+  });
+
+  // Handlers for Task & Guest Requirement Management
+  const handleOwnerAddTaskSubmit = (e) => {
+    e.preventDefault();
+    if (!newOwnerTask.title.trim()) return;
+    const item = {
+      id: Date.now(),
+      title: newOwnerTask.title.trim(),
+      category: newOwnerTask.category,
+      time: newOwnerTask.time || '10:00 AM',
+      completed: false,
+      priority: newOwnerTask.priority,
+      assignedBy: 'Property Owner'
+    };
+    const updated = [item, ...ownerDuties];
+    setOwnerDuties(updated);
+    localStorage.setItem('caretaker_daily_duties', JSON.stringify(updated));
+    setNewOwnerTask({ title: '', category: 'Housekeeping', time: '10:00 AM', priority: 'High' });
+    setShowAddTaskModalOwner(false);
+    setActionSuccess(`✅ Daily Task "${item.title}" assigned to Caretaker Ramesh Pawar!`);
+  };
+
+  const handleOwnerDeleteTask = (id) => {
+    if (!window.confirm('Remove this daily task from Caretaker checklist?')) return;
+    const updated = ownerDuties.filter(d => d.id !== id);
+    setOwnerDuties(updated);
+    localStorage.setItem('caretaker_daily_duties', JSON.stringify(updated));
+    setActionSuccess('Task removed from Caretaker checklist.');
+  };
+
+  const handleOwnerAddGuestReqSubmit = (e) => {
+    e.preventDefault();
+    if (!newOwnerGuestReq.label.trim()) return;
+    const updated = ownerGuestReqs.map(g => {
+      if (g.id === newOwnerGuestReq.guestId) {
+        return {
+          ...g,
+          specialRequests: [...g.specialRequests, { label: newOwnerGuestReq.label.trim(), done: false }]
+        };
+      }
+      return g;
+    });
+    setOwnerGuestReqs(updated);
+    localStorage.setItem('caretaker_guest_arrivals', JSON.stringify(updated));
+    setNewOwnerGuestReq({ guestId: 'B-8091', label: '' });
+    setShowAddReqModalOwner(false);
+    setActionSuccess(`✅ Requirement assigned for Guest & synced live to Caretaker!`);
+  };
+
+  const handleOwnerDeleteGuestReq = (guestId, reqIdx) => {
+    const updated = ownerGuestReqs.map(g => {
+      if (g.id === guestId) {
+        const filtered = g.specialRequests.filter((_, idx) => idx !== reqIdx);
+        return { ...g, specialRequests: filtered };
+      }
+      return g;
+    });
+    setOwnerGuestReqs(updated);
+    localStorage.setItem('caretaker_guest_arrivals', JSON.stringify(updated));
+    setActionSuccess('Guest requirement removed.');
+  };
+
+  const handleOwnerRestockStock = (id, amount = 5) => {
+    const updated = ownerInventory.map(item => {
+      if (item.id === id) {
+        const newQty = item.qty + amount;
+        let newStatus = 'In Stock';
+        if (newQty < item.minQty) newStatus = 'Low Stock';
+        return { ...item, qty: newQty, status: newStatus };
+      }
+      return item;
+    });
+    setOwnerInventory(updated);
+    localStorage.setItem('caretaker_stock_inventory', JSON.stringify(updated));
+    setActionSuccess('📦 Caretaker inventory stock restocked & updated live!');
+  };
+
   const openWhatsAppOwnerToCaretaker = (app) => {
     const caretakerPhone = app?.assignedCaretakerPhone || '+91 98901 23456';
     const caretakerName = app?.assignedCaretakerName || 'Suresh Pawar (Certified Caretaker)';
@@ -656,6 +826,12 @@ const OwnerDashboard = () => {
             <i className="fa-solid fa-calendar-check"></i> Guest Bookings ({bookings.length})
           </button>
           <button 
+            className={`nav-btn ${activeTab === 'caretaker-tasks' ? 'active' : ''}`}
+            onClick={() => { handleTabChange('caretaker-tasks'); setIsDrawerOpen(false); }}
+          >
+            <i className="fa-solid fa-list-check"></i> Caretaker & Daily Tasks
+          </button>
+          <button 
             className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
             onClick={() => { handleTabChange('caretakers'); setIsDrawerOpen(false); }}
           >
@@ -716,6 +892,12 @@ const OwnerDashboard = () => {
                 <i className="fa-solid fa-wallet"></i> Earnings & Financials
               </button>
               <button 
+                className={`nav-btn ${activeTab === 'caretaker-tasks' ? 'active' : ''}`}
+                onClick={() => handleTabChange('caretaker-tasks')}
+              >
+                <i className="fa-solid fa-list-check"></i> Caretaker & Daily Tasks
+              </button>
+              <button 
                 className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
                 onClick={() => handleTabChange('caretakers')}
               >
@@ -748,6 +930,7 @@ const OwnerDashboard = () => {
                 {activeTab === 'overview' && <><i className="fa-solid fa-gauge-high" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Host Command Center</>}
                 {activeTab === 'properties' && <><i className="fa-solid fa-hotel" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Property Portfolio ({properties.length})</>}
                 {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Guest Reservations ({bookings.length})</>}
+                {activeTab === 'caretaker-tasks' && <><i className="fa-solid fa-list-check" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Caretaker Task & Guest Requirement Center</>}
                 {activeTab === 'caretakers' && <><i className="fa-solid fa-user-shield" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Property Caretaker Applications ({caretakerApps.length})</>}
                 {activeTab === 'analytics' && <><i className="fa-solid fa-chart-line" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Financial Earnings & Analytics</>}
                 {activeTab === 'profile' && <><i className="fa-solid fa-user-gear" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Host Account Settings</>}
@@ -756,6 +939,7 @@ const OwnerDashboard = () => {
                 {activeTab === 'overview' && `Welcome back, ${user?.name || 'Owner'}! Track stay performance, guest check-ins & payouts.`}
                 {activeTab === 'properties' && `Manage your luxury stay listings, update direct photos, prices and live GPS links.`}
                 {activeTab === 'bookings' && `Track check-ins, guest contacts, stay payments, and confirm or reject reservations.`}
+                {activeTab === 'caretaker-tasks' && `Assign daily shift duties to caretakers, add guest-specific stay requirements, and monitor real-time completion.`}
                 {activeTab === 'caretakers' && `Apply and assign caretakers for your properties, manage guest check-in staff & maintenance.`}
                 {activeTab === 'analytics' && `Track direct stay earnings, average reservation value, and monthly host payouts.`}
                 {activeTab === 'profile' && `Manage your owner identity, contact details and stay policies displayed to travelers.`}
@@ -763,6 +947,27 @@ const OwnerDashboard = () => {
             </div>
 
             <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button 
+                className="btn-primary-gold" 
+                onClick={() => {
+                  setCaretakerForm({
+                    propertyId: properties.length > 0 ? properties[0]._id : '',
+                    propertyName: properties.length > 0 ? properties[0].name : '',
+                    propertyAddress: properties.length > 0 ? (properties[0].location || 'Mahabaleshwar, Satara') : '',
+                    positionRole: 'Chief Villa Caretaker Host',
+                    phone: user?.phone || '',
+                    experience: '3 - 5 Years',
+                    skillsRequired: ['Guest Check-in & Key Handover', 'Housekeeping & Linen Sanitation', '24/7 Gate & Estate Security'],
+                    govtIdType: 'Aadhaar Card',
+                    govtId: '',
+                    bio: ''
+                  });
+                  setShowCaretakerModal(true);
+                }}
+                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)', color: '#ffffff', border: 'none', padding: '10px 18px', borderRadius: '20px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem' }}
+              >
+                <i className="fa-solid fa-user-shield"></i> Send Caretaker Request to Admin
+              </button>
               {activeTab === 'properties' && (
                 <button className="btn-primary-gold" onClick={() => {
                   setEditingProperty(null);
@@ -1374,6 +1579,405 @@ const OwnerDashboard = () => {
               </div>
             )}
 
+            {/* TAB: CARETAKERS (SEND REQUEST TO ADMIN PANEL) */}
+            {activeTab === 'caretakers' && (
+              <div className="tab-caretakers">
+                {/* Header Card */}
+                <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(145deg, rgba(27, 38, 44, 0.9) 0%, rgba(15, 23, 30, 0.9) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                  <div>
+                    <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.3rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <i className="fa-solid fa-user-shield"></i> Caretaker & Staff Allocation Requests
+                    </h3>
+                    <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.88rem' }}>
+                      Submit official caretaker and property host requests directly to the Admin Panel. Verified staff will be assigned to manage guest check-in, key handover & housekeeping.
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setCaretakerForm({
+                        propertyId: properties.length > 0 ? properties[0]._id : '',
+                        propertyName: properties.length > 0 ? properties[0].name : '',
+                        propertyAddress: properties.length > 0 ? (properties[0].location || 'Mahabaleshwar, Satara') : '',
+                        positionRole: 'Chief Villa Caretaker Host',
+                        phone: user?.phone || '',
+                        experience: '3 - 5 Years',
+                        skillsRequired: ['Guest Check-in & Key Handover', 'Housekeeping & Linen Sanitation', '24/7 Gate & Estate Security'],
+                        govtIdType: 'Aadhaar Card',
+                        govtId: '',
+                        bio: ''
+                      });
+                      setShowCaretakerModal(true);
+                    }}
+                    style={{ background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '12px 22px', borderRadius: '24px', fontWeight: '800', cursor: 'pointer', fontSize: '0.9rem', boxShadow: '0 4px 16px rgba(212, 175, 55, 0.35)', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <i className="fa-solid fa-paper-plane"></i> Send Request for Caretaker to Admin Panel
+                  </button>
+                </div>
+
+                {/* Summary Stat Bar */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                  <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', fontWeight: '600', textTransform: 'uppercase' }}>Total Requests Sent</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', marginTop: '4px' }}>{caretakerApps.length}</div>
+                  </div>
+                  <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: '600', textTransform: 'uppercase' }}>Allocated & Approved</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>
+                      {caretakerApps.filter(a => a.status === 'approved').length}
+                    </div>
+                  </div>
+                  <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: '600', textTransform: 'uppercase' }}>Pending Admin Verification</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#f59e0b', marginTop: '4px' }}>
+                      {caretakerApps.filter(a => a.status === 'pending').length}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Applications List */}
+                {caretakerApps.length === 0 ? (
+                  <div className="glass-morphism" style={{ padding: '48px', borderRadius: '20px', textAlign: 'center', border: '1px border-dashed rgba(212, 175, 55, 0.3)' }}>
+                    <i className="fa-solid fa-user-shield" style={{ fontSize: '3rem', color: '#d4af37', marginBottom: '16px' }}></i>
+                    <h3 style={{ color: '#ffffff', marginBottom: '8px' }}>No Caretaker Requests Sent Yet</h3>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.7)', maxWidth: '480px', margin: '0 auto 20px auto', fontSize: '0.9rem' }}>
+                      You have not sent any caretaker requests to the Admin Panel. Click below to request dedicated staff for your property stays.
+                    </p>
+                    <button 
+                      onClick={() => setShowCaretakerModal(true)}
+                      style={{ background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '12px 24px', borderRadius: '24px', fontWeight: '800', cursor: 'pointer' }}
+                    >
+                      <i className="fa-solid fa-paper-plane"></i> Send Request for Caretaker to Admin Panel
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
+                    {caretakerApps.map((app, idx) => (
+                      <div key={app._id || idx} className="glass-morphism" style={{ padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.12)', background: 'linear-gradient(160deg, rgba(27,38,44,0.7) 0%, rgba(15,23,30,0.85) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                            <h4 style={{ margin: 0, color: '#ffd700', fontSize: '1.1rem', fontWeight: '700' }}>
+                              <i className="fa-solid fa-building-user" style={{ marginRight: '6px' }}></i> {app.propertyName}
+                            </h4>
+                            <span style={{
+                              background: app.status === 'approved' ? 'rgba(16, 185, 129, 0.2)' : app.status === 'rejected' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                              color: app.status === 'approved' ? '#10b981' : app.status === 'rejected' ? '#ef4444' : '#f59e0b',
+                              border: app.status === 'approved' ? '1px solid #10b981' : app.status === 'rejected' ? '1px solid #ef4444' : '1px solid #f59e0b',
+                              padding: '4px 10px',
+                              borderRadius: '12px',
+                              fontSize: '0.75rem',
+                              fontWeight: '700',
+                              textTransform: 'uppercase'
+                            }}>
+                              {app.status === 'approved' ? 'Allocated & Approved' : app.status === 'rejected' ? 'Rejected' : 'Pending Admin Approval'}
+                            </span>
+                          </div>
+
+                          <p style={{ margin: '0 0 10px 0', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>
+                            <i className="fa-solid fa-location-dot" style={{ color: '#d4af37', marginRight: '6px' }}></i> {app.propertyAddress || 'Mahabaleshwar, Satara'}
+                          </p>
+
+                          <div style={{ background: 'rgba(255,255,255,0.04)', padding: '10px 12px', borderRadius: '10px', marginBottom: '12px', fontSize: '0.83rem' }}>
+                            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '4px' }}>Requested Role</div>
+                            <div style={{ fontWeight: '700', color: '#ffffff' }}>{app.positionRole || 'Chief Caretaker Host'}</div>
+                            <div style={{ color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>Experience: {app.experience || '3 - 5 Years'}</div>
+                          </div>
+
+                          {app.assignedCaretakerName && (
+                            <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '12px', borderRadius: '12px', marginBottom: '12px' }}>
+                              <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: '700', textTransform: 'uppercase' }}>
+                                <i className="fa-solid fa-circle-check"></i> Admin Allocated Caretaker
+                              </div>
+                              <div style={{ fontWeight: '800', color: '#ffffff', marginTop: '2px', fontSize: '0.92rem' }}>
+                                {app.assignedCaretakerName}
+                              </div>
+                              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.8)', marginTop: '2px' }}>
+                                📞 {app.assignedCaretakerPhone || '+91 98901 23456'}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                          <button 
+                            onClick={() => openWhatsAppOwnerToCaretaker(app)}
+                            style={{ flex: 1, background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)', color: '#ffffff', border: 'none', padding: '8px 12px', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                          >
+                            <i className="fa-brands fa-whatsapp"></i> WhatsApp Caretaker
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB: CARETAKER DAILY TASKS & GUEST REQUIREMENTS */}
+            {activeTab === 'caretaker-tasks' && (
+              <div className="tab-caretaker-tasks">
+                {/* Header Profile & Caretaker Status Card */}
+                <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(145deg, rgba(27, 38, 44, 0.9) 0%, rgba(15, 23, 30, 0.9) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: 'linear-gradient(135deg, #d4af37 0%, #10b981 100%)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '900' }}>
+                      <i className="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Chief Estate Caretaker: Ramesh Pawar
+                        <span style={{ fontSize: '0.72rem', background: 'rgba(16,185,129,0.2)', border: '1px solid #10b981', color: '#10b981', padding: '2px 8px', borderRadius: '12px', fontWeight: '800' }}>🟢 SHIFT ON DUTY</span>
+                      </h3>
+                      <p style={{ margin: '4px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.85rem' }}>
+                        🏡 Assigned Estate: <strong>Royal Mist Villa Estate</strong> • 📞 +91 98901 23456 • 🕒 Duty Shift: 07:00 AM - 09:00 PM
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button 
+                      onClick={() => setShowAddTaskModalOwner(true)}
+                      style={{ background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '10px 18px', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                    >
+                      <i className="fa-solid fa-plus-circle"></i> Assign New Daily Task
+                    </button>
+                    <button 
+                      onClick={() => setShowAddReqModalOwner(true)}
+                      style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', padding: '10px 18px', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                    >
+                      <i className="fa-solid fa-user-plus"></i> Add Guest Requirement
+                    </button>
+                  </div>
+                </div>
+
+                {/* Summary Stat Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                  <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)', fontWeight: '600', textTransform: 'uppercase' }}>Daily Shift Tasks</div>
+                    <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#ffffff', marginTop: '4px' }}>{ownerDuties.length} Tasks</div>
+                    <div style={{ fontSize: '0.8rem', color: '#10b981', marginTop: '4px' }}>
+                      {ownerDuties.filter(d => d.completed).length} Completed • {ownerDuties.filter(d => !d.completed).length} Pending
+                    </div>
+                  </div>
+
+                  <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    <div style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: '600', textTransform: 'uppercase' }}>Guest Special Requests</div>
+                    <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>
+                      {ownerGuestReqs.reduce((sum, g) => sum + g.specialRequests.length, 0)} Total Reqs
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
+                      {ownerGuestReqs.reduce((sum, g) => sum + g.specialRequests.filter(r => r.done).length, 0)} Completed by Caretaker
+                    </div>
+                  </div>
+
+                  <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                    <div style={{ fontSize: '0.78rem', color: '#f59e0b', fontWeight: '600', textTransform: 'uppercase' }}>Caretaker Stock Status</div>
+                    <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#f59e0b', marginTop: '4px' }}>
+                      {ownerInventory.filter(i => i.status !== 'In Stock').length} Low Stock Alert
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
+                      {ownerInventory.length} Total Inventory Items
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 1: Daily Shift Duties Assigned to Caretaker */}
+                <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'rgba(12,20,18,0.85)', border: '1px solid rgba(212,175,55,0.25)', marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <i className="fa-solid fa-list-check"></i> Daily Shift Tasks Assigned to Caretaker
+                      </h3>
+                      <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem' }}>
+                        Caretaker checks off tasks in real-time. Completed items lock automatically into non-clickable status.
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => setShowAddTaskModalOwner(true)}
+                      style={{ background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '8px 16px', borderRadius: '16px', fontWeight: '800', cursor: 'pointer', fontSize: '0.8rem' }}
+                    >
+                      + Assign Task
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {ownerDuties.map(d => (
+                      <div key={d.id} style={{
+                        background: d.completed ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.04)',
+                        border: d.completed ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)',
+                        padding: '14px 18px',
+                        borderRadius: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '14px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                          <span style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            background: d.completed ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.08)',
+                            color: d.completed ? '#10b981' : '#a3b18a',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.9rem'
+                          }}>
+                            <i className={`fa-solid ${d.completed ? 'fa-check' : 'fa-clock'}`}></i>
+                          </span>
+                          <div>
+                            <div style={{ fontWeight: '700', fontSize: '0.95rem', color: '#ffffff', textDecoration: d.completed ? 'line-through' : 'none' }}>
+                              {d.title}
+                            </div>
+                            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>
+                              🕒 Time: {d.time} • Category: {d.category} • Priority: <strong style={{ color: d.priority === 'High' ? '#ef4444' : '#f59e0b' }}>{d.priority}</strong>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          {d.completed ? (
+                            <span style={{ background: 'rgba(16,185,129,0.2)', border: '1px solid #10b981', color: '#10b981', fontSize: '0.75rem', padding: '4px 10px', borderRadius: '12px', fontWeight: '800' }}>
+                              <i className="fa-solid fa-lock"></i> COMPLETED BY CARETAKER
+                            </span>
+                          ) : (
+                            <span style={{ background: 'rgba(245,158,11,0.2)', border: '1px solid #f59e0b', color: '#f59e0b', fontSize: '0.75rem', padding: '4px 10px', borderRadius: '12px', fontWeight: '800' }}>
+                              <i className="fa-solid fa-hourglass-half"></i> PENDING CARETAKER
+                            </span>
+                          )}
+
+                          <button 
+                            onClick={() => handleOwnerDeleteTask(d.id)}
+                            style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', padding: '6px 10px', borderRadius: '10px', cursor: 'pointer', fontSize: '0.8rem' }}
+                            title="Delete Task"
+                          >
+                            <i className="fa-solid fa-trash-can"></i>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Section 2: Guest-Specific Requirements Assigned to Caretaker */}
+                <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'rgba(12,20,18,0.85)', border: '1px solid rgba(212,175,55,0.25)', marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <i className="fa-solid fa-users-gear"></i> Guest Stay Requirements & Special Requests
+                      </h3>
+                      <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem' }}>
+                        Assign guest-specific preparation requirements (welcome drinks, extra bedding, baby cot, dinner setup) to Caretaker.
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => setShowAddReqModalOwner(true)}
+                      style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', padding: '8px 16px', borderRadius: '16px', fontWeight: '800', cursor: 'pointer', fontSize: '0.8rem' }}
+                    >
+                      + Add Guest Requirement
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '18px' }}>
+                    {ownerGuestReqs.map(g => (
+                      <div key={g.id} className="glass-morphism" style={{ padding: '18px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(20,30,26,0.6)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                          <div>
+                            <h4 style={{ margin: 0, color: '#ffffff', fontSize: '1rem', fontWeight: '700' }}>{g.guestName}</h4>
+                            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>Booking ID: {g.id} • {g.rooms}</span>
+                          </div>
+                          <span style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid #d4af37', color: '#ffd700', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: '700' }}>
+                            Check-In: {g.checkIn}
+                          </span>
+                        </div>
+
+                        <div style={{ marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px' }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#ffd700', marginBottom: '8px', textTransform: 'uppercase' }}>
+                            CARETAKER SPECIAL REQUESTS CHECKLIST
+                          </div>
+                          {g.specialRequests.map((req, idx) => (
+                            <div key={idx} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              background: req.done ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.04)',
+                              border: req.done ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,255,255,0.08)',
+                              padding: '8px 12px',
+                              borderRadius: '10px',
+                              marginBottom: '6px',
+                              fontSize: '0.83rem'
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <i className={`fa-solid ${req.done ? 'fa-circle-check' : 'fa-circle'}`} style={{ color: req.done ? '#10b981' : 'rgba(255,255,255,0.4)' }}></i>
+                                <span style={{ color: '#ffffff', textDecoration: req.done ? 'line-through' : 'none' }}>{req.label}</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                {req.done ? (
+                                  <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: '800' }}>🔒 DONE</span>
+                                ) : (
+                                  <span style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: '800' }}>PENDING</span>
+                                )}
+                                <button 
+                                  onClick={() => handleOwnerDeleteGuestReq(g.id, idx)}
+                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.75rem', marginLeft: '4px' }}
+                                  title="Delete Requirement"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Section 3: Caretaker Stock & Inventory Live Monitor */}
+                <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'rgba(12,20,18,0.85)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <i className="fa-solid fa-boxes-stacked"></i> Caretaker Villa Consumable Stock Inventory
+                      </h3>
+                      <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem' }}>
+                        Monitor live supplies reported by Caretaker (Linen, Towels, Mineral Water Cases, Bonfire Wood, LPG Cylinders) & restock instantly.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
+                    {ownerInventory.map(item => (
+                      <div key={item.id} className="glass-morphism" style={{ padding: '16px', borderRadius: '14px', border: item.status === 'In Stock' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(239,68,68,0.4)', background: item.status === 'In Stock' ? 'rgba(255,255,255,0.03)' : 'rgba(239,68,68,0.08)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <h4 style={{ margin: 0, color: '#ffffff', fontSize: '0.92rem', fontWeight: '700' }}>{item.item}</h4>
+                          <span style={{
+                            background: item.status === 'In Stock' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
+                            color: item.status === 'In Stock' ? '#10b981' : '#ef4444',
+                            border: item.status === 'In Stock' ? '1px solid #10b981' : '1px solid #ef4444',
+                            fontSize: '0.7rem',
+                            padding: '2px 8px',
+                            borderRadius: '10px',
+                            fontWeight: '800'
+                          }}>
+                            {item.status}
+                          </span>
+                        </div>
+                        <div style={{ margin: '10px 0 12px 0', fontSize: '1.4rem', fontWeight: '800', color: '#ffd700' }}>
+                          {item.qty} <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', fontWeight: '400' }}>{item.unit}</span>
+                        </div>
+                        <button 
+                          onClick={() => handleOwnerRestockStock(item.id, 5)}
+                          style={{ width: '100%', background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '8px', borderRadius: '10px', fontWeight: '800', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                        >
+                          <i className="fa-solid fa-cart-plus"></i> Approve +5 Restock
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* TAB 5: PROFILE */}
             {activeTab === 'profile' && (
               <div className="tab-profile">
@@ -1641,9 +2245,9 @@ const OwnerDashboard = () => {
             <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '14px' }}>
               <div>
                 <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.4rem', fontFamily: 'Cormorant Garamond, serif' }}>
-                  <i className="fa-solid fa-user-shield" style={{ marginRight: '8px' }}></i> Apply for Property Caretaker
+                  <i className="fa-solid fa-paper-plane" style={{ marginRight: '8px' }}></i> Send Caretaker Request to Admin Panel
                 </h3>
-                <p style={{ margin: '4px 0 0 0', opacity: 0.8, fontSize: '0.85rem' }}>Request dedicated staff & caretaker services for your Mahabaleshwar stay</p>
+                <p style={{ margin: '4px 0 0 0', opacity: 0.8, fontSize: '0.85rem' }}>Submit official request for verified caretakers, housekeepers, and villa staff to the Admin Command Center.</p>
               </div>
               <button onClick={() => setShowCaretakerModal(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.6rem', cursor: 'pointer' }}>×</button>
             </div>
@@ -2050,6 +2654,117 @@ const OwnerDashboard = () => {
                 Close Details Card
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* OWNER ASSIGN DAILY TASK MODAL */}
+      {showAddTaskModalOwner && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h3><i className="fa-solid fa-list-check" style={{ color: 'var(--accent-gold)' }}></i> Assign Daily Task to Caretaker</h3>
+              <button className="close-btn" onClick={() => setShowAddTaskModalOwner(false)}><i className="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form onSubmit={handleOwnerAddTaskSubmit} className="modal-form">
+              <div className="form-group">
+                <label>Task Title / Description *</label>
+                <input 
+                  type="text" 
+                  value={newOwnerTask.title} 
+                  onChange={(e) => setNewOwnerTask({ ...newOwnerTask, title: e.target.value })} 
+                  placeholder="e.g. Deep Clean Swimming Pool & Inspect pH Balance" 
+                  required 
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Category</label>
+                  <select 
+                    value={newOwnerTask.category} 
+                    onChange={(e) => setNewOwnerTask({ ...newOwnerTask, category: e.target.value })}
+                  >
+                    <option value="Housekeeping">Housekeeping</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Guest Care">Guest Care</option>
+                    <option value="Amenities">Amenities</option>
+                    <option value="Safety">Safety</option>
+                    <option value="Kitchen">Kitchen</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Scheduled Time</label>
+                  <input 
+                    type="text" 
+                    value={newOwnerTask.time} 
+                    onChange={(e) => setNewOwnerTask({ ...newOwnerTask, time: e.target.value })} 
+                    placeholder="10:00 AM" 
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Task Priority</label>
+                <select 
+                  value={newOwnerTask.priority} 
+                  onChange={(e) => setNewOwnerTask({ ...newOwnerTask, priority: e.target.value })}
+                >
+                  <option value="High">High Priority</option>
+                  <option value="Medium">Medium Priority</option>
+                  <option value="Low">Low Priority</option>
+                </select>
+              </div>
+
+              <button type="submit" className="btn-primary-gold" style={{ marginTop: '14px' }}>
+                <i className="fa-solid fa-paper-plane"></i> Assign Task to Caretaker Checklist
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* OWNER ASSIGN GUEST REQUIREMENT MODAL */}
+      {showAddReqModalOwner && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h3><i className="fa-solid fa-user-plus" style={{ color: '#10b981' }}></i> Assign Requirement for Guest Stay</h3>
+              <button className="close-btn" onClick={() => setShowAddReqModalOwner(false)}><i className="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form onSubmit={handleOwnerAddGuestReqSubmit} className="modal-form">
+              <div className="form-group">
+                <label>Select Guest / Booking *</label>
+                <select 
+                  value={newOwnerGuestReq.guestId} 
+                  onChange={(e) => setNewOwnerGuestReq({ ...newOwnerGuestReq, guestId: e.target.value })}
+                >
+                  {ownerGuestReqs.map(g => (
+                    <option key={g.id} value={g.id}>
+                      {g.guestName} ({g.rooms} - ID: {g.id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Requirement Details for Caretaker *</label>
+                <input 
+                  type="text" 
+                  value={newOwnerGuestReq.label} 
+                  onChange={(e) => setNewOwnerGuestReq({ ...newOwnerGuestReq, label: e.target.value })} 
+                  placeholder="e.g. Prepare Welcome Fresh Strawberry Smoothie & Extra Bedding" 
+                  required 
+                />
+              </div>
+
+              <button type="submit" className="btn-primary-gold" style={{ marginTop: '14px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff' }}>
+                <i className="fa-solid fa-check"></i> Assign Requirement to Caretaker
+              </button>
+            </form>
           </div>
         </div>
       )}
