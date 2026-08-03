@@ -122,7 +122,7 @@ jobs:
           EOF
 
             ln -sf /etc/nginx/sites-available/lonavala.fun /etc/nginx/sites-enabled/lonavala.fun
-            nginx -t && systemctl reload nginx
+            nginx -t && (systemctl restart nginx || systemctl start nginx)
 
             # 3. Attempt Certbot SSL Certificate Generation
             certbot certonly --webroot -w /var/www/certbot \
@@ -219,7 +219,7 @@ jobs:
           }
           EOF
 
-            nginx -t && systemctl reload nginx
+            nginx -t && (systemctl restart nginx || systemctl start nginx)
             echo 'Nginx configured successfully for lonavala.fun!'
           "
 
