@@ -1,15 +1,14 @@
 === Nginx Config Files ===
 total 8
-drwxr-xr-x 2 root root 4096 Aug  3 10:12 .
+drwxr-xr-x 2 root root 4096 Aug  3 10:26 .
 drwxr-xr-x 8 root root 4096 Aug  1 16:21 ..
 lrwxrwxrwx 1 root root   42 Jul 19 17:54 admin-shiftride -> /etc/nginx/sites-available/admin-shiftride
 lrwxrwxrwx 1 root root   38 Jun  1 09:58 itjobx.conf -> /etc/nginx/sites-available/itjobx.conf
-lrwxrwxrwx 1 root root   39 Aug  3 10:12 lonavala.fun -> /etc/nginx/sites-available/lonavala.fun
+lrwxrwxrwx 1 root root   39 Aug  3 10:26 lonavala.fun -> /etc/nginx/sites-available/lonavala.fun
 lrwxrwxrwx 1 root root   42 Jul 24 07:55 mydoctor.family -> /etc/nginx/sites-available/mydoctor.family
 lrwxrwxrwx 1 root root   37 Jun  2 08:01 punarmilan -> /etc/nginx/sites-available/punarmilan
 lrwxrwxrwx 1 root root   36 Jun  1 09:52 shiftride -> /etc/nginx/sites-available/shiftride
 === Content of /etc/nginx/sites-enabled/lonavala.fun ===
-# Unified HTTP block - Handles certbot challenge and redirects all HTTP to HTTPS
 server {
     listen 80;
     server_name lonavala.fun www.lonavala.fun api.lonavala.fun admin.lonavala.fun;
@@ -19,62 +18,9 @@ server {
     }
     
     location / {
-        return 301 https://$host$request_uri;
-    }
-}
-
-# HTTPS: Frontend Main Site
-server {
-    listen 443 ssl;
-    server_name lonavala.fun www.lonavala.fun;
-    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-    root /var/www/lonavala.fun/frontend;
-    index index.html;
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-}
-
-# HTTPS: Admin Portal
-server {
-    listen 443 ssl;
-    server_name admin.lonavala.fun;
-    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-    root /var/www/lonavala.fun/admin;
-    index index.html;
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-}
-
-# HTTPS: Backend API Proxy
-server {
-    listen 443 ssl;
-    server_name api.lonavala.fun;
-    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-    location / {
-        proxy_pass http://127.0.0.1:5001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection upgrade;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
+        root /var/www/lonavala.fun/frontend;
+        index index.html;
+        try_files  / /index.html;
     }
 }
 === Directory structure of /var/www/lonavala.fun ===
