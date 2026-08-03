@@ -93,7 +93,49 @@ jobs:
       - name: Configure Nginx
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+            set -e
+            mkdir -p /var/www/certbot /var/www/lonavala.fun/frontend /var/www/lonavala.fun/admin
+
+            # 1. Clean up duplicate configs
+            rm -f /etc/nginx/sites-enabled/admin.lonavala.fun
+            rm -f /etc/nginx/sites-available/admin.lonavala.fun
+            rm -f /etc/nginx/sites-enabled/default
+
+            # 2. Write HTTP config first so Certbot webroot challenge succeeds
             cat > /etc/nginx/sites-available/lonavala.fun << 'EOF'
+          server {
+              listen 80;
+              server_name lonavala.fun www.lonavala.fun api.lonavala.fun admin.lonavala.fun;
+              
+              location /.well-known/acme-challenge/ {
+                  root /var/www/certbot;
+              }
+              
+              location / {
+                  root /var/www/lonavala.fun/frontend;
+                  index index.html;
+                  try_files \$uri \$uri/ /index.html;
+              }
+          }
+          EOF
+
+            ln -sf /etc/nginx/sites-available/lonavala.fun /etc/nginx/sites-enabled/lonavala.fun
+            nginx -t && systemctl reload nginx
+
+            # 3. Obtain/expand SSL certificates
+            certbot certonly --webroot -w /var/www/certbot \
+              -d lonavala.fun \
+              -d www.lonavala.fun \
+              -d api.lonavala.fun \
+              -d admin.lonavala.fun \
+              --email admin@lonavala.fun \
+              --agree-tos \
+              --expand \
+              --non-interactive || true
+
+            # 4. If SSL certificate exists, apply full HTTP redirect + HTTPS configuration
+            if [ -f /etc/letsencrypt/live/lonavala.fun/fullchain.pem ]; then
+              cat > /etc/nginx/sites-available/lonavala.fun << 'EOF'
           # Unified HTTP block - Handles certbot challenge and redirects all HTTP to HTTPS
           server {
               listen 80;
@@ -163,31 +205,11 @@ jobs:
               }
           }
           EOF
-            # Remove duplicate/conflicting configurations if they exist
-            rm -f /etc/nginx/sites-enabled/admin.lonavala.fun
-            rm -f /etc/nginx/sites-available/admin.lonavala.fun
-
-            # Enable the new configuration and clean default Nginx page
-            ln -sf /etc/nginx/sites-available/lonavala.fun /etc/nginx/sites-enabled/lonavala.fun
-            rm -f /etc/nginx/sites-enabled/default
-            
-            # Reload Nginx to read the new Port 80 / 443 config
-            nginx -t && systemctl reload nginx
-            
-            # Obtain/expand SSL certificate to cover admin.lonavala.fun as well
-            certbot certonly --webroot -w /var/www/certbot \
-              -d lonavala.fun \
-              -d www.lonavala.fun \
-              -d api.lonavala.fun \
-              -d admin.lonavala.fun \
-              --email admin@lonavala.fun \
-              --agree-tos \
-              --expand \
-              --non-interactive
-              
-            # Reload Nginx again to apply the expanded certificate
-            nginx -t && systemctl reload nginx
-            echo 'Nginx configured and SSL certificates expanded!'
+              nginx -t && systemctl reload nginx
+              echo 'Nginx HTTPS successfully configured!'
+            else
+              echo 'SSL cert not yet issued, running Nginx on HTTP'
+            fi
           "
 
       # ── 7.5 Debug Nginx VPS ───────────────────────────────────────────────
