@@ -1,0 +1,65 @@
+:root {
+  /* Color Palette */
+  --primary-color: #2D433D;
+  /* Forest Green */
+  --secondary-color: #D4AF37;
+  /* Gold Accent */
+  --accent-color: #4A6762;
+  /* Soft Sage */
+  --bg-color: #F2ECE4;
+  /* Darker luxury beige */
+  --text-primary: #1A1A1A;
+  --text-secondary: #5C5C5C;
+  --white: #F2ECE4;
+  /* Unified with bg-color to match sections */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+
+  /* Typography */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Spacing */
+  --section-padding: 90px 5%;
+  --border-radius: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}

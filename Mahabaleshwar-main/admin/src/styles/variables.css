@@ -1,0 +1,64 @@
+:root {
+  /* Dark Slate & Gold Luxury Palette */
+  --primary-color: #1a2a26;
+  /* Deep Slate Green */
+  --secondary-color: #d4af37;
+  /* Gold Accent */
+  --accent-color: #2c443e;
+  /* Sage Accent */
+  --bg-color: #0b110f;
+  /* Dark Background */
+  --text-primary: #f2ece4;
+  /* Warm Ivory Text */
+  --text-secondary: #859690;
+  /* Sage Muted Text */
+  --white: #131d1a;
+  /* Dark Slate Surface */
+  --glass-bg: rgba(19, 29, 26, 0.75);
+  --glass-border: rgba(212, 175, 55, 0.2);
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+
+  /* Typography */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Spacing & Borders */
+  --section-padding: 40px 5%;
+  --border-radius: 12px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
