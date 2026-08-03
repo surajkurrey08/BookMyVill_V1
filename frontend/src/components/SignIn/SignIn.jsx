@@ -35,7 +35,7 @@ const SignIn = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (response.ok) {
         sessionStorage.setItem('token', data.token);
         sessionStorage.setItem('user', JSON.stringify(data.user));
@@ -44,11 +44,11 @@ const SignIn = () => {
         const destination = location.state?.from || '/';
         navigate(destination, { state: { property: location.state?.property } });
       } else {
-        setErrorMsg(data.msg || 'Login failed');
+        setErrorMsg(data.msg || 'Invalid email or password. Please check your credentials or create an account.');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setErrorMsg('Connection to server failed');
+      setErrorMsg('Connection to server failed. Please check network connection.');
     }
   };
 
