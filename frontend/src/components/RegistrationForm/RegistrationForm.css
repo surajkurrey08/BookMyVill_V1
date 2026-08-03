@@ -1,0 +1,318 @@
+.registration-section {
+  min-height: 100vh;
+  position: relative;
+  color: #ffffff;
+  padding: 110px 5% 70px;
+  z-index: 1;
+}
+
+.registration-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.registration-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.registration-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(11, 17, 15, 0.82) 0%, rgba(5, 8, 7, 0.96) 100%);
+  z-index: 1;
+}
+
+.registration-container {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 36px;
+  align-items: flex-start;
+}
+
+.registration-info h2 {
+  font-family: var(--font-heading, 'Outfit', serif);
+  font-size: 2.3rem;
+  margin-bottom: 14px;
+  color: #d4af37;
+  text-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+}
+
+.registration-info p {
+  font-size: 0.98rem;
+  margin-bottom: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.benefits-list li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.benefits-list li .icon {
+  background: rgba(212, 175, 55, 0.18);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #d4af37;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.benefits-list h4 {
+  margin: 0 0 3px 0;
+  font-size: 1rem;
+  color: #ffffff;
+}
+
+.benefits-list p {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0;
+}
+
+.registration-card {
+  background: rgba(18, 26, 23, 0.88);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 20px;
+  padding: 26px 30px;
+  color: #ffffff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.registration-card label {
+  display: block;
+  font-size: 0.83rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.3px;
+}
+
+.registration-card input, 
+.registration-card select, 
+.registration-card textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.88rem;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.registration-card select option {
+  background: #121a17;
+  color: #ffffff;
+}
+
+.registration-card input::placeholder, 
+.registration-card textarea::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.registration-card input:focus, 
+.registration-card select:focus, 
+.registration-card textarea:focus {
+  outline: none;
+  border-color: #d4af37;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+}
+
+.w-full {
+  width: 100%;
+}
+
+.photo-upload-area {
+  position: relative;
+  width: 100%;
+  min-height: 100px;
+  border: 2px dashed rgba(212, 175, 55, 0.4);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.photo-upload-area:hover {
+  border-color: #d4af37;
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.upload-content {
+  text-align: center;
+  pointer-events: none;
+}
+
+.upload-icon {
+  font-size: 1.8rem;
+  color: #d4af37;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.upload-content p {
+  font-weight: 600;
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.remove-photos-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(239, 68, 68, 0.85);
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  z-index: 5;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 5px 18px rgba(212, 175, 55, 0.35);
+  transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
+}
+
+@media (max-width: 900px) {
+  .registration-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
+@media (max-width: 640px) {
+  .registration-section {
+    padding: 90px 16px 40px;
+  }
+
+  .registration-card {
+    padding: 24px 16px;
+    border-radius: 18px;
+  }
+
+  .registration-info h2 {
+    font-size: 2rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
+/* FORM ERROR VALIDATION STYLES */
+.form-error-banner {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #ff6b6b;
+  padding: 16px 20px;
+  border-radius: 14px;
+  margin-bottom: 22px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
+}
+
+.form-error-banner h4 {
+  margin: 0 0 6px 0;
+  color: #ff8787;
+  font-size: 0.98rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-error-banner ul {
+  margin: 6px 0 0 20px;
+  padding: 0;
+}
+
+.form-error-banner li {
+  margin-bottom: 3px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.form-error-msg {
+  color: #ff6b6b;
+  font-size: 0.78rem;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+input.field-invalid, select.field-invalid, textarea.field-invalid, .file-upload-box.field-invalid {
+  border-color: #ff6b6b !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.3) !important;
+}

@@ -1,0 +1,106 @@
+@import './styles/variables.css';
+
+/* Global Invisible Scrollbar Rule Across All Browsers & Containers */
+html, body, div, section, main, aside, nav, table, textarea, select, form, iframe, * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  border: none !important;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--secondary-color);
+  text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}
+
+.logo-subtext {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 5px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.glass-morphism {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+}
+
+.btn-primary {
+  background-color: var(--secondary-color);
+  color: #0b110f;
+  padding: 12px 28px;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #f7d45e;
+  transform: translateY(-1px);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-primary);
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.btn-outline:hover {
+  border-color: var(--secondary-color);
+  color: var(--secondary-color);
+}
+
+.fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

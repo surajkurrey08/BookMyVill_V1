@@ -1,0 +1,144 @@
+@import './styles/variables.css';
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;700;900&family=Cormorant+Garamond:wght@600;700&display=swap');
+
+/* Global Invisible Scrollbar Rule Across All Browsers & Containers */
+html, body, div, section, main, aside, nav, table, textarea, select, form, iframe, * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  border: none !important;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.8rem;
+  /* Made even bigger as requested */
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #FFD700;
+  /* Rich Yellow / Gold */
+  line-height: 0.8;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 0 30px rgba(255, 215, 0, 0.2);
+  transition: text-shadow 0.3s ease;
+}
+
+.logo-text:hover {
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.3);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.logo-subtext {
+  font-size: 0.75rem;
+  letter-spacing: 6px;
+  color: var(--secondary-color);
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.glass-morphism {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--white);
+  padding: 12px 28px;
+  border-radius: 50px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-color);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1), 0 0 20px rgba(45, 67, 61, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 10px 26px;
+  border-radius: 50px;
+  font-weight: 600;
+}
+
+.btn-outline:hover {
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+section {
+  padding: var(--section-padding);
+}
+
+.fade-in {
+  animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
