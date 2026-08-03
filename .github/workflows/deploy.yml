@@ -33,9 +33,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: |
+            frontend/package-lock.json
+            admin/package-lock.json
 
       # ── 3. Frontend Build ─────────────────────────────────────────────────
       - name: Install Frontend Dependencies
@@ -114,7 +116,7 @@ jobs:
               location / {
                   root /var/www/lonavala.fun/frontend;
                   index index.html;
-                  try_files \$uri \$uri/ /index.html;
+                  try_files $uri $uri/ /index.html;
               }
           }
           EOF
@@ -146,7 +148,7 @@ jobs:
               }
               
               location / {
-                  return 301 https://\$host\$request_uri;
+                  return 301 https://$host$request_uri;
               }
           }
 
@@ -161,7 +163,7 @@ jobs:
               root /var/www/lonavala.fun/frontend;
               index index.html;
               location / {
-                  try_files \$uri \$uri/ /index.html;
+                  try_files $uri $uri/ /index.html;
               }
               gzip on;
               gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
@@ -178,7 +180,7 @@ jobs:
               root /var/www/lonavala.fun/admin;
               index index.html;
               location / {
-                  try_files \$uri \$uri/ /index.html;
+                  try_files $uri $uri/ /index.html;
               }
               gzip on;
               gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
@@ -195,13 +197,13 @@ jobs:
               location / {
                   proxy_pass http://127.0.0.1:5001;
                   proxy_http_version 1.1;
-                  proxy_set_header Upgrade \$http_upgrade;
+                  proxy_set_header Upgrade $http_upgrade;
                   proxy_set_header Connection upgrade;
-                  proxy_set_header Host \$host;
-                  proxy_set_header X-Real-IP \$remote_addr;
-                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto \$scheme;
-                  proxy_cache_bypass \$http_upgrade;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  proxy_cache_bypass $http_upgrade;
               }
           }
           EOF
