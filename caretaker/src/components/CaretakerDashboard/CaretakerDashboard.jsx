@@ -651,33 +651,55 @@ const CaretakerDashboard = () => {
   return (
     <div className="caretaker-dashboard-page">
       {/* Top Navbar */}
+      {/* Stable Fixed Top Navbar */}
       <header className="caretaker-navbar">
         <div className="nav-brand">
-          <div className="brand-logo-container">
-            <div className="main-site-logo">
-              <span className="logo-text">Mahabaleshwar</span>
-              <span className="logo-subtext">LUXURY STAYS</span>
-            </div>
-            <span className="caretaker-badge-pill">
-              <i className="fa-solid fa-user-shield"></i> CARETAKER
-            </span>
-          </div>
+          <a href="http://localhost:5173" className="stable-brand-logo" style={{ textDecoration: 'none' }}>
+            <span className="logo-text">Mahabaleshwar</span>
+            <span className="logo-subtext">LUXURY STAYS • CARETAKER COMMAND CENTER</span>
+          </a>
         </div>
 
-        <div className="nav-links">
-          {isCheckedIn ? (
-            <button className="nav-quick-punch-btn out" onClick={handleCheckOut} title="Punch Out Shift">
-              <i className="fa-solid fa-circle-pause"></i> Punch Out
-            </button>
-          ) : (
-            <button className="nav-quick-punch-btn in" onClick={handleCheckIn} title="Punch In Shift">
-              <i className="fa-solid fa-circle-play"></i> Punch In
-            </button>
-          )}
+        <div className="nav-right-container" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div className="caretaker-user-pill" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255, 255, 255, 0.06)', padding: '6px 14px', borderRadius: '30px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+            <div className="avatar-circle-green" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>
+              {profileData.name ? profileData.name.charAt(0).toUpperCase() : 'S'}
+            </div>
+            <div className="profile-text-group" style={{ textAlign: 'left' }}>
+              <span style={{ display: 'block', fontSize: '0.86rem', fontWeight: '800', color: '#ffffff', lineHeight: '1.1' }}>
+                {profileData.name || user?.name || 'Suresh Patil'}
+              </span>
+              <span style={{ fontSize: '0.65rem', color: '#34d399', fontWeight: '700', textTransform: 'uppercase' }}>
+                <i className="fa-solid fa-user-shield"></i> Chief Villa Caretaker
+              </span>
+            </div>
+          </div>
 
-          <a href="http://localhost:5173" className="back-link" title="Return to Guest Website">
-            <i className="fa-solid fa-arrow-left"></i> Guest Portal
-          </a>
+          <button 
+            className="header-logout-btn-green"
+            onClick={() => {
+              sessionStorage.removeItem('token');
+              sessionStorage.removeItem('user');
+              window.location.href = 'http://localhost:5173';
+            }}
+            style={{
+              background: 'rgba(239, 68, 68, 0.15)',
+              color: '#f87171',
+              border: '1px solid rgba(239, 68, 68, 0.35)',
+              padding: '8px 18px',
+              borderRadius: '30px',
+              fontSize: '0.84rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              align-items: 'center',
+              gap: '8px',
+              transition: 'all 0.25s ease'
+            }}
+            title="Sign Out of Caretaker Account"
+          >
+            <i className="fa-solid fa-right-from-bracket"></i> Sign Out
+          </button>
         </div>
       </header>
 

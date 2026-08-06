@@ -793,49 +793,16 @@ const OwnerDashboard = () => {
 
         {/* Main Content Area */}
         <main className="owner-main-content">
-          {/* Sticky Top Navigation Bar */}
+          {/* Stable Fixed Top Header Bar */}
           <div className="owner-top-navbar">
             <div className="top-nav-left">
-              <div className="top-nav-welcome">
-                <span className="welcome-greeting">Welcome back, <strong>{user?.name || 'Saroj Naydu'}</strong></span>
-                <span className="current-date-badge">
-                  <i className="fa-solid fa-calendar-day"></i> {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-                </span>
-              </div>
-            </div>
-
-            <div className="top-nav-search">
-              <i className="fa-solid fa-magnifying-glass search-icon"></i>
-              <input 
-                type="text" 
-                placeholder="Search properties, bookings, or guest requests..." 
-                value={propertySearchQuery}
-                onChange={(e) => setPropertySearchQuery(e.target.value)}
-              />
-              <span className="search-shortcut">⌘K</span>
+              <a href="http://localhost:5173" className="stable-brand-logo">
+                <span className="logo-text">Mahabaleshwar</span>
+                <span className="logo-subtext">LUXURY STAYS • HOST PORTAL</span>
+              </a>
             </div>
 
             <div className="top-nav-right">
-              <button type="button" className="top-nav-icon-btn" title="Notifications">
-                <i className="fa-solid fa-bell"></i>
-                <span className="nav-unread-dot">3</span>
-              </button>
-              <button 
-                type="button"
-                className="top-nav-icon-btn" 
-                title="Quick Caretaker Request" 
-                onClick={() => setShowCaretakerModal(true)}
-              >
-                <i className="fa-solid fa-user-shield"></i>
-              </button>
-              <button 
-                type="button"
-                className="top-add-btn" 
-                onClick={() => { setEditingProperty(null); setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' }); setShowAddModal(true); }}
-              >
-                <i className="fa-solid fa-plus"></i> <span>Add Property</span>
-              </button>
-
               <div className="top-profile-badge">
                 <div className="avatar-circle">
                   {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
@@ -845,6 +812,15 @@ const OwnerDashboard = () => {
                   <span className="profile-role"><i className="fa-solid fa-shield-check"></i> Verified Host</span>
                 </div>
               </div>
+
+              <button 
+                type="button" 
+                className="header-logout-btn" 
+                onClick={handleLogout}
+                title="Sign Out of Host Account"
+              >
+                <i className="fa-solid fa-right-from-bracket"></i> Sign Out
+              </button>
             </div>
           </div>
 
