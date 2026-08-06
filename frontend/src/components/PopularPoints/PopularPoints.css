@@ -281,12 +281,20 @@
 
 @media (max-width: 768px) {
   .popular-points-section {
-    padding: 50px 0;
+    padding: 45px 0;
   }
   .popular-points-section h2 {
     font-size: 1.8rem;
   }
   .popular-point-card {
-    min-width: 280px;
+    min-width: 270px;
+    max-width: 285px;
+  }
+}
+
+@media (max-width: 480px) {
+  .popular-point-card {
+    min-width: 250px;
+    max-width: 265px;
   }
 }

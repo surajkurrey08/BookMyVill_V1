@@ -27,12 +27,13 @@
 .filter-tabs {
   display: flex;
   justify-content: center;
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 .filter-btn {
-  padding: 8px 20px;
+  padding: 8px 18px;
   border-radius: 30px;
   background: #f4f6f4;
   border: 1px solid #c8d3cc;
@@ -40,6 +41,7 @@
   color: #1b4332 !important;
   cursor: pointer;
   transition: all 0.25s ease;
+  white-space: nowrap;
 }
 
 .filter-btn:hover {
@@ -73,17 +75,31 @@
 }
 
 @media (max-width: 900px) {
-  .section-header h2 {
-    font-size: 2rem;
+  .property-grid-section {
+    padding: 60px 4%;
   }
-  
+  .section-header h2 {
+    font-size: 2.1rem;
+  }
   .grid-container {
     grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
   }
 }
 
 @media (max-width: 600px) {
+  .property-grid-section {
+    padding: 40px 3%;
+  }
+  .section-header h2 {
+    font-size: 1.7rem;
+  }
   .grid-container {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .filter-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
   }
 }

@@ -7,9 +7,13 @@ const Navbar = () => {
   const [isNavHidden, setIsNavHidden] = useState(false);
   const [menuMode, setMenuMode] = useState(() => localStorage.getItem('navbarMode') || 'auto-hide');
   const [user, setUser] = useState(null);
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -101,15 +105,25 @@ const Navbar = () => {
           </Link>
 
 
-          <nav className="nav-links-center">
-            <Link to="/" onClick={() => scrollToSection('home')}>Home</Link>
-            <Link to="/explore">Explore Stays</Link>
-            <Link to="/packages">Packages</Link>
-            {(!user || (user.role !== 'user' && user.role !== 'traveller')) && <Link to="/join-us">Join Us</Link>}
-            <Link to="/about-us">About Us</Link>
+          <nav className={`nav-links-center ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+            <Link to="/" onClick={() => { scrollToSection('home'); setIsMobileMenuOpen(false); }}>Home</Link>
+            <Link to="/explore" onClick={() => setIsMobileMenuOpen(false)}>Explore Stays</Link>
+            <Link to="/packages" onClick={() => setIsMobileMenuOpen(false)}>Packages</Link>
+            {(!user || (user.role !== 'user' && user.role !== 'traveller')) && (
+              <Link to="/join-us" onClick={() => setIsMobileMenuOpen(false)}>Join Us</Link>
+            )}
+            <Link to="/about-us" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
           </nav>
 
           <div className="nav-right-container">
+            <button 
+              type="button"
+              className="mobile-hamburger-btn"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle Navigation Menu"
+            >
+              <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
+            </button>
             {user ? (
               <div className="user-profile-menu-container" style={{ position: 'relative' }}>
                 <button 
