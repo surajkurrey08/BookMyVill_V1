@@ -945,9 +945,9 @@ const OwnerDashboard = () => {
               </p>
             </div>
 
-            <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <div className="header-actions">
               <button
-                className="btn-primary-gold"
+                className="btn-caretaker-emerald"
                 onClick={() => {
                   setCaretakerForm({
                     propertyId: properties.length > 0 ? properties[0]._id : '',
@@ -963,7 +963,6 @@ const OwnerDashboard = () => {
                   });
                   setShowCaretakerModal(true);
                 }}
-                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)', color: '#ffffff', border: 'none', padding: '10px 18px', borderRadius: '20px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem' }}
               >
                 <i className="fa-solid fa-user-shield"></i> Send Caretaker Request to Admin
               </button>
