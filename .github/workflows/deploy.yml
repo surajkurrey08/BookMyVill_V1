@@ -103,23 +103,38 @@ jobs:
             rm -f /etc/nginx/sites-available/admin.lonavala.fun
             rm -f /etc/nginx/sites-enabled/default
 
-            # 2. Ensure basic HTTP config for certbot challenge
+            # 2. Ensure basic HTTP config for certbot challenge & admin HTTP serving
             cat > /etc/nginx/sites-available/lonavala.fun << 'EOF'
-          server {
-              listen 80;
-              server_name lonavala.fun www.lonavala.fun api.lonavala.fun admin.lonavala.fun;
-              
-              location /.well-known/acme-challenge/ {
-                  root /var/www/certbot;
-              }
-              
-              location / {
-                  root /var/www/lonavala.fun/frontend;
-                  index index.html;
-                  try_files $uri $uri/ /index.html;
-              }
-          }
-          EOF
+server {
+    listen 80;
+    server_name lonavala.fun www.lonavala.fun api.lonavala.fun;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        root /var/www/lonavala.fun/frontend;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+server {
+    listen 80;
+    server_name admin.lonavala.fun;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        root /var/www/lonavala.fun/admin;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+}
+EOF
 
             ln -sf /etc/nginx/sites-available/lonavala.fun /etc/nginx/sites-enabled/lonavala.fun
             nginx -t && (systemctl reload nginx || systemctl restart nginx || systemctl start nginx)
@@ -146,82 +161,82 @@ jobs:
 
             # 5. Write full HTTP + HTTPS Nginx configuration
             cat > /etc/nginx/sites-available/lonavala.fun << 'EOF'
-          # HTTP block - Handles certbot challenge and redirects all HTTP to HTTPS
-          server {
-              listen 80;
-              server_name lonavala.fun www.lonavala.fun api.lonavala.fun admin.lonavala.fun;
-              
-              location /.well-known/acme-challenge/ {
-                  root /var/www/certbot;
-              }
-              
-              location / {
-                  return 301 https://$host$request_uri;
-              }
-          }
+# HTTP block - Handles certbot challenge and redirects HTTP to HTTPS
+server {
+    listen 80;
+    server_name lonavala.fun www.lonavala.fun api.lonavala.fun admin.lonavala.fun;
+    
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
 
-          # HTTPS: Frontend Main Site
-          server {
-              listen 443 ssl;
-              server_name lonavala.fun www.lonavala.fun;
-              ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-              ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-              ssl_protocols TLSv1.2 TLSv1.3;
-              ssl_prefer_server_ciphers on;
-              ssl_ciphers HIGH:!aNULL:!MD5;
-              root /var/www/lonavala.fun/frontend;
-              index index.html;
-              location / {
-                  try_files $uri $uri/ /index.html;
-              }
-              gzip on;
-              gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-          }
+# HTTPS: Frontend Main Site
+server {
+    listen 443 ssl;
+    server_name lonavala.fun www.lonavala.fun;
+    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    root /var/www/lonavala.fun/frontend;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+}
 
-          # HTTPS: Admin Portal
-          server {
-              listen 443 ssl;
-              server_name admin.lonavala.fun;
-              ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-              ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-              ssl_protocols TLSv1.2 TLSv1.3;
-              ssl_prefer_server_ciphers on;
-              ssl_ciphers HIGH:!aNULL:!MD5;
-              root /var/www/lonavala.fun/admin;
-              index index.html;
-              location / {
-                  try_files $uri $uri/ /index.html;
-              }
-              gzip on;
-              gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-          }
+# HTTPS: Admin Portal
+server {
+    listen 443 ssl;
+    server_name admin.lonavala.fun;
+    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    root /var/www/lonavala.fun/admin;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+}
 
-          # HTTPS: Backend API Proxy
-          server {
-              listen 443 ssl;
-              server_name api.lonavala.fun;
-              ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-              ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-              ssl_protocols TLSv1.2 TLSv1.3;
-              ssl_prefer_server_ciphers on;
-              ssl_ciphers HIGH:!aNULL:!MD5;
-              location / {
-                  proxy_pass http://127.0.0.1:5001;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade $http_upgrade;
-                  proxy_set_header Connection upgrade;
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $scheme;
-                  proxy_cache_bypass $http_upgrade;
-              }
-          }
-          EOF
+# HTTPS: Backend API Proxy
+server {
+    listen 443 ssl;
+    server_name api.lonavala.fun;
+    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    location / {
+        proxy_pass http://127.0.0.1:5001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection upgrade;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+EOF
 
             nginx -t && (systemctl reload nginx || systemctl restart nginx || systemctl start nginx)
             echo 'Nginx configured successfully for lonavala.fun!'
-          SSH_EOF
+SSH_EOF
 
       # ── 7.5 Debug Nginx VPS ───────────────────────────────────────────────
       - name: Debug Nginx VPS
