@@ -312,7 +312,7 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
         <img src={property.image} alt={property.name} loading="lazy" />
         
         <span className="day-night-badge">
-          ☀️ Day & 🌙 Night
+          Day & Night
         </span>
         
         <button 
@@ -326,24 +326,9 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
         >
           <i className={`fa-${isWishlisted ? 'solid' : 'regular'} fa-heart`}></i>
         </button>
-
-        <div className="pro-amenities-overlay">
-          {defaultAmenities.map((am, i) => (
-            <span key={i} className="pro-amenity-chip">{am}</span>
-          ))}
-        </div>
       </div>
 
       <div className="card-content-box">
-        <div className="card-top-meta">
-          <span className="card-type-label">{property.type?.toUpperCase() || 'LUXURY STAY'}</span>
-          <div className="card-rating-row">
-            <i className="fa-solid fa-star" style={{ color: '#d4af37', fontSize: '0.85rem' }}></i>
-            <span className="card-rating-star">{property.rating || '4.8'}</span>
-            <span className="card-reviews-count">({reviewsCount})</span>
-          </div>
-        </div>
-
         <h3 className="card-title">{property.name}</h3>
 
         <p className="card-location">
@@ -351,34 +336,37 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
           <span>{property.location}</span>
         </p>
 
-        <div className="card-bottom-row">
-          <div className="card-price-block">
-            <span className="card-orig-price">{originalPrice}</span>
-            <div className="card-main-price">
-              {numericPrice} <span className="card-price-unit">/ night</span>
-            </div>
-          </div>
+        <div className="card-rating-row">
+          <i className="fa-solid fa-star" style={{ color: '#d4af37' }}></i>
+          <span className="card-rating-star">{property.rating || '4.8'}</span>
+          <span className="card-reviews-count">({reviewsCount} reviews)</span>
+        </div>
 
-          <div className="card-actions-group">
-            <button
-              type="button"
-              className="btn-locate-map"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect(property);
-              }}
-              title="Locate hotel and zoom on interactive map"
-            >
-              <i className="fa-solid fa-location-crosshairs"></i> Pin
-            </button>
-            <button 
-              type="button"
-              className="btn-book-now-gold"
-              onClick={handleBookNow}
-            >
-              Book Now
-            </button>
-          </div>
+        <div className="card-price-row">
+          <span className="card-main-price">
+            {numericPrice} <span className="card-price-unit">/night</span>
+          </span>
+        </div>
+
+        <div className="card-actions-group">
+          <button
+            type="button"
+            className="btn-locate-map"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(property);
+            }}
+            title="Locate hotel and zoom on interactive map"
+          >
+            <i className="fa-solid fa-location-crosshairs"></i> Map Pin
+          </button>
+          <button 
+            type="button"
+            className="btn-book-now-gold"
+            onClick={handleBookNow}
+          >
+            Book Now
+          </button>
         </div>
       </div>
     </div>
