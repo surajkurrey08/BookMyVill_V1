@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './CaretakerDashboard.css';
+import AiAssistant from '../AiAssistant/AiAssistant';
 import { API_BASE_URL } from '../../config';
 
 const CaretakerDashboard = () => {
@@ -1947,6 +1948,9 @@ const CaretakerDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Floating Caretaker AI Assistant */}
+      <AiAssistant />
 
       {/* Footer Bar */}
       <footer className="caretaker-footer">

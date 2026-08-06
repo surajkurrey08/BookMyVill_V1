@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AiAssistant from '../AiAssistant/AiAssistant';
 // Owner Dashboard Component - Mahabaleshwar Luxury Stays
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config';
@@ -2751,6 +2752,9 @@ const OwnerDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Floating Host AI Assistant */}
+      <AiAssistant />
     </div>
   );
 };
