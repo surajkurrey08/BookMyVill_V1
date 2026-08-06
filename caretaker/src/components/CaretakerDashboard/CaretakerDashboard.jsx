@@ -651,26 +651,37 @@ const CaretakerDashboard = () => {
   return (
     <div className="caretaker-dashboard-page">
       {/* Top Navbar */}
-      {/* Stable Fixed Top Navbar */}
-      <header className="caretaker-navbar">
-        <div className="nav-brand">
+      {/* Stable Fixed Single-Line Top Navbar */}
+      <header className="caretaker-navbar single-line-header">
+        <div className="nav-brand-inline">
           <a href="http://localhost:5173" className="stable-brand-logo" style={{ textDecoration: 'none' }}>
             <span className="logo-text">Mahabaleshwar</span>
-            <span className="logo-subtext">LUXURY STAYS • CARETAKER COMMAND CENTER</span>
+            <span className="logo-subtext">CARETAKER PORTAL</span>
           </a>
+          <span className="header-divider">|</span>
+          <span className="nav-active-tab-title">
+            {activeTab === 'home' && <><i className="fa-solid fa-house-user" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Overview</>}
+            {activeTab === 'attendance' && <><i className="fa-solid fa-user-clock" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Attendance Log</>}
+            {activeTab === 'duties' && <><i className="fa-solid fa-clipboard-check" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Daily Duties</>}
+            {activeTab === 'guests' && <><i className="fa-solid fa-users-gear" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Guest Arrivals</>}
+            {activeTab === 'maintenance' && <><i className="fa-solid fa-triangle-exclamation" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Maintenance</>}
+            {activeTab === 'inventory' && <><i className="fa-solid fa-boxes-stacked" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Stock Inventory</>}
+            {activeTab === 'rules' && <><i className="fa-solid fa-shield-halved" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Estate Rules</>}
+            {activeTab === 'profile' && <><i className="fa-solid fa-user-gear" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> My Profile</>}
+          </span>
         </div>
 
-        <div className="nav-right-container" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div className="caretaker-user-pill" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255, 255, 255, 0.06)', padding: '6px 14px', borderRadius: '30px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-            <div className="avatar-circle-green" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>
-              {profileData.name ? profileData.name.charAt(0).toUpperCase() : 'S'}
+        <div className="nav-right-container">
+          <div className="caretaker-user-pill">
+            <div className="avatar-circle-green">
+              {profileData.name ? profileData.name.charAt(0).toUpperCase() : (user?.name ? user.name.charAt(0).toUpperCase() : 'C')}
             </div>
-            <div className="profile-text-group" style={{ textAlign: 'left' }}>
-              <span style={{ display: 'block', fontSize: '0.86rem', fontWeight: '800', color: '#ffffff', lineHeight: '1.1' }}>
-                {profileData.name || user?.name || 'Suresh Patil'}
+            <div className="profile-text-group">
+              <span className="profile-name">
+                {profileData.name || user?.name || 'Caretaker'}
               </span>
-              <span style={{ fontSize: '0.65rem', color: '#34d399', fontWeight: '700', textTransform: 'uppercase' }}>
-                <i className="fa-solid fa-user-shield"></i> Chief Villa Caretaker
+              <span className="profile-role">
+                <i className="fa-solid fa-user-shield"></i> Caretaker
               </span>
             </div>
           </div>
@@ -681,20 +692,6 @@ const CaretakerDashboard = () => {
               sessionStorage.removeItem('token');
               sessionStorage.removeItem('user');
               window.location.href = 'http://localhost:5173';
-            }}
-            style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              color: '#f87171',
-              border: '1px solid rgba(239, 68, 68, 0.35)',
-              padding: '8px 18px',
-              borderRadius: '30px',
-              fontSize: '0.84rem',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              align-items: 'center',
-              gap: '8px',
-              transition: 'all 0.25s ease'
             }}
             title="Sign Out of Caretaker Account"
           >

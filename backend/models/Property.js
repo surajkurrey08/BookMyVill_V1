@@ -8,9 +8,18 @@ const PropertySchema = new mongoose.Schema({
   price: { type: Number, default: 10000 },
   mapLink: { type: String, default: '' },
   amenities: [{ type: String }],
+  facilities: [{ type: String }],
   photos: [{ type: String }],
   videos: [{ type: String }],
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  assignedCaretaker: {
+    name: String,
+    phone: String,
+    experience: String,
+    role: String,
+    govtIdStatus: { type: String, default: 'Verified' },
+    assignedDate: { type: Date, default: Date.now }
+  },
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
   createdAt: { type: Date, default: Date.now }
 });
 

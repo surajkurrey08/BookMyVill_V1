@@ -95,23 +95,37 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 28px;
+  padding: 12px 28px;
   background: rgba(14, 22, 19, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-gold);
+  border-bottom: 1px solid var(--border-emerald);
   position: sticky;
   top: 0;
   z-index: 1000;
   box-shadow: 0 6px 30px rgba(0, 0, 0, 0.6);
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
 }
 
-.nav-brand {
+.nav-brand-inline {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.nav-brand-inline .header-divider {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 1.1rem;
+  font-weight: 300;
+}
+
+.nav-active-tab-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
 }
 
 .menu-toggle-btn {
@@ -268,6 +282,89 @@
   border-left: 1px solid rgba(255, 255, 255, 0.15);
   padding-left: 10px;
   font-size: 0.82rem;
+}
+
+/* User Profile Badge Pill in Caretaker Header */
+.nav-right-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.caretaker-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 6px 14px;
+  border-radius: 30px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  transition: all 0.25s ease;
+}
+
+.caretaker-user-pill:hover {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: var(--accent-emerald);
+}
+
+.avatar-circle-green {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.caretaker-user-pill .profile-text-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.caretaker-user-pill .profile-name {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.caretaker-user-pill .profile-role {
+  font-size: 0.65rem;
+  color: #34d399;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-logout-btn-green {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  padding: 8px 18px;
+  border-radius: 30px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+}
+
+.header-logout-btn-green:hover {
+  background: rgba(239, 68, 68, 0.28);
+  color: #ffffff;
+  border-color: #ef4444;
+  transform: translateY(-1px);
 }
 
 .duty-status-badge-nav {
@@ -1710,14 +1807,43 @@
    RESPONSIVE MEDIA QUERIES
    ========================================================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 960px) {
   .caretaker-navbar {
     padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  .nav-brand-inline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .nav-brand-inline .header-divider {
+    display: none;
   }
   .caretaker-container {
     padding: 0 12px;
     margin-top: 16px;
   }
+  .dashboard-main-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav-active-tab-title {
+    font-size: 1rem;
+  }
+  .caretaker-user-pill {
+    padding: 4px 10px;
+  }
+  .caretaker-user-pill .profile-name {
+    font-size: 0.78rem;
+  }
+  .header-logout-btn-green {
+    padding: 6px 12px;
+    font-size: 0.76rem;
+  }
+}
   .caretaker-header-card {
     padding: 20px 16px;
   }

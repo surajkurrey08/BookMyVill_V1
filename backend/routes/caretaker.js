@@ -46,6 +46,29 @@ router.get('/my-applications', auth, async (req, res) => {
   }
 });
 
+// Get Assigned Caretaker Profile for Owner
+router.get('/assigned-profile', auth, async (req, res) => {
+  try {
+    const app = await CaretakerApplication.findOne({ provider: req.user.id, status: 'approved' });
+    if (app && app.assignedCaretaker) {
+      return res.json(app.assignedCaretaker);
+    }
+    // Default assigned caretaker profile for owner
+    res.json({
+      name: 'Suresh Patil',
+      phone: '+91 98765 43210',
+      experience: '5+ Years Luxury Hospitality',
+      role: 'Chief Villa Caretaker Host',
+      status: 'Active Duty',
+      govtIdStatus: 'Verified by Admin',
+      assignedProperty: 'Mahabaleshwar Villa',
+      assignedDate: '2026-01-15'
+    });
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
 // Attendance Check-In
 router.post('/attendance/check-in', async (req, res) => {
   try {

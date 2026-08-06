@@ -109,6 +109,11 @@ const OwnerDashboard = () => {
   const [ownerInventory, setOwnerInventory] = useState([]);
   const [caretakerDataLoading, setCaretakerDataLoading] = useState(true);
   const [assignedCaretaker, setAssignedCaretaker] = useState(null);
+  const [touristRegisterList, setTouristRegisterList] = useState([]);
+  const [touristFeedbackList, setTouristFeedbackList] = useState([]);
+  const [revenueYear, setRevenueYear] = useState('2026');
+  const [estOccupancy, setEstOccupancy] = useState(70);
+  const [customAvgRate, setCustomAvgRate] = useState(15000);
 
   // Modals and Form States for Owner Caretaker Task Assignment
   const [showAddTaskModalOwner, setShowAddTaskModalOwner] = useState(false);
@@ -235,6 +240,25 @@ const OwnerDashboard = () => {
     }
   };
 
+  const handleUpdateTouristStatus = async (id, status) => {
+    const rawToken = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = rawToken ? rawToken.replace(/^["']|["']$/g, '').trim() : '';
+    try {
+      const res = await fetch(`${API_BASE_URL}/tourist-register/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setTouristRegisterList(prev => prev.map(t => ((t._id === id || t.id === id) ? updated : t)));
+        setActionSuccess(`Tourist guest status updated to ${status}.`);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const openWhatsAppOwnerToCaretaker = (app) => {
     const caretakerPhone = app?.assignedCaretakerPhone || '+91 98901 23456';
     const caretakerName = app?.assignedCaretakerName || 'Suresh Pawar (Certified Caretaker)';
@@ -297,11 +321,13 @@ const OwnerDashboard = () => {
   const fetchCaretakerOpsData = async (token) => {
     setCaretakerDataLoading(true);
     try {
-      const [tasksRes, reqsRes, inventoryRes, profileRes] = await Promise.all([
+      const [tasksRes, reqsRes, inventoryRes, profileRes, touristRes, feedbackRes] = await Promise.all([
         fetch(`${API_BASE_URL}/caretaker-tasks/owner`, { headers: { 'x-auth-token': token } }),
         fetch(`${API_BASE_URL}/guest-requirements/owner`, { headers: { 'x-auth-token': token } }),
         fetch(`${API_BASE_URL}/inventory/owner`, { headers: { 'x-auth-token': token } }),
-        fetch(`${API_BASE_URL}/caretaker/assigned-profile`, { headers: { 'x-auth-token': token } })
+        fetch(`${API_BASE_URL}/caretaker/assigned-profile`, { headers: { 'x-auth-token': token } }),
+        fetch(`${API_BASE_URL}/tourist-register/owner`, { headers: { 'x-auth-token': token } }),
+        fetch(`${API_BASE_URL}/feedback/owner`, { headers: { 'x-auth-token': token } })
       ]);
 
       if (tasksRes.ok) {
@@ -319,6 +345,14 @@ const OwnerDashboard = () => {
       if (profileRes.ok) {
         const profileData = await profileRes.json();
         setAssignedCaretaker(profileData || null);
+      }
+      if (touristRes && touristRes.ok) {
+        const touristData = await touristRes.json();
+        if (Array.isArray(touristData)) setTouristRegisterList(touristData);
+      }
+      if (feedbackRes && feedbackRes.ok) {
+        const feedbackData = await feedbackRes.json();
+        if (Array.isArray(feedbackData)) setTouristFeedbackList(feedbackData);
       }
     } catch (err) {
       console.error('Error fetching caretaker operations data:', err);
@@ -756,16 +790,34 @@ const OwnerDashboard = () => {
               <i className="fa-solid fa-calendar-check"></i> Guest Bookings ({totalBookings})
             </button>
             <button
+              className={`nav-btn ${activeTab === 'tourists' ? 'active' : ''}`}
+              onClick={() => handleTabChange('tourists')}
+            >
+              <i className="fa-solid fa-users-viewfinder"></i> Tourist Arrival Register ({touristRegisterList.length})
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'inventory' ? 'active' : ''}`}
+              onClick={() => handleTabChange('inventory')}
+            >
+              <i className="fa-solid fa-boxes-stacked"></i> Material Stock Inventory ({ownerInventory.length})
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'feedback' ? 'active' : ''}`}
+              onClick={() => handleTabChange('feedback')}
+            >
+              <i className="fa-solid fa-comments"></i> Tourist Feedback & Reviews ({touristFeedbackList.length})
+            </button>
+            <button
               className={`nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
               onClick={() => handleTabChange('analytics')}
             >
-              <i className="fa-solid fa-wallet"></i> Earnings & Financials
+              <i className="fa-solid fa-wallet"></i> Revenue & Yearly Calculator
             </button>
             <button
               className={`nav-btn ${activeTab === 'caretaker-tasks' ? 'active' : ''}`}
               onClick={() => handleTabChange('caretaker-tasks')}
             >
-              <i className="fa-solid fa-list-check"></i> Caretaker & Daily Tasks
+              <i className="fa-solid fa-list-check"></i> Caretaker Tasks
             </button>
             <button
               className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
@@ -793,36 +845,37 @@ const OwnerDashboard = () => {
 
         {/* Main Content Area */}
         <main className="owner-main-content">
-          <header className="content-header">
-            <div className="header-titles">
-              <h1>
-                {activeTab === 'overview' && <><i className="fa-solid fa-gauge-high" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Host Command Center</>}
-                {activeTab === 'properties' && <><i className="fa-solid fa-hotel" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Property Portfolio ({properties.length})</>}
-                {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Guest Reservations ({bookings.length})</>}
-                {activeTab === 'caretaker-tasks' && <><i className="fa-solid fa-list-check" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Caretaker Task & Guest Requirement Center</>}
-                {activeTab === 'caretakers' && <><i className="fa-solid fa-user-shield" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Property Caretaker Applications ({caretakerApps.length})</>}
-                {activeTab === 'analytics' && <><i className="fa-solid fa-chart-line" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Financial Earnings & Analytics</>}
-                {activeTab === 'profile' && <><i className="fa-solid fa-user-gear" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i>Host Account Settings</>}
+          <header className="content-header single-line-header">
+            <div className="header-title-inline">
+              <h1 className="header-title-text">
+                {activeTab === 'overview' && <><i className="fa-solid fa-gauge-high" style={{ color: 'var(--accent-gold)' }}></i> Host Overview</>}
+                {activeTab === 'properties' && <><i className="fa-solid fa-hotel" style={{ color: 'var(--accent-gold)' }}></i> Properties ({properties.length})</>}
+                {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check" style={{ color: 'var(--accent-gold)' }}></i> Bookings ({bookings.length})</>}
+                {activeTab === 'caretaker-tasks' && <><i className="fa-solid fa-list-check" style={{ color: 'var(--accent-gold)' }}></i> Caretaker Tasks</>}
+                {activeTab === 'caretakers' && <><i className="fa-solid fa-user-shield" style={{ color: 'var(--accent-gold)' }}></i> Caretaker Requests ({caretakerApps.length})</>}
+                {activeTab === 'analytics' && <><i className="fa-solid fa-chart-line" style={{ color: 'var(--accent-gold)' }}></i> Financials</>}
+                {activeTab === 'profile' && <><i className="fa-solid fa-user-gear" style={{ color: 'var(--accent-gold)' }}></i> Host Profile</>}
               </h1>
-              <p>
-                {activeTab === 'overview' && `Welcome back, ${user?.name || 'Owner'}! Track stay performance, guest check-ins & payouts.`}
-                {activeTab === 'properties' && `Manage your luxury stay listings, update direct photos, prices and live GPS links.`}
-                {activeTab === 'bookings' && `Track check-ins, guest contacts, stay payments, and confirm or reject reservations.`}
-                {activeTab === 'caretaker-tasks' && `Assign daily shift duties to caretakers, add guest-specific stay requirements, and monitor real-time completion.`}
-                {activeTab === 'caretakers' && `Apply and assign caretakers for your properties, manage guest check-in staff & maintenance.`}
-                {activeTab === 'analytics' && `Track direct stay earnings, average reservation value, and monthly host payouts.`}
-                {activeTab === 'profile' && `Manage your owner identity, contact details and stay policies displayed to travelers.`}
-              </p>
+              <span className="header-divider">|</span>
+              <span className="header-sub-inline">
+                {activeTab === 'overview' && `Welcome back, ${user?.name || 'Host'}`}
+                {activeTab === 'properties' && 'Listings & pricing'}
+                {activeTab === 'bookings' && 'Reservations'}
+                {activeTab === 'caretaker-tasks' && 'Shift duties'}
+                {activeTab === 'caretakers' && 'Staff applications'}
+                {activeTab === 'analytics' && 'Financial insights'}
+                {activeTab === 'profile' && 'Account settings'}
+              </span>
             </div>
 
             <div className="header-actions">
               <div className="top-profile-badge">
                 <div className="avatar-circle">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'O'}
                 </div>
                 <div className="profile-text-group">
-                  <span className="profile-name">{user?.name || 'Saroj Naydu'}</span>
-                  <span className="profile-role"><i className="fa-solid fa-shield-check"></i> Verified Host</span>
+                  <span className="profile-name">{user?.name || 'Property Owner'}</span>
+                  <span className="profile-role"><i className="fa-solid fa-shield-check"></i> Host</span>
                 </div>
               </div>
 
@@ -854,7 +907,7 @@ const OwnerDashboard = () => {
                   setShowCaretakerModal(true);
                 }}
               >
-                <i className="fa-solid fa-user-shield"></i> Send Caretaker Request to Admin
+                <i className="fa-solid fa-user-shield"></i> Request Caretaker
               </button>
               {activeTab === 'properties' && (
                 <button 
@@ -866,7 +919,7 @@ const OwnerDashboard = () => {
                     setShowAddModal(true);
                   }}
                 >
-                  <i className="fa-solid fa-plus"></i> Add New Property
+                  <i className="fa-solid fa-plus"></i> Add Property
                 </button>
               )}
             </div>
@@ -1921,6 +1974,166 @@ const OwnerDashboard = () => {
                         </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: TOURIST ARRIVAL REGISTER */}
+              {activeTab === 'tourists' && (
+                <div className="tab-tourists-register">
+                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(145deg, rgba(27, 38, 44, 0.9) 0%, rgba(15, 23, 30, 0.9) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <i className="fa-solid fa-users-viewfinder"></i> Tourist Arrival & Headcount Register
+                      </h3>
+                      <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.86rem' }}>
+                        Real-time log of registered tourists, expected arrival times, headcount (adults/children), assigned rooms & Govt ID verification status.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)', fontWeight: '600', textTransform: 'uppercase' }}>Total Registered Groups</div>
+                      <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#ffffff', marginTop: '4px' }}>{touristRegisterList.length} Groups</div>
+                    </div>
+                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                      <div style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: '600', textTransform: 'uppercase' }}>Currently Arrived</div>
+                      <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>
+                        {touristRegisterList.filter(t => t.status === 'Arrived').length} Arrived
+                      </div>
+                    </div>
+                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(212, 175, 55, 0.3)' }}>
+                      <div style={{ fontSize: '0.78rem', color: '#ffd700', fontWeight: '600', textTransform: 'uppercase' }}>Total Tourist Headcount</div>
+                      <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#ffd700', marginTop: '4px' }}>
+                        {touristRegisterList.reduce((sum, t) => sum + (t.adultsCount || 0) + (t.childrenCount || 0), 0)} Tourists
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {touristRegisterList.map(t => (
+                      <div key={t._id || t.id} className="glass-morphism" style={{ padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(18,27,24,0.7)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                            <h4 style={{ margin: 0, color: '#ffffff', fontSize: '1.1rem', fontWeight: '800' }}>{t.guestName}</h4>
+                            <span style={{ background: t.status === 'Arrived' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(212, 175, 55, 0.2)', color: t.status === 'Arrived' ? '#10b981' : '#ffd700', border: t.status === 'Arrived' ? '1px solid #10b981' : '1px solid #d4af37', padding: '2px 10px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: '800' }}>
+                              {t.status}
+                            </span>
+                          </div>
+                          <p style={{ margin: '0 0 6px 0', color: 'rgba(255,255,255,0.75)', fontSize: '0.86rem' }}>
+                            <i className="fa-solid fa-building" style={{ color: '#d4af37', marginRight: '6px' }}></i> {t.propertyName} • <i className="fa-solid fa-door-closed" style={{ color: '#38bdf8', marginLeft: '6px', marginRight: '4px' }}></i> {t.roomAssigned}
+                          </p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', fontSize: '0.82rem', color: 'rgba(255,255,255,0.65)' }}>
+                            <span><i className="fa-solid fa-clock" style={{ color: '#f59e0b' }}></i> Arrival Time: <strong>{t.expectedArrivalTime}</strong></span>
+                            <span><i className="fa-solid fa-users" style={{ color: '#10b981' }}></i> Guests: <strong>{t.adultsCount} Adults, {t.childrenCount} Kids</strong></span>
+                            <span><i className="fa-solid fa-id-card" style={{ color: '#a78bfa' }}></i> Govt ID: <strong>{t.govtIdType || 'Aadhaar'} ({t.idVerified ? 'Verified' : 'Pending'})</strong></span>
+                          </div>
+                          {t.specialRequests && (
+                            <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#ffd700', fontStyle: 'italic' }}>
+                              "<i className="fa-solid fa-star"></i> {t.specialRequests}"
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: MATERIAL STOCK INVENTORY */}
+              {activeTab === 'inventory' && (
+                <div className="tab-inventory-stock">
+                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(145deg, rgba(27, 38, 44, 0.9) 0%, rgba(15, 23, 30, 0.9) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <i className="fa-solid fa-boxes-stacked"></i> Material Stock & Consumables Inventory
+                      </h3>
+                      <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.86rem' }}>
+                        Manage property supplies (linens, towels, toiletries, food/beverage kits) and trigger restock requests for Caretakers.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
+                    {ownerInventory.map(item => (
+                      <div key={item._id || item.id} className="glass-morphism" style={{ padding: '20px', borderRadius: '16px', border: item.status === 'In Stock' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(239,68,68,0.4)', background: item.status === 'In Stock' ? 'rgba(20,30,26,0.6)' : 'rgba(239,68,68,0.08)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                          <div>
+                            <span style={{ fontSize: '0.72rem', color: '#d4af37', fontWeight: '800', textTransform: 'uppercase' }}>{item.category || 'Supplies'}</span>
+                            <h4 style={{ margin: '2px 0 0 0', color: '#ffffff', fontSize: '1rem', fontWeight: '800' }}>{item.itemName || item.item}</h4>
+                          </div>
+                          <span style={{
+                            background: item.status === 'In Stock' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
+                            color: item.status === 'In Stock' ? '#10b981' : '#ef4444',
+                            border: item.status === 'In Stock' ? '1px solid #10b981' : '1px solid #ef4444',
+                            fontSize: '0.72rem',
+                            padding: '3px 10px',
+                            borderRadius: '12px',
+                            fontWeight: '800'
+                          }}>
+                            {item.status}
+                          </span>
+                        </div>
+                        <div style={{ margin: '14px 0', fontSize: '1.8rem', fontWeight: '800', color: '#ffd700' }}>
+                          {item.quantity || item.qty} <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', fontWeight: '400' }}>{item.unit}</span>
+                        </div>
+                        <button
+                          onClick={() => handleOwnerRestockStock(item._id || item.id, 5)}
+                          style={{ width: '100%', background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '10px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                        >
+                          <i className="fa-solid fa-cart-plus"></i> Restock +5 Units
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: TOURIST FEEDBACK */}
+              {activeTab === 'feedback' && (
+                <div className="tab-tourist-feedback">
+                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(145deg, rgba(27, 38, 44, 0.9) 0%, rgba(15, 23, 30, 0.9) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <i className="fa-solid fa-comments"></i> Tourist Feedback & Rating Reviews
+                      </h3>
+                      <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.86rem' }}>
+                        Review ratings, stay feedback, and comments submitted by tourists visiting your Mahabaleshwar properties.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                    {touristFeedbackList.map(fb => (
+                      <div key={fb._id || fb.id} className="glass-morphism" style={{ padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(18,27,24,0.7)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                            <div>
+                              <h4 style={{ margin: 0, color: '#ffffff', fontSize: '1.05rem', fontWeight: '800' }}>{fb.guestName}</h4>
+                              <span style={{ fontSize: '0.78rem', color: '#d4af37', fontWeight: '700' }}>{fb.propertyName}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '3px', color: '#ffd700', fontSize: '0.9rem' }}>
+                              {[...Array(5)].map((_, i) => (
+                                <i key={i} className={`fa-solid fa-star${i < fb.rating ? '' : '-o'}`} style={{ color: i < fb.rating ? '#ffd700' : 'rgba(255,255,255,0.2)' }}></i>
+                              ))}
+                            </div>
+                          </div>
+                          <p style={{ color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.5', fontStyle: 'italic', margin: '10px 0' }}>
+                            "{fb.reviewText}"
+                          </p>
+                          {fb.facilitiesUsed && fb.facilitiesUsed.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+                              {fb.facilitiesUsed.map((fac, idx) => (
+                                <span key={idx} style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '700' }}>
+                                  ✓ {fac}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
