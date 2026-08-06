@@ -4,6 +4,7 @@ import Lenis from 'lenis';
 import Navbar from './components/Navbar/Navbar';
 import Hero from './components/Hero/Hero';
 import Destinations from './components/Destinations/Destinations';
+import PopularPoints from './components/PopularPoints/PopularPoints';
 import PropertyGrid from './components/PropertyGrid/PropertyGrid';
 import Footer from './components/Footer/Footer';
 import SignIn from './components/SignIn/SignIn';
@@ -227,6 +228,7 @@ const Home = () => {
       <main>
         <Hero />
         <Destinations />
+        <PopularPoints />
         <PropertyGrid isHomePage={true} />
       </main>
       <Footer />
