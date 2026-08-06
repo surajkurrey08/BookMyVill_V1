@@ -1097,7 +1097,7 @@ const PropertyGrid = ({ isHomePage = false }) => {
           {/* 2. Grid of Hotels BELOW THE MAP */}
           <div className="explore-hotels-container-bottom" style={{ maxWidth: '1440px', margin: '0 auto 60px auto', padding: '0 20px' }}>
             {filteredProperties.length > 0 ? (
-              <div className="explore-cards-3col-grid">
+              <div className="explore-cards-4col-grid">
                 {filteredProperties.map(property => (
                   <LuxuryPropertyCard 
                     key={property.id} 
