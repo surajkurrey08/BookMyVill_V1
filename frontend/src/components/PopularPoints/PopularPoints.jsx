@@ -5,99 +5,123 @@ import './PopularPoints.css';
 const popularPointsData = [
   {
     id: 1,
-    name: "Venna Lake & Boating Point",
-    category: "Lake & Boating",
-    location: "Mahabaleshwar (2.5 km from Market)",
+    name: "Mahabaleshwar (Venna Lake & Boating)",
+    category: "Queen of Hill Stations",
+    location: "Satara District, Maharashtra",
     rating: "4.9",
-    reviews: "3.2k reviews",
-    highlight: "Shikara Boating, Horse Riding & Lakeside Strawberry Stalls",
+    reviews: "5.2k reviews",
+    highlight: "Shikara Boating, Kate's Point, Arthur's Seat & Strawberry Farms",
     image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop&q=80",
-    distance: "2.5 km",
-    bestTime: "09:00 AM - 07:00 PM"
+    distance: "0 km",
+    bestTime: "Year Round"
   },
   {
     id: 2,
-    name: "Kate's Point & Elephant's Head",
-    category: "Scenic Viewpoint",
-    location: "Mahabaleshwar (7 km from City)",
-    rating: "4.8",
-    reviews: "2.8k reviews",
-    highlight: "Panoramic Krishna Valley View & Natural Elephant Trunk Rock",
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80",
-    distance: "7.0 km",
-    bestTime: "06:00 AM - 06:00 PM"
-  },
-  {
-    id: 3,
-    name: "Arthur's Seat (Queen of Points)",
-    category: "Valley Viewpoint",
-    location: "Mahabaleshwar (13 km from Market)",
-    rating: "4.9",
-    reviews: "4.1k reviews",
-    highlight: "Deep Savitri River Valley & Floating Light Objects Phenomenon",
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop&q=80",
-    distance: "13.0 km",
-    bestTime: "08:00 AM - 06:00 PM"
-  },
-  {
-    id: 4,
-    name: "Wilson Point (Sunrise Point)",
-    category: "Highest Peak 1439m",
-    location: "Mahabaleshwar Peak",
-    rating: "4.7",
-    reviews: "1.9k reviews",
-    highlight: "360° Panoramic Sunrise Views over Sahyadri Ranges",
-    image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800&auto=format&fit=crop&q=80",
-    distance: "1.5 km",
-    bestTime: "05:30 AM - 07:30 AM"
-  },
-  {
-    id: 5,
-    name: "Table Land Plateau",
-    category: "Mountain Plateau",
+    name: "Panchgani (Table Land & Mapro)",
+    category: "Volcanic Plateau",
     location: "Panchgani (18 km from Mahabaleshwar)",
     rating: "4.8",
-    reviews: "3.9k reviews",
-    highlight: "Asia's 2nd Largest Volcanic Plateau & Rajpuri Cave Views",
+    reviews: "4.2k reviews",
+    highlight: "Asia's 2nd Largest Table Land, Rajpuri Caves & Mapro Garden",
     image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&auto=format&fit=crop&q=80",
-    distance: "18.0 km",
+    distance: "18 km",
     bestTime: "06:00 AM - 07:00 PM"
   },
   {
-    id: 6,
-    name: "Mapro Garden & Strawberry Farm",
-    category: "Strawberry Farm & Cafe",
-    location: "Gureghar, Panchgani-Mahabaleshwar Road",
+    id: 3,
+    name: "Lonavala (Tiger's Leap & Dam)",
+    category: "Sahyadri Jewel",
+    location: "Pune District, Maharashtra",
+    rating: "4.8",
+    reviews: "6.1k reviews",
+    highlight: "Tiger's Leap, Bhushi Dam, Lion's Point & Chikki Markets",
+    image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=800&auto=format&fit=crop&q=80",
+    distance: "175 km",
+    bestTime: "Monsoon & Winter"
+  },
+  {
+    id: 4,
+    name: "Khandala (Rajmachi Point)",
+    category: "Scenic Cliff",
+    location: "Western Ghats, Maharashtra",
+    rating: "4.7",
+    reviews: "3.5k reviews",
+    highlight: "Duke's Nose Peak, Rajmachi Fort Trail & Valley Mist",
+    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop&q=80",
+    distance: "178 km",
+    bestTime: "06:00 AM - 06:00 PM"
+  },
+  {
+    id: 5,
+    name: "Matheran (Automobile-Free Hill)",
+    category: "Eco-Sensitive Zone",
+    location: "Raigad District, Maharashtra",
     rating: "4.9",
-    reviews: "5.4k reviews",
-    highlight: "Fresh Strawberry Cream, Woodfired Pizza & Chocolate Tasting",
-    image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=800&auto=format&fit=crop&q=80",
-    distance: "11.0 km",
-    bestTime: "08:00 AM - 09:30 PM"
+    reviews: "4.8k reviews",
+    highlight: "Toy Train Ride, Louisa Point, Charlotte Lake & Horse Trails",
+    image: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&auto=format&fit=crop&q=80",
+    distance: "190 km",
+    bestTime: "07:00 AM - 07:00 PM"
+  },
+  {
+    id: 6,
+    name: "Igatpuri (Kalsubai & Vipassana)",
+    category: "Trekking & Wellness",
+    location: "Nashik District, Maharashtra",
+    rating: "4.8",
+    reviews: "3.1k reviews",
+    highlight: "Highest Peak in Maharashtra (Kalsubai 1646m) & Meditation Center",
+    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&auto=format&fit=crop&q=80",
+    distance: "270 km",
+    bestTime: "Monsoon & Winter"
   },
   {
     id: 7,
-    name: "Lingmala Waterfall Point",
-    category: "Plunge Waterfall",
-    location: "Mahabaleshwar Forest Trail",
+    name: "Bhandardara (Arthur Lake & Waterfalls)",
+    category: "Lakes & Waterfalls",
+    location: "Ahmednagar District, Maharashtra",
     rating: "4.8",
-    reviews: "2.1k reviews",
-    highlight: "600-Foot Plunge Waterfall & Forest Trek Trail",
-    image: "https://images.unsplash.com/photo-1511497584788-876761c11969?w=800&auto=format&fit=crop&q=80",
-    distance: "6.0 km",
-    bestTime: "08:00 AM - 05:30 PM"
+    reviews: "2.9k reviews",
+    highlight: "Wilson Dam, Randha Falls, Fireflies Festival & Lake Camping",
+    image: "https://images.unsplash.com/photo-1510312305653-8ed496efae75?w=800&auto=format&fit=crop&q=80",
+    distance: "290 km",
+    bestTime: "June - March"
   },
   {
     id: 8,
-    name: "Elphinstone & Lodwick Point",
-    category: "Fort & Cliff Viewpoint",
-    location: "Mahabaleshwar West Edge",
+    name: "Kaas Plateau (UNESCO Flower Valley)",
+    category: "UNESCO Heritage Site",
+    location: "Satara (25 km from Mahabaleshwar)",
+    rating: "4.9",
+    reviews: "5.8k reviews",
+    highlight: "Endemic Wildflowers Bloom, Kaas Lake & Biodiversity Trail",
+    image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&auto=format&fit=crop&q=80",
+    distance: "25 km",
+    bestTime: "August - October"
+  },
+  {
+    id: 9,
+    name: "Amboli (Cherrapunji of Maharashtra)",
+    category: "High Rainfall & Waterfalls",
+    location: "Sindhudurg District, Maharashtra",
     rating: "4.7",
-    reviews: "1.6k reviews",
-    highlight: "Majestic View of Pratapgad Fort & Koyna River Valley",
-    image: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&auto=format&fit=crop&q=80",
-    distance: "5.0 km",
-    bestTime: "07:00 AM - 06:00 PM"
+    reviews: "2.3k reviews",
+    highlight: "Amboli Waterfalls, Sunset Point, Hiranyakeshi River Temple",
+    image: "https://images.unsplash.com/photo-1511497584788-876761c11969?w=800&auto=format&fit=crop&q=80",
+    distance: "340 km",
+    bestTime: "Monsoon Special"
+  },
+  {
+    id: 10,
+    name: "Chikhaldara (Melghat Tiger Reserve)",
+    category: "Vidarbha Hill Resort",
+    location: "Amravati District, Maharashtra",
+    rating: "4.7",
+    reviews: "1.9k reviews",
+    highlight: "Coffee Plantations, Hurricane Point & Melghat Tiger Safari",
+    image: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&auto=format&fit=crop&q=80",
+    distance: "550 km",
+    bestTime: "October - March"
   }
 ];
 
@@ -106,7 +130,7 @@ const PopularPoints = () => {
   const scrollRef = useRef(null);
 
   const handlePointClick = (pointName) => {
-    const cleanSearch = pointName.split('&')[0].trim();
+    const cleanSearch = pointName.split('(')[0].trim();
     navigate(`/explore?search=${encodeURIComponent(cleanSearch)}`);
   };
 
@@ -120,15 +144,15 @@ const PopularPoints = () => {
   return (
     <section className="popular-points-section">
       <div className="container">
-        <div className="points-header-row">
-          <div className="section-header">
+        <div className="points-header-row centered-header">
+          <div className="section-header center-align">
             <span className="section-subtitle">
-              <i className="fa-solid fa-compass" style={{ color: '#d4af37', marginRight: '6px' }}></i>
-              Must-Visit Sightseeing Attractions
+              <i className="fa-solid fa-mountain-sun" style={{ color: '#d4af37', marginRight: '6px' }}></i>
+              EXPLORE MAHARASHTRA DESTINATIONS
             </span>
-            <h2>Popular Hill Station Points</h2>
+            <h2>Popular Maharashtra Hill Stations</h2>
             <p className="section-desc">
-              Explore famous scenic viewpoints, waterfalls, boating lakes, and strawberry farms in Mahabaleshwar & Panchgani.
+              Discover serene mountain retreats, volcanic plateaus, waterfalls, and strawberry valleys across Maharashtra.
             </p>
           </div>
 
@@ -145,7 +169,6 @@ const PopularPoints = () => {
               onClick={() => handleScroll('right')} 
               aria-label="Scroll Right"
             >
-              ›
             </button>
           </div>
         </div>

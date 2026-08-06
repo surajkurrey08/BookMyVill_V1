@@ -39,7 +39,7 @@ jobs:
             frontend/package-lock.json
             admin/package-lock.json
 
-      # ── 3. Frontend Build ─────────────────────────────────────────────────
+      # ── 3. Frontend Build (Main Site & Users Portal) ──────────────────────────
       - name: Install Frontend Dependencies
         working-directory: frontend
         run: npm install
@@ -50,7 +50,29 @@ jobs:
         env:
           VITE_API_URL: https://api.lonavala.fun
 
-      # ── 3.5 Admin Build ───────────────────────────────────────────────────
+      # ── 3.4 Owner Build ───────────────────────────────────────────────────
+      - name: Install Owner Dependencies
+        working-directory: owner
+        run: npm install
+
+      - name: Build Owner
+        working-directory: owner
+        run: npm run build
+        env:
+          VITE_API_URL: https://api.lonavala.fun
+
+      # ── 3.5 Caretaker Build ───────────────────────────────────────────────
+      - name: Install Caretaker Dependencies
+        working-directory: caretaker
+        run: npm install
+
+      - name: Build Caretaker
+        working-directory: caretaker
+        run: npm run build
+        env:
+          VITE_API_URL: https://api.lonavala.fun
+
+      # ── 3.6 Admin Build ───────────────────────────────────────────────────
       - name: Install Admin Dependencies
         working-directory: admin
         run: npm install
@@ -83,7 +105,13 @@ jobs:
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF'
             set -e
-            mkdir -p /var/www/lonavala.fun/frontend /var/www/lonavala.fun/backend /var/www/lonavala.fun/admin /var/www/certbot
+            mkdir -p /var/www/lonavala.fun/frontend \
+                     /var/www/lonavala.fun/users \
+                     /var/www/lonavala.fun/owner \
+                     /var/www/lonavala.fun/caretaker \
+                     /var/www/lonavala.fun/admin \
+                     /var/www/lonavala.fun/backend \
+                     /var/www/certbot
             command -v node || (curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs)
             command -v pm2 || npm install -g pm2
             command -v nginx || (apt-get update -qq && apt-get install -y nginx)
@@ -96,18 +124,23 @@ jobs:
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF'
             set -e
-            mkdir -p /var/www/certbot /var/www/lonavala.fun/frontend /var/www/lonavala.fun/admin
+            mkdir -p /var/www/certbot \
+                     /var/www/lonavala.fun/frontend \
+                     /var/www/lonavala.fun/users \
+                     /var/www/lonavala.fun/owner \
+                     /var/www/lonavala.fun/caretaker \
+                     /var/www/lonavala.fun/admin
 
             # 1. Clean up duplicate/conflicting configs
             rm -f /etc/nginx/sites-enabled/admin.lonavala.fun
             rm -f /etc/nginx/sites-available/admin.lonavala.fun
             rm -f /etc/nginx/sites-enabled/default
 
-            # 2. Ensure basic HTTP config for certbot challenge & admin HTTP serving
+            # 2. Basic HTTP config for Certbot validation
             cat > /etc/nginx/sites-available/lonavala.fun << 'EOF'
 server {
     listen 80;
-    server_name lonavala.fun www.lonavala.fun api.lonavala.fun;
+    server_name lonavala.fun www.lonavala.fun users.lonavala.fun owner.lonavala.fun caretaker.lonavala.fun admin.lonavala.fun api.lonavala.fun;
 
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
@@ -115,21 +148,6 @@ server {
 
     location / {
         root /var/www/lonavala.fun/frontend;
-        index index.html;
-        try_files $uri $uri/ /index.html;
-    }
-}
-
-server {
-    listen 80;
-    server_name admin.lonavala.fun;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-
-    location / {
-        root /var/www/lonavala.fun/admin;
         index index.html;
         try_files $uri $uri/ /index.html;
     }
@@ -143,8 +161,11 @@ EOF
             certbot certonly --webroot -w /var/www/certbot \
               -d lonavala.fun \
               -d www.lonavala.fun \
-              -d api.lonavala.fun \
+              -d users.lonavala.fun \
+              -d owner.lonavala.fun \
+              -d caretaker.lonavala.fun \
               -d admin.lonavala.fun \
+              -d api.lonavala.fun \
               --email admin@lonavala.fun \
               --agree-tos \
               --expand \
@@ -161,10 +182,9 @@ EOF
 
             # 5. Write full HTTP + HTTPS Nginx configuration
             cat > /etc/nginx/sites-available/lonavala.fun << 'EOF'
-# HTTP block - Handles certbot challenge and redirects HTTP to HTTPS
 server {
     listen 80;
-    server_name lonavala.fun www.lonavala.fun api.lonavala.fun admin.lonavala.fun;
+    server_name lonavala.fun www.lonavala.fun users.lonavala.fun owner.lonavala.fun caretaker.lonavala.fun admin.lonavala.fun api.lonavala.fun;
     
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
@@ -175,15 +195,13 @@ server {
     }
 }
 
-# HTTPS: Frontend Main Site
+# Main Site & Users Subdomain
 server {
     listen 443 ssl;
-    server_name lonavala.fun www.lonavala.fun;
+    server_name lonavala.fun www.lonavala.fun users.lonavala.fun;
     ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
-    ssl_ciphers HIGH:!aNULL:!MD5;
     root /var/www/lonavala.fun/frontend;
     index index.html;
     location / {
@@ -193,15 +211,45 @@ server {
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
 }
 
-# HTTPS: Admin Portal
+# Property Owner Subdomain
+server {
+    listen 443 ssl;
+    server_name owner.lonavala.fun;
+    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    root /var/www/lonavala.fun/owner;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+}
+
+# Caretaker Subdomain
+server {
+    listen 443 ssl;
+    server_name caretaker.lonavala.fun;
+    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    root /var/www/lonavala.fun/caretaker;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+}
+
+# Admin Subdomain
 server {
     listen 443 ssl;
     server_name admin.lonavala.fun;
     ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
-    ssl_ciphers HIGH:!aNULL:!MD5;
     root /var/www/lonavala.fun/admin;
     index index.html;
     location / {
@@ -211,15 +259,13 @@ server {
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
 }
 
-# HTTPS: Backend API Proxy
+# Backend API Proxy Subdomain
 server {
     listen 443 ssl;
     server_name api.lonavala.fun;
     ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
-    ssl_ciphers HIGH:!aNULL:!MD5;
     location / {
         proxy_pass http://127.0.0.1:5001;
         proxy_http_version 1.1;
@@ -235,8 +281,8 @@ server {
 EOF
 
             nginx -t && (systemctl reload nginx || systemctl restart nginx || systemctl start nginx)
-            echo 'Nginx configured successfully for lonavala.fun!'
-SSH_EOF
+            echo 'Nginx configured successfully for all subdomains!'
+          SSH_EOF
 
       # ── 7.5 Debug Nginx VPS ───────────────────────────────────────────────
       - name: Debug Nginx VPS
@@ -257,12 +303,26 @@ SSH_EOF
           git commit -m "debug: save vps debug info [skip ci]" || true
           git push origin main || true
 
-      # ── 8. Deploy Frontend ────────────────────────────────────────────────
+      # ── 8. Deploy Frontend (Main Site & Users Subdomain) ─────────────────
       - name: Deploy Frontend
         run: |
           rsync -az --delete \
             frontend/dist/ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/frontend/
+
+      # ── 8.2 Deploy Owner ──────────────────────────────────────────────────
+      - name: Deploy Owner
+        run: |
+          rsync -az --delete \
+            owner/dist/ \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/owner/
+
+      # ── 8.3 Deploy Caretaker ──────────────────────────────────────────────
+      - name: Deploy Caretaker
+        run: |
+          rsync -az --delete \
+            caretaker/dist/ \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/caretaker/
 
       # ── 8.5 Deploy Admin ──────────────────────────────────────────────────
       - name: Deploy Admin
@@ -297,5 +357,8 @@ SSH_EOF
         run: |
           sleep 5
           curl -so /dev/null -w "lonavala.fun HTTP %{http_code}\n" http://lonavala.fun || true
+          curl -so /dev/null -w "users.lonavala.fun HTTP %{http_code}\n" http://users.lonavala.fun || true
+          curl -so /dev/null -w "owner.lonavala.fun HTTP %{http_code}\n" http://owner.lonavala.fun || true
+          curl -so /dev/null -w "caretaker.lonavala.fun HTTP %{http_code}\n" http://caretaker.lonavala.fun || true
           curl -so /dev/null -w "admin.lonavala.fun HTTP %{http_code}\n" http://admin.lonavala.fun || true
           curl -so /dev/null -w "api.lonavala.fun HTTP %{http_code}\n" http://api.lonavala.fun || true

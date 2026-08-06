@@ -4,6 +4,11 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix frontend\" \"npm start --prefix backend\" \"npm run dev --prefix admin\" \"npm run dev --prefix owner\" \"npm run dev --prefix caretaker\"",
+    "dev:user": "npm run dev --prefix frontend",
+    "dev:owner": "npm run dev --prefix owner",
+    "dev:caretaker": "npm run dev --prefix caretaker",
+    "dev:admin": "npm run dev --prefix admin",
+    "dev:backend": "npm start --prefix backend",
     "start": "concurrently \"npm run dev --prefix frontend\" \"npm start --prefix backend\" \"npm run dev --prefix admin\" \"npm run dev --prefix owner\" \"npm run dev --prefix caretaker\"",
     "build": "npm run build --prefix frontend",
     "lint": "npm run lint --prefix frontend",

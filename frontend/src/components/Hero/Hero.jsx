@@ -166,12 +166,25 @@ const Hero = () => {
   return (
     <section className="hero" id="home">
       <div className="hero-background">
+        <video 
+          className="hero-video-bg" 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          preload="auto"
+          poster={bg1}
+        >
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-resort-and-the-ocean-41480-large.mp4" type="video/mp4" />
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-luxury-house-with-a-swimming-pool-41481-large.mp4" type="video/mp4" />
+        </video>
         {images.map((img, index) => (
           <img 
             key={index}
             src={img} 
             alt={`Hill Station ${index + 1}`} 
             className={`hero-img ${index === currentImageIndex ? 'active' : ''}`}
+            loading="lazy"
           />
         ))}
         <div className="hero-overlay"></div>

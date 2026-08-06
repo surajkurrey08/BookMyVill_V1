@@ -229,7 +229,6 @@ const Home = () => {
       <main>
         <Hero />
         <Destinations />
-        <PopularPoints />
         <PropertyGrid isHomePage={true} />
         <GuestReviews />
       </main>

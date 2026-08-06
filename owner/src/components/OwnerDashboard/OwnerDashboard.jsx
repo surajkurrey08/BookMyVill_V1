@@ -743,13 +743,14 @@ const OwnerDashboard = () => {
     setPropertySearchQuery('');
     setPropertyFilterType('All');
     setBookingFilterStatus('All');
+    setIsDrawerOpen(false);
   };
 
   return (
     <div className="owner-dashboard-container">
       <div className="owner-dashboard-layout">
         {/* Permanent Left Sidebar Navigation */}
-        <aside className="owner-sidebar">
+        <aside className={`owner-sidebar ${isDrawerOpen ? 'show-mobile' : ''}`}>
           <div className="sidebar-brand">
             <div className="brand-logo">
               <i className="fa-solid fa-hotel"></i>
@@ -814,16 +815,10 @@ const OwnerDashboard = () => {
               <i className="fa-solid fa-wallet"></i> Revenue & Yearly Calculator
             </button>
             <button
-              className={`nav-btn ${activeTab === 'caretaker-tasks' ? 'active' : ''}`}
-              onClick={() => handleTabChange('caretaker-tasks')}
-            >
-              <i className="fa-solid fa-list-check"></i> Caretaker Tasks
-            </button>
-            <button
               className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
               onClick={() => handleTabChange('caretakers')}
             >
-              <i className="fa-solid fa-user-shield"></i> Caretaker Requests ({caretakerApps.length})
+              <i className="fa-solid fa-user-shield"></i> Caretaker Tasks & Requests ({caretakerApps.length})
             </button>
             <button
               className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
@@ -843,32 +838,47 @@ const OwnerDashboard = () => {
           </div>
         </aside>
 
+        <div className={`sidebar-backdrop ${isDrawerOpen ? 'active' : ''}`} onClick={() => setIsDrawerOpen(false)}></div>
+
         {/* Main Content Area */}
         <main className="owner-main-content">
           <header className="content-header single-line-header">
             <div className="header-title-inline">
               <h1 className="header-title-text">
-                {activeTab === 'overview' && <><i className="fa-solid fa-gauge-high" style={{ color: 'var(--accent-gold)' }}></i> Host Overview</>}
-                {activeTab === 'properties' && <><i className="fa-solid fa-hotel" style={{ color: 'var(--accent-gold)' }}></i> Properties ({properties.length})</>}
-                {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check" style={{ color: 'var(--accent-gold)' }}></i> Bookings ({bookings.length})</>}
-                {activeTab === 'caretaker-tasks' && <><i className="fa-solid fa-list-check" style={{ color: 'var(--accent-gold)' }}></i> Caretaker Tasks</>}
-                {activeTab === 'caretakers' && <><i className="fa-solid fa-user-shield" style={{ color: 'var(--accent-gold)' }}></i> Caretaker Requests ({caretakerApps.length})</>}
-                {activeTab === 'analytics' && <><i className="fa-solid fa-chart-line" style={{ color: 'var(--accent-gold)' }}></i> Financials</>}
-                {activeTab === 'profile' && <><i className="fa-solid fa-user-gear" style={{ color: 'var(--accent-gold)' }}></i> Host Profile</>}
+                {activeTab === 'overview' && <><i className="fa-solid fa-gauge-high"></i> Host Overview</>}
+                {activeTab === 'properties' && <><i className="fa-solid fa-hotel"></i> Properties ({properties.length})</>}
+                {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check"></i> Bookings ({bookings.length})</>}
+                {activeTab === 'caretakers' && <><i className="fa-solid fa-user-shield"></i> Caretaker Tasks & Requests ({caretakerApps.length})</>}
+                {activeTab === 'tourists' && <><i className="fa-solid fa-users-viewfinder"></i> Tourist Register</>}
+                {activeTab === 'inventory' && <><i className="fa-solid fa-boxes-stacked"></i> Inventory</>}
+                {activeTab === 'feedback' && <><i className="fa-solid fa-comments"></i> Feedback</>}
+                {activeTab === 'analytics' && <><i className="fa-solid fa-chart-line"></i> Financials</>}
+                {activeTab === 'profile' && <><i className="fa-solid fa-user-gear"></i> Host Profile</>}
               </h1>
               <span className="header-divider">|</span>
               <span className="header-sub-inline">
                 {activeTab === 'overview' && `Welcome back, ${user?.name || 'Host'}`}
                 {activeTab === 'properties' && 'Listings & pricing'}
                 {activeTab === 'bookings' && 'Reservations'}
-                {activeTab === 'caretaker-tasks' && 'Shift duties'}
-                {activeTab === 'caretakers' && 'Staff applications'}
+                {activeTab === 'caretakers' && 'Staff allocation & daily duties'}
+                {activeTab === 'tourists' && 'Arrivals & headcount'}
+                {activeTab === 'inventory' && 'Supplies & restocking'}
+                {activeTab === 'feedback' && 'Ratings & reviews'}
                 {activeTab === 'analytics' && 'Financial insights'}
                 {activeTab === 'profile' && 'Account settings'}
               </span>
             </div>
 
             <div className="header-actions">
+              <button
+                type="button"
+                className="mobile-toggle-btn"
+                onClick={() => setIsDrawerOpen(prev => !prev)}
+                aria-label="Open navigation menu"
+              >
+                <i className="fa-solid fa-bars"></i>
+              </button>
+
               <div className="top-profile-badge">
                 <div className="avatar-circle">
                   {user?.name ? user.name.charAt(0).toUpperCase() : 'O'}
@@ -879,13 +889,13 @@ const OwnerDashboard = () => {
                 </div>
               </div>
 
-              <button 
-                type="button" 
-                className="header-logout-btn" 
+              <button
+                type="button"
+                className="header-logout-btn"
                 onClick={handleLogout}
                 title="Sign Out of Host Account"
               >
-                <i className="fa-solid fa-right-from-bracket"></i> Sign Out
+                <i className="fa-solid fa-right-from-bracket"></i> <span>Sign Out</span>
               </button>
 
               <button
@@ -910,9 +920,9 @@ const OwnerDashboard = () => {
                 <i className="fa-solid fa-user-shield"></i> Request Caretaker
               </button>
               {activeTab === 'properties' && (
-                <button 
+                <button
                   type="button"
-                  className="btn-primary-gold" 
+                  className="btn-primary-gold"
                   onClick={() => {
                     setEditingProperty(null);
                     setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' });
@@ -955,9 +965,9 @@ const OwnerDashboard = () => {
                   {/* High Impact Property Overview Highlight Banner */}
                   <div className="property-overview-banner glass-morphism">
                     <div className="banner-image-container">
-                      <img 
-                        src={properties.length > 0 && properties[0].photos && properties[0].photos[0] ? properties[0].photos[0] : 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80'} 
-                        alt="Primary Property Banner" 
+                      <img
+                        src={properties.length > 0 && properties[0].photos && properties[0].photos[0] ? properties[0].photos[0] : 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80'}
+                        alt="Primary Property Banner"
                       />
                       <div className="banner-type-tag">
                         <i className="fa-solid fa-crown"></i> Primary Luxury Estate
@@ -969,12 +979,12 @@ const OwnerDashboard = () => {
                         <div>
                           <h2 className="banner-title">{properties.length > 0 ? properties[0].name : 'Ganesh kuj Villa Estate'}</h2>
                           <p className="banner-location">
-                            <i className="fa-solid fa-location-dot" style={{ color: 'var(--accent-gold)' }}></i> {properties.length > 0 ? properties[0].location : 'Pune & Outskirts, Mahabaleshwar'}
+                            <i className="fa-solid fa-location-dot"></i> {properties.length > 0 ? properties[0].location : 'Pune & Outskirts, Mahabaleshwar'}
                             <span className="verified-chip"><i className="fa-solid fa-circle-check"></i> Verified Stay</span>
                           </p>
                         </div>
                         <div className="banner-rating-pill">
-                          <i className="fa-solid fa-star" style={{ color: 'var(--accent-gold)' }}></i>
+                          <i className="fa-solid fa-star"></i>
                           <span className="rating-score">4.9</span>
                           <span className="rating-count">(124 reviews)</span>
                         </div>
@@ -1060,7 +1070,7 @@ const OwnerDashboard = () => {
                   <div className="revenue-analytics-grid">
                     <div className="chart-card-box glass-morphism">
                       <div className="chart-header">
-                        <h3><i className="fa-solid fa-chart-area" style={{ color: 'var(--accent-gold)' }}></i> Monthly Revenue Trend</h3>
+                        <h3><i className="fa-solid fa-chart-area"></i> Monthly Revenue Trend</h3>
                         <div className="chart-legend">
                           <span><span className="legend-dot gold"></span> Direct Earnings</span>
                           <span><span className="legend-dot emerald"></span> Occupancy Peak</span>
@@ -1090,7 +1100,7 @@ const OwnerDashboard = () => {
 
                     <div className="chart-card-box glass-morphism">
                       <div className="chart-header">
-                        <h3><i className="fa-solid fa-pie-chart" style={{ color: 'var(--accent-emerald)' }}></i> Estate Performance Metrics</h3>
+                        <h3><i className="fa-solid fa-pie-chart"></i> Estate Performance Metrics</h3>
                       </div>
 
                       <div className="progress-meters-list">
@@ -1127,11 +1137,11 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Recent Activity Feed & Overview Grids */}
+                  {/* Recent Activity Feed */}
                   <div className="revenue-analytics-grid">
-                    <div className="activity-feed-card glass-morphism">
+                    <div className="activity-feed-card glass-morphism" style={{ gridColumn: '1 / -1' }}>
                       <div className="chart-header">
-                        <h3><i className="fa-solid fa-clock-rotate-left" style={{ color: 'var(--accent-gold)' }}></i> Recent Activity Feed</h3>
+                        <h3><i className="fa-solid fa-clock-rotate-left"></i> Recent Activity Feed</h3>
                         <span className="verified-chip">Live Updates</span>
                       </div>
 
@@ -1317,7 +1327,7 @@ const OwnerDashboard = () => {
                             <div className="card-body">
                               <h3>{prop.name}</h3>
                               <p className="location">
-                                <i className="fa-solid fa-location-dot" style={{ color: 'var(--accent-gold)' }}></i> {prop.location}
+                                <i className="fa-solid fa-location-dot"></i> {prop.location}
                               </p>
 
                               <div className="media-counts">
@@ -1358,7 +1368,6 @@ const OwnerDashboard = () => {
                                 </a>
                                 <button
                                   className="btn-edit"
-                                  style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)' }}
                                   onClick={() => {
                                     setCaretakerForm(prev => ({
                                       ...prev,
@@ -1392,7 +1401,7 @@ const OwnerDashboard = () => {
                   {/* Booking Filter Bar */}
                   <div className="portfolio-filter-bar" style={{ marginBottom: '20px' }}>
                     <div className="type-filter-pills">
-                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginRight: '6px' }}><i className="fa-solid fa-filter" style={{ color: 'var(--accent-gold)' }}></i> Filter Reservations:</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--od-muted)', marginRight: '6px' }}><i className="fa-solid fa-filter"></i> Filter Reservations:</span>
                       {['All', 'pending', 'confirmed', 'cancelled'].map(st => (
                         <button
                           key={st}
@@ -1455,7 +1464,7 @@ const OwnerDashboard = () => {
                                   <td>
                                     <div className="date-cell">
                                       <span className="date-range">
-                                        <i className="fa-solid fa-calendar"></i> {checkInDate.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} → {checkOutDate.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                                        {checkInDate.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} → {checkOutDate.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
                                       </span>
                                       <span className="nights-badge">{nights} {nights === 1 ? 'Night' : 'Nights'}</span>
                                     </div>
@@ -1503,7 +1512,6 @@ const OwnerDashboard = () => {
               {/* TAB 4: ANALYTICS & FINANCIALS */}
               {activeTab === 'analytics' && (
                 <div className="tab-analytics">
-
                   <div className="analytics-summary-cards">
                     <div className="financial-card glass-morphism">
                       <div className="fin-icon gold"><i className="fa-solid fa-wallet"></i></div>
@@ -1530,7 +1538,7 @@ const OwnerDashboard = () => {
                   {/* Property-by-Property Financial Breakdown */}
                   <div className="financial-breakdown-card glass-morphism">
                     <div className="breakdown-header">
-                      <h3><i className="fa-solid fa-money-bill-trend-up" style={{ color: 'var(--accent-gold)' }}></i> Payout & Property Revenue Distribution</h3>
+                      <h3><i className="fa-solid fa-money-bill-trend-up"></i> Payout & Property Revenue Distribution</h3>
                       <span className="payout-status-badge"><i className="fa-solid fa-circle-check"></i> Auto-settlement active</span>
                     </div>
 
@@ -1579,277 +1587,175 @@ const OwnerDashboard = () => {
                 </div>
               )}
 
-              {/* TAB: CARETAKER REQUESTS */}
+              {/* TAB: CARETAKER HUB (TASKS & REQUESTS IN ONE PAGE) */}
               {activeTab === 'caretakers' && (
                 <div className="tab-caretakers">
                   {/* Header Card */}
-                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(145deg, rgba(27, 38, 44, 0.9) 0%, rgba(15, 23, 30, 0.9) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                    <div>
-                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.3rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <i className="fa-solid fa-user-shield"></i> Caretaker & Staff Allocation Requests
-                      </h3>
-                      <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.88rem' }}>
-                        Submit official caretaker and property host requests directly to the Admin Panel. Verified staff will be assigned to manage guest check-in, key handover & housekeeping.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setCaretakerForm({
-                          propertyId: properties.length > 0 ? properties[0]._id : '',
-                          propertyName: properties.length > 0 ? properties[0].name : '',
-                          propertyAddress: properties.length > 0 ? (properties[0].location || 'Mahabaleshwar, Satara') : '',
-                          positionRole: 'Chief Villa Caretaker Host',
-                          phone: user?.phone || '',
-                          experience: '3 - 5 Years',
-                          skillsRequired: ['Guest Check-in & Key Handover', 'Housekeeping & Linen Sanitation', '24/7 Gate & Estate Security'],
-                          govtIdType: 'Aadhaar Card',
-                          govtId: '',
-                          bio: ''
-                        });
-                        setShowCaretakerModal(true);
-                      }}
-                      style={{ background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '12px 22px', borderRadius: '24px', fontWeight: '800', cursor: 'pointer', fontSize: '0.9rem', boxShadow: '0 4px 16px rgba(212, 175, 55, 0.35)', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                    >
-                      <i className="fa-solid fa-paper-plane"></i> Send Request for Caretaker to Admin Panel
-                    </button>
-                  </div>
-
-                  {/* Summary Stat Bar */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', fontWeight: '600', textTransform: 'uppercase' }}>Total Requests Sent</div>
-                      <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', marginTop: '4px' }}>{caretakerApps.length}</div>
-                    </div>
-                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                      <div style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: '600', textTransform: 'uppercase' }}>Allocated & Approved</div>
-                      <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>
-                        {caretakerApps.filter(a => a.status === 'approved').length}
-                      </div>
-                    </div>
-                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                      <div style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: '600', textTransform: 'uppercase' }}>Pending Admin Verification</div>
-                      <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#f59e0b', marginTop: '4px' }}>
-                        {caretakerApps.filter(a => a.status === 'pending').length}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Applications List */}
-                  {caretakerApps.length === 0 ? (
-                    <div className="glass-morphism" style={{ padding: '48px', borderRadius: '20px', textAlign: 'center', border: '1px border-dashed rgba(212, 175, 55, 0.3)' }}>
-                      <i className="fa-solid fa-user-shield" style={{ fontSize: '3rem', color: '#d4af37', marginBottom: '16px' }}></i>
-                      <h3 style={{ color: '#ffffff', marginBottom: '8px' }}>No Caretaker Requests Sent Yet</h3>
-                      <p style={{ color: 'rgba(255, 255, 255, 0.7)', maxWidth: '480px', margin: '0 auto 20px auto', fontSize: '0.9rem' }}>
-                        You have not sent any caretaker requests to the Admin Panel. Click below to request dedicated staff for your property stays.
-                      </p>
-                      <button
-                        onClick={() => setShowCaretakerModal(true)}
-                        style={{ background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '12px 24px', borderRadius: '24px', fontWeight: '800', cursor: 'pointer' }}
-                      >
-                        <i className="fa-solid fa-paper-plane"></i> Send Request for Caretaker to Admin Panel
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
-                      {caretakerApps.map((app, idx) => (
-                        <div key={app._id || idx} className="glass-morphism" style={{ padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.12)', background: 'linear-gradient(160deg, rgba(27,38,44,0.7) 0%, rgba(15,23,30,0.85) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                          <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                              <h4 style={{ margin: 0, color: '#ffd700', fontSize: '1.1rem', fontWeight: '700' }}>
-                                <i className="fa-solid fa-building-user" style={{ marginRight: '6px' }}></i> {app.propertyName}
-                              </h4>
-                              <span style={{
-                                background: app.status === 'approved' ? 'rgba(16, 185, 129, 0.2)' : app.status === 'rejected' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                                color: app.status === 'approved' ? '#10b981' : app.status === 'rejected' ? '#ef4444' : '#f59e0b',
-                                border: app.status === 'approved' ? '1px solid #10b981' : app.status === 'rejected' ? '1px solid #ef4444' : '1px solid #f59e0b',
-                                padding: '4px 10px',
-                                borderRadius: '12px',
-                                fontSize: '0.75rem',
-                                fontWeight: '700',
-                                textTransform: 'uppercase'
-                              }}>
-                                {app.status === 'approved' ? 'Allocated & Approved' : app.status === 'rejected' ? 'Rejected' : 'Pending Admin Approval'}
-                              </span>
-                            </div>
-
-                            <p style={{ margin: '0 0 10px 0', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>
-                              <i className="fa-solid fa-location-dot" style={{ color: '#d4af37', marginRight: '6px' }}></i> {app.propertyAddress || 'Mahabaleshwar, Satara'}
-                            </p>
-
-                            <div style={{ background: 'rgba(255,255,255,0.04)', padding: '10px 12px', borderRadius: '10px', marginBottom: '12px', fontSize: '0.83rem' }}>
-                              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '4px' }}>Requested Role</div>
-                              <div style={{ fontWeight: '700', color: '#ffffff' }}>{app.positionRole || 'Chief Caretaker Host'}</div>
-                              <div style={{ color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>Experience: {app.experience || '3 - 5 Years'}</div>
-                            </div>
-
-                            {app.assignedCaretakerName && (
-                              <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '12px', borderRadius: '12px', marginBottom: '12px' }}>
-                                <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: '700', textTransform: 'uppercase' }}>
-                                  <i className="fa-solid fa-circle-check"></i> Admin Allocated Caretaker
-                                </div>
-                                <div style={{ fontWeight: '800', color: '#ffffff', marginTop: '2px', fontSize: '0.92rem' }}>
-                                  {app.assignedCaretakerName}
-                                </div>
-                                <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.8)', marginTop: '2px' }}>
-                                  {app.assignedCaretakerPhone || '+91 98901 23456'}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                            <button
-                              onClick={() => openWhatsAppOwnerToCaretaker(app)}
-                              style={{ flex: 1, background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)', color: '#ffffff', border: 'none', padding: '8px 12px', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                            >
-                              <i className="fa-brands fa-whatsapp"></i> WhatsApp Caretaker
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* TAB: CARETAKER DAILY TASKS & GUEST REQUIREMENTS */}
-              {activeTab === 'caretaker-tasks' && (
-                <div className="tab-caretaker-tasks">
-                  {/* Header Profile & Caretaker Status Card */}
-                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(145deg, rgba(27, 38, 44, 0.9) 0%, rgba(15, 23, 30, 0.9) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: 'linear-gradient(135deg, #d4af37 0%, #10b981 100%)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '900' }}>
-                        <i className="fa-solid fa-user-shield"></i>
-                      </div>
+                  <div className="od-section-header glass-morphism">
+                    <div className="od-section-header-left">
+                      <div className="od-avatar-round"><i className="fa-solid fa-user-shield"></i></div>
                       <div>
-                        <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          Chief Estate Caretaker: Ramesh Pawar
-                          <span style={{ fontSize: '0.72rem', background: 'rgba(16,185,129,0.2)', border: '1px solid #10b981', color: '#10b981', padding: '2px 8px', borderRadius: '12px', fontWeight: '800' }}>SHIFT ON DUTY</span>
-                        </h3>
-                        <p style={{ margin: '4px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.85rem' }}>
-                          Assigned Estate: <strong>Royal Mist Villa Estate</strong> • +91 98901 23456 • Duty Shift: 07:00 AM - 09:00 PM
-                        </p>
+                        <h3><i className="fa-solid fa-user-shield"></i> Caretaker Operations & Staff Hub</h3>
+                        <p>Manage caretaker allocation requests sent to Admin, view assigned caretaker profiles, and track daily shift duties & guest requirements.</p>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <div className="od-header-btn-group">
                       <button
-                        onClick={() => setShowAddTaskModalOwner(true)}
-                        style={{ background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '10px 18px', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                        className="btn-pill-gold"
+                        onClick={() => {
+                          setCaretakerForm({
+                            propertyId: properties.length > 0 ? properties[0]._id : '',
+                            propertyName: properties.length > 0 ? properties[0].name : '',
+                            propertyAddress: properties.length > 0 ? (properties[0].location || 'Mahabaleshwar, Satara') : '',
+                            positionRole: 'Chief Villa Caretaker Host',
+                            phone: user?.phone || '',
+                            experience: '3 - 5 Years',
+                            skillsRequired: ['Guest Check-in & Key Handover', 'Housekeeping & Linen Sanitation', '24/7 Gate & Estate Security'],
+                            govtIdType: 'Aadhaar Card',
+                            govtId: '',
+                            bio: ''
+                          });
+                          setShowCaretakerModal(true);
+                        }}
                       >
-                        <i className="fa-solid fa-plus-circle"></i> Assign New Daily Task
+                        <i className="fa-solid fa-paper-plane"></i> Send Request to Admin
                       </button>
-                      <button
-                        onClick={() => setShowAddReqModalOwner(true)}
-                        style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', padding: '10px 18px', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                      >
-                        <i className="fa-solid fa-user-plus"></i> Add Guest Requirement
+                      <button className="btn-pill-emerald" onClick={() => setShowAddTaskModalOwner(true)}>
+                        <i className="fa-solid fa-plus-circle"></i> Assign Daily Task
                       </button>
                     </div>
                   </div>
 
                   {/* Summary Stat Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)', fontWeight: '600', textTransform: 'uppercase' }}>Daily Shift Tasks</div>
-                      <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#ffffff', marginTop: '4px' }}>{ownerDuties.length} Tasks</div>
-                      <div style={{ fontSize: '0.8rem', color: '#10b981', marginTop: '4px' }}>
-                        {ownerDuties.filter(d => d.completed).length} Completed • {ownerDuties.filter(d => !d.completed).length} Pending
-                      </div>
+                  <div className="od-mini-stats-grid">
+                    <div className="od-mini-stat neutral glass-morphism">
+                      <div className="lbl">Total Caretaker Requests</div>
+                      <div className="val">{caretakerApps.length}</div>
+                      <div className="sub">{caretakerApps.filter(a => a.status === 'approved').length} Approved • {caretakerApps.filter(a => a.status === 'pending').length} Pending</div>
                     </div>
-
-                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                      <div style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: '600', textTransform: 'uppercase' }}>Guest Special Requests</div>
-                      <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>
-                        {ownerGuestReqs.reduce((sum, g) => sum + g.specialRequests.length, 0)} Total Reqs
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
-                        {ownerGuestReqs.reduce((sum, g) => sum + g.specialRequests.filter(r => r.done).length, 0)} Completed by Caretaker
-                      </div>
+                    <div className="od-mini-stat emerald glass-morphism">
+                      <div className="lbl">Daily Shift Duties</div>
+                      <div className="val">{ownerDuties.length} Tasks</div>
+                      <div className="sub">{ownerDuties.filter(d => d.completed).length} Completed • {ownerDuties.filter(d => !d.completed).length} Pending</div>
                     </div>
-
-                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                      <div style={{ fontSize: '0.78rem', color: '#f59e0b', fontWeight: '600', textTransform: 'uppercase' }}>Caretaker Stock Status</div>
-                      <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#f59e0b', marginTop: '4px' }}>
-                        {ownerInventory.filter(i => i.status !== 'In Stock').length} Low Stock Alert
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
-                        {ownerInventory.length} Total Inventory Items
-                      </div>
+                    <div className="od-mini-stat amber glass-morphism">
+                      <div className="lbl">Guest Special Requests</div>
+                      <div className="val">{ownerGuestReqs.reduce((sum, g) => sum + g.specialRequests.length, 0)} Total</div>
+                      <div className="sub">{ownerGuestReqs.reduce((sum, g) => sum + g.specialRequests.filter(r => r.done).length, 0)} Completed</div>
                     </div>
                   </div>
 
-                  {/* Section 1: Daily Shift Duties Assigned to Caretaker */}
-                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'rgba(12,20,18,0.85)', border: '1px solid rgba(212,175,55,0.25)', marginBottom: '28px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  {/* SECTION 1: CARETAKER ALLOCATION REQUESTS & PROFILES */}
+                  <div className="od-panel glass-morphism" style={{ marginBottom: '28px' }}>
+                    <div className="od-panel-head">
                       <div>
-                        <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <i className="fa-solid fa-list-check"></i> Daily Shift Tasks Assigned to Caretaker
-                        </h3>
-                        <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem' }}>
-                          Caretaker checks off tasks in real-time. Completed items lock automatically into non-clickable status.
-                        </p>
+                        <h3><i className="fa-solid fa-user-shield"></i> Caretaker Allocation Requests & Profiles</h3>
+                        <p>Official requests submitted to Admin and allocated caretaker profile details.</p>
                       </div>
                       <button
-                        onClick={() => setShowAddTaskModalOwner(true)}
-                        style={{ background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '8px 16px', borderRadius: '16px', fontWeight: '800', cursor: 'pointer', fontSize: '0.8rem' }}
+                        className="btn-mini-gold"
+                        onClick={() => {
+                          setCaretakerForm({
+                            propertyId: properties.length > 0 ? properties[0]._id : '',
+                            propertyName: properties.length > 0 ? properties[0].name : '',
+                            propertyAddress: properties.length > 0 ? (properties[0].location || 'Mahabaleshwar, Satara') : '',
+                            positionRole: 'Chief Villa Caretaker Host',
+                            phone: user?.phone || '',
+                            experience: '3 - 5 Years',
+                            skillsRequired: ['Guest Check-in & Key Handover', 'Housekeeping & Linen Sanitation', '24/7 Gate & Estate Security'],
+                            govtIdType: 'Aadhaar Card',
+                            govtId: '',
+                            bio: ''
+                          });
+                          setShowCaretakerModal(true);
+                        }}
                       >
-                        + Assign Task
+                        + Request Caretaker
                       </button>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {caretakerApps.length === 0 ? (
+                      <div className="empty-state-card glass-morphism">
+                        <i className="fa-solid fa-user-shield"></i>
+                        <h3>No Caretaker Requests Sent Yet</h3>
+                        <p>You have not sent any caretaker requests to the Admin Panel. Click below to request dedicated staff for your property stays.</p>
+                        <button className="btn-pill-gold" onClick={() => setShowCaretakerModal(true)}>
+                          <i className="fa-solid fa-paper-plane"></i> Send Request to Admin Panel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="caretaker-apps-grid">
+                        {caretakerApps.map((app, idx) => (
+                          <div key={app._id || idx} className="caretaker-app-card glass-morphism">
+                            <div>
+                              <div className="caretaker-app-card-top">
+                                <h4><i className="fa-solid fa-building-user"></i> {app.propertyName}</h4>
+                                <span className={`od-status-badge ${app.status === 'approved' ? 'approved' : app.status === 'rejected' ? 'rejected' : 'pending'}`}>
+                                  {app.status === 'approved' ? 'Allocated' : app.status === 'rejected' ? 'Rejected' : 'Pending'}
+                                </span>
+                              </div>
+
+                              <p className="caretaker-app-address">
+                                <i className="fa-solid fa-location-dot"></i> {app.propertyAddress || 'Mahabaleshwar, Satara'}
+                              </p>
+
+                              <div className="caretaker-app-role-box">
+                                <span className="lbl">Requested Role</span>
+                                <div className="role">{app.positionRole || 'Chief Caretaker Host'}</div>
+                                <div className="exp">Experience: {app.experience || '3 - 5 Years'}</div>
+                              </div>
+
+                              {app.assignedCaretakerName && (
+                                <div className="caretaker-assigned-box">
+                                  <div className="lbl"><i className="fa-solid fa-circle-check"></i> Admin Allocated Caretaker</div>
+                                  <div className="name">{app.assignedCaretakerName}</div>
+                                  <div className="phone">{app.assignedCaretakerPhone || '+91 98901 23456'}</div>
+                                </div>
+                              )}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--od-hairline)' }}>
+                              <button className="btn-whatsapp" onClick={() => openWhatsAppOwnerToCaretaker(app)}>
+                                <i className="fa-brands fa-whatsapp"></i> WhatsApp Caretaker
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* SECTION 2: DAILY SHIFT DUTIES ASSIGNED TO CARETAKER */}
+                  <div className="od-panel glass-morphism" style={{ marginBottom: '28px' }}>
+                    <div className="od-panel-head">
+                      <div>
+                        <h3><i className="fa-solid fa-list-check"></i> Daily Shift Tasks Assigned to Caretaker</h3>
+                        <p>Caretaker checks off tasks in real-time. Completed items lock automatically.</p>
+                      </div>
+                      <button className="btn-mini-gold" onClick={() => setShowAddTaskModalOwner(true)}>+ Assign Task</button>
+                    </div>
+
+                    <div>
                       {ownerDuties.map(d => (
-                        <div key={d.id} style={{
-                          background: d.completed ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.04)',
-                          border: d.completed ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)',
-                          padding: '14px 18px',
-                          borderRadius: '14px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '14px'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                            <span style={{
-                              width: '28px',
-                              height: '28px',
-                              borderRadius: '50%',
-                              background: d.completed ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.08)',
-                              color: d.completed ? '#10b981' : '#a3b18a',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '0.9rem'
-                            }}>
+                        <div key={d.id} className={`task-row ${d.completed ? 'done' : ''}`}>
+                          <div className="task-row-left">
+                            <span className="task-icon-circle">
                               <i className={`fa-solid ${d.completed ? 'fa-check' : 'fa-clock'}`}></i>
                             </span>
                             <div>
-                              <div style={{ fontWeight: '700', fontSize: '0.95rem', color: '#ffffff', textDecoration: d.completed ? 'line-through' : 'none' }}>
-                                {d.title}
-                              </div>
-                              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>
-                                Time: {d.time} • Category: {d.category} • Priority: <strong style={{ color: d.priority === 'High' ? '#ef4444' : '#f59e0b' }}>{d.priority}</strong>
+                              <div className="task-title">{d.title}</div>
+                              <span className="task-meta">
+                                Time: {d.time} • Category: {d.category} • Priority: <strong className={d.priority === 'High' ? 'priority-high' : 'priority-med'}>{d.priority}</strong>
                               </span>
                             </div>
                           </div>
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            {d.completed ? (
-                              <span style={{ background: 'rgba(16,185,129,0.2)', border: '1px solid #10b981', color: '#10b981', fontSize: '0.75rem', padding: '4px 10px', borderRadius: '12px', fontWeight: '800' }}>
-                                <i className="fa-solid fa-lock"></i> COMPLETED BY CARETAKER
-                              </span>
-                            ) : (
-                              <span style={{ background: 'rgba(245,158,11,0.2)', border: '1px solid #f59e0b', color: '#f59e0b', fontSize: '0.75rem', padding: '4px 10px', borderRadius: '12px', fontWeight: '800' }}>
-                                <i className="fa-solid fa-hourglass-half"></i> PENDING CARETAKER
-                              </span>
-                            )}
-
-                            <button
-                              onClick={() => handleOwnerDeleteTask(d.id)}
-                              style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', padding: '6px 10px', borderRadius: '10px', cursor: 'pointer', fontSize: '0.8rem' }}
-                              title="Delete Task"
-                            >
+                            <span className={`task-status-chip ${d.completed ? 'done' : 'pending'}`}>
+                              <i className={`fa-solid ${d.completed ? 'fa-lock' : 'fa-hourglass-half'}`}></i> {d.completed ? 'COMPLETED' : 'PENDING'}
+                            </span>
+                            <button className="btn-icon-danger" onClick={() => handleOwnerDeleteTask(d.id)} title="Delete Task">
                               <i className="fa-solid fa-trash-can"></i>
                             </button>
                           </div>
@@ -1858,117 +1764,63 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Section 2: Guest-Specific Requirements Assigned to Caretaker */}
-                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'rgba(12,20,18,0.85)', border: '1px solid rgba(212,175,55,0.25)', marginBottom: '28px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  {/* SECTION 3: GUEST STAY REQUIREMENTS & SPECIAL REQUESTS */}
+                  <div className="od-panel glass-morphism" style={{ marginBottom: '28px' }}>
+                    <div className="od-panel-head">
                       <div>
-                        <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <i className="fa-solid fa-users-gear"></i> Guest Stay Requirements & Special Requests
-                        </h3>
-                        <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem' }}>
-                          Assign guest-specific preparation requirements (welcome drinks, extra bedding, baby cot, dinner setup) to Caretaker.
-                        </p>
+                        <h3><i className="fa-solid fa-users-gear"></i> Guest Stay Requirements & Special Requests</h3>
+                        <p>Assign guest-specific preparation requirements to the Caretaker.</p>
                       </div>
-                      <button
-                        onClick={() => setShowAddReqModalOwner(true)}
-                        style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', padding: '8px 16px', borderRadius: '16px', fontWeight: '800', cursor: 'pointer', fontSize: '0.8rem' }}
-                      >
-                        + Add Guest Requirement
-                      </button>
+                      <button className="btn-mini-emerald" onClick={() => setShowAddReqModalOwner(true)}>+ Add Requirement</button>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '18px' }}>
+                    <div className="guest-req-grid">
                       {ownerGuestReqs.map(g => (
-                        <div key={g.id} className="glass-morphism" style={{ padding: '18px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(20,30,26,0.6)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                        <div key={g.id} className="guest-req-card">
+                          <div className="guest-req-card-top">
                             <div>
-                              <h4 style={{ margin: 0, color: '#ffffff', fontSize: '1rem', fontWeight: '700' }}>{g.guestName}</h4>
-                              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>Booking ID: {g.id} • {g.rooms}</span>
+                              <h4>{g.guestName}</h4>
+                              <span className="meta">Booking ID: {g.id} • {g.rooms}</span>
                             </div>
-                            <span style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid #d4af37', color: '#ffd700', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: '700' }}>
-                              Check-In: {g.checkIn}
-                            </span>
+                            <span className="checkin-chip">Check-In: {g.checkIn}</span>
                           </div>
 
-                          <div style={{ marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px' }}>
-                            <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#ffd700', marginBottom: '8px', textTransform: 'uppercase' }}>
-                              Caretaker Special Requests Checklist
-                            </div>
-                            {g.specialRequests.map((req, idx) => (
-                              <div key={idx} style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                background: req.done ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.04)',
-                                border: req.done ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,255,255,0.08)',
-                                padding: '8px 12px',
-                                borderRadius: '10px',
-                                marginBottom: '6px',
-                                fontSize: '0.83rem'
-                              }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <i className={`fa-solid ${req.done ? 'fa-circle-check' : 'fa-circle'}`} style={{ color: req.done ? '#10b981' : 'rgba(255,255,255,0.4)' }}></i>
-                                  <span style={{ color: '#ffffff', textDecoration: req.done ? 'line-through' : 'none' }}>{req.label}</span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  {req.done ? (
-                                    <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: '800' }}>DONE</span>
-                                  ) : (
-                                    <span style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: '800' }}>PENDING</span>
-                                  )}
-                                  <button
-                                    onClick={() => handleOwnerDeleteGuestReq(g.id, idx)}
-                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.75rem', marginLeft: '4px' }}
-                                    title="Delete Requirement"
-                                  >
-                                    ×
-                                  </button>
-                                </div>
+                          <div className="req-checklist-label">Caretaker Checklist</div>
+                          {g.specialRequests.map((req, idx) => (
+                            <div key={idx} className={`req-item ${req.done ? 'done' : ''}`}>
+                              <div className="req-item-left">
+                                <i className={`fa-solid ${req.done ? 'fa-circle-check' : 'fa-circle'}`} style={{ color: req.done ? 'var(--od-emerald-bright)' : 'var(--od-faint)' }}></i>
+                                <span>{req.label}</span>
                               </div>
-                            ))}
-                          </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span className={req.done ? 'req-tag-done' : 'req-tag-pending'}>{req.done ? 'DONE' : 'PENDING'}</span>
+                                <button className="req-delete-btn" onClick={() => handleOwnerDeleteGuestReq(g.id, idx)} title="Delete Requirement">×</button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Section 3: Caretaker Stock & Inventory Live Monitor */}
-                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'rgba(12,20,18,0.85)', border: '1px solid rgba(212,175,55,0.25)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  {/* SECTION 4: CARETAKER VILLA CONSUMABLE INVENTORY */}
+                  <div className="od-panel glass-morphism">
+                    <div className="od-panel-head">
                       <div>
-                        <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <i className="fa-solid fa-boxes-stacked"></i> Caretaker Villa Consumable Stock Inventory
-                        </h3>
-                        <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem' }}>
-                          Monitor live supplies reported by Caretaker (Linen, Towels, Mineral Water Cases, Bonfire Wood, LPG Cylinders) & restock instantly.
-                        </p>
+                        <h3><i className="fa-solid fa-boxes-stacked"></i> Caretaker Villa Consumable Stock Inventory</h3>
+                        <p>Monitor live supplies reported by Caretaker & restock instantly.</p>
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
+                    <div className="inventory-grid">
                       {ownerInventory.map(item => (
-                        <div key={item.id} className="glass-morphism" style={{ padding: '16px', borderRadius: '14px', border: item.status === 'In Stock' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(239,68,68,0.4)', background: item.status === 'In Stock' ? 'rgba(255,255,255,0.03)' : 'rgba(239,68,68,0.08)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <h4 style={{ margin: 0, color: '#ffffff', fontSize: '0.92rem', fontWeight: '700' }}>{item.item}</h4>
-                            <span style={{
-                              background: item.status === 'In Stock' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
-                              color: item.status === 'In Stock' ? '#10b981' : '#ef4444',
-                              border: item.status === 'In Stock' ? '1px solid #10b981' : '1px solid #ef4444',
-                              fontSize: '0.7rem',
-                              padding: '2px 8px',
-                              borderRadius: '10px',
-                              fontWeight: '800'
-                            }}>
-                              {item.status}
-                            </span>
+                        <div key={item.id} className={`inventory-item-card ${item.status === 'In Stock' ? '' : 'low'}`}>
+                          <div className="inventory-item-top">
+                            <h4>{item.item}</h4>
+                            <span className={`status ${item.status === 'In Stock' ? 'instock' : 'low'}`}>{item.status}</span>
                           </div>
-                          <div style={{ margin: '10px 0 12px 0', fontSize: '1.4rem', fontWeight: '800', color: '#ffd700' }}>
-                            {item.qty} <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', fontWeight: '400' }}>{item.unit}</span>
-                          </div>
-                          <button
-                            onClick={() => handleOwnerRestockStock(item.id, 5)}
-                            style={{ width: '100%', background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '8px', borderRadius: '10px', fontWeight: '800', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                          >
+                          <div className="inventory-qty">{item.qty} <span>{item.unit}</span></div>
+                          <button className="btn-restock" onClick={() => handleOwnerRestockStock(item.id, 5)}>
                             <i className="fa-solid fa-cart-plus"></i> Approve +5 Restock
                           </button>
                         </div>
@@ -1981,58 +1833,46 @@ const OwnerDashboard = () => {
               {/* TAB: TOURIST ARRIVAL REGISTER */}
               {activeTab === 'tourists' && (
                 <div className="tab-tourists-register">
-                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(145deg, rgba(27, 38, 44, 0.9) 0%, rgba(15, 23, 30, 0.9) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                  <div className="od-section-header glass-morphism">
                     <div>
-                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <i className="fa-solid fa-users-viewfinder"></i> Tourist Arrival & Headcount Register
-                      </h3>
-                      <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.86rem' }}>
-                        Real-time log of registered tourists, expected arrival times, headcount (adults/children), assigned rooms & Govt ID verification status.
-                      </p>
+                      <h3><i className="fa-solid fa-users-viewfinder"></i> Tourist Arrival & Headcount Register</h3>
+                      <p>Real-time log of registered tourists, expected arrival times, headcount, assigned rooms & Govt ID verification status.</p>
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)', fontWeight: '600', textTransform: 'uppercase' }}>Total Registered Groups</div>
-                      <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#ffffff', marginTop: '4px' }}>{touristRegisterList.length} Groups</div>
+                  <div className="od-mini-stats-grid">
+                    <div className="od-mini-stat neutral glass-morphism">
+                      <div className="lbl">Total Registered Groups</div>
+                      <div className="val">{touristRegisterList.length} Groups</div>
                     </div>
-                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                      <div style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: '600', textTransform: 'uppercase' }}>Currently Arrived</div>
-                      <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>
-                        {touristRegisterList.filter(t => t.status === 'Arrived').length} Arrived
-                      </div>
+                    <div className="od-mini-stat emerald glass-morphism">
+                      <div className="lbl">Currently Arrived</div>
+                      <div className="val">{touristRegisterList.filter(t => t.status === 'Arrived').length}</div>
                     </div>
-                    <div className="glass-morphism" style={{ padding: '18px', borderRadius: '14px', border: '1px solid rgba(212, 175, 55, 0.3)' }}>
-                      <div style={{ fontSize: '0.78rem', color: '#ffd700', fontWeight: '600', textTransform: 'uppercase' }}>Total Tourist Headcount</div>
-                      <div style={{ fontSize: '1.7rem', fontWeight: '800', color: '#ffd700', marginTop: '4px' }}>
-                        {touristRegisterList.reduce((sum, t) => sum + (t.adultsCount || 0) + (t.childrenCount || 0), 0)} Tourists
-                      </div>
+                    <div className="od-mini-stat gold glass-morphism">
+                      <div className="lbl">Total Tourist Headcount</div>
+                      <div className="val">{touristRegisterList.reduce((sum, t) => sum + (t.adultsCount || 0) + (t.childrenCount || 0), 0)}</div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
                     {touristRegisterList.map(t => (
-                      <div key={t._id || t.id} className="glass-morphism" style={{ padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(18,27,24,0.7)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                      <div key={t._id || t.id} className="tourist-row glass-morphism">
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                            <h4 style={{ margin: 0, color: '#ffffff', fontSize: '1.1rem', fontWeight: '800' }}>{t.guestName}</h4>
-                            <span style={{ background: t.status === 'Arrived' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(212, 175, 55, 0.2)', color: t.status === 'Arrived' ? '#10b981' : '#ffd700', border: t.status === 'Arrived' ? '1px solid #10b981' : '1px solid #d4af37', padding: '2px 10px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: '800' }}>
-                              {t.status}
-                            </span>
+                          <div className="tourist-row-name">
+                            <h4>{t.guestName}</h4>
+                            <span className={`od-status-badge ${t.status === 'Arrived' ? 'approved' : 'pending'}`}>{t.status}</span>
                           </div>
-                          <p style={{ margin: '0 0 6px 0', color: 'rgba(255,255,255,0.75)', fontSize: '0.86rem' }}>
-                            <i className="fa-solid fa-building" style={{ color: '#d4af37', marginRight: '6px' }}></i> {t.propertyName} • <i className="fa-solid fa-door-closed" style={{ color: '#38bdf8', marginLeft: '6px', marginRight: '4px' }}></i> {t.roomAssigned}
+                          <p className="tourist-row-sub">
+                            <i className="fa-solid fa-building"></i> {t.propertyName} &nbsp;•&nbsp; <i className="fa-solid fa-door-closed"></i> {t.roomAssigned}
                           </p>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', fontSize: '0.82rem', color: 'rgba(255,255,255,0.65)' }}>
-                            <span><i className="fa-solid fa-clock" style={{ color: '#f59e0b' }}></i> Arrival Time: <strong>{t.expectedArrivalTime}</strong></span>
-                            <span><i className="fa-solid fa-users" style={{ color: '#10b981' }}></i> Guests: <strong>{t.adultsCount} Adults, {t.childrenCount} Kids</strong></span>
-                            <span><i className="fa-solid fa-id-card" style={{ color: '#a78bfa' }}></i> Govt ID: <strong>{t.govtIdType || 'Aadhaar'} ({t.idVerified ? 'Verified' : 'Pending'})</strong></span>
+                          <div className="tourist-row-meta">
+                            <span><i className="fa-solid fa-clock"></i> Arrival: <strong>{t.expectedArrivalTime}</strong></span>
+                            <span><i className="fa-solid fa-users"></i> Guests: <strong>{t.adultsCount} Adults, {t.childrenCount} Kids</strong></span>
+                            <span><i className="fa-solid fa-id-card"></i> Govt ID: <strong>{t.govtIdType || 'Aadhaar'} ({t.idVerified ? 'Verified' : 'Pending'})</strong></span>
                           </div>
                           {t.specialRequests && (
-                            <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#ffd700', fontStyle: 'italic' }}>
-                              "<i className="fa-solid fa-star"></i> {t.specialRequests}"
-                            </div>
+                            <div className="tourist-special-req"><i className="fa-solid fa-star"></i> "{t.specialRequests}"</div>
                           )}
                         </div>
                       </div>
@@ -2044,44 +1884,25 @@ const OwnerDashboard = () => {
               {/* TAB: MATERIAL STOCK INVENTORY */}
               {activeTab === 'inventory' && (
                 <div className="tab-inventory-stock">
-                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(145deg, rgba(27, 38, 44, 0.9) 0%, rgba(15, 23, 30, 0.9) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                  <div className="od-section-header glass-morphism">
                     <div>
-                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <i className="fa-solid fa-boxes-stacked"></i> Material Stock & Consumables Inventory
-                      </h3>
-                      <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.86rem' }}>
-                        Manage property supplies (linens, towels, toiletries, food/beverage kits) and trigger restock requests for Caretakers.
-                      </p>
+                      <h3><i className="fa-solid fa-boxes-stacked"></i> Material Stock & Consumables Inventory</h3>
+                      <p>Manage property supplies and trigger restock requests for Caretakers.</p>
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
+                  <div className="inventory-grid">
                     {ownerInventory.map(item => (
-                      <div key={item._id || item.id} className="glass-morphism" style={{ padding: '20px', borderRadius: '16px', border: item.status === 'In Stock' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(239,68,68,0.4)', background: item.status === 'In Stock' ? 'rgba(20,30,26,0.6)' : 'rgba(239,68,68,0.08)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                      <div key={item._id || item.id} className={`inventory-item-card ${item.status === 'In Stock' ? '' : 'low'}`}>
+                        <div className="inventory-item-top">
                           <div>
-                            <span style={{ fontSize: '0.72rem', color: '#d4af37', fontWeight: '800', textTransform: 'uppercase' }}>{item.category || 'Supplies'}</span>
-                            <h4 style={{ margin: '2px 0 0 0', color: '#ffffff', fontSize: '1rem', fontWeight: '800' }}>{item.itemName || item.item}</h4>
+                            <span className="cat">{item.category || 'Supplies'}</span>
+                            <h4>{item.itemName || item.item}</h4>
                           </div>
-                          <span style={{
-                            background: item.status === 'In Stock' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
-                            color: item.status === 'In Stock' ? '#10b981' : '#ef4444',
-                            border: item.status === 'In Stock' ? '1px solid #10b981' : '1px solid #ef4444',
-                            fontSize: '0.72rem',
-                            padding: '3px 10px',
-                            borderRadius: '12px',
-                            fontWeight: '800'
-                          }}>
-                            {item.status}
-                          </span>
+                          <span className={`status ${item.status === 'In Stock' ? 'instock' : 'low'}`}>{item.status}</span>
                         </div>
-                        <div style={{ margin: '14px 0', fontSize: '1.8rem', fontWeight: '800', color: '#ffd700' }}>
-                          {item.quantity || item.qty} <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', fontWeight: '400' }}>{item.unit}</span>
-                        </div>
-                        <button
-                          onClick={() => handleOwnerRestockStock(item._id || item.id, 5)}
-                          style={{ width: '100%', background: 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)', color: '#1a1a1a', border: 'none', padding: '10px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                        >
+                        <div className="inventory-qty">{item.quantity || item.qty} <span>{item.unit}</span></div>
+                        <button className="btn-restock" onClick={() => handleOwnerRestockStock(item._id || item.id, 5)}>
                           <i className="fa-solid fa-cart-plus"></i> Restock +5 Units
                         </button>
                       </div>
@@ -2093,45 +1914,35 @@ const OwnerDashboard = () => {
               {/* TAB: TOURIST FEEDBACK */}
               {activeTab === 'feedback' && (
                 <div className="tab-tourist-feedback">
-                  <div className="glass-morphism" style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(145deg, rgba(27, 38, 44, 0.9) 0%, rgba(15, 23, 30, 0.9) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                  <div className="od-section-header glass-morphism">
                     <div>
-                      <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <i className="fa-solid fa-comments"></i> Tourist Feedback & Rating Reviews
-                      </h3>
-                      <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.86rem' }}>
-                        Review ratings, stay feedback, and comments submitted by tourists visiting your Mahabaleshwar properties.
-                      </p>
+                      <h3><i className="fa-solid fa-comments"></i> Tourist Feedback & Rating Reviews</h3>
+                      <p>Review ratings, stay feedback, and comments submitted by tourists visiting your Mahabaleshwar properties.</p>
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                  <div className="feedback-grid">
                     {touristFeedbackList.map(fb => (
-                      <div key={fb._id || fb.id} className="glass-morphism" style={{ padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(18,27,24,0.7)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                            <div>
-                              <h4 style={{ margin: 0, color: '#ffffff', fontSize: '1.05rem', fontWeight: '800' }}>{fb.guestName}</h4>
-                              <span style={{ fontSize: '0.78rem', color: '#d4af37', fontWeight: '700' }}>{fb.propertyName}</span>
-                            </div>
-                            <div style={{ display: 'flex', gap: '3px', color: '#ffd700', fontSize: '0.9rem' }}>
-                              {[...Array(5)].map((_, i) => (
-                                <i key={i} className={`fa-solid fa-star${i < fb.rating ? '' : '-o'}`} style={{ color: i < fb.rating ? '#ffd700' : 'rgba(255,255,255,0.2)' }}></i>
-                              ))}
-                            </div>
+                      <div key={fb._id || fb.id} className="feedback-card">
+                        <div className="feedback-card-top">
+                          <div>
+                            <h4>{fb.guestName}</h4>
+                            <span className="prop">{fb.propertyName}</span>
                           </div>
-                          <p style={{ color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.5', fontStyle: 'italic', margin: '10px 0' }}>
-                            "{fb.reviewText}"
-                          </p>
-                          {fb.facilitiesUsed && fb.facilitiesUsed.length > 0 && (
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
-                              {fb.facilitiesUsed.map((fac, idx) => (
-                                <span key={idx} style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '700' }}>
-                                  ✓ {fac}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+                          <div className="feedback-stars">
+                            {[...Array(5)].map((_, i) => (
+                              <i key={i} className={`fa-solid fa-star${i < fb.rating ? '' : '-o'}`} style={{ color: i < fb.rating ? 'var(--od-gold-bright)' : 'rgba(243,238,226,0.15)' }}></i>
+                            ))}
+                          </div>
                         </div>
+                        <p className="feedback-review">"{fb.reviewText}"</p>
+                        {fb.facilitiesUsed && fb.facilitiesUsed.length > 0 && (
+                          <div className="feedback-facility-tags">
+                            {fb.facilitiesUsed.map((fac, idx) => (
+                              <span key={idx} className="feedback-facility-tag">✓ {fac}</span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -2256,14 +2067,14 @@ const OwnerDashboard = () => {
                 </div>
 
                 <div className="form-group">
-                  <label><i className="fa-solid fa-map-location-dot" style={{ color: 'var(--accent-gold)', marginRight: '6px' }}></i> Google Maps Live Location Link</label>
+                  <label><i className="fa-solid fa-map-location-dot"></i> Google Maps Live Location Link</label>
                   <input
                     type="url"
                     value={propertyForm.mapLink || ''}
                     onChange={(e) => setPropertyForm({ ...propertyForm, mapLink: e.target.value })}
                     placeholder="e.g. https://maps.app.goo.gl/... or https://maps.google.com/?q=..."
                   />
-                  <small style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '4px', display: 'block' }}>
+                  <small style={{ color: 'var(--od-muted)', fontSize: '0.78rem', display: 'block' }}>
                     Paste exact Google Maps URL so guests can view live GPS pin & directions on the map.
                   </small>
                 </div>
@@ -2271,10 +2082,9 @@ const OwnerDashboard = () => {
                 {/* Provided Stay Amenities & Resources Checklist */}
                 <div className="form-group">
                   <label>
-                    <i className="fa-solid fa-list-check" style={{ color: 'var(--accent-gold)', marginRight: '6px' }}></i>
-                    Stay Amenities & Provided Resources ({propertyForm.amenities?.length || 0} Selected)
+                    <i className="fa-solid fa-list-check"></i> Stay Amenities & Provided Resources ({propertyForm.amenities?.length || 0} Selected)
                   </label>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '-4px', marginBottom: '10px' }}>
+                  <p style={{ color: 'var(--od-muted)', fontSize: '0.8rem', marginTop: '-4px', marginBottom: '10px' }}>
                     Select all resources & amenities provided at your stay for travelers:
                   </p>
 
@@ -2311,7 +2121,7 @@ const OwnerDashboard = () => {
                 </div>
 
                 <div className="form-group">
-                  <label><i className="fa-solid fa-camera" style={{ color: 'var(--accent-gold)', marginRight: '6px' }}></i> Property Photos (Upload Directly)</label>
+                  <label><i className="fa-solid fa-camera"></i> Property Photos (Upload Directly)</label>
                   <div className="direct-upload-area">
                     <input
                       type="file"
@@ -2348,7 +2158,7 @@ const OwnerDashboard = () => {
                 </div>
 
                 <div className="form-group">
-                  <label><i className="fa-solid fa-video" style={{ color: 'var(--accent-gold)', marginRight: '6px' }}></i> Property HD Video Tours (Upload Directly from Device)</label>
+                  <label><i className="fa-solid fa-video"></i> Property HD Video Tours (Upload Directly from Device)</label>
                   <div className="direct-upload-area">
                     <input
                       type="file"
@@ -2359,7 +2169,7 @@ const OwnerDashboard = () => {
                       style={{ display: 'none' }}
                     />
                     <label htmlFor="property-direct-videos" className="upload-dropzone">
-                      <i className="fa-solid fa-film" style={{ color: 'var(--accent-gold)' }}></i>
+                      <i className="fa-solid fa-film"></i>
                       <span>Select Video Files from Computer / Mobile</span>
                       <small>Upload MP4, WEBM, MOV • Multiple videos supported</small>
                     </label>
@@ -2370,7 +2180,7 @@ const OwnerDashboard = () => {
                       {propertyForm.videos.map((vid, idx) => (
                         <div key={idx} className="thumb-item" style={{ height: '90px' }}>
                           <video src={vid} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          <span style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.75)', color: '#d4af37', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '700' }}>
+                          <span style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.75)', color: 'var(--od-gold-bright)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '700' }}>
                             <i className="fa-solid fa-circle-play"></i> Video #{idx + 1}
                           </span>
                           <button
@@ -2401,25 +2211,20 @@ const OwnerDashboard = () => {
         {/* CARETAKER APPLICATION MODAL */}
         {showCaretakerModal && (
           <div className="modal-overlay">
-            <div className="modal-content glass-morphism" style={{ maxWidth: '620px', width: '100%', padding: '28px', borderRadius: '24px', background: 'linear-gradient(145deg, #1b262c 0%, #0f171e 100%)', border: '1px solid rgba(212, 175, 55, 0.4)', color: '#ffffff', boxShadow: '0 25px 60px rgba(0,0,0,0.7)' }}>
-              <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '14px' }}>
+            <div className="modal-content" style={{ maxWidth: '640px' }}>
+              <div className="modal-header">
                 <div>
-                  <h3 style={{ margin: 0, color: '#ffd700', fontSize: '1.4rem', fontFamily: 'Cormorant Garamond, serif' }}>
-                    <i className="fa-solid fa-paper-plane" style={{ marginRight: '8px' }}></i> Send Caretaker Request to Admin Panel
-                  </h3>
-                  <p style={{ margin: '4px 0 0 0', opacity: 0.8, fontSize: '0.85rem' }}>Submit official request for verified caretakers, housekeepers, and villa staff to the Admin Command Center.</p>
+                  <h3><i className="fa-solid fa-paper-plane"></i> Send Caretaker Request to Admin Panel</h3>
+                  <p style={{ margin: '4px 0 0 0', color: 'var(--od-muted)', fontSize: '0.82rem' }}>Submit official request for verified caretakers, housekeepers, and villa staff.</p>
                 </div>
-                <button onClick={() => setShowCaretakerModal(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.6rem', cursor: 'pointer' }}>×</button>
+                <button className="close-btn" onClick={() => setShowCaretakerModal(false)}><i className="fa-solid fa-xmark"></i></button>
               </div>
 
-              <form onSubmit={handleCaretakerSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
+              <form onSubmit={handleCaretakerSubmit} className="modal-form">
                 {/* Property Selection & Address */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div className="form-row">
                   <div className="form-group">
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
-                      <i className="fa-solid fa-hotel" style={{ marginRight: '6px' }}></i> Target Property Name *
-                    </label>
+                    <label><i className="fa-solid fa-hotel"></i> Target Property Name *</label>
                     <select
                       value={caretakerForm.propertyName}
                       onChange={(e) => {
@@ -2431,73 +2236,61 @@ const OwnerDashboard = () => {
                           propertyAddress: selectedProp ? (selectedProp.location || 'Mahabaleshwar, Satara') : caretakerForm.propertyAddress
                         });
                       }}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
                       required
                     >
-                      <option value="" style={{ background: '#1b262c', color: '#fff' }}>Select a Property...</option>
-                      <option value="All Managed Stays" style={{ background: '#1b262c', color: '#fff' }}>All My Managed Properties</option>
+                      <option value="">Select a Property...</option>
+                      <option value="All Managed Stays">All My Managed Properties</option>
                       {properties.map(p => (
-                        <option key={p._id} value={p.name} style={{ background: '#1b262c', color: '#fff' }}>{p.name} ({p.location})</option>
+                        <option key={p._id} value={p.name}>{p.name} ({p.location})</option>
                       ))}
                     </select>
                   </div>
 
                   <div className="form-group">
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
-                      <i className="fa-solid fa-location-dot" style={{ marginRight: '6px' }}></i> Property Address / Location *
-                    </label>
+                    <label><i className="fa-solid fa-location-dot"></i> Property Address / Location *</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Metgutad, Panchgani-Mahabaleshwar Highway"
                       value={caretakerForm.propertyAddress}
                       onChange={(e) => setCaretakerForm({ ...caretakerForm, propertyAddress: e.target.value })}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
                     />
                   </div>
                 </div>
 
                 {/* Exact Position & Experience Required */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div className="form-row">
                   <div className="form-group">
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
-                      <i className="fa-solid fa-user-tag" style={{ marginRight: '6px' }}></i> Exact Position / Staff Role Required *
-                    </label>
+                    <label><i className="fa-solid fa-user-tag"></i> Exact Position / Staff Role Required *</label>
                     <select
                       value={caretakerForm.positionRole}
                       onChange={(e) => setCaretakerForm({ ...caretakerForm, positionRole: e.target.value })}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
                     >
-                      <option value="Chief Villa Caretaker Host" style={{ background: '#1b262c', color: '#fff' }}>Chief Villa Caretaker Host</option>
-                      <option value="Senior Estate Manager & Host" style={{ background: '#1b262c', color: '#fff' }}>Senior Estate Manager & Host</option>
-                      <option value="Housekeeping & Linen Supervisor" style={{ background: '#1b262c', color: '#fff' }}>Housekeeping & Linen Supervisor</option>
-                      <option value="Culinary Chef & Dining Host" style={{ background: '#1b262c', color: '#fff' }}>Culinary Chef & Dining Host</option>
-                      <option value="Maintenance & Electrical Technician" style={{ background: '#1b262c', color: '#fff' }}>Maintenance & Electrical Technician</option>
-                      <option value="Night Gate & Security Officer" style={{ background: '#1b262c', color: '#fff' }}>Night Gate & Security Officer</option>
+                      <option value="Chief Villa Caretaker Host">Chief Villa Caretaker Host</option>
+                      <option value="Senior Estate Manager & Host">Senior Estate Manager & Host</option>
+                      <option value="Housekeeping & Linen Supervisor">Housekeeping & Linen Supervisor</option>
+                      <option value="Culinary Chef & Dining Host">Culinary Chef & Dining Host</option>
+                      <option value="Maintenance & Electrical Technician">Maintenance & Electrical Technician</option>
+                      <option value="Night Gate & Security Officer">Night Gate & Security Officer</option>
                     </select>
                   </div>
 
                   <div className="form-group">
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
-                      <i className="fa-solid fa-award" style={{ marginRight: '6px' }}></i> Caretaker Experience Required *
-                    </label>
+                    <label><i className="fa-solid fa-award"></i> Caretaker Experience Required *</label>
                     <select
                       value={caretakerForm.experience}
                       onChange={(e) => setCaretakerForm({ ...caretakerForm, experience: e.target.value })}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
                     >
-                      <option value="1 - 3 Years" style={{ background: '#1b262c', color: '#fff' }}>1 - 3 Years (Junior Staff)</option>
-                      <option value="3 - 5 Years" style={{ background: '#1b262c', color: '#fff' }}>3 - 5 Years (Experienced Caretaker)</option>
-                      <option value="5+ Years" style={{ background: '#1b262c', color: '#fff' }}>5+ Years (Senior Villa Manager)</option>
+                      <option value="1 - 3 Years">1 - 3 Years (Junior Staff)</option>
+                      <option value="3 - 5 Years">3 - 5 Years (Experienced Caretaker)</option>
+                      <option value="5+ Years">5+ Years (Senior Villa Manager)</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Required Skills Picker */}
                 <div className="form-group">
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
-                    <i className="fa-solid fa-list-check" style={{ marginRight: '6px' }}></i> Required Skills & Duties (Click to toggle)
-                  </label>
+                  <label><i className="fa-solid fa-list-check"></i> Required Skills & Duties (Click to toggle)</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
                     {[
                       'Guest Check-in & Key Handover',
@@ -2519,20 +2312,8 @@ const OwnerDashboard = () => {
                               : [...currentSkills, skill];
                             setCaretakerForm({ ...caretakerForm, skillsRequired: newSkills });
                           }}
-                          style={{
-                            background: isSelected ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.06)',
-                            border: isSelected ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.15)',
-                            color: isSelected ? '#10b981' : '#cbd5e1',
-                            padding: '6px 12px',
-                            borderRadius: '20px',
-                            fontSize: '0.8rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.2s ease'
-                          }}
+                          className={`amenity-chip-btn ${isSelected ? 'selected' : ''}`}
+                          style={{ borderRadius: '999px' }}
                         >
                           <i className={`fa-solid ${isSelected ? 'fa-circle-check' : 'fa-circle'}`}></i>
                           {skill}
@@ -2545,7 +2326,7 @@ const OwnerDashboard = () => {
                 {/* Contact Phone & Verification Details */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
                   <div className="form-group">
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Host Phone (10 Digits)</label>
+                    <label>Host Phone (10 Digits)</label>
                     <input
                       type="tel"
                       required
@@ -2556,31 +2337,29 @@ const OwnerDashboard = () => {
                         const val = e.target.value.replace(/\D/g, '').slice(0, 10);
                         setCaretakerForm({ ...caretakerForm, phone: val });
                       }}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
                     />
                     {caretakerForm.phone && caretakerForm.phone.length > 0 && caretakerForm.phone.length !== 10 && (
-                      <small style={{ color: '#f87171', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>
+                      <small style={{ color: 'var(--od-danger)', fontSize: '0.75rem' }}>
                         Must be 10 digits ({caretakerForm.phone.length}/10)
                       </small>
                     )}
                   </div>
 
                   <div className="form-group">
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Verification ID Type</label>
+                    <label>Verification ID Type</label>
                     <select
                       value={caretakerForm.govtIdType || 'Aadhaar Card'}
                       onChange={(e) => setCaretakerForm({ ...caretakerForm, govtIdType: e.target.value, govtId: '' })}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
                     >
-                      <option value="Aadhaar Card" style={{ background: '#1b262c', color: '#fff' }}>Aadhaar Card (12 Digits)</option>
-                      <option value="PAN Card" style={{ background: '#1b262c', color: '#fff' }}>PAN Card (10 Chars)</option>
-                      <option value="Driving License" style={{ background: '#1b262c', color: '#fff' }}>Driving License</option>
-                      <option value="Voter ID Card" style={{ background: '#1b262c', color: '#fff' }}>Voter ID Card</option>
+                      <option value="Aadhaar Card">Aadhaar Card (12 Digits)</option>
+                      <option value="PAN Card">PAN Card (10 Chars)</option>
+                      <option value="Driving License">Driving License</option>
+                      <option value="Voter ID Card">Voter ID Card</option>
                     </select>
                   </div>
 
                   <div className="form-group">
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>
+                    <label>
                       {caretakerForm.govtIdType === 'PAN Card' ? 'PAN (10 Chars)' : caretakerForm.govtIdType === 'Aadhaar Card' || !caretakerForm.govtIdType ? 'Aadhaar (12 Digits)' : 'ID Number'}
                     </label>
                     <input
@@ -2604,36 +2383,24 @@ const OwnerDashboard = () => {
                         }
                         setCaretakerForm({ ...caretakerForm, govtId: val });
                       }}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem' }}
                     />
                   </div>
                 </div>
 
                 <div className="form-group">
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', marginBottom: '6px' }}>Special Instructions & Staff Notes</label>
+                  <label>Special Instructions & Staff Notes</label>
                   <textarea
                     rows="3"
                     placeholder="Mention guest check-in preferences, key handling rules, maintenance needs, or special staff requirements..."
                     value={caretakerForm.bio}
                     onChange={(e) => setCaretakerForm({ ...caretakerForm, bio: e.target.value })}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.95rem', fontFamily: 'inherit' }}
                   ></textarea>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
-                  <button
-                    type="submit"
-                    disabled={submittingCaretaker}
-                    style={{ flex: 1, padding: '14px 20px', borderRadius: '50px', background: 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)', color: '#1a1a1a', border: 'none', fontWeight: '800', fontSize: '1rem', cursor: submittingCaretaker ? 'not-allowed' : 'pointer' }}
-                  >
+                <div className="modal-footer">
+                  <button type="button" className="btn-cancel" onClick={() => setShowCaretakerModal(false)}>Cancel</button>
+                  <button type="submit" className="btn-primary-gold" disabled={submittingCaretaker}>
                     {submittingCaretaker ? 'Submitting Application...' : 'Submit Caretaker Application'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCaretakerModal(false)}
-                    style={{ padding: '14px 22px', borderRadius: '50px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)', cursor: 'pointer' }}
-                  >
-                    Cancel
                   </button>
                 </div>
               </form>
@@ -2644,35 +2411,29 @@ const OwnerDashboard = () => {
         {/* VIEW CARETAKER DETAILS CARD MODAL */}
         {viewingCaretakerApp && (
           <div className="modal-overlay">
-            <div className="modal-content glass-morphism" style={{ maxWidth: '650px', width: '100%', padding: '28px', borderRadius: '24px', background: 'linear-gradient(145deg, #1b262c 0%, #0f171e 100%)', border: '1px solid rgba(212, 175, 55, 0.4)', color: '#ffffff', boxShadow: '0 25px 60px rgba(0,0,0,0.75)' }}>
-
-              {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+            <div className="modal-content" style={{ maxWidth: '650px' }}>
+              <div className="modal-header">
                 <div>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(212, 175, 55, 0.15)', color: '#ffd700', border: '1px solid rgba(212, 175, 55, 0.3)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', marginBottom: '8px' }}>
+                  <span className="verified-chip" style={{ marginBottom: '8px' }}>
                     <i className="fa-solid fa-shield-halved"></i> Caretaker Application Record
                   </span>
-                  <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1.5rem', fontFamily: 'Outfit, sans-serif' }}>
-                    {viewingCaretakerApp.propertyName || 'All Managed Properties'}
-                  </h3>
+                  <h3 style={{ marginTop: '8px' }}>{viewingCaretakerApp.propertyName || 'All Managed Properties'}</h3>
                 </div>
-                <button onClick={() => setViewingCaretakerApp(null)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.8rem', cursor: 'pointer', opacity: 0.8 }}>×</button>
+                <button className="close-btn" onClick={() => setViewingCaretakerApp(null)}><i className="fa-solid fa-xmark"></i></button>
               </div>
 
-              {/* Content Body Grid */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
+              <div className="modal-form">
                 {/* Status Banner */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', padding: '14px 18px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--od-surface-raised)', border: '1px solid var(--od-hairline)', borderRadius: '16px', padding: '14px 18px' }}>
                   <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700' }}>Application Status</span>
-                    <strong style={{ fontSize: '1rem', color: viewingCaretakerApp.status === 'approved' ? '#52b788' : '#ffd700', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                    <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--od-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Application Status</span>
+                    <strong style={{ fontSize: '0.95rem', color: viewingCaretakerApp.status === 'approved' ? 'var(--od-emerald-bright)' : 'var(--od-gold-bright)' }}>
                       {viewingCaretakerApp.status === 'approved' ? 'Caretaker Allocated & Assigned' : 'Pending Admin Allocation'}
                     </strong>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700' }}>Date Submitted</span>
-                    <span style={{ fontSize: '0.9rem', color: '#cbd5e1', fontWeight: '600' }}>
+                    <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--od-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Date Submitted</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--od-ivory-dim)', fontFamily: 'var(--od-mono)' }}>
                       {new Date(viewingCaretakerApp.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   </div>
@@ -2680,40 +2441,18 @@ const OwnerDashboard = () => {
 
                 {/* Allocated Caretaker Staff Banner */}
                 {viewingCaretakerApp.status === 'approved' && (
-                  <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.25) 100%)', border: '1px solid #10b981', borderRadius: '16px', padding: '16px 20px' }}>
+                  <div className="caretaker-assigned-box" style={{ padding: '16px 20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#10b981', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
-                          <i className="fa-solid fa-user-shield"></i>
-                        </div>
+                        <div className="od-avatar-round" style={{ width: '48px', height: '48px', fontSize: '1.2rem' }}><i className="fa-solid fa-user-shield"></i></div>
                         <div>
-                          <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#52b788', letterSpacing: '1px', textTransform: 'uppercase', display: 'block' }}>Admin Allocated Caretaker</span>
-                          <strong style={{ fontSize: '1.1rem', color: '#ffffff', display: 'block', marginTop: '2px' }}>
-                            {viewingCaretakerApp.assignedCaretakerName || 'Suresh Pawar (Certified Caretaker)'}
-                          </strong>
-                          <span style={{ fontSize: '0.88rem', color: '#ffd700', fontWeight: '700', marginTop: '2px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <i className="fa-solid fa-phone"></i> Contact Mobile: {viewingCaretakerApp.assignedCaretakerPhone || '+91 98901 23456'}
-                          </span>
+                          <span className="lbl">Admin Allocated Caretaker</span>
+                          <strong className="name" style={{ display: 'block', fontSize: '1.02rem' }}>{viewingCaretakerApp.assignedCaretakerName || 'Suresh Pawar (Certified Caretaker)'}</strong>
+                          <span className="phone" style={{ fontFamily: 'var(--od-mono)' }}>{viewingCaretakerApp.assignedCaretakerPhone || '+91 98901 23456'}</span>
                         </div>
                       </div>
-                      <button
-                        onClick={() => openWhatsAppOwnerToCaretaker(viewingCaretakerApp)}
-                        style={{
-                          background: '#25D366',
-                          color: '#ffffff',
-                          border: 'none',
-                          padding: '10px 18px',
-                          borderRadius: '24px',
-                          fontWeight: '800',
-                          fontSize: '0.85rem',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)'
-                        }}
-                      >
-                        <i className="fa-brands fa-whatsapp" style={{ fontSize: '1.1rem' }}></i> Chat on WhatsApp
+                      <button className="btn-whatsapp" style={{ flex: '0 auto' }} onClick={() => openWhatsAppOwnerToCaretaker(viewingCaretakerApp)}>
+                        <i className="fa-brands fa-whatsapp"></i> Chat on WhatsApp
                       </button>
                     </div>
                   </div>
@@ -2721,98 +2460,51 @@ const OwnerDashboard = () => {
 
                 {/* Grid Details */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
-                      <i className="fa-solid fa-location-dot" style={{ marginRight: '6px' }}></i> Property Address & Location
-                    </span>
-                    <p style={{ margin: 0, color: '#f2ece4', fontSize: '0.92rem', fontWeight: '600' }}>
-                      {viewingCaretakerApp.propertyAddress || viewingCaretakerApp.city || 'Mahabaleshwar, Satara'}
-                    </p>
+                  <div className="caretaker-app-role-box">
+                    <span className="lbl"><i className="fa-solid fa-location-dot"></i> Property Address</span>
+                    <p style={{ margin: 0, color: 'var(--od-ivory)', fontSize: '0.9rem', fontWeight: '600' }}>{viewingCaretakerApp.propertyAddress || viewingCaretakerApp.city || 'Mahabaleshwar, Satara'}</p>
                   </div>
-
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
-                      <i className="fa-solid fa-user-tag" style={{ marginRight: '6px' }}></i> Required Position / Role
-                    </span>
-                    <p style={{ margin: 0, color: '#ffd700', fontSize: '0.92rem', fontWeight: '700' }}>
-                      {viewingCaretakerApp.positionRole || 'Chief Villa Caretaker Host'}
-                    </p>
+                  <div className="caretaker-app-role-box">
+                    <span className="lbl"><i className="fa-solid fa-user-tag"></i> Required Position / Role</span>
+                    <p style={{ margin: 0, color: 'var(--od-gold-bright)', fontSize: '0.9rem', fontWeight: '700' }}>{viewingCaretakerApp.positionRole || 'Chief Villa Caretaker Host'}</p>
                   </div>
-
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
-                      <i className="fa-solid fa-phone" style={{ marginRight: '6px' }}></i> Host Contact Phone
-                    </span>
-                    <p style={{ margin: 0, color: '#52b788', fontSize: '0.92rem', fontWeight: '700' }}>
-                      {viewingCaretakerApp.phone}
-                    </p>
+                  <div className="caretaker-app-role-box">
+                    <span className="lbl"><i className="fa-solid fa-phone"></i> Host Contact Phone</span>
+                    <p style={{ margin: 0, color: 'var(--od-emerald-bright)', fontSize: '0.9rem', fontWeight: '700', fontFamily: 'var(--od-mono)' }}>{viewingCaretakerApp.phone}</p>
                   </div>
-
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
-                      <i className="fa-solid fa-award" style={{ marginRight: '6px' }}></i> Caretaker Experience
-                    </span>
-                    <p style={{ margin: 0, color: '#38bdf8', fontSize: '0.92rem', fontWeight: '700' }}>
-                      {viewingCaretakerApp.experience}
-                    </p>
+                  <div className="caretaker-app-role-box">
+                    <span className="lbl"><i className="fa-solid fa-award"></i> Caretaker Experience</span>
+                    <p style={{ margin: 0, color: 'var(--od-blue)', fontSize: '0.9rem', fontWeight: '700' }}>{viewingCaretakerApp.experience}</p>
                   </div>
                 </div>
 
                 {/* Govt ID Verification Details */}
-                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
-                    <i className="fa-solid fa-id-card" style={{ marginRight: '6px' }}></i> Govt ID Verification Details
-                  </span>
-                  <p style={{ margin: 0, color: '#ffffff', fontSize: '0.92rem', fontWeight: '600' }}>
-                    {viewingCaretakerApp.govtId || 'Provided & Verified by Admin'}
-                  </p>
+                <div className="caretaker-app-role-box">
+                  <span className="lbl"><i className="fa-solid fa-id-card"></i> Govt ID Verification Details</span>
+                  <p style={{ margin: 0, color: 'var(--od-ivory)', fontSize: '0.9rem', fontWeight: '600' }}>{viewingCaretakerApp.govtId || 'Provided & Verified by Admin'}</p>
                 </div>
 
                 {/* Required Skills & Duties Tags */}
-                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '8px' }}>
-                    <i className="fa-solid fa-list-check" style={{ marginRight: '6px' }}></i> Required Skills & Duties
-                  </span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                <div className="caretaker-app-role-box">
+                  <span className="lbl"><i className="fa-solid fa-list-check"></i> Required Skills & Duties</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
                     {(Array.isArray(viewingCaretakerApp.skillsRequired) && viewingCaretakerApp.skillsRequired.length > 0 ? viewingCaretakerApp.skillsRequired : viewingCaretakerApp.services || []).map((svc, i) => (
-                      <span key={i} style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                        <i className="fa-solid fa-check"></i> {svc}
-                      </span>
+                      <span key={i} className="feedback-facility-tag"><i className="fa-solid fa-check"></i> {svc}</span>
                     ))}
                   </div>
                 </div>
 
                 {/* Special Notes */}
                 {viewingCaretakerApp.bio && (
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
-                      <i className="fa-solid fa-note-sticky" style={{ marginRight: '6px' }}></i> Special Instructions & Staff Notes
-                    </span>
-                    <p style={{ margin: 0, color: '#cbd5e1', fontSize: '0.88rem', lineHeight: '1.5', fontStyle: 'italic' }}>
-                      "{viewingCaretakerApp.bio}"
-                    </p>
+                  <div className="caretaker-app-role-box">
+                    <span className="lbl"><i className="fa-solid fa-note-sticky"></i> Special Instructions & Staff Notes</span>
+                    <p style={{ margin: 0, color: 'var(--od-ivory-dim)', fontSize: '0.85rem', lineHeight: '1.5', fontStyle: 'italic' }}>"{viewingCaretakerApp.bio}"</p>
                   </div>
                 )}
-              </div>
 
-              {/* Modal Footer */}
-              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  onClick={() => setViewingCaretakerApp(null)}
-                  style={{
-                    background: 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)',
-                    color: '#1a1a1a',
-                    border: 'none',
-                    padding: '10px 26px',
-                    borderRadius: '30px',
-                    fontWeight: '800',
-                    cursor: 'pointer',
-                    fontSize: '0.9rem'
-                  }}
-                >
-                  Close Details Card
-                </button>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="btn-primary-gold" onClick={() => setViewingCaretakerApp(null)}>Close Details Card</button>
+                </div>
               </div>
             </div>
           </div>
@@ -2823,7 +2515,7 @@ const OwnerDashboard = () => {
           <div className="modal-overlay">
             <div className="modal-content" style={{ maxWidth: '500px' }}>
               <div className="modal-header">
-                <h3><i className="fa-solid fa-list-check" style={{ color: 'var(--accent-gold)' }}></i> Assign Daily Task to Caretaker</h3>
+                <h3><i className="fa-solid fa-list-check"></i> Assign Daily Task to Caretaker</h3>
                 <button className="close-btn" onClick={() => setShowAddTaskModalOwner(false)}><i className="fa-solid fa-xmark"></i></button>
               </div>
 
@@ -2878,7 +2570,7 @@ const OwnerDashboard = () => {
                   </select>
                 </div>
 
-                <button type="submit" className="btn-primary-gold" style={{ marginTop: '14px' }}>
+                <button type="submit" className="btn-primary-gold" style={{ marginTop: '4px' }}>
                   <i className="fa-solid fa-paper-plane"></i> Assign Task to Caretaker Checklist
                 </button>
               </form>
@@ -2891,7 +2583,7 @@ const OwnerDashboard = () => {
           <div className="modal-overlay">
             <div className="modal-content" style={{ maxWidth: '500px' }}>
               <div className="modal-header">
-                <h3><i className="fa-solid fa-user-plus" style={{ color: '#10b981' }}></i> Assign Requirement for Guest Stay</h3>
+                <h3><i className="fa-solid fa-user-plus"></i> Assign Requirement for Guest Stay</h3>
                 <button className="close-btn" onClick={() => setShowAddReqModalOwner(false)}><i className="fa-solid fa-xmark"></i></button>
               </div>
 
@@ -2921,7 +2613,7 @@ const OwnerDashboard = () => {
                   />
                 </div>
 
-                <button type="submit" className="btn-primary-gold" style={{ marginTop: '14px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff' }}>
+                <button type="submit" className="btn-pill-emerald" style={{ marginTop: '4px', width: '100%', justifyContent: 'center' }}>
                   <i className="fa-solid fa-check"></i> Assign Requirement to Caretaker
                 </button>
               </form>

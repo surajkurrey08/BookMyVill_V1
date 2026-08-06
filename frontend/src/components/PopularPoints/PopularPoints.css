@@ -21,22 +21,26 @@
   background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.3) 50%, transparent 100%);
 }
 
-.points-header-row {
+.points-header-row.centered-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 40px;
-  gap: 20px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 36px;
+  gap: 16px;
 }
 
-.popular-points-section .section-header {
-  max-width: 620px;
+.popular-points-section .section-header.center-align {
+  max-width: 750px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .popular-points-section .section-subtitle {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 2.5px;
@@ -52,13 +56,16 @@
   color: #ffffff;
   margin: 0 0 12px 0;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
 .popular-points-section .section-desc {
   font-size: 0.96rem;
   color: #a3b18a;
-  margin: 0;
+  margin: 0 auto;
+  max-width: 620px;
   line-height: 1.6;
+  text-align: center;
 }
 
 .points-nav-arrows {
