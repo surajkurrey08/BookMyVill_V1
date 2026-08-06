@@ -1,12 +1,12 @@
 /* ==========================================================================
-   MAHABALESHWAR PROPERTY OWNER PORTAL - ULTRA-LUXURY DESIGN SYSTEM
+   MAHABALESHWAR PROPERTY OWNER PORTAL - ULTRA-LUXURY DARK GLASS DESIGN SYSTEM
    ========================================================================== */
 
 :root {
   --bg-dark: #070b0a;
   --bg-sidebar: #0a0f0d;
-  --bg-card: rgba(18, 28, 24, 0.75);
-  --bg-card-hover: rgba(26, 40, 34, 0.88);
+  --bg-card: rgba(18, 28, 24, 0.78);
+  --bg-card-hover: rgba(26, 40, 34, 0.9);
   --border-color: rgba(212, 175, 55, 0.18);
   --border-color-glow: rgba(212, 175, 55, 0.45);
   --text-main: #f8fafc;
@@ -31,6 +31,15 @@
     radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 40%);
   color: var(--text-main);
   font-family: var(--font-body);
+}
+
+.glass-morphism {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  WebkitBackdropFilter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 /* ==========================================================================
@@ -340,10 +349,7 @@
   box-shadow: 0 6px 24px rgba(16, 185, 129, 0.5);
 }
 
-/* ==========================================================================
-   GLOBAL ALERTS
-   ========================================================================== */
-
+/* Global Alert Boxes */
 .alert-box {
   display: flex;
   align-items: center;
@@ -810,6 +816,245 @@
 }
 
 /* ==========================================================================
+   FINANCIAL EARNINGS & ANALYTICS TAB
+   ========================================================================== */
+
+.tab-analytics {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.analytics-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+.financial-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  WebkitBackdropFilter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 22px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.financial-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent-gold);
+  box-shadow: 0 16px 36px rgba(212, 175, 55, 0.25);
+}
+
+.fin-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.fin-icon.gold { background: rgba(212, 175, 55, 0.18); color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.4); }
+.fin-icon.emerald { background: rgba(16, 185, 129, 0.18); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
+.fin-icon.blue { background: rgba(59, 130, 246, 0.18); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+
+.financial-card h4 {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 0 0 8px 0;
+}
+
+.financial-card h2 {
+  font-family: var(--font-heading);
+  font-size: 2.3rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  line-height: 1;
+}
+
+.financial-card p {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.financial-card p.trend-up {
+  color: #34d399;
+  font-weight: 700;
+}
+
+.financial-breakdown-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  WebkitBackdropFilter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.breakdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.breakdown-header h3 {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.payout-status-badge {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.payout-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.payout-row-fancy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  transition: all 0.25s ease;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.payout-row-fancy:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: rgba(212, 175, 55, 0.35);
+  transform: translateY(-2px);
+}
+
+.payout-prop-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0f1714;
+  flex-shrink: 0;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.payout-prop-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.payout-prop-info {
+  flex: 1;
+  min-width: 220px;
+}
+
+.payout-prop-info h4 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+}
+
+.payout-prop-info p {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.occupancy-bar-wrap {
+  width: 100%;
+  max-width: 280px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.occupancy-progress {
+  height: 100%;
+  background: var(--accent-gold-gradient);
+  border-radius: 10px;
+}
+
+.payout-stats-group {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.stat-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.stat-unit .label {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.stat-unit .val {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.stat-unit .val.gold {
+  color: var(--accent-gold);
+  font-size: 1.3rem;
+  font-family: var(--font-heading);
+}
+
+/* ==========================================================================
    CUSTOM TABLES & MODALS
    ========================================================================== */
 
@@ -820,7 +1065,7 @@
   backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: 20px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .custom-table {
@@ -891,7 +1136,7 @@
   border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .dashboard-card .card-header {
