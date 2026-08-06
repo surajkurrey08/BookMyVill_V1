@@ -1,0 +1,42 @@
+services:
+  backend:
+    build: ./backend
+    container_name: hillstation-backend
+    ports:
+      - "5001:5001"
+    env_file:
+      - path: ./backend/.env
+        required: false
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: hillstation-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  admin:
+    build: ./admin
+    container_name: hillstation-admin
+    ports:
+      - "5174:5174"
+    depends_on:
+      - backend
+
+  owner:
+    build: ./owner
+    container_name: hillstation-owner
+    ports:
+      - "5175:5175"
+    depends_on:
+      - backend
+
+  caretaker:
+    build: ./caretaker
+    container_name: hillstation-caretaker
+    ports:
+      - "5176:5176"
+    depends_on:
+      - backend
