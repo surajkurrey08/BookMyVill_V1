@@ -923,6 +923,69 @@ const OwnerDashboard = () => {
 
         {/* Main Content Area */}
         <main className="owner-main-content">
+          {/* Sticky Top Navigation Bar */}
+          <div className="owner-top-navbar">
+            <div className="top-nav-left">
+              <button 
+                type="button"
+                className="mobile-toggle-btn" 
+                onClick={() => setIsSidebarHidden(!isSidebarHidden)}
+                title="Toggle Sidebar Navigation"
+              >
+                <i className="fa-solid fa-bars"></i>
+              </button>
+              <div className="top-nav-welcome">
+                <span className="welcome-greeting">Welcome back, <strong>{user?.name || 'Saroj Naydu'}</strong></span>
+                <span className="current-date-badge">
+                  <i className="fa-solid fa-calendar-day"></i> {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </div>
+            </div>
+
+            <div className="top-nav-search">
+              <i className="fa-solid fa-magnifying-glass search-icon"></i>
+              <input 
+                type="text" 
+                placeholder="Search properties, bookings, or guest requests..." 
+                value={propertySearchQuery}
+                onChange={(e) => setPropertySearchQuery(e.target.value)}
+              />
+              <span className="search-shortcut">⌘K</span>
+            </div>
+
+            <div className="top-nav-right">
+              <button type="button" className="top-nav-icon-btn" title="Notifications">
+                <i className="fa-solid fa-bell"></i>
+                <span className="nav-unread-dot">3</span>
+              </button>
+              <button 
+                type="button"
+                className="top-nav-icon-btn" 
+                title="Quick Caretaker Request" 
+                onClick={() => setShowCaretakerModal(true)}
+              >
+                <i className="fa-solid fa-user-shield"></i>
+              </button>
+              <button 
+                type="button"
+                className="top-add-btn" 
+                onClick={() => { setEditingProperty(null); setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' }); setShowAddModal(true); }}
+              >
+                <i className="fa-solid fa-plus"></i> <span>Add Property</span>
+              </button>
+
+              <div className="top-profile-badge">
+                <div className="avatar-circle">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
+                </div>
+                <div className="profile-text-group">
+                  <span className="profile-name">{user?.name || 'Saroj Naydu'}</span>
+                  <span className="profile-role"><i className="fa-solid fa-shield-check"></i> Verified Host</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <header className="content-header">
             <div className="header-titles">
               <h1>
@@ -947,6 +1010,7 @@ const OwnerDashboard = () => {
 
             <div className="header-actions">
               <button
+                type="button"
                 className="btn-caretaker-emerald"
                 onClick={() => {
                   setCaretakerForm({
@@ -967,11 +1031,15 @@ const OwnerDashboard = () => {
                 <i className="fa-solid fa-user-shield"></i> Send Caretaker Request to Admin
               </button>
               {activeTab === 'properties' && (
-                <button className="btn-primary-gold" onClick={() => {
-                  setEditingProperty(null);
-                  setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' });
-                  setShowAddModal(true);
-                }}>
+                <button 
+                  type="button"
+                  className="btn-primary-gold" 
+                  onClick={() => {
+                    setEditingProperty(null);
+                    setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' });
+                    setShowAddModal(true);
+                  }}
+                >
                   <i className="fa-solid fa-plus"></i> Add New Property
                 </button>
               )}
@@ -994,16 +1062,82 @@ const OwnerDashboard = () => {
           )}
 
           {loading ? (
-            <div className="loading-spinner-container">
-              <i className="fa-solid fa-circle-notch fa-spin"></i>
-              <p>Syncing property records & reservations...</p>
+            <div className="skeleton-loader-grid">
+              <div className="skeleton-card-pulse"></div>
+              <div className="skeleton-card-pulse"></div>
+              <div className="skeleton-card-pulse"></div>
+              <div className="skeleton-card-pulse"></div>
             </div>
           ) : (
             <>
               {/* TAB 1: OVERVIEW */}
               {activeTab === 'overview' && (
                 <div className="tab-overview">
-                  {/* Stats Cards Grid - Only rendered when Cards are not hidden */}
+                  {/* High Impact Property Overview Highlight Banner */}
+                  <div className="property-overview-banner glass-morphism">
+                    <div className="banner-image-container">
+                      <img 
+                        src={properties.length > 0 && properties[0].photos && properties[0].photos[0] ? properties[0].photos[0] : 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80'} 
+                        alt="Primary Property Banner" 
+                      />
+                      <div className="banner-type-tag">
+                        <i className="fa-solid fa-crown"></i> Primary Luxury Estate
+                      </div>
+                    </div>
+
+                    <div className="banner-details">
+                      <div className="banner-header-row">
+                        <div>
+                          <h2 className="banner-title">{properties.length > 0 ? properties[0].name : 'Ganesh kuj Villa Estate'}</h2>
+                          <p className="banner-location">
+                            <i className="fa-solid fa-location-dot" style={{ color: 'var(--accent-gold)' }}></i> {properties.length > 0 ? properties[0].location : 'Pune & Outskirts, Mahabaleshwar'}
+                            <span className="verified-chip"><i className="fa-solid fa-circle-check"></i> Verified Stay</span>
+                          </p>
+                        </div>
+                        <div className="banner-rating-pill">
+                          <i className="fa-solid fa-star" style={{ color: 'var(--accent-gold)' }}></i>
+                          <span className="rating-score">4.9</span>
+                          <span className="rating-count">(124 reviews)</span>
+                        </div>
+                      </div>
+
+                      <div className="banner-stats-row">
+                        <div className="banner-stat-chip">
+                          <div className="chip-icon gold"><i className="fa-solid fa-chart-line"></i></div>
+                          <div>
+                            <span className="chip-label">Occupancy Rate</span>
+                            <span className="chip-value">85%</span>
+                          </div>
+                        </div>
+
+                        <div className="banner-stat-chip">
+                          <div className="chip-icon emerald"><i className="fa-solid fa-calendar-check"></i></div>
+                          <div>
+                            <span className="chip-label">Active Reservations</span>
+                            <span className="chip-value">{bookings.length > 0 ? bookings.length : '4 Active'}</span>
+                          </div>
+                        </div>
+
+                        <div className="banner-stat-chip">
+                          <div className="chip-icon blue"><i className="fa-solid fa-indian-rupee-sign"></i></div>
+                          <div>
+                            <span className="chip-label">Monthly Payout</span>
+                            <span className="chip-value">₹{totalRevenue > 0 ? totalRevenue.toLocaleString('en-IN') : '2,40,000'}</span>
+                          </div>
+                        </div>
+
+                        <div className="banner-stat-chip">
+                          <div className="chip-icon yellow"><i className="fa-solid fa-users"></i></div>
+                          <div>
+                            <span className="chip-label">Total Guests</span>
+                            <span className="chip-value">48 Guests</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stats Cards Grid */}
                   {!isCardsHidden && (
                     <div className="stats-grid">
                       <div className="stat-card">
@@ -1042,6 +1176,124 @@ const OwnerDashboard = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Analytics & Revenue Charts Section */}
+                  <div className="revenue-analytics-grid">
+                    <div className="chart-card-box glass-morphism">
+                      <div className="chart-header">
+                        <h3><i className="fa-solid fa-chart-area" style={{ color: 'var(--accent-gold)' }}></i> Monthly Revenue Trend</h3>
+                        <div className="chart-legend">
+                          <span><span className="legend-dot gold"></span> Direct Earnings</span>
+                          <span><span className="legend-dot emerald"></span> Occupancy Peak</span>
+                        </div>
+                      </div>
+
+                      <div className="bar-chart-visual">
+                        {[
+                          { m: 'Jan', val: 40, col: 'gold' },
+                          { m: 'Feb', val: 55, col: 'gold' },
+                          { m: 'Mar', val: 70, col: 'emerald' },
+                          { m: 'Apr', val: 65, col: 'gold' },
+                          { m: 'May', val: 90, col: 'emerald' },
+                          { m: 'Jun', val: 80, col: 'emerald' },
+                          { m: 'Jul', val: 75, col: 'gold' },
+                          { m: 'Aug', val: 95, col: 'emerald' }
+                        ].map((b, i) => (
+                          <div key={i} className="chart-bar-column">
+                            <div className="bar-track">
+                              <div className={`bar-fill ${b.col}`} style={{ height: `${b.val}%` }}></div>
+                            </div>
+                            <span className="bar-month-label">{b.m}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="chart-card-box glass-morphism">
+                      <div className="chart-header">
+                        <h3><i className="fa-solid fa-pie-chart" style={{ color: 'var(--accent-emerald)' }}></i> Estate Performance Metrics</h3>
+                      </div>
+
+                      <div className="progress-meters-list">
+                        <div className="meter-unit">
+                          <div className="meter-meta">
+                            <span className="meter-title">Occupancy Rate</span>
+                            <span className="meter-val">85%</span>
+                          </div>
+                          <div className="meter-bar-track">
+                            <div className="meter-bar-fill gold" style={{ width: '85%' }}></div>
+                          </div>
+                        </div>
+
+                        <div className="meter-unit">
+                          <div className="meter-meta">
+                            <span className="meter-title">Guest Satisfaction</span>
+                            <span className="meter-val">98%</span>
+                          </div>
+                          <div className="meter-bar-track">
+                            <div className="meter-bar-fill emerald" style={{ width: '98%' }}></div>
+                          </div>
+                        </div>
+
+                        <div className="meter-unit">
+                          <div className="meter-meta">
+                            <span className="meter-title">Caretaker Inventory</span>
+                            <span className="meter-val">92%</span>
+                          </div>
+                          <div className="meter-bar-track">
+                            <div className="meter-bar-fill blue" style={{ width: '92%' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recent Activity Feed & Overview Grids */}
+                  <div className="revenue-analytics-grid">
+                    <div className="activity-feed-card glass-morphism">
+                      <div className="chart-header">
+                        <h3><i className="fa-solid fa-clock-rotate-left" style={{ color: 'var(--accent-gold)' }}></i> Recent Activity Feed</h3>
+                        <span className="verified-chip">Live Updates</span>
+                      </div>
+
+                      <div className="activity-feed-list">
+                        <div className="activity-item-row">
+                          <div className="activity-icon-badge emerald"><i className="fa-solid fa-calendar-check"></i></div>
+                          <div className="activity-meta">
+                            <h4>New Booking Confirmed</h4>
+                            <p>Mr. Rajesh Kumar reserved Ganesh kuj Villa Estate for 3 nights.</p>
+                          </div>
+                          <span className="activity-time">15m ago</span>
+                        </div>
+
+                        <div className="activity-item-row">
+                          <div className="activity-icon-badge gold"><i className="fa-solid fa-user-shield"></i></div>
+                          <div className="activity-meta">
+                            <h4>Caretaker Duty Completed</h4>
+                            <p>Caretaker Ramesh completed Pool & Garden Linen Sanitation.</p>
+                          </div>
+                          <span className="activity-time">1h ago</span>
+                        </div>
+
+                        <div className="activity-item-row">
+                          <div className="activity-icon-badge blue"><i className="fa-solid fa-building-columns"></i></div>
+                          <div className="activity-meta">
+                            <h4>Bank Payout Settled</h4>
+                            <p>Direct payout ₹45,000 processed to registered HDFC Bank account.</p>
+                          </div>
+                          <span className="activity-time">3h ago</span>
+                        </div>
+
+                        <div className="activity-item-row">
+                          <div className="activity-icon-badge yellow"><i className="fa-solid fa-wine-glass"></i></div>
+                          <div className="activity-meta">
+                            <h4>Guest Special Request Added</h4>
+                            <p>Complimentary Welcome Drinks & Campfire setup requested for Check-In.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Quick Content Section */}
                   <div className="overview-sections-grid">
