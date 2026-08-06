@@ -106,13 +106,23 @@ const Navbar = () => {
 
 
           <nav className={`nav-links-center ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
-            <Link to="/" onClick={() => { scrollToSection('home'); setIsMobileMenuOpen(false); }}>Home</Link>
-            <Link to="/explore" onClick={() => setIsMobileMenuOpen(false)}>Explore Stays</Link>
-            <Link to="/packages" onClick={() => setIsMobileMenuOpen(false)}>Packages</Link>
+            <Link to="/" onClick={() => { scrollToSection('home'); setIsMobileMenuOpen(false); }}>
+              <i className="fa-solid fa-house" style={{ marginRight: '6px', fontSize: '0.85rem' }}></i>Home
+            </Link>
+            <Link to="/explore" onClick={() => setIsMobileMenuOpen(false)}>
+              <i className="fa-solid fa-compass" style={{ marginRight: '6px', fontSize: '0.85rem' }}></i>Explore Stays
+            </Link>
+            <Link to="/packages" onClick={() => setIsMobileMenuOpen(false)}>
+              <i className="fa-solid fa-gift" style={{ marginRight: '6px', fontSize: '0.85rem' }}></i>Packages
+            </Link>
             {(!user || (user.role !== 'user' && user.role !== 'traveller')) && (
-              <Link to="/join-us" onClick={() => setIsMobileMenuOpen(false)}>Join Us</Link>
+              <Link to="/join-us" onClick={() => setIsMobileMenuOpen(false)}>
+                <i className="fa-solid fa-handshake" style={{ marginRight: '6px', fontSize: '0.85rem' }}></i>Join Us
+              </Link>
             )}
-            <Link to="/about-us" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+            <Link to="/about-us" onClick={() => setIsMobileMenuOpen(false)}>
+              <i className="fa-solid fa-circle-info" style={{ marginRight: '6px', fontSize: '0.85rem' }}></i>About Us
+            </Link>
           </nav>
 
           <div className="nav-right-container">

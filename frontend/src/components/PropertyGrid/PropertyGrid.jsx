@@ -375,7 +375,7 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
             className="btn-book-now-gold"
             onClick={handleBookNow}
           >
-            Book Now
+            <i className="fa-solid fa-bolt" style={{ marginRight: '6px' }}></i>Book Now
           </button>
         </div>
       </div>
@@ -845,7 +845,11 @@ const PropertyGrid = ({ isHomePage = false }) => {
                       boxShadow: activeFilter === tab ? '0 4px 14px rgba(27, 67, 50, 0.3)' : '0 2px 5px rgba(0,0,0,0.02)'
                     }}
                   >
-                    {tab === 'All' ? '✨ All' : (tab === 'Villa' ? '🏡 Villas' : tab === 'Hotel' ? '🏨 Hotels' : tab === 'Cabin' ? '🛖 Cabins' : '🏞️ Resorts')}
+                    {tab === 'All' && <><i className="fa-solid fa-border-all" style={{ marginRight: '6px' }}></i>All</>}
+                    {tab === 'Villa' && <><i className="fa-solid fa-house-chimney-window" style={{ marginRight: '6px' }}></i>Villas</>}
+                    {tab === 'Hotel' && <><i className="fa-solid fa-hotel" style={{ marginRight: '6px' }}></i>Hotels</>}
+                    {tab === 'Cabin' && <><i className="fa-solid fa-tree" style={{ marginRight: '6px' }}></i>Cabins</>}
+                    {tab === 'Resort' && <><i className="fa-solid fa-spa" style={{ marginRight: '6px' }}></i>Resorts</>}
                   </button>
                 ))}
               </div>
