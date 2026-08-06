@@ -1,10 +1,10 @@
 === Nginx Config Files ===
 total 8
-drwxr-xr-x 2 root root 4096 Aug  3 10:31 .
+drwxr-xr-x 2 root root 4096 Aug  3 10:35 .
 drwxr-xr-x 8 root root 4096 Aug  1 16:21 ..
 lrwxrwxrwx 1 root root   42 Jul 19 17:54 admin-shiftride -> /etc/nginx/sites-available/admin-shiftride
 lrwxrwxrwx 1 root root   38 Jun  1 09:58 itjobx.conf -> /etc/nginx/sites-available/itjobx.conf
-lrwxrwxrwx 1 root root   39 Aug  3 10:31 lonavala.fun -> /etc/nginx/sites-available/lonavala.fun
+lrwxrwxrwx 1 root root   39 Aug  3 10:35 lonavala.fun -> /etc/nginx/sites-available/lonavala.fun
 lrwxrwxrwx 1 root root   42 Jul 24 07:55 mydoctor.family -> /etc/nginx/sites-available/mydoctor.family
 lrwxrwxrwx 1 root root   37 Jun  2 08:01 punarmilan -> /etc/nginx/sites-available/punarmilan
 lrwxrwxrwx 1 root root   36 Jun  1 09:52 shiftride -> /etc/nginx/sites-available/shiftride
@@ -20,7 +20,7 @@ server {
     location / {
         root /var/www/lonavala.fun/frontend;
         index index.html;
-        try_files  / /index.html;
+        try_files $uri $uri/ /index.html;
     }
 }
 === Directory structure of /var/www/lonavala.fun ===
