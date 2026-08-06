@@ -352,13 +352,10 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
           <button
             type="button"
             className="btn-locate-map"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(property);
-            }}
-            title="Locate hotel and zoom on interactive map"
+            onClick={handleBookNow}
+            title="View property details & photos"
           >
-            <i className="fa-solid fa-location-crosshairs"></i> Map Pin
+            <i className="fa-solid fa-eye"></i> View Details
           </button>
           <button 
             type="button"
@@ -1052,37 +1049,7 @@ const PropertyGrid = ({ isHomePage = false }) => {
             </div>
           </div>
           
-          {/* 1. Interactive Map Section FIRST */}
-          <div className="explore-map-container-top" style={{ maxWidth: '1440px', margin: '0 auto 35px auto', padding: '0 20px' }}>
-            <div className="top-map-wrapper" style={{
-              position: 'relative',
-              height: '440px',
-              borderRadius: '24px',
-              overflow: 'hidden',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
-              border: '1px solid rgba(0,0,0,0.08)'
-            }}>
-              <div style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                zIndex: 999,
-                background: 'rgba(212, 175, 55, 0.95)',
-                color: '#1a1a1a',
-                padding: '8px 20px',
-                borderRadius: '30px',
-                fontWeight: '700',
-                fontSize: '0.88rem',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                backdropFilter: 'blur(8px)'
-              }}>
-                <i className="fa-solid fa-map-location-dot" style={{ marginRight: '6px' }}></i> Explore This Area on Map
-              </div>
-              <div id="leaflet-map" style={{ height: '100%', width: '100%' }}></div>
-            </div>
-          </div>
-
-          {/* 2. Grid of Hotels BELOW THE MAP */}
+          {/* Grid of Hotels */}
           <div className="explore-hotels-container-bottom" style={{ maxWidth: '1440px', margin: '0 auto 60px auto', padding: '0 20px' }}>
             {filteredProperties.length > 0 ? (
               <div className="explore-cards-4col-grid">
