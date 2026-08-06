@@ -3,8 +3,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* Unified Single Font Family Across Entire Application */
-*, html, body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, a, label {
-  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif !important;
+body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, a, label, div, section, header, footer {
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* FontAwesome Icon Family Protection Rule */
+i, .fa, .fas, .far, .fal, .fab, .fa-solid, .fa-regular, .fa-brands, [class*="fa-"] {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
 }
 
 /* Global Invisible Scrollbar Rule Across All Browsers & Containers */

@@ -15,9 +15,13 @@
   --font-body: 'Outfit', 'Inter', sans-serif;
 }
 
-*, html, body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, a, label {
-  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif !important;
+body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, a, label, div, section, header, footer {
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
   box-sizing: border-box;
+}
+
+i, .fa, .fas, .far, .fal, .fab, .fa-solid, .fa-regular, .fa-brands, [class*="fa-"] {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
 }
 
 body {
