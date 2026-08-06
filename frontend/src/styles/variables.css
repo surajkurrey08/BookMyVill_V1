@@ -16,9 +16,9 @@
   --glass-border: rgba(255, 255, 255, 0.3);
   --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
 
-  /* Typography */
-  --font-heading: 'Playfair Display', serif;
-  --font-body: 'Inter', sans-serif;
+  /* Typography - Unified Single Font Across Entire Application */
+  --font-heading: 'Outfit', 'Inter', sans-serif;
+  --font-body: 'Outfit', 'Inter', sans-serif;
 
   /* Spacing */
   --section-padding: 90px 5%;

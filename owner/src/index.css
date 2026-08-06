@@ -11,14 +11,13 @@
   --status-approved: #2ea043;
   --status-pending: #d97706;
   --status-rejected: #da3633;
-  --font-heading: 'Outfit', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Outfit', 'Inter', sans-serif;
+  --font-body: 'Outfit', 'Inter', sans-serif;
 }
 
-* {
+*, html, body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, a, label {
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif !important;
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 body {
