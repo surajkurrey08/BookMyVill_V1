@@ -711,229 +711,90 @@ const OwnerDashboard = () => {
   };
 
   return (
-    <div className="owner-dashboard-wrapper">
-      {/* STATIC HEADER WITH LOGO BRANDING */}
-      <div style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-        background: 'rgba(9, 14, 13, 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(212, 175, 55, 0.25)',
-        padding: '12px 28px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
-      }}>
-        {/* LOGO BRANDING */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <span style={{
-            color: '#d4af37',
-            fontFamily: "'Playfair Display', 'Cinzel', 'Outfit', serif",
-            fontSize: '1.25rem',
-            fontWeight: '800',
-            letterSpacing: '2.5px',
-            lineHeight: '1.1',
-            textTransform: 'uppercase',
-            textShadow: '0 0 10px rgba(212, 175, 55, 0.2)'
-          }}>
-            MAHABLESHWAR
-          </span>
-          <span style={{
-            color: '#52b788',
-            fontFamily: "'Inter', sans-serif",
-            fontSize: '0.68rem',
-            fontWeight: '700',
-            letterSpacing: '3.5px',
-            textTransform: 'uppercase',
-            opacity: 0.9
-          }}>
-            PROPERTY OWNER PORTAL
-          </span>
-        </div>
-
-      </div>
-
-      {/* SLIDE-OUT MENU DRAWER OVERLAY & PANEL */}
-      {isDrawerOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(0, 0, 0, 0.7)',
-            backdropFilter: 'blur(5px)',
-            zIndex: 99999,
-            transition: 'opacity 0.3s ease'
-          }}
-          onClick={() => setIsDrawerOpen(false)}
-        />
-      )}
-
-      <aside
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: isDrawerOpen ? 0 : '-340px',
-          width: '300px',
-          height: '100vh',
-          background: 'linear-gradient(180deg, #0d1613 0%, #08110e 100%)',
-          borderRight: '1px solid rgba(212, 175, 55, 0.35)',
-          zIndex: 100000,
-          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '24px',
-          boxShadow: '10px 0 30px rgba(0, 0, 0, 0.6)'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <div>
-            <h3 style={{ margin: 0, color: '#d4af37', fontFamily: 'Outfit, serif', fontSize: '1.1rem', letterSpacing: '1px' }}>MAHABLESHWAR</h3>
-            <span style={{ fontSize: '0.65rem', color: '#52b788', letterSpacing: '2px', fontWeight: '700' }}>PROPERTY OWNER DRAWER</span>
+    <div className="owner-dashboard-container">
+      <div className="owner-dashboard-layout">
+        {/* Permanent Left Sidebar Navigation */}
+        <aside className="owner-sidebar">
+          <div className="sidebar-brand">
+            <div className="brand-logo">
+              <i className="fa-solid fa-hotel"></i>
+            </div>
+            <div className="brand-text">
+              <h2>MAHABALESHWAR</h2>
+              <span>PROPERTY OWNER PORTAL</span>
+            </div>
           </div>
-          <button
-            onClick={() => setIsDrawerOpen(false)}
-            style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: '1.5rem', cursor: 'pointer', opacity: 0.8 }}
-          >
-            ×
-          </button>
-        </div>
 
-        <nav className="nav-menu" style={{ display: 'flex', flexDirection: 'column', gap: '10px', flexGrow: 1 }}>
-          <button
-            className={`nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => { handleTabChange('overview'); setIsDrawerOpen(false); }}
-          >
-            <i className="fa-solid fa-gauge-high"></i> Host Command Center
-          </button>
-          <button
-            className={`nav-btn ${activeTab === 'properties' ? 'active' : ''}`}
-            onClick={() => { handleTabChange('properties'); setIsDrawerOpen(false); }}
-          >
-            <i className="fa-solid fa-hotel"></i> Property Portfolio ({properties.length})
-          </button>
-          <button
-            className={`nav-btn ${activeTab === 'bookings' ? 'active' : ''}`}
-            onClick={() => { handleTabChange('bookings'); setIsDrawerOpen(false); }}
-          >
-            <i className="fa-solid fa-calendar-check"></i> Guest Bookings ({bookings.length})
-          </button>
-          <button
-            className={`nav-btn ${activeTab === 'caretaker-tasks' ? 'active' : ''}`}
-            onClick={() => { handleTabChange('caretaker-tasks'); setIsDrawerOpen(false); }}
-          >
-            <i className="fa-solid fa-list-check"></i> Caretaker & Daily Tasks
-          </button>
-          <button
-            className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
-            onClick={() => { handleTabChange('caretakers'); setIsDrawerOpen(false); }}
-          >
-            <i className="fa-solid fa-user-shield"></i> Caretaker Requests ({caretakerApps.length})
-          </button>
-          <button
-            className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
-            onClick={() => { handleTabChange('profile'); setIsDrawerOpen(false); }}
-          >
-            <i className="fa-solid fa-user-gear"></i> Host Profile Settings
-          </button>
-        </nav>
-
-        <div className="sidebar-footer" style={{ paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button className="logout-btn" onClick={() => { setIsDrawerOpen(false); handleLogout(); }}>
-            <i className="fa-solid fa-right-from-bracket"></i> Sign Out
-          </button>
-        </div>
-      </aside>
-
-      <div className={`owner-dashboard-layout ${isSidebarHidden ? 'sidebar-hidden' : ''}`}>
-        {/* Sidebar Navigation */}
-        {!isSidebarHidden && (
-          <aside className="owner-sidebar">
-            <div className="owner-profile-mini">
-              <div className="avatar-circle font-outfit">
-                {user?.name ? user.name.charAt(0).toUpperCase() : 'O'}
-              </div>
-              <div className="user-info">
-                <h4>{user?.name || 'Property Host'}</h4>
-                <span className="role-tag"><i className="fa-solid fa-shield-halved"></i> Verified Host</span>
-              </div>
+          <div className="user-profile-badge">
+            <div className="avatar">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
             </div>
-
-            <nav className="sidebar-nav">
-              <button
-                className={`nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
-                onClick={() => handleTabChange('overview')}
-              >
-                <i className="fa-solid fa-chart-line"></i> Dashboard Overview
-              </button>
-              <button
-                className={`nav-btn ${activeTab === 'properties' ? 'active' : ''}`}
-                onClick={() => handleTabChange('properties')}
-              >
-                <i className="fa-solid fa-building-user"></i> My Properties ({totalProperties})
-              </button>
-              <button
-                className={`nav-btn ${activeTab === 'bookings' ? 'active' : ''}`}
-                onClick={() => handleTabChange('bookings')}
-              >
-                <i className="fa-solid fa-calendar-check"></i> Guest Bookings ({totalBookings})
-              </button>
-              <button
-                className={`nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
-                onClick={() => handleTabChange('analytics')}
-              >
-                <i className="fa-solid fa-wallet"></i> Earnings & Financials
-              </button>
-              <button
-                className={`nav-btn ${activeTab === 'caretaker-tasks' ? 'active' : ''}`}
-                onClick={() => handleTabChange('caretaker-tasks')}
-              >
-                <i className="fa-solid fa-list-check"></i> Caretaker & Daily Tasks
-              </button>
-              <button
-                className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
-                onClick={() => handleTabChange('caretakers')}
-              >
-                <i className="fa-solid fa-user-shield"></i> Caretaker Requests ({caretakerApps.length})
-              </button>
-              <button
-                className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
-                onClick={() => handleTabChange('profile')}
-              >
-                <i className="fa-solid fa-user-gear"></i> Host Profile Settings
-              </button>
-            </nav>
-
-            <div className="sidebar-footer">
-              <a href="http://localhost:5173" className="main-site-btn" target="_blank" rel="noreferrer">
-                <i className="fa-solid fa-globe"></i> View Main Site
-              </a>
-              <button className="logout-btn" onClick={handleLogout}>
-                <i className="fa-solid fa-right-from-bracket"></i> Sign Out
-              </button>
+            <div className="user-info">
+              <h4>{user?.name || 'Saroj Naydu'}</h4>
+              <span className="role-tag"><i className="fa-solid fa-circle-check"></i> Verified Host</span>
             </div>
-          </aside>
-        )}
+          </div>
+
+          <nav className="sidebar-nav">
+            <button
+              className={`nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={() => handleTabChange('overview')}
+            >
+              <i className="fa-solid fa-chart-line"></i> Dashboard Overview
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'properties' ? 'active' : ''}`}
+              onClick={() => handleTabChange('properties')}
+            >
+              <i className="fa-solid fa-building-user"></i> My Properties ({totalProperties})
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'bookings' ? 'active' : ''}`}
+              onClick={() => handleTabChange('bookings')}
+            >
+              <i className="fa-solid fa-calendar-check"></i> Guest Bookings ({totalBookings})
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+              onClick={() => handleTabChange('analytics')}
+            >
+              <i className="fa-solid fa-wallet"></i> Earnings & Financials
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'caretaker-tasks' ? 'active' : ''}`}
+              onClick={() => handleTabChange('caretaker-tasks')}
+            >
+              <i className="fa-solid fa-list-check"></i> Caretaker & Daily Tasks
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
+              onClick={() => handleTabChange('caretakers')}
+            >
+              <i className="fa-solid fa-user-shield"></i> Caretaker Requests ({caretakerApps.length})
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
+              onClick={() => handleTabChange('profile')}
+            >
+              <i className="fa-solid fa-user-gear"></i> Host Profile Settings
+            </button>
+          </nav>
+
+          <div className="sidebar-footer">
+            <a href="http://localhost:5173" className="main-site-btn" target="_blank" rel="noreferrer">
+              <i className="fa-solid fa-globe"></i> View Main Site
+            </a>
+            <button className="logout-btn" onClick={handleLogout}>
+              <i className="fa-solid fa-right-from-bracket"></i> Sign Out
+            </button>
+          </div>
+        </aside>
 
         {/* Main Content Area */}
         <main className="owner-main-content">
           {/* Sticky Top Navigation Bar */}
           <div className="owner-top-navbar">
             <div className="top-nav-left">
-              <button 
-                type="button"
-                className="mobile-toggle-btn" 
-                onClick={() => setIsSidebarHidden(!isSidebarHidden)}
-                title="Toggle Sidebar Navigation"
-              >
-                <i className="fa-solid fa-bars"></i>
-              </button>
               <div className="top-nav-welcome">
                 <span className="welcome-greeting">Welcome back, <strong>{user?.name || 'Saroj Naydu'}</strong></span>
                 <span className="current-date-badge">
