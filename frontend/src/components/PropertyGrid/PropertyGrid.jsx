@@ -151,12 +151,18 @@ const resolveCoordinates = async (property) => {
   };
 };
 
-// Horizontal card for the Home Page split view next to the map (Matching User's Screenshot)
+// Horizontal card for the Home Page split view next to the map
 const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover, onLeave }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const rawPriceNum = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '10000');
+  const rawPriceNum = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '8500');
   const numericPrice = `₹${rawPriceNum.toLocaleString('en-IN')}`;
+  const originalPrice = `₹${Math.round(rawPriceNum * 1.25).toLocaleString('en-IN')}`;
+  const reviewsCount = property.reviewsCount || (((String(property._id || property.id || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)) % 80) + 35);
+
+  const defaultAmenities = property.amenities && property.amenities.length > 0 
+    ? property.amenities.slice(0, 3) 
+    : ['Pool', 'WiFi', 'View'];
 
   const handleBookNow = (e) => {
     if (e) e.stopPropagation();
@@ -190,35 +196,46 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
       onClick={() => onSelect(property)}
       onMouseEnter={() => onHover(property.id)}
       onMouseLeave={onLeave}
-      style={{ cursor: 'pointer' }}
     >
       <div className="split-card-img-wrapper">
-        <img src={property.image} alt={property.name} />
-        <span className="split-card-tag" style={{ background: '#2D433D', border: '1px solid #D4AF37', color: '#fff' }}>
+        <img src={property.image} alt={property.name} loading="lazy" />
+        <span className="split-card-tag">
           ☀️ Day & 🌙 Night
         </span>
+        <div className="split-card-amenities-mini">
+          {defaultAmenities.map((am, i) => (
+            <span key={i} className="mini-amenity-pill">{am}</span>
+          ))}
+        </div>
       </div>
+
       <div className="split-card-info">
-        <div>
+        <div className="split-card-top">
           <div className="split-card-meta">
-            <span className="split-card-type">{property.type?.toUpperCase()}</span>
+            <span className="split-card-type">{property.type?.toUpperCase() || 'STAY'}</span>
             <span className="split-card-rating">
-              ★ {property.rating} <span className="split-card-reviews">({property.reviewsCount || 70} reviews)</span>
+              <i className="fa-solid fa-star" style={{ color: '#d4af37' }}></i>
+              <b>{property.rating || '4.8'}</b>
+              <span className="split-card-reviews">({reviewsCount})</span>
             </span>
           </div>
-          <h3 style={{ fontSize: '1.25rem', margin: '4px 0 4px 0', fontFamily: 'var(--font-heading)', color: '#1a1a1a' }}>{property.name}</h3>
-          <p className="split-card-location" style={{ margin: '0 0 6px 0' }}>
-            <i className="fa-solid fa-location-dot" style={{ color: '#d4af37', marginRight: '6px' }}></i>
-            {property.location}
+
+          <h3 className="split-card-title">{property.name}</h3>
+          <p className="split-card-location">
+            <i className="fa-solid fa-location-dot"></i>
+            <span>{property.location}</span>
           </p>
         </div>
 
-        <div className="card-price-row">
-          <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#1a1a1a', fontFamily: 'var(--font-heading)' }}>
-            {numericPrice} <span style={{ fontSize: '0.82rem', color: '#666', fontWeight: '500' }}>/night</span>
-          </span>
-             <div className="split-card-footer" style={{ marginTop: 'auto', borderTop: '1px solid #eee', paddingTop: '10px' }}>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
+        <div className="split-card-bottom">
+          <div className="split-card-price-container">
+            <span className="split-card-orig-price">{originalPrice}</span>
+            <div className="split-card-final-price">
+              {numericPrice} <span className="split-price-unit">/ night</span>
+            </div>
+          </div>
+
+          <div className="split-card-actions">
             <button 
               type="button" 
               className="btn-locate-map" 
@@ -228,18 +245,18 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
               }}
               title="Locate hotel and zoom on interactive map"
             >
-              <i className="fa-solid fa-location-crosshairs" style={{ color: '#d4af37' }}></i> Find on Map
+              <i className="fa-solid fa-location-crosshairs"></i>
+              <span>Pin</span>
             </button>
             <button 
               type="button"
-              className="btn-primary" 
-              style={{ padding: '9px 22px', fontSize: '0.88rem', fontWeight: '700', borderRadius: '30px', whiteSpace: 'nowrap', background: '#1b4332', border: 'none', cursor: 'pointer' }}
+              className="btn-book-now-gold" 
               onClick={handleBookNow}
             >
               Book Stays
             </button>
           </div>
-        </div>       </div>
+        </div>
       </div>
     </div>
   );
@@ -249,8 +266,14 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
 const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover, onLeave, isWishlisted, onToggleWishlist }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const rawPriceNum = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '10000');
+  const rawPriceNum = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '8500');
   const numericPrice = `₹${rawPriceNum.toLocaleString('en-IN')}`;
+  const originalPrice = `₹${Math.round(rawPriceNum * 1.25).toLocaleString('en-IN')}`;
+  const reviewsCount = property.reviewsCount || (((String(property._id || property.id || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)) % 80) + 35);
+
+  const defaultAmenities = property.amenities && property.amenities.length > 0 
+    ? property.amenities.slice(0, 3) 
+    : ['Swimming Pool', 'Free WiFi', 'Valley View'];
 
   const handleBookNow = (e) => {
     if (e) e.stopPropagation();
@@ -284,13 +307,14 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
       onClick={() => onSelect(property)}
       onMouseEnter={() => onHover(property.id)}
       onMouseLeave={onLeave}
-      style={{ cursor: 'pointer' }}
     >
       <div className="card-img-box">
-        <img src={property.image} alt={property.name} />
+        <img src={property.image} alt={property.name} loading="lazy" />
+        
         <span className="day-night-badge">
-          Day & Night
+          ☀️ Day & 🌙 Night
         </span>
+        
         <button 
           type="button"
           className={`wishlist-heart-btn ${isWishlisted ? 'active' : ''}`}
@@ -302,47 +326,59 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
         >
           <i className={`fa-${isWishlisted ? 'solid' : 'regular'} fa-heart`}></i>
         </button>
+
+        <div className="pro-amenities-overlay">
+          {defaultAmenities.map((am, i) => (
+            <span key={i} className="pro-amenity-chip">{am}</span>
+          ))}
+        </div>
       </div>
 
       <div className="card-content-box">
+        <div className="card-top-meta">
+          <span className="card-type-label">{property.type?.toUpperCase() || 'LUXURY STAY'}</span>
+          <div className="card-rating-row">
+            <i className="fa-solid fa-star" style={{ color: '#d4af37', fontSize: '0.85rem' }}></i>
+            <span className="card-rating-star">{property.rating || '4.8'}</span>
+            <span className="card-reviews-count">({reviewsCount})</span>
+          </div>
+        </div>
+
         <h3 className="card-title">{property.name}</h3>
+
         <p className="card-location">
-          <i className="fa-solid fa-location-dot" style={{ color: '#d4af37', marginRight: '6px' }}></i>
-          {property.location}
+          <i className="fa-solid fa-location-dot"></i>
+          <span>{property.location}</span>
         </p>
 
-        <div className="card-rating-row">
-          <span className="card-rating-star">★ {property.rating}</span>
-          <span className="card-reviews-count">({property.reviewsCount || 70} reviews)</span>
-        </div>
+        <div className="card-bottom-row">
+          <div className="card-price-block">
+            <span className="card-orig-price">{originalPrice}</span>
+            <div className="card-main-price">
+              {numericPrice} <span className="card-price-unit">/ night</span>
+            </div>
+          </div>
 
-        <div className="card-price-row">
-          <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#1a1a1a', fontFamily: 'var(--font-heading)' }}>
-            {numericPrice} <span style={{ fontSize: '0.82rem', color: '#666', fontWeight: '500' }}>/night</span>
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-          <button
-            type="button"
-            className="btn-locate-map"
-            style={{ flex: '1', justifyContent: 'center' }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(property);
-            }}
-            title="Locate hotel and zoom on interactive map"
-          >
-            <i className="fa-solid fa-location-crosshairs" style={{ color: '#d4af37' }}></i> Map Pin
-          </button>
-          <button 
-            type="button"
-            className="btn-book-now-gold"
-            style={{ flex: '1.2', padding: '10px', border: 'none', cursor: 'pointer' }}
-            onClick={handleBookNow}
-          >
-            Book Now
-          </button>
+          <div className="card-actions-group">
+            <button
+              type="button"
+              className="btn-locate-map"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(property);
+              }}
+              title="Locate hotel and zoom on interactive map"
+            >
+              <i className="fa-solid fa-location-crosshairs"></i> Pin
+            </button>
+            <button 
+              type="button"
+              className="btn-book-now-gold"
+              onClick={handleBookNow}
+            >
+              Book Now
+            </button>
+          </div>
         </div>
       </div>
     </div>

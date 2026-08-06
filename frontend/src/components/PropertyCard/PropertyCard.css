@@ -1,134 +1,253 @@
-.property-card {
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--border-radius);
+/* Professional Hotel/Stay Luxury Card Styling */
+
+.pro-hotel-card {
+  background: #ffffff;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  transition: all 0.4s ease;
+  border: 1px solid rgba(27, 67, 50, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
   cursor: pointer;
-  color: white;
-}
-
-.property-card:hover {
-  transform: translateY(-10px);
-  background: rgba(0, 0, 0, 0.6);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-}
-
-.card-image {
+  display: flex;
+  flex-direction: column;
   position: relative;
-  height: 250px;
-  overflow: hidden;
 }
 
-.card-image img {
+.pro-hotel-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(27, 67, 50, 0.16);
+  border-color: #d4af37;
+}
+
+/* Image Media Container */
+.pro-card-media {
+  position: relative;
+  height: 230px;
+  overflow: hidden;
+  background: #111;
+}
+
+.pro-card-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s ease;
+  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
-.property-card:hover .card-image img {
-  transform: scale(1.1);
+.pro-hotel-card:hover .pro-card-media img {
+  transform: scale(1.08);
 }
 
-.card-tag {
+/* Floating Badges */
+.pro-media-badges {
   position: absolute;
-  top: 15px;
-  left: 15px;
-  background: var(--secondary-color);
-  color: var(--white);
-  padding: 5px 15px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  z-index: 1;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  top: 14px;
+  left: 14px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
 }
 
-.card-overlay {
+.pro-badge-stay {
+  background: rgba(27, 67, 50, 0.88);
+  backdrop-filter: blur(8px);
+  WebkitBackdropFilter: blur(8px);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 30px;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.3px;
+}
+
+/* Wishlist Heart Button */
+.pro-wishlist-btn {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.2);
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+  WebkitBackdropFilter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #555555;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  z-index: 3;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.property-card:hover .card-overlay {
-  opacity: 1;
+.pro-wishlist-btn:hover {
+  transform: scale(1.15);
+  background: #ffffff;
+  color: #e63946;
 }
 
-.card-info {
-  padding: 20px;
+.pro-wishlist-btn.saved {
+  color: #e63946;
+  background: #ffffff;
 }
 
-.card-header {
+/* Amenities Overlay Chips */
+.pro-amenities-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  z-index: 2;
+}
+
+.pro-amenity-chip {
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(6px);
+  WebkitBackdropFilter: blur(6px);
+  color: #f8fafc;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  white-space: nowrap;
+}
+
+/* Card Body */
+.pro-card-body {
+  padding: 18px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: #ffffff;
+}
+
+.pro-card-top-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 }
 
-.card-header h3 {
-  font-size: 1.2rem;
-  color: #fff;
+.pro-type-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1b4332;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.rating-wrapper {
+.pro-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fdfbf7;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.pro-rating-score {
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.pro-review-count {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.pro-card-title {
+  font-family: 'Cormorant Garamond', 'Plus Jakarta Sans', serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pro-card-location {
+  font-size: 0.86rem;
+  color: #475569;
+  margin: 0 0 16px 0;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
+  align-items: center;
+  gap: 6px;
 }
 
-.rating {
-  font-weight: 700;
-  color: #52b788;
+.pro-card-location i {
+  color: #d4af37;
   font-size: 0.95rem;
 }
 
-.reviews {
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 400;
-  white-space: nowrap;
-}
-
-.location {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  margin-bottom: 15px;
-}
-
-.card-footer {
+/* Footer Section */
+.pro-card-footer {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding-top: 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: flex-end;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(226, 232, 240, 0.9);
 }
 
-.type {
+.pro-price-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.pro-price-original {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.pro-price-main {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #1b4332;
+  font-family: var(--font-heading, inherit);
+  line-height: 1.1;
+}
+
+.pro-price-unit {
+  font-size: 0.76rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.pro-book-btn {
+  background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 30px;
   font-size: 0.85rem;
-  font-weight: 600;
-  color: #52b788;
-  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(27, 67, 50, 0.25);
 }
 
-.price {
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.price b {
-  color: #52b788;
-  font-size: 1.1rem;
+.pro-book-btn:hover {
+  background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%);
+  transform: translateX(2px);
+  box-shadow: 0 6px 16px rgba(27, 67, 50, 0.38);
 }
