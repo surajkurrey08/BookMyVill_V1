@@ -326,6 +326,19 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
         >
           <i className={`fa-${isWishlisted ? 'solid' : 'regular'} fa-heart`}></i>
         </button>
+
+        {/* Interactive Image Hover Overlay */}
+        <div className="card-img-hover-overlay">
+          <div className="hover-overlay-inner">
+            <span className="hover-badge-live">⚡ Instant Booking Available</span>
+            <div className="hover-highlights-list">
+              <span><i className="fa-solid fa-square-check"></i> Verified Luxury Host</span>
+              <span><i className="fa-solid fa-mug-hot"></i> Free Breakfast</span>
+              <span><i className="fa-solid fa-shield-halved"></i> 100% Price Match</span>
+            </div>
+            <span className="hover-cta-text">Click to View Details <i className="fa-solid fa-arrow-right"></i></span>
+          </div>
+        </div>
       </div>
 
       <div className="card-content-box">

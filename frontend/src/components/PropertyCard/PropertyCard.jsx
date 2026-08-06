@@ -76,6 +76,19 @@ const PropertyCard = ({ property }) => {
           <i className={`fa-${isWishlisted ? 'solid' : 'regular'} fa-heart`}></i>
         </button>
 
+        {/* Interactive Image Hover Info Overlay */}
+        <div className="pro-image-hover-info">
+          <div className="pro-hover-info-content">
+            <span className="pro-hover-tag"><i className="fa-solid fa-bolt"></i> Instant Confirmation</span>
+            <div className="pro-hover-perks">
+              <span><i className="fa-solid fa-utensils"></i> Free Breakfast</span>
+              <span><i className="fa-solid fa-wifi"></i> Free High-Speed WiFi</span>
+              <span><i className="fa-solid fa-mountain-sun"></i> Scenic View Balcony</span>
+            </div>
+            <span className="pro-hover-click-hint">Click to View Details <i className="fa-solid fa-arrow-right"></i></span>
+          </div>
+        </div>
+
         {/* Amenities Pill Bar on Image */}
         <div className="pro-amenities-overlay">
           {defaultAmenities.map((amenity, idx) => (

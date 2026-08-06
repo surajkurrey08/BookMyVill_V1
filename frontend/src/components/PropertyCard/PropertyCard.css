@@ -268,3 +268,74 @@
   transform: translateX(2px);
   box-shadow: 0 6px 16px rgba(27, 67, 50, 0.38);
 }
+
+/* Interactive Image Hover Info Overlay */
+.pro-image-hover-info {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 17, 15, 0.3) 0%, rgba(11, 17, 15, 0.92) 100%);
+  backdrop-filter: blur(8px);
+  WebkitBackdropFilter: blur(8px);
+  opacity: 0;
+  transform: translateY(100%);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+  z-index: 4;
+}
+
+.pro-hotel-card:hover .pro-image-hover-info {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pro-hover-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pro-hover-tag {
+  align-self: flex-start;
+  background: rgba(212, 175, 55, 0.25);
+  color: #f5d061;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pro-hover-perks {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pro-hover-perks span {
+  font-size: 0.78rem;
+  color: #ffffff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pro-hover-perks i {
+  color: #34d399;
+  font-size: 0.85rem;
+}
+
+.pro-hover-click-hint {
+  font-size: 0.74rem;
+  color: #f5d061;
+  font-weight: 700;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

@@ -1307,4 +1307,74 @@
   transform: translateY(-1px);
 }
 
+/* Interactive Image Hover Info Overlay for Luxury Card */
+.card-img-hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 17, 15, 0.25) 0%, rgba(11, 17, 15, 0.94) 100%);
+  backdrop-filter: blur(8px);
+  WebkitBackdropFilter: blur(8px);
+  opacity: 0;
+  transform: translateY(100%);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+  z-index: 4;
+}
+
+.luxury-explore-card:hover .card-img-hover-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hover-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hover-badge-live {
+  align-self: flex-start;
+  background: rgba(223, 178, 59, 0.25);
+  color: #f5d061;
+  border: 1px solid rgba(223, 178, 59, 0.5);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.hover-highlights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hover-highlights-list span {
+  font-size: 0.78rem;
+  color: #ffffff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hover-highlights-list i {
+  color: #34d399;
+  font-size: 0.85rem;
+}
+
+.hover-cta-text {
+  font-size: 0.74rem;
+  color: #f5d061;
+  font-weight: 700;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 
