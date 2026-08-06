@@ -793,37 +793,6 @@ const OwnerDashboard = () => {
 
         {/* Main Content Area */}
         <main className="owner-main-content">
-          {/* Stable Fixed Top Header Bar */}
-          <div className="owner-top-navbar">
-            <div className="top-nav-left">
-              <a href="http://localhost:5173" className="stable-brand-logo">
-                <span className="logo-text">Mahabaleshwar</span>
-                <span className="logo-subtext">LUXURY STAYS • HOST PORTAL</span>
-              </a>
-            </div>
-
-            <div className="top-nav-right">
-              <div className="top-profile-badge">
-                <div className="avatar-circle">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
-                </div>
-                <div className="profile-text-group">
-                  <span className="profile-name">{user?.name || 'Saroj Naydu'}</span>
-                  <span className="profile-role"><i className="fa-solid fa-shield-check"></i> Verified Host</span>
-                </div>
-              </div>
-
-              <button 
-                type="button" 
-                className="header-logout-btn" 
-                onClick={handleLogout}
-                title="Sign Out of Host Account"
-              >
-                <i className="fa-solid fa-right-from-bracket"></i> Sign Out
-              </button>
-            </div>
-          </div>
-
           <header className="content-header">
             <div className="header-titles">
               <h1>
@@ -847,6 +816,25 @@ const OwnerDashboard = () => {
             </div>
 
             <div className="header-actions">
+              <div className="top-profile-badge">
+                <div className="avatar-circle">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
+                </div>
+                <div className="profile-text-group">
+                  <span className="profile-name">{user?.name || 'Saroj Naydu'}</span>
+                  <span className="profile-role"><i className="fa-solid fa-shield-check"></i> Verified Host</span>
+                </div>
+              </div>
+
+              <button 
+                type="button" 
+                className="header-logout-btn" 
+                onClick={handleLogout}
+                title="Sign Out of Host Account"
+              >
+                <i className="fa-solid fa-right-from-bracket"></i> Sign Out
+              </button>
+
               <button
                 type="button"
                 className="btn-caretaker-emerald"
