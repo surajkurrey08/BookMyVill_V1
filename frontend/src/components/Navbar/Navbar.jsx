@@ -107,21 +107,21 @@ const Navbar = () => {
 
           <nav className={`nav-links-center ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
             <Link to="/" onClick={() => { scrollToSection('home'); setIsMobileMenuOpen(false); }}>
-              <i className="fa-solid fa-house" style={{ marginRight: '6px', fontSize: '0.85rem' }}></i>Home
+              Home
             </Link>
             <Link to="/explore" onClick={() => setIsMobileMenuOpen(false)}>
-              <i className="fa-solid fa-compass" style={{ marginRight: '6px', fontSize: '0.85rem' }}></i>Explore Stays
+              Explore Stays
             </Link>
             <Link to="/packages" onClick={() => setIsMobileMenuOpen(false)}>
-              <i className="fa-solid fa-gift" style={{ marginRight: '6px', fontSize: '0.85rem' }}></i>Packages
+              Packages
             </Link>
             {(!user || (user.role !== 'user' && user.role !== 'traveller')) && (
               <Link to="/join-us" onClick={() => setIsMobileMenuOpen(false)}>
-                <i className="fa-solid fa-handshake" style={{ marginRight: '6px', fontSize: '0.85rem' }}></i>Join Us
+                Join Us
               </Link>
             )}
             <Link to="/about-us" onClick={() => setIsMobileMenuOpen(false)}>
-              <i className="fa-solid fa-circle-info" style={{ marginRight: '6px', fontSize: '0.85rem' }}></i>About Us
+              About Us
             </Link>
           </nav>
 

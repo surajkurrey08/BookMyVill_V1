@@ -835,6 +835,60 @@
   }
 }
 
+@media (max-width: 576px) {
+  .dashboard-content {
+    padding: 1.8rem 12px;
+  }
+  .content-header {
+    margin-bottom: 1.8rem;
+  }
+  .content-header h1 {
+    font-size: 1.8rem;
+  }
+  .content-header p {
+    font-size: 0.95rem;
+  }
+  .dashboard-nav {
+    padding: 1rem 12px;
+  }
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+  .booking-list-item {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+  .booking-list-header h2 {
+    font-size: 1.25rem;
+  }
+  .property-selector-container {
+    flex-direction: column;
+    width: 100%;
+    border-radius: 20px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .property-dropdown {
+    width: 100%;
+  }
+  .receipt-modal-card {
+    border-radius: 18px;
+    max-height: 90vh;
+  }
+  .receipt-modal-header {
+    padding: 14px 18px;
+  }
+  .receipt-modal-body {
+    padding: 16px 18px;
+  }
+  .receipt-details-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
 /* Property Selector Styling */
 .property-selector-container {
   display: flex;

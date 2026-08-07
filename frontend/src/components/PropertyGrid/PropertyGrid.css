@@ -89,17 +89,31 @@
 
 @media (max-width: 600px) {
   .property-grid-section {
-    padding: 40px 3%;
+    padding: 35px 12px;
+  }
+  .section-header {
+    margin-bottom: 30px;
   }
   .section-header h2 {
-    font-size: 1.7rem;
+    font-size: 1.6rem;
+    margin-bottom: 16px;
+  }
+  .filter-tabs {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
   }
   .grid-container {
     grid-template-columns: 1fr;
     gap: 16px;
+    margin-bottom: 35px;
   }
   .filter-btn {
-    padding: 6px 14px;
-    font-size: 0.8rem;
+    padding: 7px 16px;
+    font-size: 0.82rem;
+    flex: 0 0 auto;
   }
 }

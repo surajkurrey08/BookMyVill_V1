@@ -8,6 +8,9 @@ import bg1 from '../../assets/hillstationhome (1).jpg';
 import bg2 from '../../assets/hillstationhome (2).jpg';
 import bg3 from '../../assets/hillstationhome (3).jpg';
 import bg4 from '../../assets/hillstationhome (4).jpg';
+import waterfallvalley from '../../assets/waterfallvalley.jpg';
+
+const bgImages = [waterfallvalley, bg1, bg2, bg3, bg4];
 
 const popularDestinations = [
   { name: 'Mahabaleshwar', famous: 'Arthur\'s Seat, Wilson Point, Venna Lake', image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=400&auto=format&fit=crop&q=80' },
@@ -26,7 +29,7 @@ const popularDestinations = [
 ];
 
 const Hero = () => {
-  const images = [bg1, bg2, bg3, bg4];
+  const images = bgImages;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [hotels, setHotels] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState('');

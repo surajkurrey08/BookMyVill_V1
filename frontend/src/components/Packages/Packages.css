@@ -639,3 +639,53 @@
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
 }
+
+@media (max-width: 768px) {
+  .packages-container {
+    padding: 85px 12px 40px;
+  }
+
+  .packages-title-box h2 {
+    font-size: 1.8rem;
+  }
+
+  .packages-header-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .packages-search-form {
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .category-pill-group {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .packages-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .package-card {
+    border-radius: 18px;
+  }
+
+  .package-body {
+    padding: 18px 16px;
+  }
+
+  .package-title {
+    font-size: 1.25rem;
+  }
+
+  .package-filter-card {
+    padding: 20px 16px;
+    border-radius: 18px;
+  }
+}

@@ -272,9 +272,24 @@
 }
 
 @media (max-width: 640px) {
+  .profile-container {
+    padding: 85px 12px 30px;
+  }
+
   .profile-header-card {
     flex-direction: column;
     text-align: center;
+    padding: 24px 16px;
+    gap: 16px;
+  }
+
+  .profile-form-card {
+    padding: 24px 16px;
+    border-radius: 18px;
+  }
+
+  .profile-meta h1 {
+    font-size: 1.6rem;
   }
 
   .profile-email {
@@ -289,11 +304,15 @@
   .profile-actions-bar {
     flex-direction: column-reverse;
     width: 100%;
+    margin-top: 24px;
+    padding-top: 18px;
+    gap: 12px;
   }
 
   .btn-cancel-profile,
   .btn-save-profile {
     width: 100%;
     justify-content: center;
+    padding: 12px 20px;
   }
 }

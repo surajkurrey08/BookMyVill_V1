@@ -27,17 +27,17 @@ const Footer = () => {
         <div className="footer-links">
           <div className="link-group">
             <h4>Explore & Stay</h4>
-            <Link to="/explore"><i className="fa-solid fa-hotel" style={{ marginRight: '6px' }}></i>All Luxury Stays</Link>
-            <Link to="/packages"><i className="fa-solid fa-gift" style={{ marginRight: '6px' }}></i>Holiday Packages</Link>
-            <Link to="/about-us"><i className="fa-solid fa-circle-info" style={{ marginRight: '6px' }}></i>About Us</Link>
-            <Link to="/join-us"><i className="fa-solid fa-handshake" style={{ marginRight: '6px' }}></i>Partner With Us</Link>
+            <Link to="/explore">All Luxury Stays</Link>
+            <Link to="/packages">Holiday Packages</Link>
+            <Link to="/about-us">About Us</Link>
+            <Link to="/join-us">Partner With Us</Link>
           </div>
           <div className="link-group">
             <h4>Account & Portals</h4>
-            <Link to="/signin"><i className="fa-solid fa-arrow-right-to-bracket" style={{ marginRight: '6px' }}></i>Guest Sign In</Link>
-            <Link to="/dashboard"><i className="fa-solid fa-gauge-high" style={{ marginRight: '6px' }}></i>User Dashboard</Link>
-            <Link to="/caretaker-apply"><i className="fa-solid fa-user-gear" style={{ marginRight: '6px' }}></i>Caretaker Jobs</Link>
-            <Link to="/register-property"><i className="fa-solid fa-plus" style={{ marginRight: '6px' }}></i>List Property</Link>
+            <Link to="/signin">Guest Sign In</Link>
+            <Link to="/dashboard">User Dashboard</Link>
+            <Link to="/caretaker-apply">Caretaker Jobs</Link>
+            <Link to="/register-property">List Property</Link>
           </div>
           <div className="link-group">
             <h4>Contact & Support</h4>

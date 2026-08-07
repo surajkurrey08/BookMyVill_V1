@@ -339,3 +339,22 @@
   align-items: center;
   gap: 4px;
 }
+
+@media (max-width: 480px) {
+  .pro-card-media {
+    height: 195px;
+  }
+  .pro-card-body {
+    padding: 14px 16px 16px 16px;
+  }
+  .pro-card-title {
+    font-size: 1.18rem;
+  }
+  .pro-price-main {
+    font-size: 1.2rem;
+  }
+  .pro-book-btn {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+}

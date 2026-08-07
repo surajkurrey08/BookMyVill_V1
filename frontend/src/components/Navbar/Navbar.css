@@ -207,6 +207,8 @@
     top: 72px;
     left: 0;
     right: 0;
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
     background: rgba(242, 236, 228, 0.98);
     backdrop-filter: blur(20px);
     WebkitBackdropFilter: blur(20px);
@@ -253,13 +255,39 @@
 
 @media (max-width: 480px) {
   .navbar-header {
-    padding: 10px 16px;
+    padding: 10px 12px;
   }
   .logo-text {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+  }
+  .logo-subtext {
+    font-size: 0.52rem;
+    letter-spacing: 2px;
   }
   .signin-btn {
-    padding: 8px 18px !important;
-    font-size: 0.85rem !important;
+    padding: 7px 14px !important;
+    font-size: 0.8rem !important;
+  }
+  .dashboard-link {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+  }
+  .user-name {
+    display: none;
+  }
+  .mobile-hamburger-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .logo-text {
+    font-size: 1.2rem;
+  }
+  .signin-btn {
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
   }
 }

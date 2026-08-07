@@ -756,12 +756,12 @@
   .description-card, 
   .location-map-card, 
   .feedback-section-card {
-    padding: 20px 16px;
+    padding: 20px 14px;
     border-radius: 16px;
   }
 
   .booking-card {
-    padding: 20px 16px;
+    padding: 20px 14px;
     border-radius: 18px;
   }
 
@@ -786,7 +786,7 @@
   }
 
   .detail-map-wrapper {
-    height: 250px;
+    height: 240px;
   }
 
   .feedback-ratings-grid {
@@ -794,8 +794,27 @@
   }
 
   .zoom-modal-toolbar {
-    padding: 10px 16px;
+    padding: 10px 14px;
     border-radius: 20px;
+    justify-content: center;
+  }
+
+  .fake-payment-modal {
+    padding: 18px 14px;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 380px) {
+  .details-hero h1 {
+    font-size: 1.45rem;
+  }
+  .price-text {
+    font-size: 1.65rem;
+  }
+  .gallery-thumb-item {
+    width: 70px;
+    height: 52px;
   }
 }
 

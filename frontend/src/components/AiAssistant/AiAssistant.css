@@ -395,10 +395,26 @@
 }
 
 @media (max-width: 480px) {
+  .ai-assistant-trigger-btn {
+    bottom: 16px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
+  }
+  .ai-trigger-icon {
+    font-size: 1.3rem;
+  }
   .ai-assistant-window {
-    right: 15px;
-    bottom: 85px;
-    width: calc(100vw - 30px);
-    height: 520px;
+    right: 10px;
+    left: 10px;
+    bottom: 76px;
+    width: calc(100vw - 20px);
+    max-width: 100vw;
+    height: calc(100vh - 95px);
+    max-height: 540px;
+    border-radius: 20px;
+  }
+  .ai-chat-body {
+    padding: 12px 14px;
   }
 }
