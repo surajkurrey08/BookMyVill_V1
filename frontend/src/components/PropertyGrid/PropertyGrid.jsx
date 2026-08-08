@@ -892,78 +892,111 @@ const PropertyGrid = ({ isHomePage = false }) => {
             </div>
           </div>
           
-          {/* Side-by-Side Map + Hotel List View (User Screenshot Design) */}
-          <div className="property-split-container" style={{ height: '620px' }}>
-            <div className="properties-list-column" data-lenis-prevent style={{ flex: '4.8', overflowY: 'auto' }}>
-              {filteredProperties.length > 0 ? (
-                filteredProperties.map(property => (
-                  <SplitPropertyCard 
-                    key={property.id} 
-                    property={property} 
-                    isSelected={selectedPropertyId === property.id}
-                    isHovered={hoveredPropertyId === property.id}
-                    onSelect={selectHotelOnMap}
-                    onHover={setHoveredPropertyId}
-                    onLeave={() => setHoveredPropertyId(null)}
-                  />
-                ))
-              ) : (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
-                  <i className="fa-solid fa-hotel" style={{ fontSize: '2rem', marginBottom: '10px', color: 'var(--secondary-color)' }}></i>
-                  <h3>No stays matching search</h3>
-                  <p style={{ fontSize: '0.85rem', marginTop: '6px' }}>Try searching another city or selecting a different category.</p>
-                </div>
-              )}
-            </div>
-            <div className="map-column" style={{ flex: '5.2', height: '620px' }}>
-              <div id="leaflet-map" style={{ height: '100%' }}></div>
-            </div>
-          </div>
-
-          {/* Full-width View All Hotels Banner (Navigates to /explore page) */}
+          {/* Clean Home Page Explore Showcase Card (Replaces long hotel list on Home page) */}
           <div style={{
-            maxWidth: '1400px',
-            margin: '30px auto 0 auto',
+            maxWidth: '1280px',
+            margin: '0 auto',
             padding: '0 20px',
             textAlign: 'center'
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
-              borderRadius: '24px',
-              padding: '30px 40px',
+              background: 'linear-gradient(135deg, #0b110f 0%, #1b4332 50%, #2d6a4f 100%)',
+              borderRadius: '32px',
+              padding: '48px 40px',
               color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '20px',
-              boxShadow: '0 10px 30px rgba(27, 67, 50, 0.3)'
+              boxShadow: '0 20px 50px rgba(11, 17, 15, 0.4)',
+              border: '1px solid rgba(212, 175, 55, 0.3)',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-              <div style={{ textAlign: 'left' }}>
-                <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', color: '#d4af37', margin: '0 0 6px 0' }}>
-                  Explore All Available Hotels ({resolvedAllProperties.length} Stays)
-                </h3>
-                <p style={{ margin: 0, opacity: 0.9, fontSize: '0.95rem' }}>
-                  Browse complete luxury amenities, room details, ratings, and video tours for all stays.
-                </p>
+              {/* Subtle background glow */}
+              <div style={{
+                position: 'absolute',
+                top: '-50%',
+                right: '-20%',
+                width: '400px',
+                height: '400px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(0,0,0,0) 70%)',
+                pointerEvents: 'none'
+              }} />
+
+              <span style={{
+                display: 'inline-block',
+                fontSize: '0.82rem',
+                fontWeight: '800',
+                letterSpacing: '3px',
+                color: '#d4af37',
+                textTransform: 'uppercase',
+                marginBottom: '12px'
+              }}>
+                ✦ Complete Mahabaleshwar Collection ✦
+              </span>
+
+              <h3 style={{
+                fontSize: '2.4rem',
+                fontFamily: 'var(--font-heading)',
+                color: '#ffffff',
+                margin: '0 0 14px 0',
+                fontWeight: '800',
+                lineHeight: '1.2'
+              }}>
+                Discover {resolvedAllProperties.length}+ Handpicked Luxury Stays
+              </h3>
+
+              <p style={{
+                maxWidth: '680px',
+                margin: '0 auto 28px auto',
+                color: 'rgba(255, 255, 255, 0.85)',
+                fontSize: '1.05rem',
+                lineHeight: '1.6'
+              }}>
+                Browse complete property photos, room details, private swimming pools, chef services, ratings, and interactive valley maps on our Explore page.
+              </p>
+
+              {/* Feature Badges */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                gap: '12px',
+                marginBottom: '36px'
+              }}>
+                <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '30px', padding: '8px 18px', fontSize: '0.88rem', fontWeight: '600', color: '#e2e8f0' }}>
+                  🏔️ Mountain View Villas
+                </span>
+                <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '30px', padding: '8px 18px', fontSize: '0.88rem', fontWeight: '600', color: '#e2e8f0' }}>
+                  🏊 Private Pool Stays
+                </span>
+                <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '30px', padding: '8px 18px', fontSize: '0.88rem', fontWeight: '600', color: '#e2e8f0' }}>
+                  🌲 Heritage Forest Estates
+                </span>
+                <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '30px', padding: '8px 18px', fontSize: '0.88rem', fontWeight: '600', color: '#e2e8f0' }}>
+                  🗺️ Interactive Valley Map
+                </span>
               </div>
+
+              {/* View All Button */}
               <button 
                 onClick={() => navigate('/explore')} 
                 className="btn-primary"
                 style={{
-                  background: '#d4af37',
-                  color: '#1a1a1a',
-                  fontWeight: '700',
-                  padding: '14px 32px',
+                  background: 'linear-gradient(135deg, #d4af37 0%, #b38b19 100%)',
+                  color: '#0b110f',
+                  fontWeight: '800',
+                  padding: '16px 42px',
                   borderRadius: '50px',
-                  fontSize: '1rem',
+                  fontSize: '1.1rem',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
-                  whiteSpace: 'nowrap'
+                  boxShadow: '0 8px 25px rgba(212, 175, 55, 0.45)',
+                  transition: 'all 0.3s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '10px'
                 }}
               >
-                <i className="fa-solid fa-list-check" style={{ marginRight: '8px' }}></i> View All Hotels & Details
+                <i className="fa-solid fa-compass" style={{ fontSize: '1.2rem' }}></i> View All Stays ({resolvedAllProperties.length} Properties)
               </button>
             </div>
           </div>

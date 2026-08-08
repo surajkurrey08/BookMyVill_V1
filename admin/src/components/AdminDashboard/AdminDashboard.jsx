@@ -290,7 +290,8 @@ const AdminDashboard = () => {
 
     const endpoint = activeTab === 'properties' ? 'admin/properties' :
       activeTab === 'users' ? 'admin/users' :
-        activeTab === 'partners' ? 'admin/partner-applications' : 'bookings/all';
+        activeTab === 'partners' ? 'admin/partner-applications' :
+          activeTab === 'feedback' ? 'feedback/admin' : 'bookings/all';
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/${endpoint}`, {
@@ -661,6 +662,12 @@ const AdminDashboard = () => {
           >
             Bookings
           </button>
+          <button
+            className={`nav-item ${activeTab === 'feedback' ? 'active' : ''}`}
+            onClick={() => { handleTabSwitch('feedback'); setIsDrawerOpen(false); }}
+          >
+            Tourist Feedback
+          </button>
         </nav>
 
         <div className="sidebar-footer" style={{ paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
@@ -711,6 +718,12 @@ const AdminDashboard = () => {
               >
                 Bookings
               </button>
+              <button
+                className={`nav-item ${activeTab === 'feedback' ? 'active' : ''}`}
+                onClick={() => handleTabSwitch('feedback')}
+              >
+                Tourist Feedback
+              </button>
             </nav>
 
             <div className="sidebar-footer">
@@ -732,6 +745,7 @@ const AdminDashboard = () => {
                 {activeTab === 'properties' && 'Mahabaleshwar Property Inventory'}
                 {activeTab === 'users' && 'System Users & Account Management'}
                 {activeTab === 'bookings' && 'Guest Reservations Master Log'}
+                {activeTab === 'feedback' && '💬 Tourist Stay Reviews & Feedback Center'}
               </h1>
               <p className="header-subtitle">
                 {activeTab === 'owner-requests' && 'Centralized hub for receiving, evaluating, and taking action on property listing registrations & caretaker staff requests from hosts.'}
@@ -740,6 +754,7 @@ const AdminDashboard = () => {
                 {activeTab === 'properties' && 'Manage prices, status, and verification of luxury hill station stays.'}
                 {activeTab === 'users' && 'View all registered guest, host owner, caretaker and administrator accounts.'}
                 {activeTab === 'bookings' && 'Track check-ins, guest payments, and stay reservation statuses.'}
+                {activeTab === 'feedback' && 'Monitor, feature, and manage tourist review ratings and feedback submitted for Mahabaleshwar properties.'}
               </p>
             </div>
           </header>
@@ -1630,6 +1645,146 @@ const AdminDashboard = () => {
                                 <span className={`payment-badge ${booking.paymentStatus}`} style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: '700' }}>
                                   {booking.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
                                 </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* TAB 6: TOURIST FEEDBACK */}
+              {activeTab === 'feedback' && (
+                <div className="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Tourist Guest</th>
+                        <th>Property Stay</th>
+                        <th>Rating</th>
+                        <th>Stay Feedback</th>
+                        <th>Display Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data.feedback || []).length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="empty-row">No tourist feedback entries submitted yet.</td>
+                        </tr>
+                      ) : (
+                        (data.feedback || []).map(fb => (
+                          <tr key={fb._id || fb.id}>
+                            <td>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <strong style={{ color: '#ffffff', fontSize: '0.9rem' }}>{fb.guestName || 'Guest Tourist'}</strong>
+                                <span style={{ fontSize: '0.78rem', color: '#d4af37' }}>{fb.guestPhone || 'No Phone'}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <strong style={{ color: '#ffffff', fontSize: '0.9rem' }}>{fb.propertyName}</strong>
+                            </td>
+                            <td>
+                              <div style={{ color: '#d4af37', fontWeight: '700', fontSize: '0.9rem' }}>
+                                {'★'.repeat(fb.rating || 5)} <span style={{ color: '#ffffff', fontSize: '0.8rem' }}>({fb.rating}/5)</span>
+                              </div>
+                            </td>
+                            <td style={{ maxWidth: '300px' }}>
+                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.88)', fontStyle: 'italic' }}>
+                                "{fb.reviewText}"
+                              </p>
+                              {Array.isArray(fb.facilitiesUsed) && fb.facilitiesUsed.length > 0 && (
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
+                                  {fb.facilitiesUsed.map((fac, idx) => (
+                                    <span key={idx} style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '10px', padding: '2px 6px', fontSize: '0.7rem', color: '#d4af37' }}>
+                                      ✓ {fac}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              <span style={{
+                                padding: '4px 10px',
+                                borderRadius: '12px',
+                                fontSize: '0.75rem',
+                                fontWeight: '700',
+                                background: fb.selectedForHotelPage ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                                color: fb.selectedForHotelPage ? '#10b981' : '#a3b18a',
+                                border: fb.selectedForHotelPage ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)'
+                              }}>
+                                {fb.selectedForHotelPage ? 'Featured on Hotel Page' : 'Hidden'}
+                              </span>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const res = await fetch(`${API_BASE_URL}/api/feedback/${fb._id || fb.id}/toggle-select`, {
+                                        method: 'PUT',
+                                        headers: { 'x-auth-token': token }
+                                      });
+                                      if (res.ok) {
+                                        const updated = await res.json();
+                                        setData(prev => ({
+                                          ...prev,
+                                          feedback: (prev.feedback || []).map(item => (item._id === (fb._id || fb.id) || item.id === (fb._id || fb.id)) ? { ...item, selectedForHotelPage: updated.selectedForHotelPage } : item)
+                                        }));
+                                        setActionNotice({ msg: 'Visibility status updated!', type: 'success' });
+                                      }
+                                    } catch (err) {
+                                      console.error(err);
+                                    }
+                                  }}
+                                  style={{
+                                    background: fb.selectedForHotelPage ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                                    color: fb.selectedForHotelPage ? '#ef4444' : '#10b981',
+                                    border: '1px solid currentColor',
+                                    borderRadius: '8px',
+                                    padding: '6px 12px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '700'
+                                  }}
+                                >
+                                  {fb.selectedForHotelPage ? 'Hide' : 'Feature'}
+                                </button>
+
+                                <button
+                                  onClick={async () => {
+                                    if (!window.confirm('Delete this tourist feedback record?')) return;
+                                    try {
+                                      const res = await fetch(`${API_BASE_URL}/api/feedback/${fb._id || fb.id}`, {
+                                        method: 'DELETE',
+                                        headers: { 'x-auth-token': token }
+                                      });
+                                      if (res.ok) {
+                                        setData(prev => ({
+                                          ...prev,
+                                          feedback: (prev.feedback || []).filter(item => item._id !== (fb._id || fb.id) && item.id !== (fb._id || fb.id))
+                                        }));
+                                        setActionNotice({ msg: 'Feedback record deleted.', type: 'success' });
+                                      }
+                                    } catch (err) {
+                                      console.error(err);
+                                    }
+                                  }}
+                                  style={{
+                                    background: 'rgba(239, 68, 68, 0.2)',
+                                    color: '#ef4444',
+                                    border: '1px solid #ef4444',
+                                    borderRadius: '8px',
+                                    padding: '6px 10px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '700'
+                                  }}
+                                >
+                                  Delete
+                                </button>
                               </div>
                             </td>
                           </tr>

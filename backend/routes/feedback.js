@@ -54,6 +54,24 @@ router.get('/owner', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/feedback/admin
+// @desc    Get all tourist feedback for admin dashboard across all properties
+router.get('/admin', auth, async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.json(defaultFeedbackList);
+  }
+  try {
+    let feedbackList = await Feedback.find().sort({ createdAt: -1 });
+    if (feedbackList.length === 0) {
+      feedbackList = defaultFeedbackList;
+    }
+    res.json(feedbackList);
+  } catch (err) {
+    console.error('Admin Feedback GET Error:', err.message);
+    res.json(defaultFeedbackList);
+  }
+});
+
 // @route   GET api/feedback/property/:propertyId
 // @desc    Get owner-selected feedback for a specific property details page
 router.get('/property/:propertyId', async (req, res) => {
@@ -108,6 +126,23 @@ router.put('/:id/toggle-select', auth, async (req, res) => {
   }
 });
 
+// @route   DELETE api/feedback/:id
+// @desc    Delete a tourist feedback entry
+router.delete('/:id', auth, async (req, res) => {
+  const { id } = req.params;
+  if (mongoose.connection.readyState !== 1) {
+    defaultFeedbackList = defaultFeedbackList.filter(f => f._id !== id && f.id !== id);
+    return res.json({ msg: 'Feedback removed' });
+  }
+  try {
+    await Feedback.findByIdAndDelete(id);
+    res.json({ msg: 'Feedback removed successfully' });
+  } catch (err) {
+    console.error('Error deleting feedback:', err);
+    res.status(500).json({ msg: 'Failed to delete feedback' });
+  }
+});
+
 // @route   POST api/feedback
 // @desc    Public route for tourists to submit stay feedback
 router.post('/', async (req, res) => {
@@ -115,22 +150,28 @@ router.post('/', async (req, res) => {
     const { propertyId, propertyName, guestName, guestPhone, rating, reviewText, facilitiesUsed } = req.body;
     
     let ownerId = null;
+    let finalPropName = propertyName || 'Mahabaleshwar Villa';
+
     if (propertyId && mongoose.connection.readyState === 1) {
       const prop = await Property.findById(propertyId);
-      if (prop) ownerId = prop.owner;
+      if (prop) {
+        ownerId = prop.owner;
+        if (!propertyName && prop.title) finalPropName = prop.title;
+      }
     }
 
     const newFeedback = {
       _id: 'fb-' + Date.now(),
       propertyId: propertyId || req.body.ownerId || 'prop-101',
-      propertyName: propertyName || 'Mahabaleshwar Villa',
+      propertyName: finalPropName,
       ownerId,
       guestName: guestName || 'Guest Tourist',
       guestPhone: guestPhone || '',
       rating: Number(rating) || 5,
       reviewText: reviewText || 'Wonderful stay experience!',
-      facilitiesUsed: facilitiesUsed || [],
-      selectedForHotelPage: true
+      facilitiesUsed: Array.isArray(facilitiesUsed) ? facilitiesUsed : [],
+      selectedForHotelPage: true,
+      createdAt: new Date()
     };
 
     if (mongoose.connection.readyState === 1) {
