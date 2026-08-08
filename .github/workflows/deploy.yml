@@ -149,253 +149,253 @@ jobs:
 
             # 3. Complete HTTP & HTTPS Nginx config for all subdomains
             cat > /etc/nginx/sites-available/lonavala.fun << 'EOF'
-# ==============================================================================
-# HTTP SERVER BLOCKS (Port 80)
-# ==============================================================================
+            # ==============================================================================
+            # HTTP SERVER BLOCKS (Port 80)
+            # ==============================================================================
 
-# Main Tourist Site & Users (Port 80)
-server {
-    listen 80;
-    server_name lonavala.fun www.lonavala.fun users.lonavala.fun;
+            # Main Tourist Site & Users (Port 80)
+            server {
+                listen 80;
+                server_name lonavala.fun www.lonavala.fun users.lonavala.fun;
 
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
+                location /.well-known/acme-challenge/ {
+                    root /var/www/certbot;
+                }
 
-    root /var/www/lonavala.fun/frontend;
-    index index.html;
+                root /var/www/lonavala.fun/frontend;
+                index index.html;
 
-    location / {
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /index.html;
-    }
-    location /owner/ {
-        alias /var/www/lonavala.fun/owner/;
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /owner/index.html;
-    }
-    location /caretaker/ {
-        alias /var/www/lonavala.fun/caretaker/;
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /caretaker/index.html;
-    }
-    location /admin/ {
-        alias /var/www/lonavala.fun/admin/;
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /admin/index.html;
-    }
-    location /api/ {
-        proxy_pass http://127.0.0.1:5001/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-    }
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-}
+                location / {
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /index.html;
+                }
+                location /owner/ {
+                    alias /var/www/lonavala.fun/owner/;
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /owner/index.html;
+                }
+                location /caretaker/ {
+                    alias /var/www/lonavala.fun/caretaker/;
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /caretaker/index.html;
+                }
+                location /admin/ {
+                    alias /var/www/lonavala.fun/admin/;
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /admin/index.html;
+                }
+                location /api/ {
+                    proxy_pass http://127.0.0.1:5001/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_set_header Host $host;
+                }
+                gzip on;
+                gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+            }
 
-# Property Owner Subdomain (Port 80)
-server {
-    listen 80;
-    server_name owner.lonavala.fun;
+            # Property Owner Subdomain (Port 80)
+            server {
+                listen 80;
+                server_name owner.lonavala.fun;
 
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
+                location /.well-known/acme-challenge/ {
+                    root /var/www/certbot;
+                }
 
-    root /var/www/lonavala.fun/owner;
-    index index.html;
-    location / {
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /index.html;
-    }
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-}
+                root /var/www/lonavala.fun/owner;
+                index index.html;
+                location / {
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /index.html;
+                }
+                gzip on;
+                gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+            }
 
-# Caretaker Subdomain (Port 80)
-server {
-    listen 80;
-    server_name caretaker.lonavala.fun;
+            # Caretaker Subdomain (Port 80)
+            server {
+                listen 80;
+                server_name caretaker.lonavala.fun;
 
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
+                location /.well-known/acme-challenge/ {
+                    root /var/www/certbot;
+                }
 
-    root /var/www/lonavala.fun/caretaker;
-    index index.html;
-    location / {
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /index.html;
-    }
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-}
+                root /var/www/lonavala.fun/caretaker;
+                index index.html;
+                location / {
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /index.html;
+                }
+                gzip on;
+                gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+            }
 
-# Admin Subdomain (Port 80)
-server {
-    listen 80;
-    server_name admin.lonavala.fun;
+            # Admin Subdomain (Port 80)
+            server {
+                listen 80;
+                server_name admin.lonavala.fun;
 
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
+                location /.well-known/acme-challenge/ {
+                    root /var/www/certbot;
+                }
 
-    root /var/www/lonavala.fun/admin;
-    index index.html;
-    location / {
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /index.html;
-    }
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-}
+                root /var/www/lonavala.fun/admin;
+                index index.html;
+                location / {
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /index.html;
+                }
+                gzip on;
+                gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+            }
 
-# Backend API Proxy Subdomain (Port 80)
-server {
-    listen 80;
-    server_name api.lonavala.fun;
+            # Backend API Proxy Subdomain (Port 80)
+            server {
+                listen 80;
+                server_name api.lonavala.fun;
 
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
+                location /.well-known/acme-challenge/ {
+                    root /var/www/certbot;
+                }
 
-    location / {
-        proxy_pass http://127.0.0.1:5001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
+                location / {
+                    proxy_pass http://127.0.0.1:5001;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                }
+            }
 
-# ==============================================================================
-# HTTPS SERVER BLOCKS (Port 443) - Used when SSL Certificates are present
-# ==============================================================================
+            # ==============================================================================
+            # HTTPS SERVER BLOCKS (Port 443) - Used when SSL Certificates are present
+            # ==============================================================================
 
-# Main Tourist Site & Users (Port 443 SSL)
-server {
-    listen 443 ssl;
-    server_name lonavala.fun www.lonavala.fun users.lonavala.fun;
+            # Main Tourist Site & Users (Port 443 SSL)
+            server {
+                listen 443 ssl;
+                server_name lonavala.fun www.lonavala.fun users.lonavala.fun;
 
-    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
+                ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
+                ssl_protocols TLSv1.2 TLSv1.3;
 
-    root /var/www/lonavala.fun/frontend;
-    index index.html;
+                root /var/www/lonavala.fun/frontend;
+                index index.html;
 
-    location / {
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /index.html;
-    }
-    location /owner/ {
-        alias /var/www/lonavala.fun/owner/;
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /owner/index.html;
-    }
-    location /caretaker/ {
-        alias /var/www/lonavala.fun/caretaker/;
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /caretaker/index.html;
-    }
-    location /admin/ {
-        alias /var/www/lonavala.fun/admin/;
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /admin/index.html;
-    }
-    location /api/ {
-        proxy_pass http://127.0.0.1:5001/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-    }
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-}
+                location / {
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /index.html;
+                }
+                location /owner/ {
+                    alias /var/www/lonavala.fun/owner/;
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /owner/index.html;
+                }
+                location /caretaker/ {
+                    alias /var/www/lonavala.fun/caretaker/;
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /caretaker/index.html;
+                }
+                location /admin/ {
+                    alias /var/www/lonavala.fun/admin/;
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /admin/index.html;
+                }
+                location /api/ {
+                    proxy_pass http://127.0.0.1:5001/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_set_header Host $host;
+                }
+                gzip on;
+                gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+            }
 
-# Property Owner Subdomain (Port 443 SSL)
-server {
-    listen 443 ssl;
-    server_name owner.lonavala.fun;
+            # Property Owner Subdomain (Port 443 SSL)
+            server {
+                listen 443 ssl;
+                server_name owner.lonavala.fun;
 
-    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
+                ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
+                ssl_protocols TLSv1.2 TLSv1.3;
 
-    root /var/www/lonavala.fun/owner;
-    index index.html;
-    location / {
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /index.html;
-    }
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-}
+                root /var/www/lonavala.fun/owner;
+                index index.html;
+                location / {
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /index.html;
+                }
+                gzip on;
+                gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+            }
 
-# Caretaker Subdomain (Port 443 SSL)
-server {
-    listen 443 ssl;
-    server_name caretaker.lonavala.fun;
+            # Caretaker Subdomain (Port 443 SSL)
+            server {
+                listen 443 ssl;
+                server_name caretaker.lonavala.fun;
 
-    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
+                ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
+                ssl_protocols TLSv1.2 TLSv1.3;
 
-    root /var/www/lonavala.fun/caretaker;
-    index index.html;
-    location / {
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /index.html;
-    }
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-}
+                root /var/www/lonavala.fun/caretaker;
+                index index.html;
+                location / {
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /index.html;
+                }
+                gzip on;
+                gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+            }
 
-# Admin Subdomain (Port 443 SSL)
-server {
-    listen 443 ssl;
-    server_name admin.lonavala.fun;
+            # Admin Subdomain (Port 443 SSL)
+            server {
+                listen 443 ssl;
+                server_name admin.lonavala.fun;
 
-    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
+                ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
+                ssl_protocols TLSv1.2 TLSv1.3;
 
-    root /var/www/lonavala.fun/admin;
-    index index.html;
-    location / {
-        add_header Cache-Control "no-store, no-cache, must-revalidate";
-        try_files $uri $uri/ /index.html;
-    }
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
-}
+                root /var/www/lonavala.fun/admin;
+                index index.html;
+                location / {
+                    add_header Cache-Control "no-store, no-cache, must-revalidate";
+                    try_files $uri $uri/ /index.html;
+                }
+                gzip on;
+                gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+            }
 
-# Backend API Proxy Subdomain (Port 443 SSL)
-server {
-    listen 443 ssl;
-    server_name api.lonavala.fun;
+            # Backend API Proxy Subdomain (Port 443 SSL)
+            server {
+                listen 443 ssl;
+                server_name api.lonavala.fun;
 
-    ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
+                ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/lonavala.fun/privkey.pem;
+                ssl_protocols TLSv1.2 TLSv1.3;
 
-    location / {
-        proxy_pass http://127.0.0.1:5001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
+                location / {
+                    proxy_pass http://127.0.0.1:5001;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                }
+            }
 EOF
 
             ln -sf /etc/nginx/sites-available/lonavala.fun /etc/nginx/sites-enabled/lonavala.fun
