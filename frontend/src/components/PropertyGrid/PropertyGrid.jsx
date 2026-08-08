@@ -892,111 +892,55 @@ const PropertyGrid = ({ isHomePage = false }) => {
             </div>
           </div>
           
-          {/* Clean Home Page Explore Showcase Card (Replaces long hotel list on Home page) */}
+          {/* Home Page Featured 3 Hotels Grid */}
           <div style={{
             maxWidth: '1280px',
             margin: '0 auto',
-            padding: '0 20px',
-            textAlign: 'center'
+            padding: '0 20px'
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #0b110f 0%, #1b4332 50%, #2d6a4f 100%)',
-              borderRadius: '32px',
-              padding: '48px 40px',
-              color: '#ffffff',
-              boxShadow: '0 20px 50px rgba(11, 17, 15, 0.4)',
-              border: '1px solid rgba(212, 175, 55, 0.3)',
-              position: 'relative',
-              overflow: 'hidden'
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '24px',
+              marginBottom: '36px'
             }}>
-              {/* Subtle background glow */}
-              <div style={{
-                position: 'absolute',
-                top: '-50%',
-                right: '-20%',
-                width: '400px',
-                height: '400px',
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(0,0,0,0) 70%)',
-                pointerEvents: 'none'
-              }} />
+              {filteredProperties.slice(0, 3).map(property => (
+                <LuxuryPropertyCard
+                  key={property.id}
+                  property={property}
+                  isSelected={selectedPropertyId === property.id}
+                  isHovered={hoveredPropertyId === property.id}
+                  onSelect={(p) => navigate(`/property/${p._id || p.id}`)}
+                  onHover={setHoveredPropertyId}
+                  onLeave={() => setHoveredPropertyId(null)}
+                  isWishlisted={wishlist.includes(property._id || property.id)}
+                  onToggleWishlist={toggleWishlist}
+                />
+              ))}
+            </div>
 
-              <span style={{
-                display: 'inline-block',
-                fontSize: '0.82rem',
-                fontWeight: '800',
-                letterSpacing: '3px',
-                color: '#d4af37',
-                textTransform: 'uppercase',
-                marginBottom: '12px'
-              }}>
-                ✦ Complete Mahabaleshwar Collection ✦
-              </span>
-
-              <h3 style={{
-                fontSize: '2.4rem',
-                fontFamily: 'var(--font-heading)',
-                color: '#ffffff',
-                margin: '0 0 14px 0',
-                fontWeight: '800',
-                lineHeight: '1.2'
-              }}>
-                Discover {resolvedAllProperties.length}+ Handpicked Luxury Stays
-              </h3>
-
-              <p style={{
-                maxWidth: '680px',
-                margin: '0 auto 28px auto',
-                color: 'rgba(255, 255, 255, 0.85)',
-                fontSize: '1.05rem',
-                lineHeight: '1.6'
-              }}>
-                Browse complete property photos, room details, private swimming pools, chef services, ratings, and interactive valley maps on our Explore page.
-              </p>
-
-              {/* Feature Badges */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-                gap: '12px',
-                marginBottom: '36px'
-              }}>
-                <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '30px', padding: '8px 18px', fontSize: '0.88rem', fontWeight: '600', color: '#e2e8f0' }}>
-                  🏔️ Mountain View Villas
-                </span>
-                <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '30px', padding: '8px 18px', fontSize: '0.88rem', fontWeight: '600', color: '#e2e8f0' }}>
-                  🏊 Private Pool Stays
-                </span>
-                <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '30px', padding: '8px 18px', fontSize: '0.88rem', fontWeight: '600', color: '#e2e8f0' }}>
-                  🌲 Heritage Forest Estates
-                </span>
-                <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '30px', padding: '8px 18px', fontSize: '0.88rem', fontWeight: '600', color: '#e2e8f0' }}>
-                  🗺️ Interactive Valley Map
-                </span>
-              </div>
-
-              {/* View All Button */}
+            {/* View All Stays Button Centered below 3 hotels */}
+            <div style={{ textAlign: 'center', marginTop: '30px' }}>
               <button 
                 onClick={() => navigate('/explore')} 
                 className="btn-primary"
                 style={{
-                  background: 'linear-gradient(135deg, #d4af37 0%, #b38b19 100%)',
-                  color: '#0b110f',
+                  background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
+                  color: '#ffffff',
                   fontWeight: '800',
                   padding: '16px 42px',
                   borderRadius: '50px',
-                  fontSize: '1.1rem',
-                  border: 'none',
+                  fontSize: '1.05rem',
+                  border: '1px solid #d4af37',
                   cursor: 'pointer',
-                  boxShadow: '0 8px 25px rgba(212, 175, 55, 0.45)',
+                  boxShadow: '0 8px 25px rgba(27, 67, 50, 0.35)',
                   transition: 'all 0.3s ease',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '10px'
                 }}
               >
-                <i className="fa-solid fa-compass" style={{ fontSize: '1.2rem' }}></i> View All Stays ({resolvedAllProperties.length} Properties)
+                <i className="fa-solid fa-hotel" style={{ color: '#d4af37' }}></i> View All Stays ({resolvedAllProperties.length} Properties) <i className="fa-solid fa-arrow-right" style={{ color: '#d4af37', marginLeft: '4px' }}></i>
               </button>
             </div>
           </div>
