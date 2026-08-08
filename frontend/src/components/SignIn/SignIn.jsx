@@ -26,9 +26,53 @@ const SignIn = () => {
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
+  const validateField = (fieldName, value) => {
+    let err = '';
+    const trimmed = (value || '').trim();
+    if (fieldName === 'email') {
+      if (!trimmed) {
+        err = 'Email address is required.';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        err = 'Please enter a valid email address (e.g. name@example.com).';
+      }
+    }
+    if (fieldName === 'password') {
+      if (!value) {
+        err = 'Password is required.';
+      } else if (value.length < 6) {
+        err = 'Password must be at least 6 characters long.';
+      }
+    }
+    return err;
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    setErrorMsg('');
+    setFieldErrors(prev => ({ ...prev, email: validateField('email', val) }));
+  };
+
+  const handlePasswordChange = (e) => {
+    const val = e.target.value;
+    setPassword(val);
+    setErrorMsg('');
+    setFieldErrors(prev => ({ ...prev, password: validateField('password', val) }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+
+    const emailErr = validateField('email', email);
+    const passErr = validateField('password', password);
+
+    if (emailErr || passErr) {
+      setFieldErrors({ email: emailErr, password: passErr });
+      setErrorMsg('Please correct the validation errors below before submitting.');
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
@@ -229,17 +273,24 @@ const SignIn = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="signin-form">
+        <form onSubmit={handleSubmit} className="signin-form" noValidate>
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input
               type="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
+              onBlur={(e) => setFieldErrors(prev => ({ ...prev, email: validateField('email', e.target.value) }))}
+              className={fieldErrors.email ? 'field-invalid' : ''}
               placeholder="name@example.com"
               required
             />
+            {fieldErrors.email && (
+              <span className="form-error-msg">
+                <i className="fa-solid fa-circle-exclamation"></i> {fieldErrors.email}
+              </span>
+            )}
           </div>
 
           <div className="form-group">
@@ -249,7 +300,9 @@ const SignIn = () => {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
+                onBlur={(e) => setFieldErrors(prev => ({ ...prev, password: validateField('password', e.target.value) }))}
+                className={fieldErrors.password ? 'field-invalid' : ''}
                 placeholder="••••••••"
                 required
               />
@@ -262,6 +315,11 @@ const SignIn = () => {
                 <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
               </button>
             </div>
+            {fieldErrors.password && (
+              <span className="form-error-msg">
+                <i className="fa-solid fa-circle-exclamation"></i> {fieldErrors.password}
+              </span>
+            )}
             {/* Right-aligned Forgot Password button directly below password input */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
               <button 

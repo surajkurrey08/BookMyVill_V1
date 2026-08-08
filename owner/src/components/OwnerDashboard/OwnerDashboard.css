@@ -236,6 +236,9 @@
   font-family: var(--od-body);
   text-align: left;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
   position: relative;
 }

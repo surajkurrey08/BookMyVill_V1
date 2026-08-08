@@ -55,6 +55,9 @@
   border-left: 3px solid transparent;
   border-radius: 0;
   text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: all 0.2s ease;
   cursor: pointer;
   width: 100%;

@@ -250,3 +250,19 @@
   width: 100%;
   margin-top: 4px;
 }
+
+.signin-form input.field-invalid {
+  border-color: #ff6b6b !important;
+  background: rgba(255, 107, 107, 0.1) !important;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.25) !important;
+}
+
+.signin-form .form-error-msg {
+  color: #ff6b6b;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}

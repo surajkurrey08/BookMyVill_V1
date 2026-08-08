@@ -692,28 +692,25 @@ const CaretakerDashboard = () => {
                 <i className="fa-solid fa-house-user"></i> Overview
               </button>
               <button className={`sb-nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>
-                <i className="fa-solid fa-user-clock"></i> Attendance Log
-                <span className="sb-badge gold">{attendanceLogs.length}</span>
+                <i className="fa-solid fa-user-clock"></i> Attendance
               </button>
               <button className={`sb-nav-item ${activeTab === 'duties' ? 'active' : ''}`} onClick={() => setActiveTab('duties')}>
-                <i className="fa-solid fa-clipboard-check"></i> Daily Duties
-                <span className="sb-badge">{duties.filter(d => !d.completed).length} pending</span>
+                <i className="fa-solid fa-clipboard-check"></i> Duties
               </button>
               <button className={`sb-nav-item ${activeTab === 'guests' ? 'active' : ''}`} onClick={() => setActiveTab('guests')}>
-                <i className="fa-solid fa-users-gear"></i> Guest Arrivals
-                <span className="sb-badge gold">{guestArrivals.length}</span>
+                <i className="fa-solid fa-users-gear"></i> Guests
               </button>
               <button className={`sb-nav-item ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>
                 <i className="fa-solid fa-triangle-exclamation"></i> Maintenance
               </button>
               <button className={`sb-nav-item ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => setActiveTab('inventory')}>
-                <i className="fa-solid fa-boxes-stacked"></i> Stock Inventory
+                <i className="fa-solid fa-boxes-stacked"></i> Inventory
               </button>
               <button className={`sb-nav-item ${activeTab === 'rules' ? 'active' : ''}`} onClick={() => setActiveTab('rules')}>
-                <i className="fa-solid fa-shield-halved"></i> Estate Rules
+                <i className="fa-solid fa-shield-halved"></i> Rules
               </button>
               <button className={`sb-nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-                <i className="fa-solid fa-user-gear"></i> My Profile
+                <i className="fa-solid fa-user-gear"></i> Profile
               </button>
             </div>
           </aside>

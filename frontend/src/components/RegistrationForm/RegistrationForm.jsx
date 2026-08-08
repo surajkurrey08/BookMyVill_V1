@@ -95,10 +95,13 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
   const handleInputChange = (field, value) => {
     const updatedData = { ...formData, [field]: value };
     setFormData(updatedData);
-    if (errors[field]) {
-      const fieldErr = validateField(field, value, updatedData.photos);
-      setErrors(prev => ({ ...prev, [field]: fieldErr }));
-    }
+    const fieldErr = validateField(field, value, updatedData.photos);
+    setErrors(prev => ({ ...prev, [field]: fieldErr }));
+  };
+
+  const handleInputBlur = (field) => {
+    const fieldErr = validateField(field, formData[field], formData.photos);
+    setErrors(prev => ({ ...prev, [field]: fieldErr }));
   };
 
   const convertToBase64 = (file) => {
@@ -346,6 +349,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                   className={errors.name ? 'field-invalid' : ''}
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
+                  onBlur={() => handleInputBlur('name')}
                   placeholder="Enter owner full name" 
                 />
                 {errors.name && (
@@ -364,6 +368,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                     className={errors.email ? 'field-invalid' : ''}
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
+                    onBlur={() => handleInputBlur('email')}
                     placeholder="owner@example.com" 
                   />
                   {errors.email && (
@@ -380,6 +385,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                     className={errors.phone ? 'field-invalid' : ''}
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onBlur={() => handleInputBlur('phone')}
                     placeholder="+91 9876543210" 
                   />
                   {errors.phone && (
@@ -399,6 +405,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                     className={errors.propertyName ? 'field-invalid' : ''}
                     value={formData.propertyName}
                     onChange={(e) => handleInputChange('propertyName', e.target.value)}
+                    onBlur={() => handleInputBlur('propertyName')}
                     placeholder="e.g. Royal Mist Villa" 
                   />
                   {errors.propertyName && (
@@ -462,6 +469,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                       const val = e.target.value === '' ? '' : Math.max(1, Math.abs(parseInt(e.target.value) || 1));
                       handleInputChange('price', val);
                     }}
+                    onBlur={() => handleInputBlur('price')}
                     placeholder="12000" 
                   />
                   {errors.price && (
@@ -478,6 +486,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                     className={errors.mapLink ? 'field-invalid' : ''}
                     value={formData.mapLink}
                     onChange={(e) => handleInputChange('mapLink', e.target.value)}
+                    onBlur={() => handleInputBlur('mapLink')}
                     placeholder="https://maps.app.goo.gl/..." 
                   />
                   {errors.mapLink && (
@@ -496,6 +505,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                   className={errors.description ? 'field-invalid' : ''}
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
+                  onBlur={() => handleInputBlur('description')}
                   placeholder="Describe bedrooms, amenities (pool, bonfire, Wi-Fi), and view..." 
                   style={{
                     width: '100%',

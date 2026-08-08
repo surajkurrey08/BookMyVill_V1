@@ -145,8 +145,55 @@ const AiAssistant = () => {
     }
   };
 
+const DYNAMIC_NLP_TOPICS = [
+  {
+    keywords: ['pet', 'pets', 'dog', 'dogs', 'cat', 'animal'],
+    response: "🐾 **Pet-Friendly Stays:**\nMost of our private luxury villas in Mahabaleshwar are pet-friendly! Guests can bring pets into private garden lawns. Please mention your pet details to the caretaker during check-in so extra pet bowls & bed setups can be prepared."
+  },
+  {
+    keywords: ['checkin', 'checkout', 'check in', 'check out', 'time', 'early', 'late', 'timing'],
+    response: "⏰ **Standard Check-in & Check-out Timings:**\n• Check-in: **12:00 PM**\n• Check-out: **10:00 AM**\n\n💡 *Early check-in or late check-out is available free of cost subject to villa availability. Simply contact your villa caretaker upon arrival!*"
+  },
+  {
+    keywords: ['food', 'breakfast', 'meal', 'lunch', 'dinner', 'cook', 'chef', 'eat', 'veg', 'non-veg', 'menu', 'tea'],
+    response: "🍽️ **Fresh Homemade Dining:**\n• Complimentary Maharashtrian breakfast (Pohe, Upma, Fresh Strawberry Juice/Tea).\n• Authentic Veg & Non-Veg meals (Mahabaleshwar style handi chicken/mutton).\n• Full access to private kitchen or personal caretaker cook."
+  },
+  {
+    keywords: ['pool', 'swimming', 'water', 'swim', 'jacuzzi'],
+    response: "🏊 **Private Infinity Pool & Sanitation:**\n• Temperature-checked fresh mountain water filtered daily.\n• Pool Hours: 6:00 AM - 10:00 PM.\n• Private gazebo dining & poolside lounge loungers."
+  },
+  {
+    keywords: ['wifi', 'internet', 'network', 'power', 'generator', 'backup', 'work', 'speed'],
+    response: "📶 **Connectivity & 24/7 Power Backup:**\n• High-speed fiber Wi-Fi (50+ Mbps) suitable for remote work.\n• 24/7 automatic DG generator backup for continuous lighting & hot water during foggy monsoon weather."
+  },
+  {
+    keywords: ['park', 'parking', 'car', 'vehicle', 'suv', 'bus', 'driver'],
+    response: "🚗 **Secure Gated Parking:**\n• Free private gated parking inside villa premises for up to 4 large SUVs.\n• Complimentary driver restroom & accommodation available on request."
+  },
+  {
+    keywords: ['bonfire', 'campfire', 'bbq', 'barbecue', 'fire', 'grill'],
+    response: "🔥 **Campfire & BBQ Nights:**\n• Complimentary wood logs for evening lawn campfire.\n• Marinated veg & non-veg barbecue grill setup managed by villa caretaker."
+  },
+  {
+    keywords: ['cancel', 'refund', 'policy', 'modify', 'change date'],
+    response: "🛡️ **Flexible Cancellation & Refund Policy:**\n• 100% full refund if cancelled 48 hours prior to check-in.\n• Free date modification within 30 days of booking.\n• Instant refund processing back to source payment account."
+  },
+  {
+    keywords: ['weather', 'rain', 'monsoon', 'temperature', 'winter', 'cloth', 'season', 'jacket'],
+    response: "🌤️ **Mahabaleshwar Climate & Attire Guide:**\n• Temperature: Cool 15°C – 22°C year-round.\n• Monsoon (Jun - Sep): Lush foggy valleys, waterfalls & heavy rain.\n• Winter (Oct - Feb): Fresh strawberry harvest & crisp chilly evenings.\n💡 *Recommendation: Carry a light jacket or sweater for chilly evenings.*"
+  },
+  {
+    keywords: ['party', 'event', 'birthday', 'anniversary', 'music', 'speaker', 'celebrate'],
+    response: "🎉 **Private Events & Celebrations:**\n• Private birthday/anniversary lawn decoration available on request.\n• High-bass Bluetooth speakers provided.\n• Outdoor music allowed till 10:00 PM as per hill station quiet hours."
+  },
+  {
+    keywords: ['couple', 'unmarried', 'safety', 'safe', 'family', 'kids'],
+    response: "🔒 **Guest Safety & Verification:**\n• 100% couple-friendly and family safe environment.\n• Valid Government Photo ID (Aadhaar, Passport, Driving License) required at check-in.\n• 24/7 gated CCTV security & dedicated local caretaker."
+  }
+];
+
   const generateBotReply = (userQuery) => {
-    const queryLower = userQuery.toLowerCase();
+    const queryLower = userQuery.toLowerCase().trim();
     
     // 1. Search Hotel & Location Database for User Perspective Details
     for (const item of HOTEL_AND_LOCATION_DATABASE) {
@@ -164,22 +211,30 @@ const AiAssistant = () => {
       }
     }
 
-    // 2. Check General Knowledge Base
+    // 2. Check Dynamic NLP Topics for User Defined Inputs
+    for (const topic of DYNAMIC_NLP_TOPICS) {
+      if (topic.keywords.some(kw => queryLower.includes(kw))) {
+        return topic.response;
+      }
+    }
+
+    // 3. Check General Knowledge Base
     for (const item of AI_KNOWLEDGE_BASE) {
       if (item.keywords.some(kw => queryLower.includes(kw))) {
         return item.response;
       }
     }
 
-    // 3. Dynamic Hotel/Location Fallback with User Perspective
-    const cleanTerm = userQuery.replace(/search|hotel|resort|villa|stay|location|tell|me|about|in|at|the|show|details/gi, '').trim();
-    return `🔍 **User Perspective Details for "${cleanTerm || userQuery}"**\n\n` +
-           `⭐ **Guest Rating:** 4.8/5 ⭐ (Highly Recommended Stay)\n` +
-           `🌿 **Guest Perspective & Vibe:** Surrounded by scenic Mahabaleshwar misty valleys, cool mountain air & peaceful luxury.\n` +
-           `🏡 **Key Amenities:** 24/7 Certified Caretaker, Swimming Pool / Garden View, Hot Water & Wi-Fi, Authentic Meals.\n` +
-           `📍 **Location Advantage:** Convenient access to main market, Venna Lake boating & local strawberry farms.\n` +
-           `💰 **Pricing Range:** ₹3,800 - ₹7,500 per night (Includes caretaker assistance).\n\n` +
-           `💡 **Guest Tip:** Weekend stays fill up fast! Check our **Explore Stays** section or call +91 98765 43210 to book.`;
+    // 4. Intelligent Smart NLP Generator for Any Custom User Defined Input
+    const cleanQuery = userQuery.replace(/[?.,!]/g, '').trim();
+    return `🤖 **Mahabaleshwar AI Luxury Assistant**\n\n` +
+           `Regarding your query: **"${cleanQuery}"**\n\n` +
+           `✨ **Assistance & Guidance:**\n` +
+           `All properties on Mahabaleshwar Luxury Stays are fully serviced to accommodate custom guest requirements regarding **${cleanQuery}**!\n\n` +
+           `• **24/7 Caretaker Assistance:** Certified local caretakers manage check-in, key handovers, meals & custom guest preferences.\n` +
+           `• **Premium Amenities:** Private pool, high-speed Wi-Fi, 24/7 generator power backup, gated SUV parking & lawn bonfire.\n` +
+           `• **Flexible Booking:** Instant confirmation with 100% flexible 48-hour cancellation policy.\n\n` +
+           `📞 **Need Direct Help?** Call our 24/7 Support Helpline at **+91 98765 43210** or message our live WhatsApp concierge!`;
   };
 
   const handleSendMessage = (textToSend) => {

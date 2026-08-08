@@ -34,6 +34,10 @@ const FeedbackSchema = new mongoose.Schema({
   facilitiesUsed: [{
     type: String
   }],
+  selectedForHotelPage: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

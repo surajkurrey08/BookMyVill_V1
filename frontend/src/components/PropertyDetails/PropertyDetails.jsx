@@ -52,6 +52,27 @@ const PropertyDetails = () => {
     index: 0
   });
   const [zoomScale, setZoomScale] = useState(1);
+  const [ownerSelectedReviews, setOwnerSelectedReviews] = useState([]);
+  const [showBookingAnimation, setShowBookingAnimation] = useState(false);
+
+  useEffect(() => {
+    const fetchPropertyFeedback = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/feedback/property/${id || property?._id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setOwnerSelectedReviews(data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch owner feedback:', err);
+      }
+    };
+    if (id || property?._id) {
+      fetchPropertyFeedback();
+    }
+  }, [id, property]);
 
   const formatCardNumber = (value) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
@@ -594,18 +615,21 @@ const PropertyDetails = () => {
 
       const resData = await response.json();
       if (response.ok) {
+        setShowFakeModal(false);
+        setShowBookingAnimation(true);
         setBookingNotice({ type: 'success', msg: 'Payment Successful! Your reservation has been confirmed.' });
         setTimeout(() => {
           navigate('/dashboard');
-        }, 1500);
+        }, 3500);
       } else {
         setBookingNotice({ type: 'error', msg: `Payment simulation failed: ${resData.msg || 'Unknown error'}` });
+        setShowFakeModal(false);
       }
     } catch (err) {
       setBookingNotice({ type: 'error', msg: 'Network Error: Could not reach the server.' });
+      setShowFakeModal(false);
     } finally {
       setIsProcessing(false);
-      setShowFakeModal(false);
     }
   };
 
@@ -1071,6 +1095,69 @@ const PropertyDetails = () => {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Owner Selected Guest Reviews & Stay Feedback */}
+              <div className="description-card glass-morphism" style={{ marginTop: '24px', padding: '24px 28px', borderRadius: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#d4af37', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <i className="fa-solid fa-star" style={{ color: '#d4af37' }}></i>
+                    Verified Guest Reviews & Host Featured Feedback
+                  </h3>
+                  <span style={{ fontSize: '0.8rem', background: 'rgba(212, 175, 55, 0.15)', color: '#d4af37', padding: '4px 12px', borderRadius: '14px', border: '1px solid rgba(212, 175, 55, 0.3)', fontWeight: '700' }}>
+                    ★ Selected by Property Owner
+                  </span>
+                </div>
+                <p style={{ margin: '0 0 20px 0', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Hand-picked guest reviews and authentic stay experiences selected directly by the property owner.
+                </p>
+
+                {ownerSelectedReviews && ownerSelectedReviews.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                    {ownerSelectedReviews.map((rev, idx) => (
+                      <div key={rev._id || idx} style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(212, 175, 55, 0.25)',
+                        borderRadius: '16px',
+                        padding: '18px 20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '12px'
+                      }}>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <strong style={{ fontSize: '1rem', color: '#ffffff', fontWeight: '700' }}>{rev.guestName}</strong>
+                            <div style={{ display: 'flex', gap: '3px' }}>
+                              {[...Array(5)].map((_, i) => (
+                                <i key={i} className={`fa-solid fa-star${i < (rev.rating || 5) ? '' : '-o'}`} style={{ color: i < (rev.rating || 5) ? '#d4af37' : 'rgba(255,255,255,0.2)', fontSize: '0.85rem' }}></i>
+                              ))}
+                            </div>
+                          </div>
+                          <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.9)', fontStyle: 'italic', lineHeight: 1.5 }}>
+                            "{rev.reviewText}"
+                          </p>
+                        </div>
+
+                        {rev.facilitiesUsed && rev.facilitiesUsed.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                            {rev.facilitiesUsed.map((fac, fIdx) => (
+                              <span key={fIdx} style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '2px 8px', borderRadius: '8px', fontWeight: '600' }}>
+                                ✓ {fac}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '12px', border: '1px dashed rgba(212, 175, 55, 0.3)' }}>
+                    <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>
+                      No owner-featured reviews selected yet. Check back soon!
+                    </p>
+                  </div>
+                )}
               </div>
 
             </div>
@@ -1596,6 +1683,102 @@ const PropertyDetails = () => {
             </div>
           </div>
         )}
+        {/* LUXURY HOTEL BOOKING SUCCESS ANIMATION OVERLAY */}
+        {showBookingAnimation && (
+          <div className="booking-success-overlay">
+            <div className="booking-success-container">
+              {/* Sparkle Particles Burst */}
+              <div className="confetti-burst">
+                {[...Array(14)].map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="sparkle-particle" 
+                    style={{
+                      left: `${8 + i * 6.8}%`,
+                      animationDelay: `${(i % 5) * 0.25}s`,
+                      background: i % 2 === 0 ? '#d4af37' : '#10b981'
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Glowing Success Ring Icon */}
+              <div className="success-ring-box">
+                <i className="fa-solid fa-circle-check success-check-icon"></i>
+              </div>
+
+              <h2 style={{ color: '#d4af37', fontFamily: 'var(--font-heading, serif)', fontSize: '1.8rem', margin: '0 0 6px 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                Booking Confirmed!
+              </h2>
+              <p style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '0.95rem', margin: '0 0 16px 0' }}>
+                Your stay reservation at <strong>{property?.name}</strong> is officially locked & confirmed.
+              </p>
+
+              {/* Hotel Booking Ticket Voucher */}
+              <div className="booking-ticket-card">
+                <div className="ticket-confirmed-stamp">
+                  <i className="fa-solid fa-shield-check" style={{ marginRight: '4px' }}></i> RESERVED
+                </div>
+
+                <div className="ticket-header-row">
+                  <img 
+                    src={property?.image || (property?.photos && property?.photos[0] ? property.photos[0] : 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=600&q=80')} 
+                    alt={property?.name} 
+                    className="ticket-prop-thumb" 
+                  />
+                  <div>
+                    <h4 className="ticket-prop-name">{property?.name}</h4>
+                    <p className="ticket-prop-loc"><i className="fa-solid fa-location-dot" style={{ color: '#d4af37', marginRight: '4px' }}></i> {property?.location}</p>
+                  </div>
+                </div>
+
+                <div className="ticket-details-grid">
+                  <div className="ticket-field">
+                    <label>CHECK-IN</label>
+                    <span>{bookingDates.checkIn || '2026-08-10'}</span>
+                  </div>
+                  <div className="ticket-field">
+                    <label>CHECK-OUT</label>
+                    <span>{bookingDates.checkOut || bookingDates.checkIn || '2026-08-12'}</span>
+                  </div>
+                  <div className="ticket-field">
+                    <label>GUEST COUNT</label>
+                    <span>{guests} Guest(s)</span>
+                  </div>
+                  <div className="ticket-field">
+                    <label>TOTAL PAID</label>
+                    <span style={{ color: '#10b981' }}>₹{calculateTotalPrice().toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stepper Progress */}
+              <div className="booking-stepper-box">
+                <div className="stepper-step">
+                  <div className="stepper-icon-circle"><i className="fa-solid fa-credit-card"></i></div>
+                  <span>Paid</span>
+                </div>
+                <div className="stepper-step">
+                  <div className="stepper-icon-circle"><i className="fa-solid fa-hotel"></i></div>
+                  <span>Room Locked</span>
+                </div>
+                <div className="stepper-step">
+                  <div className="stepper-icon-circle"><i className="fa-solid fa-qrcode"></i></div>
+                  <span>Pass Issued</span>
+                </div>
+              </div>
+
+              {/* Redirect Progress Bar */}
+              <div className="redirect-progress-bar-wrap">
+                <div className="redirect-progress-bar-fill"></div>
+              </div>
+              <span style={{ fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.65)', marginTop: '8px', display: 'block' }}>
+                Redirecting to your Guest Portal in 3 seconds...
+              </span>
+            </div>
+          </div>
+        )}
+
         <Footer />
       </div>
     </>

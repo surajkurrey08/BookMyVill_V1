@@ -114,6 +114,11 @@ const CaretakerApply = () => {
     if (successMsg) setSuccessMsg('');
   };
 
+  const handleBlur = (field) => {
+    const fieldErr = validateField(field, form[field]);
+    setErrors((prev) => ({ ...prev, [field]: fieldErr }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccessMsg('');
@@ -233,6 +238,7 @@ const CaretakerApply = () => {
                   placeholder="Enter full legal name"
                   value={form.fullName}
                   onChange={(e) => handleChange('fullName', e.target.value)}
+                  onBlur={() => handleBlur('fullName')}
                   className={`caretaker-input ${errors.fullName ? 'has-error' : ''}`}
                 />
                 {errors.fullName && <div className="error-msg">{errors.fullName}</div>}
@@ -247,6 +253,7 @@ const CaretakerApply = () => {
                   placeholder="+91 9876543210"
                   value={form.phone}
                   onChange={(e) => handleChange('phone', e.target.value)}
+                  onBlur={() => handleBlur('phone')}
                   className={`caretaker-input ${errors.phone ? 'has-error' : ''}`}
                 />
                 {errors.phone && <div className="error-msg">{errors.phone}</div>}
@@ -263,6 +270,7 @@ const CaretakerApply = () => {
                   placeholder="caretaker@example.com"
                   value={form.email}
                   onChange={(e) => handleChange('email', e.target.value)}
+                  onBlur={() => handleBlur('email')}
                   className={`caretaker-input ${errors.email ? 'has-error' : ''}`}
                 />
                 {errors.email && <div className="error-msg">{errors.email}</div>}
@@ -277,6 +285,7 @@ const CaretakerApply = () => {
                   placeholder="Enter Aadhaar / PAN / License No."
                   value={form.govtId}
                   onChange={(e) => handleChange('govtId', e.target.value)}
+                  onBlur={() => handleBlur('govtId')}
                   className={`caretaker-input ${errors.govtId ? 'has-error' : ''}`}
                 />
                 {errors.govtId && <div className="error-msg">{errors.govtId}</div>}
@@ -338,6 +347,7 @@ const CaretakerApply = () => {
                 placeholder="Describe your property host experience, previous stay management, key capabilities..."
                 value={form.bio}
                 onChange={(e) => handleChange('bio', e.target.value)}
+                onBlur={() => handleBlur('bio')}
                 className={`caretaker-textarea ${errors.bio ? 'has-error' : ''}`}
               ></textarea>
               {errors.bio && <div className="error-msg">{errors.bio}</div>}

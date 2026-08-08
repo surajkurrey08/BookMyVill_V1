@@ -71,16 +71,24 @@
   align-items: center;
 }
 
-.input-wrapper i {
+.input-wrapper i,
+.input-wrapper svg {
   position: absolute;
   left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--text-secondary);
   font-size: 1rem;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .input-wrapper input {
   width: 100%;
-  padding: 14px 16px 14px 46px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  padding-right: 16px;
+  padding-left: 46px !important;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -88,6 +96,7 @@
   font-family: var(--font-body);
   font-size: 0.95rem;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .input-wrapper input:focus {
@@ -99,6 +108,22 @@
 
 .input-wrapper input::placeholder {
   color: rgba(255, 255, 255, 0.25);
+}
+
+.input-wrapper input.field-invalid {
+  border-color: #ff6b6b !important;
+  background: rgba(255, 107, 107, 0.1) !important;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.25) !important;
+}
+
+.form-error-msg {
+  color: #ff6b6b;
+  font-size: 0.78rem;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
 }
 
 .login-btn {

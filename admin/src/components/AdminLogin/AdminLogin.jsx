@@ -6,6 +6,7 @@ import { API_BASE_URL } from '../../config';
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,9 +28,53 @@ const AdminLogin = () => {
     }
   }, [navigate]);
 
+  const validateField = (fieldName, value) => {
+    let err = '';
+    const trimmed = (value || '').trim();
+    if (fieldName === 'email') {
+      if (!trimmed) {
+        err = 'Admin email address is required.';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        err = 'Please enter a valid admin email address (e.g. admin@mahabaleshwar.com).';
+      }
+    }
+    if (fieldName === 'password') {
+      if (!value) {
+        err = 'Security password is required.';
+      } else if (value.length < 6) {
+        err = 'Security password must be at least 6 characters long.';
+      }
+    }
+    return err;
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    setError('');
+    setFieldErrors(prev => ({ ...prev, email: validateField('email', val) }));
+  };
+
+  const handlePasswordChange = (e) => {
+    const val = e.target.value;
+    setPassword(val);
+    setError('');
+    setFieldErrors(prev => ({ ...prev, password: validateField('password', val) }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    const emailErr = validateField('email', email);
+    const passErr = validateField('password', password);
+
+    if (emailErr || passErr) {
+      setFieldErrors({ email: emailErr, password: passErr });
+      setError('Please correct the highlighted validation errors below.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -81,7 +126,7 @@ const AdminLogin = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="login-form">
+        <form onSubmit={handleSubmit} className="login-form" noValidate>
           <div className="form-group">
             <label htmlFor="email">Admin Email</label>
             <div className="input-wrapper">
@@ -90,12 +135,19 @@ const AdminLogin = () => {
                 type="email"
                 id="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
+                onBlur={(e) => setFieldErrors(prev => ({ ...prev, email: validateField('email', e.target.value) }))}
+                className={fieldErrors.email ? 'field-invalid' : ''}
                 placeholder="admin@mahabaleshwar.com"
                 required
                 disabled={loading}
               />
             </div>
+            {fieldErrors.email && (
+              <span className="form-error-msg">
+                <i className="fa-solid fa-circle-exclamation"></i> {fieldErrors.email}
+              </span>
+            )}
           </div>
 
           <div className="form-group">
@@ -106,12 +158,19 @@ const AdminLogin = () => {
                 type="password"
                 id="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
+                onBlur={(e) => setFieldErrors(prev => ({ ...prev, password: validateField('password', e.target.value) }))}
+                className={fieldErrors.password ? 'field-invalid' : ''}
                 placeholder="••••••••••••"
                 required
                 disabled={loading}
               />
             </div>
+            {fieldErrors.password && (
+              <span className="form-error-msg">
+                <i className="fa-solid fa-circle-exclamation"></i> {fieldErrors.password}
+              </span>
+            )}
           </div>
 
           <button type="submit" className="btn-primary login-btn" disabled={loading}>

@@ -1509,5 +1509,260 @@ select.payment-input-field option {
   }
 }
 
+/* ==========================================================================
+   LUXURY HOTEL BOOKING SUCCESS ANIMATION OVERLAY
+   ========================================================================== */
+.booking-success-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 12, 10, 0.95);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 20px;
+  animation: fadeInOverlay 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.booking-success-container {
+  width: 100%;
+  max-width: 540px;
+  background: linear-gradient(145deg, rgba(20, 42, 34, 0.96) 0%, rgba(10, 24, 19, 0.98) 100%);
+  border: 2px solid rgba(212, 175, 55, 0.6);
+  border-radius: 28px;
+  padding: 36px 28px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 60px rgba(212, 175, 55, 0.3);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: popSuccessModal 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popSuccessModal {
+  0% { opacity: 0; transform: scale(0.7) translateY(40px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Confetti Sparkles Burst */
+.confetti-burst {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.sparkle-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d4af37;
+  box-shadow: 0 0 10px #ffd700, 0 0 20px #d4af37;
+  animation: floatSparkleParticle 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+@keyframes floatSparkleParticle {
+  0% { opacity: 0; transform: translateY(0) scale(0) rotate(0deg); }
+  30% { opacity: 1; transform: translateY(-40px) scale(1.4) rotate(90deg); }
+  100% { opacity: 0; transform: translateY(-120px) scale(0) rotate(180deg); }
+}
+
+/* Animated Success Checkmark Ring */
+.success-ring-box {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 20px auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(16, 185, 129, 0.3) 100%);
+  border: 3px solid #d4af37;
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.3);
+  animation: pulseGoldRing 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulseGoldRing {
+  0% { transform: scale(1); box-shadow: 0 0 25px rgba(212, 175, 55, 0.5); }
+  100% { transform: scale(1.08); box-shadow: 0 0 45px rgba(212, 175, 55, 0.9), 0 0 20px rgba(16, 185, 129, 0.6); }
+}
+
+.success-check-icon {
+  font-size: 3rem;
+  color: #d4af37;
+  text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
+  animation: checkmarkPopIn 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes checkmarkPopIn {
+  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+  70% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Hotel Booking Ticket Voucher Card */
+.booking-ticket-card {
+  background: rgba(12, 28, 22, 0.9);
+  border: 1px dashed rgba(212, 175, 55, 0.4);
+  border-radius: 20px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: left;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: slideUpTicket 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+@keyframes slideUpTicket {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Confirmed Stamp Impact */
+.ticket-confirmed-stamp {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  border: 2px solid #10b981;
+  color: #10b981;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transform: rotate(-10deg);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+  animation: stampImpact 0.6s cubic-bezier(0.6, -0.28, 0.735, 0.045) 0.5s both;
+}
+
+@keyframes stampImpact {
+  0% { opacity: 0; transform: scale(3) rotate(-30deg); }
+  70% { opacity: 1; transform: scale(0.9) rotate(-10deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-10deg); }
+}
+
+.ticket-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ticket-prop-thumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1.5px solid #d4af37;
+}
+
+.ticket-prop-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 2px 0;
+}
+
+.ticket-prop-loc {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+}
+
+.ticket-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.ticket-field label {
+  font-size: 0.7rem;
+  color: #d4af37;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.ticket-field span {
+  font-size: 0.92rem;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Stepper Animation */
+.booking-stepper-box {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  position: relative;
+}
+
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 700;
+}
+
+.stepper-icon-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1.5px solid #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+/* Auto Redirect Progress Bar */
+.redirect-progress-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin-top: 24px;
+  overflow: hidden;
+}
+
+.redirect-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #d4af37 0%, #10b981 100%);
+  border-radius: 4px;
+  width: 0%;
+  animation: fillRedirectBar 2.8s linear forwards;
+}
+
+@keyframes fillRedirectBar {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
 
 

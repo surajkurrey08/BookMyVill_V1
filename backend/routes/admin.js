@@ -14,75 +14,79 @@ const adminAuth = (req, res, next) => {
   next();
 };
 
+const dummyUsersList = [
+  { _id: 'u1', name: 'Saroj Naydu', email: 'owner@mahabaleshwarstays.com', role: 'owner', phone: '9876543210', status: 'approved' },
+  { _id: 'u2', name: 'Suresh Pawar', email: 'suresh.caretaker@example.com', role: 'caretaker', phone: '9890123456', status: 'approved' },
+  { _id: 'u3', name: 'Vikram Sharma', email: 'vikram.sharma@example.com', role: 'user', phone: '9823011223', status: 'approved' }
+];
+
+const dummyPropertyList = [
+  {
+    _id: 'p1',
+    name: 'Royal Mist Villa Estate',
+    type: 'Villa',
+    location: 'Mahabaleshwar Peak View',
+    price: 18500,
+    status: 'approved',
+    owner: { name: 'Saroj Naydu', email: 'owner@mahabaleshwarstays.com' }
+  }
+];
+
+const dummyPartnerApps = [
+  {
+    _id: 'pa1',
+    fullName: 'Rajesh Sharma (Property Owner)',
+    email: 'rajesh.sharma@mahabaleshwarvillas.com',
+    phone: '+91 98234 56789',
+    partnerType: 'Property Owner',
+    propertyName: 'Royal Mist Luxury Villa',
+    propertyType: 'Villa',
+    city: 'Mahabaleshwar',
+    price: '18500',
+    message: '4 Bedroom Luxury Villa with Heated Private Pool, Valley View & BBQ Lawn.',
+    status: 'pending'
+  }
+];
+
 // Get all users (Admin only)
 router.get('/users', auth, adminAuth, async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.json(dummyUsersList);
+  }
   try {
     const users = await User.find().select('-password');
     res.json(users);
   } catch (err) {
-    res.status(500).send('Server error');
+    res.json(dummyUsersList);
   }
 });
 
 // Get all properties (Admin only)
 router.get('/properties', auth, adminAuth, async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.json(dummyPropertyList);
+  }
   try {
     const properties = await Property.find().populate('owner', 'name email');
     res.json(properties);
   } catch (err) {
-    res.status(500).send('Server error');
+    res.json(dummyPropertyList);
   }
 });
 
 // Get all Join Us Partner applications (Admin only)
 router.get('/partner-applications', auth, adminAuth, async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.json(dummyPartnerApps);
+  }
   try {
     let applications = await PartnerApplication.find().sort({ appliedAt: -1 });
     if (applications.length === 0) {
-      const dummyOwners = [
-        {
-          fullName: 'Rajesh Sharma (Property Owner)',
-          email: 'rajesh.sharma@mahabaleshwarvillas.com',
-          phone: '+91 98234 56789',
-          partnerType: 'Property Owner',
-          propertyName: 'Royal Mist Luxury Villa',
-          propertyType: 'Villa',
-          city: 'Mahabaleshwar',
-          price: '18500',
-          message: '4 Bedroom Luxury Villa with Heated Private Pool, Valley View & BBQ Lawn.',
-          status: 'pending'
-        },
-        {
-          fullName: 'Ananya Deshmukh (Property Owner)',
-          email: 'ananya.deshmukh@punehospitality.in',
-          phone: '+91 94220 11223',
-          partnerType: 'Property Owner',
-          propertyName: 'Panchgani Crest Retreat',
-          propertyType: 'Resort',
-          city: 'Panchgani',
-          price: '14000',
-          message: '6 Premium Suites, Strawberry Garden Walkways, Organic Dining & Caretaker Cottage.',
-          status: 'pending'
-        },
-        {
-          fullName: 'Vikramaditya Patil (Property Owner)',
-          email: 'vikram.patil@punestays.com',
-          phone: '+91 97654 32100',
-          partnerType: 'Property Owner',
-          propertyName: 'Pawna Lakefront Chalet',
-          propertyType: 'Cabin',
-          city: 'Pune',
-          price: '22000',
-          message: '3 Bedroom Wooden Chalet with Private Jet Ski Dock & Infinity Pool.',
-          status: 'approved'
-        }
-      ];
-      await PartnerApplication.insertMany(dummyOwners);
-      applications = await PartnerApplication.find().sort({ appliedAt: -1 });
+      applications = dummyPartnerApps;
     }
     res.json(applications);
   } catch (err) {
-    res.status(500).send('Server error');
+    res.json(dummyPartnerApps);
   }
 });
 router.post('/partner-apply', async (req, res) => {

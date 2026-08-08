@@ -48,7 +48,7 @@ const AiAssistant = () => {
   }, [messages, isTyping]);
 
   const generateBotReply = (userQuery) => {
-    const queryLower = userQuery.toLowerCase();
+    const queryLower = userQuery.toLowerCase().trim();
     
     for (const kb of CARETAKER_AI_KNOWLEDGE_BASE) {
       if (kb.keywords.some(kw => queryLower.includes(kw))) {
@@ -56,7 +56,15 @@ const AiAssistant = () => {
       }
     }
 
-    return "🤖 **Caretaker Assistant:**\nFor property maintenance, key handovers, or emergency staff requests, choose a suggested topic below or contact Property Host / Admin!";
+    const cleanQuery = userQuery.replace(/[?.,!]/g, '').trim();
+    return `🤖 **Caretaker Operations AI Assistant**\n\n` +
+           `Regarding your staff task query: **"${cleanQuery}"**\n\n` +
+           `🛠️ **Caretaker Guidance & Safety Protocol:**\n` +
+           `For managing **${cleanQuery}** at the villa premises:\n\n` +
+           `• **Guest Assistance:** Always inspect guest verification IDs and hand over master keys / lockbox codes warmly.\n` +
+           `• **Sanitation Checklist:** Ensure pool filtration, daily room linen change, and bathroom restocking before 12:00 PM check-in.\n` +
+           `• **Safety Rules:** Maintain bonfire safety bucket and enforce 10:00 PM quiet hours as per local hill station rules.\n\n` +
+           `📞 **Emergency Staff Line:** Contact Property Host or Admin Hotline at +91 98765 43210 for urgent assistance!`;
   };
 
   const handleSendMessage = (textToSend) => {
@@ -93,12 +101,12 @@ const AiAssistant = () => {
         <button 
           className="ai-floating-trigger"
           onClick={() => setIsOpen(true)}
-          title="Open Caretaker AI Assistant"
+          title="Caretaker AI Assistant"
         >
           <div className="ai-trigger-icon-pulse">
             <i className="fa-solid fa-user-shield"></i>
           </div>
-          <span className="ai-trigger-label">Caretaker AI Assistant</span>
+          <span className="ai-unread-dot"></span>
         </button>
       )}
 

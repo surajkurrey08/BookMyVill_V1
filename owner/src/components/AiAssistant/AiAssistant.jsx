@@ -3,20 +3,24 @@ import './AiAssistant.css';
 
 const OWNER_AI_KNOWLEDGE_BASE = [
   {
-    keywords: ['price', 'pricing', 'rate', 'revenue', 'tariff'],
-    response: "💡 **Host Dynamic Pricing Advisor:**\n• Peak Monsoon & Weekend Demand (Fri-Sun): Increase night rates by **25% - 35%**.\n• Off-peak Weekday Discount (Mon-Thu): Offer **15% discount** to boost occupancy.\n• Extra Guest Fee: Standard ₹1,000 per extra adult per night."
+    keywords: ['price', 'pricing', 'rate', 'revenue', 'tariff', 'cost'],
+    response: "💡 **Host Dynamic Pricing Advisor:**\n• Peak Monsoon & Weekend Demand (Fri-Sun): Increase night rates by **25% - 35%**.\n• Off-peak Weekday Discount (Mon-Thu): Offer **15% discount** to boost occupancy.\n• Extra Guest Fee: Standard ₹1,000 per extra adult per night.\n• Instant Discount: Apply 10% coupon for bookings over 3 nights."
   },
   {
-    keywords: ['caretaker', 'duty', 'staff', 'clean', 'pool', 'linen'],
-    response: "🛡️ **Caretaker Management:**\n• Assign daily shift duties in **Caretaker & Daily Tasks** tab.\n• Ensure pool water filtration & linen sanitation checklist before guest check-in.\n• Emergency Request: Click 'Send Caretaker Request to Admin' in top bar."
+    keywords: ['caretaker', 'duty', 'staff', 'clean', 'pool', 'linen', 'laundry'],
+    response: "🛡️ **Caretaker Management & Guidelines:**\n• Assign daily shift duties in **Caretaker & Daily Tasks** tab.\n• Ensure pool water filtration & linen sanitation checklist before guest check-in.\n• Emergency Request: Click 'Send Caretaker Request to Admin' in top bar."
   },
   {
-    keywords: ['payout', 'bank', 'earnings', 'settle', 'money'],
-    response: "💳 **Bank Payout & Earnings:**\n• Direct payouts are processed every **Monday morning** directly to your registered bank account.\n• Track net earnings & stay breakdown under **Earnings & Financials** tab."
+    keywords: ['payout', 'bank', 'earnings', 'settle', 'money', 'payment'],
+    response: "💳 **Bank Payout & Financials:**\n• Direct payouts are processed every **Monday morning** directly to your registered bank account.\n• Track net earnings & stay breakdown under **Earnings & Financials** tab.\n• GST invoices are auto-generated for all completed stays."
   },
   {
-    keywords: ['occupancy', 'boost', 'photo', 'booking'],
-    response: "📈 **Boost Villa Occupancy:**\n1. Upload at least **6 high-definition photos** including sunset views.\n2. Enable **Live GPS Map Location** link.\n3. Add complimentary amenities like campfire setup or welcome strawberry drinks."
+    keywords: ['occupancy', 'boost', 'photo', 'booking', 'promote', 'guests'],
+    response: "📈 **Boost Villa Occupancy:**\n1. Upload at least **6 high-definition photos** including sunset views.\n2. Enable **Live GPS Map Location** link.\n3. Add complimentary amenities like campfire setup or welcome strawberry drinks.\n4. Keep caretaker response time under 15 minutes."
+  },
+  {
+    keywords: ['sightseeing', 'location', 'point', 'mapro', 'lake', 'tourist'],
+    response: "📍 **Mahabaleshwar Sightseeing Support:**\n• Venna Lake: 15 mins drive (Boating & Horse Riding)\n• Mapro Garden: Fresh Strawberry Cream & Wood-fired Pizza\n• Arthur's Seat & Elephant Head: Panoramic Savitri Valley Echo Point\n• Panchgani Table Land: Sunset point & paragliding"
   }
 ];
 
@@ -24,7 +28,8 @@ const OWNER_SUGGESTIONS = [
   { label: '💡 Dynamic Pricing Tips', query: 'How should I price my villa rates?' },
   { label: '🛡️ Caretaker Duties', query: 'How to manage caretaker staff duties?' },
   { label: '💳 Payout Schedules', query: 'When are bank payouts processed?' },
-  { label: '📈 Boost Villa Bookings', query: 'How to boost property occupancy?' }
+  { label: '📈 Boost Occupancy', query: 'How to boost property occupancy?' },
+  { label: '📍 Local Sightseeing Points', query: 'What local sightseeing points should I recommend to guests?' }
 ];
 
 const AiAssistant = () => {
@@ -47,8 +52,18 @@ const AiAssistant = () => {
     }
   }, [messages, isTyping]);
 
+  const speakText = (text) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const cleanText = text.replace(/[*_#•]/g, '');
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.rate = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
   const generateBotReply = (userQuery) => {
-    const queryLower = userQuery.toLowerCase();
+    const queryLower = userQuery.toLowerCase().trim();
     
     for (const kb of OWNER_AI_KNOWLEDGE_BASE) {
       if (kb.keywords.some(kw => queryLower.includes(kw))) {
@@ -56,7 +71,15 @@ const AiAssistant = () => {
       }
     }
 
-    return "🤖 **Host Assistant:**\nFor host account inquiries, pricing optimizations, or caretaker assignments, select from the suggested topics below or contact Admin Support!";
+    const cleanQuery = userQuery.replace(/[?.,!]/g, '').trim();
+    return `🤖 **Property Owner AI Advisor**\n\n` +
+           `Regarding your host query: **"${cleanQuery}"**\n\n` +
+           `💡 **Host Guidance & Assistance:**\n` +
+           `As a property owner on Mahabaleshwar Luxury Stays, you have full control over **${cleanQuery}**!\n\n` +
+           `• **Dashboard Control:** Update villa tariffs, manage availability calendars, and review guest arrivals in real-time.\n` +
+           `• **Caretaker Coordination:** Assign tasks, pool maintenance, and check-in schedules directly via the Caretaker Portal.\n` +
+           `• **Direct Bank Payouts:** Every Monday morning, net booking payouts are directly deposited to your bank account.\n\n` +
+           `📞 **Host Partner Helpdesk:** Call +91 98765 43210 or email partner-support@mahabaleshwarstays.com for dedicated host assistance.`;
   };
 
   const handleSendMessage = (textToSend) => {
@@ -87,18 +110,29 @@ const AiAssistant = () => {
     }, 600);
   };
 
+  const clearChat = () => {
+    setMessages([
+      {
+        id: Date.now(),
+        sender: 'bot',
+        text: "Chat reset! How else can I assist your property hosting?",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+  };
+
   return (
     <div className="ai-assistant-wrapper">
       {!isOpen && (
         <button 
           className="ai-floating-trigger"
           onClick={() => setIsOpen(true)}
-          title="Open Owner AI Advisor"
+          title="Mahabaleshwar Host AI Assistant"
         >
           <div className="ai-trigger-icon-pulse">
             <i className="fa-solid fa-wand-magic-sparkles"></i>
           </div>
-          <span className="ai-trigger-label">Host AI Assistant</span>
+          <span className="ai-unread-dot"></span>
         </button>
       )}
 
@@ -111,10 +145,19 @@ const AiAssistant = () => {
               </div>
               <div>
                 <h3>Host AI Advisor</h3>
-                <span className="ai-online-status">🟢 Online • Owner Intelligence</span>
+                <span className="ai-online-status">🟢 Online • Owner Support</span>
               </div>
             </div>
-            <button className="ai-close-btn" onClick={() => setIsOpen(false)}>×</button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button 
+                onClick={clearChat} 
+                title="Reset Chat"
+                style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: '0.9rem', opacity: 0.8 }}
+              >
+                <i className="fa-solid fa-rotate-left"></i>
+              </button>
+              <button className="ai-close-btn" onClick={() => setIsOpen(false)}>×</button>
+            </div>
           </div>
 
           <div className="ai-chat-body" ref={chatBodyRef}>
@@ -129,7 +172,18 @@ const AiAssistant = () => {
                       <p key={idx}>{line}</p>
                     ))}
                   </div>
-                  <span className="ai-message-time">{msg.time}</span>
+                  <span className="ai-message-time">
+                    {msg.time}
+                    {msg.sender === 'bot' && (
+                      <button 
+                        onClick={() => speakText(msg.text)} 
+                        title="Listen Voice"
+                        style={{ background: 'none', border: 'none', color: '#d4af37', cursor: 'pointer', marginLeft: '6px', fontSize: '0.75rem' }}
+                      >
+                        <i className="fa-solid fa-volume-high"></i>
+                      </button>
+                    )}
+                  </span>
                 </div>
               </div>
             ))}

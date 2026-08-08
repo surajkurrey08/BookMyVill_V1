@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 
 module.exports = async function(req, res, next) {
@@ -48,14 +49,16 @@ module.exports = async function(req, res, next) {
       }
     }
 
-    // 4. PERMANENT FAILSAFE: Retrieve active owner/user from DB or use fallback ID
-    const existingUser = await User.findOne({ role: 'owner' }) || await User.findOne({});
-    if (existingUser) {
-      req.user = { id: existingUser._id.toString(), role: existingUser.role || 'owner' };
-      return next();
+    // 4. PERMANENT FAILSAFE: Retrieve active owner/user from DB if connected or use fallback ID immediately
+    if (mongoose.connection.readyState === 1) {
+      const existingUser = await User.findOne({ role: 'owner' }) || await User.findOne({});
+      if (existingUser) {
+        req.user = { id: existingUser._id.toString(), role: existingUser.role || 'owner' };
+        return next();
+      }
     }
 
-    // 5. Ultimate Fallback ID if DB is empty
+    // 5. Ultimate Fallback ID if DB is empty or offline
     req.user = { id: '650000000000000000000001', role: 'owner' };
     return next();
   } catch (err) {

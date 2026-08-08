@@ -522,6 +522,31 @@ const OwnerDashboard = () => {
     }));
   };
 
+  const handleToggleSelectFeedback = async (fbId) => {
+    try {
+      const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/feedback/${fbId}/toggle-select`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        }
+      });
+
+      if (res.ok) {
+        setTouristFeedbackList(prev => prev.map(item => {
+          const idMatches = (item._id === fbId) || (item.id === fbId);
+          if (idMatches) {
+            return { ...item, selectedForHotelPage: !item.selectedForHotelPage };
+          }
+          return item;
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to toggle feedback selection:', err);
+    }
+  };
+
   const handleToggleAmenity = (amenityName) => {
     setPropertyForm(prev => {
       const current = prev.amenities || [];
@@ -776,55 +801,55 @@ const OwnerDashboard = () => {
               className={`nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
               onClick={() => handleTabChange('overview')}
             >
-              <i className="fa-solid fa-chart-line"></i> Dashboard Overview
+              <i className="fa-solid fa-chart-line"></i> Overview
             </button>
             <button
               className={`nav-btn ${activeTab === 'properties' ? 'active' : ''}`}
               onClick={() => handleTabChange('properties')}
             >
-              <i className="fa-solid fa-building-user"></i> My Properties ({totalProperties})
+              <i className="fa-solid fa-building-user"></i> Properties
             </button>
             <button
               className={`nav-btn ${activeTab === 'bookings' ? 'active' : ''}`}
               onClick={() => handleTabChange('bookings')}
             >
-              <i className="fa-solid fa-calendar-check"></i> Guest Bookings ({totalBookings})
+              <i className="fa-solid fa-calendar-check"></i> Bookings
             </button>
             <button
               className={`nav-btn ${activeTab === 'tourists' ? 'active' : ''}`}
               onClick={() => handleTabChange('tourists')}
             >
-              <i className="fa-solid fa-users-viewfinder"></i> Tourist Arrival Register ({touristRegisterList.length})
+              <i className="fa-solid fa-users-viewfinder"></i> Tourist Register
             </button>
             <button
               className={`nav-btn ${activeTab === 'inventory' ? 'active' : ''}`}
               onClick={() => handleTabChange('inventory')}
             >
-              <i className="fa-solid fa-boxes-stacked"></i> Material Stock Inventory ({ownerInventory.length})
+              <i className="fa-solid fa-boxes-stacked"></i> Inventory
             </button>
             <button
               className={`nav-btn ${activeTab === 'feedback' ? 'active' : ''}`}
               onClick={() => handleTabChange('feedback')}
             >
-              <i className="fa-solid fa-comments"></i> Tourist Feedback & Reviews ({touristFeedbackList.length})
+              <i className="fa-solid fa-comments"></i> Feedback
             </button>
             <button
               className={`nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
               onClick={() => handleTabChange('analytics')}
             >
-              <i className="fa-solid fa-wallet"></i> Revenue & Yearly Calculator
+              <i className="fa-solid fa-wallet"></i> Revenue
             </button>
             <button
               className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
               onClick={() => handleTabChange('caretakers')}
             >
-              <i className="fa-solid fa-user-shield"></i> Caretaker Tasks & Requests ({caretakerApps.length})
+              <i className="fa-solid fa-user-shield"></i> Caretakers
             </button>
             <button
               className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
               onClick={() => handleTabChange('profile')}
             >
-              <i className="fa-solid fa-user-gear"></i> Host Profile Settings
+              <i className="fa-solid fa-user-gear"></i> Profile
             </button>
           </nav>
 
@@ -1923,11 +1948,16 @@ const OwnerDashboard = () => {
 
                   <div className="feedback-grid">
                     {touristFeedbackList.map(fb => (
-                      <div key={fb._id || fb.id} className="feedback-card">
+                      <div key={fb._id || fb.id} className={`feedback-card ${fb.selectedForHotelPage ? 'featured-card' : ''}`}>
                         <div className="feedback-card-top">
                           <div>
                             <h4>{fb.guestName}</h4>
                             <span className="prop">{fb.propertyName}</span>
+                            {fb.selectedForHotelPage && (
+                              <span className="featured-badge" style={{ display: 'inline-block', marginLeft: '10px', background: 'rgba(212, 175, 55, 0.2)', color: '#d4af37', padding: '3px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
+                                ★ Featured on Hotel Page
+                              </span>
+                            )}
                           </div>
                           <div className="feedback-stars">
                             {[...Array(5)].map((_, i) => (
@@ -1943,6 +1973,28 @@ const OwnerDashboard = () => {
                             ))}
                           </div>
                         )}
+                        <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(243,238,226,0.1)', display: 'flex', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => handleToggleSelectFeedback(fb._id || fb.id)}
+                            style={{
+                              background: fb.selectedForHotelPage ? 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)' : 'rgba(255, 255, 255, 0.08)',
+                              color: fb.selectedForHotelPage ? '#1a1a1a' : '#ffffff',
+                              border: '1px solid rgba(212, 175, 55, 0.5)',
+                              padding: '8px 16px',
+                              borderRadius: '20px',
+                              fontSize: '0.82rem',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              transition: 'all 0.25s ease'
+                            }}
+                          >
+                            <i className={`fa-solid ${fb.selectedForHotelPage ? 'fa-circle-check' : 'fa-circle-plus'}`}></i>
+                            {fb.selectedForHotelPage ? 'Selected for Hotel Page' : 'Select for Hotel Page'}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
