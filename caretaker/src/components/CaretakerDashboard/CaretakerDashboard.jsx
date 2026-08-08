@@ -649,103 +649,149 @@ const CaretakerDashboard = () => {
   );
 
   return (
-    <div className="caretaker-dashboard-page">
-      {/* Top Navbar */}
-      {/* Stable Fixed Single-Line Top Navbar */}
-      <header className="caretaker-navbar single-line-header">
-        <div className="nav-brand-inline">
-          <a href="http://localhost:5173" className="stable-brand-logo" style={{ textDecoration: 'none' }}>
-            <span className="logo-text">Mahabaleshwar</span>
-            <span className="logo-subtext">CARETAKER PORTAL</span>
-          </a>
-          <span className="header-divider">|</span>
-          <span className="nav-active-tab-title">
-            {activeTab === 'home' && <><i className="fa-solid fa-house-user" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Overview</>}
-            {activeTab === 'attendance' && <><i className="fa-solid fa-user-clock" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Attendance Log</>}
-            {activeTab === 'duties' && <><i className="fa-solid fa-clipboard-check" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Daily Duties</>}
-            {activeTab === 'guests' && <><i className="fa-solid fa-users-gear" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Guest Arrivals</>}
-            {activeTab === 'maintenance' && <><i className="fa-solid fa-triangle-exclamation" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Maintenance</>}
-            {activeTab === 'inventory' && <><i className="fa-solid fa-boxes-stacked" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Stock Inventory</>}
-            {activeTab === 'rules' && <><i className="fa-solid fa-shield-halved" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> Estate Rules</>}
-            {activeTab === 'profile' && <><i className="fa-solid fa-user-gear" style={{ color: 'var(--accent-emerald)', marginRight: '6px' }}></i> My Profile</>}
-          </span>
-        </div>
-
-        <div className="nav-right-container">
-          {/* Mobile Drawer Trigger Button */}
-          <button 
-            className="mobile-drawer-toggle-btn"
-            onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-            title="Toggle Quick Menu"
-          >
-            <i className={`fa-solid ${isDrawerOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
-          </button>
-
-          <div className="caretaker-user-pill">
-            <div className="avatar-circle-green">
-              {profileData.name ? profileData.name.charAt(0).toUpperCase() : (user?.name ? user.name.charAt(0).toUpperCase() : 'C')}
+    <div className="caretaker-dashboard-container owner-dashboard-container">
+      <div className="caretaker-dashboard-layout owner-dashboard-layout">
+        {/* Permanent Left Sidebar Navigation (Matching Owner Dashboard) */}
+        <aside className={`owner-sidebar ${isDrawerOpen ? 'show-mobile' : ''}`}>
+          <div className="sidebar-brand">
+            <div className="brand-logo">
+              <i className="fa-solid fa-house-user"></i>
             </div>
-            <div className="profile-text-group">
-              <span className="profile-name">
-                {profileData.name || user?.name || 'Caretaker'}
-              </span>
-              <span className="profile-role">
-                <i className="fa-solid fa-user-shield"></i> Caretaker
-              </span>
+            <div className="brand-text">
+              <h2>MAHABALESHWAR</h2>
+              <span>CARETAKER PORTAL</span>
             </div>
           </div>
 
-          <button 
-            className="header-logout-btn-green"
-            onClick={() => {
-              sessionStorage.removeItem('token');
-              sessionStorage.removeItem('user');
-              window.location.href = 'http://localhost:5173';
-            }}
-            title="Sign Out of Caretaker Account"
-          >
-            <i className="fa-solid fa-right-from-bracket"></i> Sign Out
-          </button>
-        </div>
-      </header>
+          <div className="user-profile-badge">
+            <div className="avatar">
+              {profileData.name ? profileData.name.charAt(0).toUpperCase() : (user?.name ? user.name.charAt(0).toUpperCase() : 'C')}
+            </div>
+            <div className="user-info">
+              <h4>{profileData.name || user?.name || 'Suresh Patil'}</h4>
+              <span className="role-tag"><i className="fa-solid fa-user-shield"></i> Verified Caretaker</span>
+            </div>
+          </div>
 
-      {/* Main Workspace Container */}
-      <div className="caretaker-container">
-        <div className="dashboard-main-layout">
-          {/* Desktop Left Sidebar */}
-          <aside className="glass-morphism left-sidebar-menu-card">
-            <div className="sb-section-title">PORTAL NAVIGATION</div>
+          <nav className="sidebar-nav">
+            <button
+              className={`nav-btn ${activeTab === 'home' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('home'); setIsDrawerOpen(false); }}
+            >
+              <i className="fa-solid fa-chart-line"></i> Overview
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'attendance' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('attendance'); setIsDrawerOpen(false); }}
+            >
+              <i className="fa-solid fa-user-clock"></i> Attendance Log
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'duties' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('duties'); setIsDrawerOpen(false); }}
+            >
+              <i className="fa-solid fa-clipboard-check"></i> Daily Duties
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'guests' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('guests'); setIsDrawerOpen(false); }}
+            >
+              <i className="fa-solid fa-users-gear"></i> Guest Arrivals
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'maintenance' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('maintenance'); setIsDrawerOpen(false); }}
+            >
+              <i className="fa-solid fa-triangle-exclamation"></i> Maintenance
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'inventory' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('inventory'); setIsDrawerOpen(false); }}
+            >
+              <i className="fa-solid fa-boxes-stacked"></i> Stock Inventory
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'rules' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('rules'); setIsDrawerOpen(false); }}
+            >
+              <i className="fa-solid fa-shield-halved"></i> Estate Rules
+            </button>
+            <button
+              className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('profile'); setIsDrawerOpen(false); }}
+            >
+              <i className="fa-solid fa-user-gear"></i> Caretaker Profile
+            </button>
+          </nav>
 
-            <div className="sb-nav-list">
-              <button className={`sb-nav-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
-                <i className="fa-solid fa-house-user"></i> Overview
-              </button>
-              <button className={`sb-nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>
-                <i className="fa-solid fa-user-clock"></i> Attendance
-              </button>
-              <button className={`sb-nav-item ${activeTab === 'duties' ? 'active' : ''}`} onClick={() => setActiveTab('duties')}>
-                <i className="fa-solid fa-clipboard-check"></i> Duties
-              </button>
-              <button className={`sb-nav-item ${activeTab === 'guests' ? 'active' : ''}`} onClick={() => setActiveTab('guests')}>
-                <i className="fa-solid fa-users-gear"></i> Guests
-              </button>
-              <button className={`sb-nav-item ${activeTab === 'maintenance' ? 'active' : ''}`} onClick={() => setActiveTab('maintenance')}>
-                <i className="fa-solid fa-triangle-exclamation"></i> Maintenance
-              </button>
-              <button className={`sb-nav-item ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => setActiveTab('inventory')}>
-                <i className="fa-solid fa-boxes-stacked"></i> Inventory
-              </button>
-              <button className={`sb-nav-item ${activeTab === 'rules' ? 'active' : ''}`} onClick={() => setActiveTab('rules')}>
-                <i className="fa-solid fa-shield-halved"></i> Rules
-              </button>
-              <button className={`sb-nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-                <i className="fa-solid fa-user-gear"></i> Profile
+          <div className="sidebar-footer">
+            <a href="http://localhost:5173" className="main-site-btn">
+              <i className="fa-solid fa-globe"></i> View Main Site
+            </a>
+            <button 
+              className="logout-btn" 
+              onClick={() => {
+                sessionStorage.clear();
+                localStorage.clear();
+                window.location.href = 'http://localhost:5173';
+              }}
+            >
+              <i className="fa-solid fa-right-from-bracket"></i> Sign Out
+            </button>
+          </div>
+        </aside>
+
+        <div className={`sidebar-backdrop ${isDrawerOpen ? 'active' : ''}`} onClick={() => setIsDrawerOpen(false)}></div>
+
+        {/* Right Main Content Panel */}
+        <main className="owner-main-content main-content-panel">
+          {/* Single-Line Top Content Header Matching Owner Dashboard */}
+          <header className="content-header single-line-header">
+            <div className="header-title-inline">
+              <h1 className="header-title-text">
+                {activeTab === 'home' && <><i className="fa-solid fa-house-user"></i> Estate Overview</>}
+                {activeTab === 'attendance' && <><i className="fa-solid fa-user-clock"></i> Attendance & Shift Log</>}
+                {activeTab === 'duties' && <><i className="fa-solid fa-clipboard-check"></i> Daily Duties Checklist</>}
+                {activeTab === 'guests' && <><i className="fa-solid fa-users-gear"></i> Guest Arrivals & Register</>}
+                {activeTab === 'maintenance' && <><i className="fa-solid fa-triangle-exclamation"></i> Maintenance & Repairs</>}
+                {activeTab === 'inventory' && <><i className="fa-solid fa-boxes-stacked"></i> Stock Inventory</>}
+                {activeTab === 'rules' && <><i className="fa-solid fa-shield-halved"></i> Estate Security & Rules</>}
+                {activeTab === 'profile' && <><i className="fa-solid fa-user-gear"></i> Caretaker Profile & Payouts</>}
+              </h1>
+              <span className="header-divider">|</span>
+              <span className="header-sub-inline">
+                {activeTab === 'home' && `Welcome back, ${profileData.name || 'Suresh Patil'}`}
+                {activeTab === 'attendance' && 'Shift duration & GPS selfie proof'}
+                {activeTab === 'duties' && 'Housekeeping, pool care & safety tasks'}
+                {activeTab === 'guests' && 'Arrival schedule & Aadhaar ID check'}
+                {activeTab === 'maintenance' && 'Plumbing, electrical & pool alerts'}
+                {activeTab === 'inventory' && 'Linen, toiletries & firewood stock'}
+                {activeTab === 'rules' && 'Gate closing & generator procedures'}
+                {activeTab === 'profile' && 'Verified badge & salary account'}
+              </span>
+            </div>
+
+            <div className="header-actions">
+              {isCheckedIn ? (
+                <button className="nav-quick-punch-btn out" onClick={handleCheckOut} title="Punch Out Shift">
+                  <i className="fa-solid fa-circle-stop"></i> Punch Out ({checkInTime ? Math.floor((currentTime - checkInTime) / 3600000) + 'h ' + Math.floor(((currentTime - checkInTime) % 3600000) / 60000) + 'm' : 'Running'})
+                </button>
+              ) : (
+                <button className="nav-quick-punch-btn in" onClick={handleCheckIn} title="Punch In Shift">
+                  <i className="fa-solid fa-circle-play"></i> Punch In
+                </button>
+              )}
+
+              <button
+                type="button"
+                className="mobile-toggle-btn"
+                onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                aria-label="Toggle Navigation"
+              >
+                <i className={`fa-solid ${isDrawerOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
               </button>
             </div>
-          </aside>
-
-          {/* Right Main Content Panel */}
-          <main className="main-content-panel">
+          </header>
 
             {/* Status Alert Notification Banner */}
             {statusMsg.text && (
@@ -1765,7 +1811,6 @@ const CaretakerDashboard = () => {
             )}
           </main>
         </div>
-      </div>
 
       {/* PUNCH VERIFICATION MODAL WITH LIVE CAMERA & GPS LOCATION */}
       {showPunchModal && (

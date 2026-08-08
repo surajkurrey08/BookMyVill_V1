@@ -1,10 +1,53 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
 
 /* ==========================================================================
-   MAHABLESHWAR CARETAKER COMMAND CENTER - PREMIUM RESPONSIVE DESIGN SYSTEM
+   MAHABALESHWAR CARETAKER COMMAND CENTER - MATCHING OWNER DASHBOARD STYLING
    ========================================================================== */
 
-:root {
+.caretaker-dashboard-container {
+  --od-bg: #0a1310;
+  --od-bg-soft: #0e1a15;
+  --od-surface: rgba(22, 34, 29, 0.55);
+  --od-surface-solid: #121e19;
+  --od-surface-raised: #16241e;
+  --od-border: rgba(201, 162, 39, 0.14);
+  --od-border-strong: rgba(201, 162, 39, 0.34);
+  --od-hairline: rgba(243, 238, 226, 0.08);
+
+  --od-gold: #c9a227;
+  --od-gold-bright: #e8c468;
+  --od-gold-dim: #8a6f1d;
+  --od-gold-wash: rgba(201, 162, 39, 0.12);
+
+  --od-emerald: #2f8f6f;
+  --od-emerald-bright: #4fd8a8;
+  --od-emerald-wash: rgba(79, 216, 168, 0.12);
+
+  --od-ivory: #f3eee2;
+  --od-ivory-dim: #c9c3b4;
+  --od-muted: #8c9690;
+  --od-faint: #5d6a63;
+
+  --od-danger: #e0665a;
+  --od-danger-wash: rgba(224, 102, 90, 0.12);
+  --od-amber: #e0a458;
+  --od-amber-wash: rgba(224, 164, 88, 0.12);
+  --od-blue: #6fb3d9;
+  --od-blue-wash: rgba(111, 179, 217, 0.12);
+
+  --od-shadow-sm: 0 6px 20px rgba(0, 0, 0, 0.28);
+  --od-shadow-md: 0 16px 44px rgba(0, 0, 0, 0.38);
+  --od-shadow-lg: 0 28px 70px rgba(0, 0, 0, 0.5);
+
+  --od-r-sm: 10px;
+  --od-r-md: 16px;
+  --od-r-lg: 22px;
+  --od-r-pill: 999px;
+
+  --od-display: 'Fraunces', 'Georgia', serif;
+  --od-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --od-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
   --bg-dark-primary: #090e0d;
   --bg-dark-secondary: #101916;
   --bg-card: rgba(18, 28, 24, 0.85);
@@ -40,6 +83,12 @@
 
   --font-family: 'Outfit', 'Inter', sans-serif;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.caretaker-dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--od-bg);
 }
 
 /* Base resets & layout */
