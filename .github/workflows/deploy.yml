@@ -96,9 +96,18 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          cat << 'EOF' > ~/.ssh/config
+          Host *
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+          EOF
+          chmod 600 ~/.ssh/config
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
 
       # ── 6. VPS - Ensure directories and tools exist ───────────────────────
       - name: VPS Prerequisites
@@ -433,7 +442,7 @@ EOF
       - name: Debug Nginx VPS
         if: always()
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF'
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF' || true
             echo '=== Nginx Config Files ===' > /tmp/vps_debug.txt
             ls -la /etc/nginx/sites-enabled/ >> /tmp/vps_debug.txt
             echo '=== Content of /etc/nginx/sites-enabled/lonavala.fun ===' >> /tmp/vps_debug.txt
@@ -442,11 +451,6 @@ EOF
             ls -R /var/www/lonavala.fun >> /tmp/vps_debug.txt
           SSH_EOF
           scp ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/vps_debug.txt ./vps_debug.txt || true
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          git add vps_debug.txt || true
-          git commit -m "debug: save vps debug info [skip ci]" || true
-          git push origin main || true
 
       # ── 8. Deploy Frontend (Main Site & Users Subdomain) ─────────────────
       - name: Deploy Frontend
