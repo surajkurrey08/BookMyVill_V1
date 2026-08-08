@@ -166,7 +166,6 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
 
   const handleBookNow = (e) => {
     if (e) e.stopPropagation();
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const propertyId = property._id || property.id;
     
     const searchParams = new URLSearchParams(location.search);
@@ -181,12 +180,7 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
     query.append('autoBook', 'true');
 
     const targetUrl = `/property/${propertyId}?${query.toString()}`;
-
-    if (!token) {
-      navigate('/signin', { state: { from: targetUrl, property } });
-    } else {
-      navigate(targetUrl, { state: { property } });
-    }
+    navigate(targetUrl, { state: { property } });
   };
 
   return (
@@ -275,11 +269,15 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
     ? property.amenities.slice(0, 3) 
     : ['Swimming Pool', 'Free WiFi', 'Valley View'];
 
+  const handleViewDetails = (e) => {
+    if (e) e.stopPropagation();
+    const propertyId = property._id || property.id;
+    navigate(`/property/${propertyId}`, { state: { property } });
+  };
+
   const handleBookNow = (e) => {
     if (e) e.stopPropagation();
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const propertyId = property._id || property.id;
-
     const searchParams = new URLSearchParams(location.search);
     const qCheckIn = searchParams.get('checkIn');
     const qCheckOut = searchParams.get('checkOut');
@@ -292,12 +290,7 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
     query.append('autoBook', 'true');
 
     const targetUrl = `/property/${propertyId}?${query.toString()}`;
-
-    if (!token) {
-      navigate('/signin', { state: { from: targetUrl, property } });
-    } else {
-      navigate(targetUrl, { state: { property } });
-    }
+    navigate(targetUrl, { state: { property } });
   };
 
   return (
@@ -307,6 +300,7 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
       onClick={() => onSelect(property)}
       onMouseEnter={() => onHover(property.id)}
       onMouseLeave={onLeave}
+      style={{ cursor: 'pointer' }}
     >
       <div className="card-img-box">
         <img src={property.image} alt={property.name} loading="lazy" />
@@ -328,7 +322,7 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
         </button>
 
         {/* Interactive Image Hover Overlay */}
-        <div className="card-img-hover-overlay">
+        <div className="card-img-hover-overlay" onClick={handleViewDetails}>
           <div className="hover-overlay-inner">
             <span className="hover-badge-live">⚡ Instant Booking Available</span>
             <div className="hover-highlights-list">
@@ -365,7 +359,7 @@ const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover
           <button
             type="button"
             className="btn-locate-map"
-            onClick={handleBookNow}
+            onClick={handleViewDetails}
             title="View property details & photos"
           >
             <i className="fa-solid fa-eye"></i> View Details
