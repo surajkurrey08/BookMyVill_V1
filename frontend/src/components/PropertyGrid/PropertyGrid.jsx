@@ -904,7 +904,7 @@ const PropertyGrid = ({ isHomePage = false }) => {
               gap: '24px',
               marginBottom: '36px'
             }}>
-              {filteredProperties.slice(0, 3).map(property => (
+              {filteredProperties.slice(0, 4).map(property => (
                 <LuxuryPropertyCard
                   key={property.id}
                   property={property}
