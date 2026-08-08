@@ -106,7 +106,7 @@ jobs:
       - name: VPS Prerequisites
         run: |
           for i in 1 2 3 4 5; do
-            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF' && break || sleep 5
+            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
               set -e
               mkdir -p /var/www/lonavala.fun/frontend \
                        /var/www/lonavala.fun/users \
@@ -120,7 +120,7 @@ jobs:
               command -v nginx || (apt-get update -qq && apt-get install -y nginx)
               command -v certbot || (apt-get update -qq && apt-get install -y certbot python3-certbot-nginx)
               echo 'Prerequisites done'
-            SSH_EOF
+            " && break || sleep 5
           done
 
       # ── 7. Write Nginx Config on VPS ──────────────────────────────────────
@@ -130,7 +130,7 @@ jobs:
             scp nginx/lonavala.fun.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/etc/nginx/sites-available/lonavala.fun && break || sleep 5
           done
           for i in 1 2 3 4 5; do
-            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF' && break || sleep 5
+            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
               set -e
               mkdir -p /var/www/certbot \
                        /var/www/lonavala.fun/frontend \
@@ -174,21 +174,21 @@ jobs:
 
               nginx -t && (systemctl reload nginx || systemctl restart nginx || systemctl start nginx)
               echo 'Nginx configured successfully for all subdomains!'
-            SSH_EOF
+            " && break || sleep 5
           done
 
       # ── 7.5 Debug Nginx VPS ───────────────────────────────────────────────
       - name: Debug Nginx VPS
         if: always()
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF' || true
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
             echo '=== Nginx Config Files ===' > /tmp/vps_debug.txt
             ls -la /etc/nginx/sites-enabled/ >> /tmp/vps_debug.txt
             echo '=== Content of /etc/nginx/sites-enabled/lonavala.fun ===' >> /tmp/vps_debug.txt
             cat /etc/nginx/sites-enabled/lonavala.fun >> /tmp/vps_debug.txt
             echo '=== Directory structure of /var/www/lonavala.fun ===' >> /tmp/vps_debug.txt
             ls -R /var/www/lonavala.fun >> /tmp/vps_debug.txt
-          SSH_EOF
+          " || true
           scp ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/vps_debug.txt ./vps_debug.txt || true
 
       # ── 8. Deploy Frontend (Main Site & Users Subdomain) ─────────────────
@@ -239,7 +239,7 @@ jobs:
       - name: Restart Backend
         run: |
           for i in 1 2 3 4 5; do
-            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF' && break || sleep 5
+            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
               set -e
               cd /var/www/lonavala.fun/backend
               tar -xzf /tmp/backend.tar.gz --strip-components=1 -C .
@@ -249,7 +249,7 @@ jobs:
               pm2 save
               pm2 list
               echo 'Backend deployed!'
-            SSH_EOF
+            " && break || sleep 5
           done
 
       # ── 11. Health Check ──────────────────────────────────────────────────
