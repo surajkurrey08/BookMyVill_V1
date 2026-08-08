@@ -4,7 +4,8 @@
    MAHABALESHWAR CARETAKER COMMAND CENTER - MATCHING OWNER DASHBOARD STYLING
    ========================================================================== */
 
-.caretaker-dashboard-container {
+.caretaker-dashboard-container,
+.owner-dashboard-container {
   --od-bg: #0a1310;
   --od-bg-soft: #0e1a15;
   --od-surface: rgba(22, 34, 29, 0.55);
@@ -83,6 +84,260 @@
 
   --font-family: 'Outfit', 'Inter', sans-serif;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.caretaker-dashboard-layout,
+.owner-dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--od-bg);
+}
+
+/* SIDEBAR STYLING MATCHING OWNER DASHBOARD EXACTLY */
+.owner-sidebar {
+  width: 278px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #0d1714 0%, #0a1310 100%);
+  border-right: 1px solid var(--od-hairline);
+  display: flex;
+  flex-direction: column;
+  padding: 28px 20px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 40;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 8px 26px 8px;
+  border-bottom: 1px solid var(--od-hairline);
+  margin-bottom: 22px;
+}
+
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(155deg, var(--od-gold-bright), var(--od-gold-dim));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #14100a;
+  font-size: 1.05rem;
+  box-shadow: 0 6px 18px rgba(201, 162, 39, 0.28);
+  flex-shrink: 0;
+}
+
+.brand-text h2 {
+  font-family: var(--od-display);
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--od-ivory);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.brand-text span {
+  font-size: 0.63rem;
+  letter-spacing: 0.14em;
+  color: var(--od-gold);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--od-r-md);
+  background: var(--od-surface-raised);
+  border: 1px solid var(--od-hairline);
+  margin-bottom: 24px;
+}
+
+.user-profile-badge .avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--od-emerald-wash);
+  color: var(--od-emerald-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-family: var(--od-mono);
+  border: 1px solid rgba(79, 216, 168, 0.3);
+  flex-shrink: 0;
+}
+
+.user-info h4 {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--od-ivory);
+}
+
+.role-tag {
+  font-size: 0.68rem;
+  color: var(--od-emerald-bright);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: var(--od-r-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--od-ivory-dim);
+  font-size: 0.83rem;
+  font-weight: 500;
+  font-family: var(--od-body);
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  position: relative;
+}
+
+.nav-btn i {
+  width: 16px;
+  font-size: 0.85rem;
+  color: var(--od-faint);
+  transition: color 0.18s ease;
+}
+
+.nav-btn:hover {
+  background: rgba(243, 238, 226, 0.04);
+  color: var(--od-ivory);
+}
+
+.nav-btn.active {
+  background: var(--od-gold-wash);
+  border-color: var(--od-border-strong);
+  color: var(--od-gold-bright);
+}
+
+.nav-btn.active i {
+  color: var(--od-gold);
+}
+
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 18px;
+  border-top: 1px solid var(--od-hairline);
+  margin-top: 14px;
+}
+
+.main-site-btn,
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--od-r-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+
+.main-site-btn {
+  background: transparent;
+  border: 1px solid var(--od-border);
+  color: var(--od-ivory-dim);
+}
+
+.main-site-btn:hover {
+  border-color: var(--od-border-strong);
+  color: var(--od-gold-bright);
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid rgba(224, 102, 90, 0.25);
+  color: #d98177;
+}
+
+.logout-btn:hover {
+  background: var(--od-danger-wash);
+  border-color: var(--od-danger);
+}
+
+.owner-main-content {
+  flex: 1;
+  padding: 26px 34px 60px;
+  min-width: 0;
+}
+
+.content-header.single-line-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 22px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--od-hairline);
+}
+
+.header-title-inline {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.header-title-text {
+  font-family: var(--od-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--od-ivory);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-divider {
+  color: var(--od-hairline);
+  font-weight: 300;
+}
+
+.header-sub-inline {
+  font-size: 0.82rem;
+  color: var(--od-muted);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .caretaker-dashboard-layout {
