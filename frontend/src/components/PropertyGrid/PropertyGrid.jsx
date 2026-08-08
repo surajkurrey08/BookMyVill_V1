@@ -788,7 +788,7 @@ const PropertyGrid = ({ isHomePage = false }) => {
   return (
     <section className="property-grid-section" id="explore" style={{ padding: isHomePage ? '90px 0' : '50px 0 90px 0' }}>
       {isHomePage ? (
-        /* HOME PAGE SPLIT VIEW LAYOUT (MATCHING USER'S SCREENSHOT) */
+        /* HOME PAGE 4 FEATURED HOTELS LAYOUT */
         <>
           <div className="section-header" style={{ maxWidth: '1440px', margin: '0 auto 36px auto', padding: '0 20px', textAlign: 'center' }}>
             <span className="section-subtitle" style={{ letterSpacing: '3px', color: '#d4af37', fontWeight: '800', display: 'block', marginBottom: '8px', textTransform: 'uppercase', fontSize: '0.88rem' }}>
