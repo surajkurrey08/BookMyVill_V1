@@ -96,7 +96,7 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          printf "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null\n" > ~/.ssh/config
+          printf "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null\n  ConnectTimeout 15\n  ConnectionAttempts 5\n  ServerAliveInterval 10\n  ServerAliveCountMax 3\n" > ~/.ssh/config
           chmod 600 ~/.ssh/config
         env:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
@@ -105,71 +105,77 @@ jobs:
       # ── 6. VPS - Ensure directories and tools exist ───────────────────────
       - name: VPS Prerequisites
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF'
-            set -e
-            mkdir -p /var/www/lonavala.fun/frontend \
-                     /var/www/lonavala.fun/users \
-                     /var/www/lonavala.fun/owner \
-                     /var/www/lonavala.fun/caretaker \
-                     /var/www/lonavala.fun/admin \
-                     /var/www/lonavala.fun/backend \
-                     /var/www/certbot
-            command -v node || (curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs)
-            command -v pm2 || npm install -g pm2
-            command -v nginx || (apt-get update -qq && apt-get install -y nginx)
-            command -v certbot || (apt-get update -qq && apt-get install -y certbot python3-certbot-nginx)
-            echo 'Prerequisites done'
-          SSH_EOF
+          for i in 1 2 3 4 5; do
+            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF' && break || sleep 5
+              set -e
+              mkdir -p /var/www/lonavala.fun/frontend \
+                       /var/www/lonavala.fun/users \
+                       /var/www/lonavala.fun/owner \
+                       /var/www/lonavala.fun/caretaker \
+                       /var/www/lonavala.fun/admin \
+                       /var/www/lonavala.fun/backend \
+                       /var/www/certbot
+              command -v node || (curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs)
+              command -v pm2 || npm install -g pm2
+              command -v nginx || (apt-get update -qq && apt-get install -y nginx)
+              command -v certbot || (apt-get update -qq && apt-get install -y certbot python3-certbot-nginx)
+              echo 'Prerequisites done'
+            SSH_EOF
+          done
 
       # ── 7. Write Nginx Config on VPS ──────────────────────────────────────
       - name: Configure Nginx
         run: |
-          scp nginx/lonavala.fun.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/etc/nginx/sites-available/lonavala.fun
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF'
-            set -e
-            mkdir -p /var/www/certbot \
-                     /var/www/lonavala.fun/frontend \
-                     /var/www/lonavala.fun/users \
-                     /var/www/lonavala.fun/owner \
-                     /var/www/lonavala.fun/caretaker \
-                     /var/www/lonavala.fun/admin
+          for i in 1 2 3 4 5; do
+            scp nginx/lonavala.fun.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/etc/nginx/sites-available/lonavala.fun && break || sleep 5
+          done
+          for i in 1 2 3 4 5; do
+            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF' && break || sleep 5
+              set -e
+              mkdir -p /var/www/certbot \
+                       /var/www/lonavala.fun/frontend \
+                       /var/www/lonavala.fun/users \
+                       /var/www/lonavala.fun/owner \
+                       /var/www/lonavala.fun/caretaker \
+                       /var/www/lonavala.fun/admin
 
-            # 1. Clean up duplicate/conflicting configs
-            rm -f /etc/nginx/sites-enabled/admin.lonavala.fun
-            rm -f /etc/nginx/sites-available/admin.lonavala.fun
-            rm -f /etc/nginx/sites-enabled/default
+              # 1. Clean up duplicate/conflicting configs
+              rm -f /etc/nginx/sites-enabled/admin.lonavala.fun
+              rm -f /etc/nginx/sites-available/admin.lonavala.fun
+              rm -f /etc/nginx/sites-enabled/default
 
-            # 2. Ensure SSL cert directory and fallback certificate exist BEFORE activating Nginx config
-            if [ ! -f /etc/letsencrypt/live/lonavala.fun/fullchain.pem ]; then
-              mkdir -p /etc/letsencrypt/live/lonavala.fun
-              openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-                -keyout /etc/letsencrypt/live/lonavala.fun/privkey.pem \
-                -out /etc/letsencrypt/live/lonavala.fun/fullchain.pem \
-                -subj '/CN=lonavala.fun' || true
-            fi
+              # 2. Ensure SSL cert directory and fallback certificate exist BEFORE activating Nginx config
+              if [ ! -f /etc/letsencrypt/live/lonavala.fun/fullchain.pem ]; then
+                mkdir -p /etc/letsencrypt/live/lonavala.fun
+                openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                  -keyout /etc/letsencrypt/live/lonavala.fun/privkey.pem \
+                  -out /etc/letsencrypt/live/lonavala.fun/fullchain.pem \
+                  -subj '/CN=lonavala.fun' || true
+              fi
 
-            ln -sf /etc/nginx/sites-available/lonavala.fun /etc/nginx/sites-enabled/lonavala.fun
+              ln -sf /etc/nginx/sites-available/lonavala.fun /etc/nginx/sites-enabled/lonavala.fun
 
-            # 3. Activate Nginx config
-            nginx -t && (systemctl reload nginx || systemctl restart nginx || systemctl start nginx)
+              # 3. Activate Nginx config
+              nginx -t && (systemctl reload nginx || systemctl restart nginx || systemctl start nginx)
 
-            # 4. Attempt Certbot SSL Certificate Generation
-            certbot certonly --webroot -w /var/www/certbot \
-              -d lonavala.fun \
-              -d www.lonavala.fun \
-              -d users.lonavala.fun \
-              -d owner.lonavala.fun \
-              -d caretaker.lonavala.fun \
-              -d admin.lonavala.fun \
-              -d api.lonavala.fun \
-              --email admin@lonavala.fun \
-              --agree-tos \
-              --expand \
-              --non-interactive || true
+              # 4. Attempt Certbot SSL Certificate Generation
+              certbot certonly --webroot -w /var/www/certbot \
+                -d lonavala.fun \
+                -d www.lonavala.fun \
+                -d users.lonavala.fun \
+                -d owner.lonavala.fun \
+                -d caretaker.lonavala.fun \
+                -d admin.lonavala.fun \
+                -d api.lonavala.fun \
+                --email admin@lonavala.fun \
+                --agree-tos \
+                --expand \
+                --non-interactive || true
 
-            nginx -t && (systemctl reload nginx || systemctl restart nginx || systemctl start nginx)
-            echo 'Nginx configured successfully for all subdomains!'
-          SSH_EOF
+              nginx -t && (systemctl reload nginx || systemctl restart nginx || systemctl start nginx)
+              echo 'Nginx configured successfully for all subdomains!'
+            SSH_EOF
+          done
 
       # ── 7.5 Debug Nginx VPS ───────────────────────────────────────────────
       - name: Debug Nginx VPS
@@ -188,51 +194,63 @@ jobs:
       # ── 8. Deploy Frontend (Main Site & Users Subdomain) ─────────────────
       - name: Deploy Frontend
         run: |
-          rsync -az --delete \
-            frontend/dist/ \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/frontend/
+          for i in 1 2 3 4 5; do
+            rsync -az --delete \
+              frontend/dist/ \
+              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/frontend/ && break || sleep 5
+          done
 
       # ── 8.2 Deploy Owner ──────────────────────────────────────────────────
       - name: Deploy Owner
         run: |
-          rsync -az --delete \
-            owner/dist/ \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/owner/
+          for i in 1 2 3 4 5; do
+            rsync -az --delete \
+              owner/dist/ \
+              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/owner/ && break || sleep 5
+          done
 
       # ── 8.3 Deploy Caretaker ──────────────────────────────────────────────
       - name: Deploy Caretaker
         run: |
-          rsync -az --delete \
-            caretaker/dist/ \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/caretaker/
+          for i in 1 2 3 4 5; do
+            rsync -az --delete \
+              caretaker/dist/ \
+              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/caretaker/ && break || sleep 5
+          done
 
       # ── 8.5 Deploy Admin ──────────────────────────────────────────────────
       - name: Deploy Admin
         run: |
-          rsync -az --delete \
-            admin/dist/ \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/admin/
+          for i in 1 2 3 4 5; do
+            rsync -az --delete \
+              admin/dist/ \
+              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/lonavala.fun/admin/ && break || sleep 5
+          done
 
       # ── 9. Deploy Backend ─────────────────────────────────────────────────
       - name: Deploy Backend
         run: |
-          scp backend.tar.gz \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/backend.tar.gz
+          for i in 1 2 3 4 5; do
+            scp backend.tar.gz \
+              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/backend.tar.gz && break || sleep 5
+          done
 
       # ── 10. Extract & Restart Backend ─────────────────────────────────────
       - name: Restart Backend
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF'
-            set -e
-            cd /var/www/lonavala.fun/backend
-            tar -xzf /tmp/backend.tar.gz --strip-components=1 -C .
-            rm -f /tmp/backend.tar.gz
-            npm install --omit=dev
-            pm2 restart lonavala-backend 2>/dev/null || pm2 start index.js --name lonavala-backend
-            pm2 save
-            pm2 list
-            echo 'Backend deployed!'
-          SSH_EOF
+          for i in 1 2 3 4 5; do
+            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'SSH_EOF' && break || sleep 5
+              set -e
+              cd /var/www/lonavala.fun/backend
+              tar -xzf /tmp/backend.tar.gz --strip-components=1 -C .
+              rm -f /tmp/backend.tar.gz
+              npm install --omit=dev
+              pm2 restart lonavala-backend 2>/dev/null || pm2 start index.js --name lonavala-backend
+              pm2 save
+              pm2 list
+              echo 'Backend deployed!'
+            SSH_EOF
+          done
 
       # ── 11. Health Check ──────────────────────────────────────────────────
       - name: Health Check
