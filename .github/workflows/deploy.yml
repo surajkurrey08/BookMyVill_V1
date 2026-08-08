@@ -108,6 +108,8 @@ jobs:
           for i in 1 2 3 4 5; do
             ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
               set -e
+              ufw allow 80/tcp || true
+              ufw allow 443/tcp || true
               mkdir -p /var/www/lonavala.fun/frontend \
                        /var/www/lonavala.fun/users \
                        /var/www/lonavala.fun/owner \
