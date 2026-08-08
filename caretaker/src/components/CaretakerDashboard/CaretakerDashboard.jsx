@@ -672,6 +672,15 @@ const CaretakerDashboard = () => {
         </div>
 
         <div className="nav-right-container">
+          {/* Mobile Drawer Trigger Button */}
+          <button 
+            className="mobile-drawer-toggle-btn"
+            onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+            title="Toggle Quick Menu"
+          >
+            <i className={`fa-solid ${isDrawerOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
+          </button>
+
           <div className="caretaker-user-pill">
             <div className="avatar-circle-green">
               {profileData.name ? profileData.name.charAt(0).toUpperCase() : (user?.name ? user.name.charAt(0).toUpperCase() : 'C')}
@@ -1967,6 +1976,110 @@ const CaretakerDashboard = () => {
 
       {/* Floating Caretaker AI Assistant */}
       <AiAssistant />
+
+      {/* Senior UI/UX Mobile Bottom Navigation Bar */}
+      <nav className="mobile-bottom-navbar">
+        <button 
+          className={`mob-nav-btn ${activeTab === 'home' ? 'active' : ''}`} 
+          onClick={() => { setActiveTab('home'); setIsDrawerOpen(false); }}
+        >
+          <i className="fa-solid fa-house-user"></i>
+          <span>Home</span>
+        </button>
+        <button 
+          className={`mob-nav-btn ${activeTab === 'attendance' ? 'active' : ''}`} 
+          onClick={() => { setActiveTab('attendance'); setIsDrawerOpen(false); }}
+        >
+          <i className="fa-solid fa-user-clock"></i>
+          <span>Shift</span>
+        </button>
+        <button 
+          className={`mob-nav-btn ${activeTab === 'duties' ? 'active' : ''}`} 
+          onClick={() => { setActiveTab('duties'); setIsDrawerOpen(false); }}
+        >
+          <i className="fa-solid fa-clipboard-check"></i>
+          <span>Duties</span>
+        </button>
+        <button 
+          className={`mob-nav-btn ${activeTab === 'guests' ? 'active' : ''}`} 
+          onClick={() => { setActiveTab('guests'); setIsDrawerOpen(false); }}
+        >
+          <i className="fa-solid fa-users-gear"></i>
+          <span>Guests</span>
+        </button>
+        <button 
+          className={`mob-nav-btn ${activeTab === 'profile' ? 'active' : ''}`} 
+          onClick={() => { setActiveTab('profile'); setIsDrawerOpen(false); }}
+        >
+          <i className="fa-solid fa-user-gear"></i>
+          <span>Profile</span>
+        </button>
+        <button 
+          className={`mob-nav-btn mob-more-btn ${isDrawerOpen ? 'active' : ''}`} 
+          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+        >
+          <i className={`fa-solid ${isDrawerOpen ? 'fa-xmark' : 'fa-grid-2'}`}></i>
+          <span>More</span>
+        </button>
+      </nav>
+
+      {/* Senior UI/UX Mobile Quick Action Bottom Drawer Overlay */}
+      {isDrawerOpen && (
+        <div className="mobile-drawer-overlay" onClick={() => setIsDrawerOpen(false)}>
+          <div className="mobile-drawer-container" onClick={(e) => e.stopPropagation()}>
+            <div className="mob-drawer-header">
+              <div className="mob-drawer-title">
+                <i className="fa-solid fa-compass" style={{ color: 'var(--accent-gold)' }}></i> Caretaker Quick Actions
+              </div>
+              <button className="mob-drawer-close" onClick={() => setIsDrawerOpen(false)}>×</button>
+            </div>
+
+            <div className="mob-drawer-grid">
+              <button 
+                className={`mob-drawer-card ${activeTab === 'maintenance' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('maintenance'); setIsDrawerOpen(false); }}
+              >
+                <i className="fa-solid fa-triangle-exclamation" style={{ color: '#ef4444' }}></i>
+                <span>Maintenance</span>
+              </button>
+              <button 
+                className={`mob-drawer-card ${activeTab === 'inventory' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('inventory'); setIsDrawerOpen(false); }}
+              >
+                <i className="fa-solid fa-boxes-stacked" style={{ color: '#38bdf8' }}></i>
+                <span>Stock Inventory</span>
+              </button>
+              <button 
+                className={`mob-drawer-card ${activeTab === 'rules' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('rules'); setIsDrawerOpen(false); }}
+              >
+                <i className="fa-solid fa-shield-halved" style={{ color: '#10b981' }}></i>
+                <span>Estate Rules</span>
+              </button>
+              <a 
+                href="tel:02168260100" 
+                className="mob-drawer-card emergency-call"
+              >
+                <i className="fa-solid fa-phone-volume" style={{ color: '#ffd700' }}></i>
+                <span>Hospital Call</span>
+              </a>
+            </div>
+
+            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <button 
+                onClick={() => {
+                  sessionStorage.clear();
+                  localStorage.clear();
+                  window.location.href = 'http://localhost:5173';
+                }}
+                className="mob-drawer-logout-btn"
+              >
+                <i className="fa-solid fa-right-from-bracket"></i> Sign Out Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer Bar */}
       <footer className="caretaker-footer">
