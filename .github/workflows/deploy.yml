@@ -35,9 +35,7 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: |
-            frontend/package-lock.json
-            admin/package-lock.json
+          cache-dependency-path: '**/package-lock.json'
 
       # ── 3. Frontend Build (Main Site & Users Portal) ──────────────────────────
       - name: Install Frontend Dependencies
@@ -100,10 +98,10 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
           cat << 'EOF' > ~/.ssh/config
-          Host *
-            StrictHostKeyChecking no
-            UserKnownHostsFile /dev/null
-          EOF
+Host *
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+EOF
           chmod 600 ~/.ssh/config
         env:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
@@ -163,7 +161,6 @@ jobs:
 # Main Tourist Site & Users (Port 80)
 server {
     listen 80;
-    listen [::]:80;
     server_name lonavala.fun www.lonavala.fun users.lonavala.fun;
 
     location /.well-known/acme-challenge/ {
@@ -206,7 +203,6 @@ server {
 # Property Owner Subdomain (Port 80)
 server {
     listen 80;
-    listen [::]:80;
     server_name owner.lonavala.fun;
 
     location /.well-known/acme-challenge/ {
@@ -226,7 +222,6 @@ server {
 # Caretaker Subdomain (Port 80)
 server {
     listen 80;
-    listen [::]:80;
     server_name caretaker.lonavala.fun;
 
     location /.well-known/acme-challenge/ {
@@ -246,7 +241,6 @@ server {
 # Admin Subdomain (Port 80)
 server {
     listen 80;
-    listen [::]:80;
     server_name admin.lonavala.fun;
 
     location /.well-known/acme-challenge/ {
@@ -266,7 +260,6 @@ server {
 # Backend API Proxy Subdomain (Port 80)
 server {
     listen 80;
-    listen [::]:80;
     server_name api.lonavala.fun;
 
     location /.well-known/acme-challenge/ {
@@ -292,7 +285,6 @@ server {
 # Main Tourist Site & Users (Port 443 SSL)
 server {
     listen 443 ssl;
-    listen [::]:443 ssl;
     server_name lonavala.fun www.lonavala.fun users.lonavala.fun;
 
     ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
@@ -335,7 +327,6 @@ server {
 # Property Owner Subdomain (Port 443 SSL)
 server {
     listen 443 ssl;
-    listen [::]:443 ssl;
     server_name owner.lonavala.fun;
 
     ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
@@ -355,7 +346,6 @@ server {
 # Caretaker Subdomain (Port 443 SSL)
 server {
     listen 443 ssl;
-    listen [::]:443 ssl;
     server_name caretaker.lonavala.fun;
 
     ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
@@ -375,7 +365,6 @@ server {
 # Admin Subdomain (Port 443 SSL)
 server {
     listen 443 ssl;
-    listen [::]:443 ssl;
     server_name admin.lonavala.fun;
 
     ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
@@ -395,7 +384,6 @@ server {
 # Backend API Proxy Subdomain (Port 443 SSL)
 server {
     listen 443 ssl;
-    listen [::]:443 ssl;
     server_name api.lonavala.fun;
 
     ssl_certificate /etc/letsencrypt/live/lonavala.fun/fullchain.pem;
