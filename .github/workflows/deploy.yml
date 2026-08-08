@@ -141,10 +141,11 @@ jobs:
                        /var/www/lonavala.fun/caretaker \
                        /var/www/lonavala.fun/admin
 
-              # 1. Clean up duplicate/conflicting configs
+              # 1. Clean up duplicate/conflicting configs & ensure lonavala.fun is default_server
               rm -f /etc/nginx/sites-enabled/admin.lonavala.fun
               rm -f /etc/nginx/sites-available/admin.lonavala.fun
               rm -f /etc/nginx/sites-enabled/default
+              grep -l "default_server" /etc/nginx/sites-enabled/* 2>/dev/null | grep -v "lonavala.fun" | xargs -r sed -i 's/default_server//g' || true
 
               # 2. Ensure SSL cert directory and fallback certificate exist BEFORE activating Nginx config
               if [ ! -f /etc/letsencrypt/live/lonavala.fun/fullchain.pem ]; then
