@@ -913,8 +913,8 @@ const PropertyGrid = ({ isHomePage = false }) => {
                   onSelect={(p) => navigate(`/property/${p._id || p.id}`)}
                   onHover={setHoveredPropertyId}
                   onLeave={() => setHoveredPropertyId(null)}
-                  isWishlisted={wishlist.includes(property._id || property.id)}
-                  onToggleWishlist={toggleWishlist}
+                  isWishlisted={!!wishlistMap[property.id || property._id]}
+                  onToggleWishlist={() => toggleWishlist(property.id || property._id)}
                 />
               ))}
             </div>
