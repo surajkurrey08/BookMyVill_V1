@@ -384,10 +384,30 @@
   padding: 16px;
 }
 
-/* Animations */
+/* Animations & Smooth Page Switching */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.tab-pane-content {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.caretaker-stat-card,
+.panel-section-card,
+.glass-subcard {
+  animation: fadeInUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) ease-out forwards;
 }
 
 @keyframes pulseGlow {

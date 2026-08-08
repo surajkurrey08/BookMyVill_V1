@@ -1038,11 +1038,11 @@ const CaretakerDashboard = () => {
                           <i className={`fa-solid ${isCheckedIn ? 'fa-circle-pause' : 'fa-circle-play'}`}></i> CARETAKER {isCheckedIn ? 'PUNCH-OUT' : 'PUNCH-IN'} TERMINAL
                         </span>
                         <h3 style={{ margin: '6px 0 0 0', color: '#ffffff', fontSize: '1.35rem', fontFamily: 'Outfit, sans-serif' }}>
-                          Live Biometric Camera & Location Machine
+                          Biometric Punch Terminal
                         </h3>
                       </div>
                       <span style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.4)', color: 'var(--accent-gold-bright)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '800' }}>
-                        LIVE ONLINE
+                        ONLINE
                       </span>
                     </div>
 
@@ -1050,10 +1050,10 @@ const CaretakerDashboard = () => {
                     <div style={{ marginBottom: '18px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                         <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-gold-bright)' }}>
-                          <i className="fa-solid fa-location-dot" style={{ marginRight: '6px' }}></i> 1. Live GPS Location Verification *
+                          <i className="fa-solid fa-location-dot" style={{ marginRight: '6px' }}></i> 1. GPS Geofence *
                         </label>
                         <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.18)', border: '1px solid #10b981', color: '#10b981', padding: '2px 10px', borderRadius: '10px', fontWeight: '800' }}>
-                          📍 GEOFENCE ACTIVE
+                          📍 ACTIVE
                         </span>
                       </div>
 
@@ -1065,7 +1065,7 @@ const CaretakerDashboard = () => {
                           <div>
                             <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ffffff' }}>{punchLocation}</div>
                             <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: '600' }}>
-                              ✓ Verified Estate Boundary Stamp • Mahabaleshwar
+                              ✓ Verified Boundary Stamp
                             </span>
                           </div>
                         </div>
@@ -1079,7 +1079,7 @@ const CaretakerDashboard = () => {
                     <div style={{ marginBottom: '18px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-gold-bright)' }}>
-                          <i className="fa-solid fa-camera" style={{ marginRight: '6px' }}></i> 2. Live Selfie Photo Verification *
+                          <i className="fa-solid fa-camera" style={{ marginRight: '6px' }}></i> 2. Live Selfie *
                         </label>
                         {isWithinGeofence && !punchPhoto && (
                           <button type="button" onClick={startCameraStream} style={{ background: 'none', border: 'none', color: '#10b981', fontSize: '0.75rem', cursor: 'pointer', fontWeight: '700' }}>
@@ -1089,15 +1089,15 @@ const CaretakerDashboard = () => {
                       </div>
 
                       {!isWithinGeofence ? (
-                        <div style={{ width: '100%', padding: '26px 18px', background: 'rgba(0,0,0,0.4)', borderRadius: '18px', border: '1px solid rgba(212, 175, 55, 0.25)', textAlign: 'center' }}>
-                          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', color: 'var(--accent-gold-bright)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', margin: '0 auto 10px auto' }}>
+                        <div style={{ width: '100%', padding: '20px 16px', background: 'rgba(0,0,0,0.4)', borderRadius: '18px', border: '1px solid rgba(212, 175, 55, 0.25)', textAlign: 'center' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', color: 'var(--accent-gold-bright)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', margin: '0 auto 8px auto' }}>
                             <i className="fa-solid fa-lock"></i>
                           </div>
-                          <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#ffffff', marginBottom: '4px' }}>
-                            Camera Verification Locked
+                          <div style={{ fontSize: '0.88rem', fontWeight: '700', color: '#ffffff', marginBottom: '4px' }}>
+                            Camera Locked
                           </div>
-                          <p style={{ fontSize: '0.78rem', margin: '0 0 14px 0', color: 'var(--text-muted)' }}>
-                            Selfie photo verification will unlock automatically once your GPS location is within 200m of Mahabaleshwar Estate ({geofenceDistance}m away).
+                          <p style={{ fontSize: '0.76rem', margin: '0 0 12px 0', color: 'var(--text-muted)' }}>
+                            Unlocks when within 200m of Estate ({geofenceDistance}m away).
                           </p>
                           <button 
                             type="button" 
@@ -1107,9 +1107,9 @@ const CaretakerDashboard = () => {
                               setPunchLocation('📍 Royal Mist Villa Estate Premises, Mahabaleshwar (35m from center • Verified)');
                               startCameraStream();
                             }} 
-                            style={{ background: 'rgba(212, 175, 55, 0.18)', border: '1px solid rgba(212, 175, 55, 0.4)', color: 'var(--accent-gold-bright)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer' }}
+                            style={{ background: 'rgba(212, 175, 55, 0.18)', border: '1px solid rgba(212, 175, 55, 0.4)', color: 'var(--accent-gold-bright)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.76rem', fontWeight: '700', cursor: 'pointer' }}
                           >
-                            <i className="fa-solid fa-location-crosshairs" style={{ marginRight: '6px' }}></i> Unlock Camera (Simulate 35m inside Estate)
+                            <i className="fa-solid fa-location-crosshairs" style={{ marginRight: '6px' }}></i> Unlock Camera (35m In-Range)
                           </button>
                         </div>
                       ) : (
