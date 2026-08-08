@@ -120,13 +120,6 @@ const GuestReviews = () => {
                 <p className="review-quote-text">
                   "{item.review}"
                 </p>
-
-                {/* Bottom Action Pill Button */}
-                <div className="bottom-action-container">
-                  <button type="button" className="dots-action-btn" title="Verified Guest Stay">
-                    <i className="fa-solid fa-ellipsis"></i>
-                  </button>
-                </div>
               </div>
             </div>
           ))}
