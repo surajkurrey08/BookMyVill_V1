@@ -136,7 +136,16 @@ jobs:
             rm -f /etc/nginx/sites-available/admin.lonavala.fun
             rm -f /etc/nginx/sites-enabled/default
 
-            # 2. Complete HTTP & HTTPS Nginx config for all subdomains
+            # 2. Ensure SSL cert directory and fallback certificate exist BEFORE writing Nginx config
+            if [ ! -f /etc/letsencrypt/live/lonavala.fun/fullchain.pem ]; then
+              mkdir -p /etc/letsencrypt/live/lonavala.fun
+              openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout /etc/letsencrypt/live/lonavala.fun/privkey.pem \
+                -out /etc/letsencrypt/live/lonavala.fun/fullchain.pem \
+                -subj '/CN=lonavala.fun' || true
+            fi
+
+            # 3. Complete HTTP & HTTPS Nginx config for all subdomains
             cat > /etc/nginx/sites-available/lonavala.fun << 'EOF'
 # ==============================================================================
 # HTTP SERVER BLOCKS (Port 80)
@@ -399,16 +408,10 @@ EOF
 
             ln -sf /etc/nginx/sites-available/lonavala.fun /etc/nginx/sites-enabled/lonavala.fun
 
-            # 3. Fallback self-signed cert if certbot has not generated one yet
-            if [ ! -f /etc/letsencrypt/live/lonavala.fun/fullchain.pem ]; then
-              mkdir -p /etc/letsencrypt/live/lonavala.fun
-              openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-                -keyout /etc/letsencrypt/live/lonavala.fun/privkey.pem \
-                -out /etc/letsencrypt/live/lonavala.fun/fullchain.pem \
-                -subj '/CN=lonavala.fun' || true
-            fi
+            # 4. Activate Nginx config
+            nginx -t && (systemctl reload nginx || systemctl restart nginx || systemctl start nginx)
 
-            # 4. Attempt Certbot SSL Certificate Generation
+            # 5. Attempt Certbot SSL Certificate Generation
             certbot certonly --webroot -w /var/www/certbot \
               -d lonavala.fun \
               -d www.lonavala.fun \
