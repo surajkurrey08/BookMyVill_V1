@@ -255,6 +255,7 @@ const Packages = () => {
           <div className="packages-grid">
             {filteredPackages.map((pkg) => (
               <div key={pkg.id} className="package-card">
+                {/* 1. IMAGE AT TOP OF CARD */}
                 <div className="package-image-container">
                   <img src={pkg.image} alt={pkg.title} />
                   <span className="package-badge">{pkg.badge}</span>
@@ -264,12 +265,21 @@ const Packages = () => {
                   </span>
                 </div>
                 
+                {/* 2. CARD BODY: PRICE BELOW IMAGE & DETAILS */}
                 <div className="package-body">
-                  <span className="package-hotel-name">
-                    <i className="fa-solid fa-hotel"></i> {pkg.hotelName}
-                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
+                    <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1b4332' }}>{pkg.price}</span>
+                    <span className="package-hotel-name" style={{ margin: 0 }}>
+                      <i className="fa-solid fa-hotel"></i> {pkg.hotelName}
+                    </span>
+                  </div>
 
                   <h3 className="package-title">{pkg.title}</h3>
+
+                  <p style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#64748b', fontSize: '0.82rem', margin: '4px 0 10px 0' }}>
+                    <i className="fa-solid fa-location-dot" style={{ color: '#d4af37' }}></i>
+                    <span>Mahabaleshwar, Maharashtra</span>
+                  </p>
 
                   {/* Real-time Availability Pill */}
                   <div className="package-availability-box">
@@ -280,26 +290,22 @@ const Packages = () => {
                     <span style={{ fontSize: '0.8rem', opacity: 0.9 }}>{pkg.count}</span>
                   </div>
 
-                  <div className="package-footer">
-                    <div className="package-price-row">
-                      <span className="price-label">Package Price</span>
-                      <span className="price-amount">{pkg.price}</span>
-                    </div>
+                  {/* 3. BUTTONS: VIEW & MAP PIN */}
+                  <div className="package-footer" style={{ display: 'flex', gap: '8px', paddingTop: '10px' }}>
+                    <button 
+                      type="button"
+                      onClick={() => navigate(`/property/${pkg.propertyId}`)}
+                      style={{ border: '1.5px solid #1b4332', background: '#ffffff', color: '#1b4332', cursor: 'pointer', flex: 1, padding: '8px 10px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                    >
+                      <i className="fa-solid fa-eye" style={{ color: '#d4af37' }}></i> View
+                    </button>
 
                     <button 
                       type="button"
-                      onClick={() => {
-                        const token = sessionStorage.getItem('token') || localStorage.getItem('token');
-                        if (!token) {
-                          navigate('/signin', { state: { from: `/property/${pkg.propertyId}` } });
-                        } else {
-                          navigate(`/property/${pkg.propertyId}`);
-                        }
-                      }}
-                      className="btn-view-details"
-                      style={{ border: 'none', cursor: 'pointer' }}
+                      onClick={() => navigate(`/explore?select=${pkg.propertyId}`)}
+                      style={{ border: '1px solid #cbd5e1', background: '#f8fafc', color: '#1b4332', cursor: 'pointer', flex: 1, padding: '8px 10px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
                     >
-                      View Details & Availability <i className="fa-solid fa-arrow-right"></i>
+                      <i className="fa-solid fa-location-dot" style={{ color: '#d4af37' }}></i> Map Pin
                     </button>
                   </div>
                 </div>

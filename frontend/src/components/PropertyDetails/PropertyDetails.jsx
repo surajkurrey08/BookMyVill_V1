@@ -8,6 +8,35 @@ import { properties as mockProperties } from '../../data/mockData';
 import { API_BASE_URL } from '../../config';
 import { getRawMapLink, formatGoogleMapsDirectionsUrl } from '../../utils/locationUtils';
 
+const getPropertyTagBadge = (prop) => {
+  if (prop?.tag) return prop.tag.toUpperCase();
+  if (prop?.type) return `${prop.type.toUpperCase()} COLLECTION`;
+  return 'MAHABALESHWAR LUXURY';
+};
+
+const getPropertyScriptTitle = (prop) => {
+  const titles = ['Peaceful', 'Serene', 'Tranquil', 'Exquisite', 'Breathtaking', 'Majestic', 'Charming', 'Luxurious'];
+  const idStr = String(prop?.id || prop?._id || prop?.name || '');
+  const charSum = idStr.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  return titles[charSum % titles.length];
+};
+
+const getPropertyFeatures = (prop) => {
+  const ams = prop?.amenities && prop.amenities.length > 0 ? prop.amenities : [];
+  
+  const bedFeature = prop?.bedrooms ? `${prop.bedrooms} Bedrooms` : (ams.find(a => a.toLowerCase().includes('bed')) || '3 King Beds');
+  const bathFeature = prop?.bathrooms ? `${prop.bathrooms} Baths` : (ams.find(a => a.toLowerCase().includes('bath')) || 'Modern Baths');
+  const wifiFeature = ams.find(a => a.toLowerCase().includes('wifi') || a.toLowerCase().includes('wi-fi')) || 'Free Wi-Fi';
+  const poolFeature = ams.find(a => a.toLowerCase().includes('pool') || a.toLowerCase().includes('jacuzzi') || a.toLowerCase().includes('lake') || a.toLowerCase().includes('view')) || (prop?.type === 'Villa' ? 'Private Pool' : 'Valley View');
+
+  return [
+    { icon: 'fa-bed', text: bedFeature },
+    { icon: 'fa-bath', text: bathFeature },
+    { icon: 'fa-wifi', text: wifiFeature },
+    { icon: 'fa-water-ladder', text: poolFeature }
+  ];
+};
+
 const PropertyDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -756,78 +785,206 @@ const PropertyDetails = () => {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="details-hero" style={{ position: 'relative', overflow: 'hidden', background: '#0d1b1e' }}>
-          {activeMediaType === 'photo' ? (
-            <img 
-              src={galleryPhotos[activePhotoIndex] || galleryPhotos[0]} 
-              alt={property.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
-              onClick={() => openImageZoom(activePhotoIndex)}
-            />
-          ) : (
-            <video 
-              src={property.video || "https://assets.mixkit.co/videos/preview/mixkit-resort-pool-in-a-sunny-day-42845-large.mp4"} 
-              controls 
-              autoPlay 
-              loop
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          )}
-          
-          {/* Top-Right Native Fullscreen Button */}
-          <button
-            type="button"
-            onClick={() => {
-              if (activeMediaType === 'photo') {
-                openImageZoom(activePhotoIndex);
-              } else {
-                openVideoZoom(property.video || "https://assets.mixkit.co/videos/preview/mixkit-resort-pool-in-a-sunny-day-42845-large.mp4");
-              }
-              toggleNativeFullscreen();
-            }}
-            style={{
-              position: 'absolute',
-              top: '24px',
-              right: '24px',
-              background: 'rgba(27, 67, 50, 0.85)',
-              color: '#d4af37',
-              border: '1.5px solid #d4af37',
-              padding: '10px 20px',
-              borderRadius: '30px',
-              fontWeight: '800',
-              fontSize: '0.88rem',
-              cursor: 'pointer',
-              zIndex: 15,
-              backdropFilter: 'blur(8px)',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-            title="Expand image/video to full screen window mode"
-          >
-            <i className="fa-solid fa-expand"></i> Full Screen Window ⛶
-          </button>
+        <div className="details-hero-salford-mockup" style={{
+          position: 'relative',
+          minHeight: '620px',
+          padding: '40px 20px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          backgroundImage: `linear-gradient(180deg, rgba(13, 27, 30, 0.45) 0%, rgba(13, 27, 30, 0.82) 65%, rgba(13, 27, 30, 0.95) 100%), url(${galleryPhotos[0] || property.image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}>
+          {/* Top Header Row: Fullscreen Button */}
+          <div className="container" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', zIndex: 10 }}>
 
-          <div className="hero-overlay" style={{ pointerEvents: 'none' }}>
-            <div className="container" style={{ pointerEvents: 'auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>
-                <div>
-                  <span className="badge">{property.type}</span>
-                  <h1>{property.name}</h1>
-                  <p className="location-text">📍 {property.location}</p>
+            <button
+              type="button"
+              onClick={() => {
+                openImageZoom(activePhotoIndex);
+                toggleNativeFullscreen();
+              }}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                color: '#ffffff',
+                border: '1.5px solid rgba(255, 255, 255, 0.4)',
+                padding: '10px 22px',
+                borderRadius: '30px',
+                fontWeight: '800',
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <i className="fa-solid fa-expand" style={{ color: '#f5d061' }}></i> Full Screen ⛶
+            </button>
+          </div>
+
+          {/* Center Glass Card Overlay (Matching User Mockup) */}
+          <div className="container" style={{ zIndex: 10, maxWidth: '820px', margin: '30px auto' }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(18px)',
+              WebkitBackdropFilter: 'blur(18px)',
+              borderRadius: '32px',
+              padding: '36px 32px',
+              border: '1.5px solid rgba(255, 255, 255, 0.35)',
+              textAlign: 'center',
+              color: '#ffffff',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)'
+            }}>
+              <span style={{
+                fontFamily: "'Great Vibes', 'Playfair Display', cursive, serif",
+                fontSize: '3.2rem',
+                color: '#f5d061',
+                display: 'block',
+                marginBottom: '-8px',
+                fontWeight: '500',
+                lineHeight: '1'
+              }}>
+                {getPropertyScriptTitle(property)}
+              </span>
+              
+              <h1 style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: '2.4rem',
+                fontWeight: '900',
+                letterSpacing: '2.5px',
+                textTransform: 'uppercase',
+                color: '#ffffff',
+                margin: '0 0 8px 0',
+                lineHeight: '1.2'
+              }}>
+                {property.name}
+              </h1>
+
+              <span style={{
+                fontSize: '0.88rem',
+                fontWeight: '800',
+                color: '#f5d061',
+                letterSpacing: '1.5px',
+                textTransform: 'uppercase',
+                display: 'block',
+                marginBottom: '16px'
+              }}>
+                {property.type || 'LUXURY STAY'} • {property.location}
+              </span>
+
+              <p style={{
+                fontSize: '0.98rem',
+                color: '#e2e8f0',
+                lineHeight: '1.6',
+                margin: '0 auto 24px auto',
+                maxWidth: '650px',
+                fontWeight: '400'
+              }}>
+                A {getPropertyScriptTitle(property).toLowerCase()} space designed for rest and recharge. Discover your dream stay in {property.location} where luxury meets tranquility.
+              </p>
+
+              {/* Sub-Card with FEATURES ROW: Gold Pill Header */}
+              <div style={{
+                position: 'relative',
+                background: 'rgba(0, 0, 0, 0.4)',
+                borderRadius: '24px',
+                padding: '20px 16px 14px 16px',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                marginTop: '20px'
+              }}>
+                <span style={{
+                  position: 'absolute',
+                  top: '-13px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'linear-gradient(135deg, #f5d061 0%, #d4af37 100%)',
+                  color: '#0b110f',
+                  fontSize: '0.74rem',
+                  fontWeight: '900',
+                  letterSpacing: '1.5px',
+                  padding: '3px 18px',
+                  borderRadius: '16px',
+                  textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 12px rgba(212, 175, 55, 0.4)'
+                }}>
+                  FEATURES ROW:
+                </span>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center', alignItems: 'center' }}>
+                  {getPropertyFeatures(property).map((ft, idx) => (
+                    <div key={idx} style={{ padding: '0 8px', borderRight: idx < 3 ? '1px solid rgba(255,255,255,0.2)' : 'none' }}>
+                      <i className={`fa-solid ${ft.icon}`} style={{ fontSize: '1.4rem', color: '#f5d061', display: 'block', marginBottom: '6px' }}></i>
+                      <span style={{ fontSize: '0.82rem', fontWeight: '700', color: '#ffffff', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ft.text}</span>
+                    </div>
+                  ))}
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Photo Gallery Row (3 Preview Thumbnails with Rating Badges) */}
+          <div className="container" style={{ zIndex: 10, maxWidth: '820px', margin: '0 auto' }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              borderRadius: '24px',
+              padding: '14px',
+              border: '1.5px solid rgba(255, 255, 255, 0.35)'
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+                {galleryPhotos.slice(0, 3).map((photoUrl, idx) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => openImageZoom(idx)}
+                    title="Click to view full screen"
+                    style={{
+                      height: '110px',
+                      borderRadius: '18px',
+                      overflow: 'hidden',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      border: '1.5px solid rgba(255,255,255,0.4)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    <img src={photoUrl} alt={`Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <span style={{
+                      position: 'absolute',
+                      bottom: '8px',
+                      left: '8px',
+                      background: 'rgba(11, 17, 15, 0.85)',
+                      color: '#f5d061',
+                      padding: '3px 10px',
+                      borderRadius: '12px',
+                      fontSize: '0.78rem',
+                      fontWeight: '800',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      border: '1px solid rgba(245, 208, 97, 0.4)'
+                    }}>
+                      ♥ {idx === 0 ? '4.9' : idx === 1 ? '4.8' : '4.6'}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="container main-content">
+        <div className="container main-content" style={{ marginTop: '40px' }}>
           <div className="details-grid">
             <div className="info-section">
               
               {/* 1. About Villa, Amenities & Host Profile Section FIRST */}
-              <div className="description-card glass-morphism">
+              <div className="description-card glass-morphism animated-details-card">
                 <h3>About this {property.type}</h3>
                 <p>Experience the ultimate luxury at {property.name}. Nestled in the heart of {property.location}, this exquisite {property.type} offers breathtaking views, mountain mist breeze, and premium amenities.</p>
                 
@@ -884,116 +1041,8 @@ const PropertyDetails = () => {
                 </div>
               </div>
 
-              {/* 2. Photos & HD Video Showcase Gallery BELOW the About Section */}
-              <div className="description-card glass-morphism">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 14px 0', flexWrap: 'wrap', gap: '10px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#d4af37' }}>
-                    <i className="fa-solid fa-photo-film" style={{ color: '#d4af37', marginRight: '10px' }}></i>
-                    Photos & HD Video Showcase
-                  </h3>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
-                      type="button" 
-                      onClick={() => setActiveMediaType('photo')}
-                      style={{
-                        background: activeMediaType === 'photo' ? '#d4af37' : 'rgba(255, 255, 255, 0.1)',
-                        color: activeMediaType === 'photo' ? '#1a1a1a' : '#ffffff',
-                        border: '1px solid rgba(212, 175, 55, 0.4)',
-                        padding: '8px 18px',
-                        borderRadius: '20px',
-                        fontSize: '0.85rem',
-                        fontWeight: '800',
-                        cursor: 'pointer',
-                        transition: 'all 0.25s ease'
-                      }}
-                    >
-                      📷 Photos ({galleryPhotos.length})
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => setActiveMediaType('video')}
-                      style={{
-                        background: activeMediaType === 'video' ? '#d4af37' : 'rgba(255, 255, 255, 0.1)',
-                        color: activeMediaType === 'video' ? '#1a1a1a' : '#ffffff',
-                        border: '1px solid rgba(212, 175, 55, 0.4)',
-                        padding: '8px 18px',
-                        borderRadius: '20px',
-                        fontSize: '0.85rem',
-                        fontWeight: '800',
-                        cursor: 'pointer',
-                        transition: 'all 0.25s ease'
-                      }}
-                    >
-                      🎬 HD Video Tour
-                    </button>
-                  </div>
-                </div>
-                <p style={{ margin: '0 0 16px 0', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-                  Select any photo or HD video thumbnail below to switch view directly in the top showcase frame
-                </p>
-
-                <div className="gallery-thumbnails-strip" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
-                  {/* Photo Thumbnails */}
-                  {galleryPhotos.map((photoUrl, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`gallery-thumb-item ${activeMediaType === 'photo' && activePhotoIndex === idx ? 'active-thumb' : ''}`}
-                      onClick={() => {
-                        setActiveMediaType('photo');
-                        setActivePhotoIndex(idx);
-                        openImageZoom(idx);
-                      }}
-                      title={`Click to expand Photo #${idx + 1}`}
-                      style={{ 
-                        cursor: 'pointer', 
-                        position: 'relative', 
-                        minWidth: '105px', 
-                        height: '76px', 
-                        borderRadius: '14px', 
-                        overflow: 'hidden', 
-                        border: (activeMediaType === 'photo' && activePhotoIndex === idx) ? '3px solid #d4af37' : '2px solid transparent',
-                        boxShadow: (activeMediaType === 'photo' && activePhotoIndex === idx) ? '0 4px 14px rgba(212, 175, 55, 0.5)' : 'none'
-                      }}
-                    >
-                      <img src={photoUrl} alt={`${property.name} view ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                  ))}
-
-                  {/* Video Thumbnail in Same Strip */}
-                  <div 
-                    className={`gallery-thumb-item ${activeMediaType === 'video' ? 'active-thumb' : ''}`}
-                    onClick={() => {
-                      setActiveMediaType('video');
-                      openVideoZoom(property.video || (property.videos && property.videos[0]) || "https://assets.mixkit.co/videos/preview/mixkit-resort-pool-in-a-sunny-day-42845-large.mp4");
-                    }}
-                    title="Play HD Video Tour"
-                    style={{ 
-                      cursor: 'pointer', 
-                      position: 'relative', 
-                      minWidth: '120px', 
-                      height: '76px', 
-                      borderRadius: '14px', 
-                      overflow: 'hidden', 
-                      border: activeMediaType === 'video' ? '3px solid #d4af37' : '2px solid #1b4332',
-                      background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#ffffff',
-                      boxShadow: activeMediaType === 'video' ? '0 4px 14px rgba(212, 175, 55, 0.5)' : 'none'
-                    }}
-                  >
-                    <i className="fa-solid fa-circle-play" style={{ fontSize: '1.5rem', color: '#d4af37' }}></i>
-                    <span style={{ fontSize: '0.7rem', fontWeight: '800', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      ▶ PLAY VIDEO
-                    </span>
-                  </div>
-                </div>
-              </div>
-
               {/* Hotel Full Address & Location Card */}
-              <div className="location-map-card glass-morphism" style={{ padding: '24px 28px', borderRadius: '20px' }}>
+              <div className="location-map-card glass-morphism animated-details-card" style={{ padding: '24px 28px', borderRadius: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '18px' }}>
                   <div>
                     <h3 style={{ margin: '0 0 6px 0', fontSize: '1.25rem', color: '#ffd700', fontFamily: 'var(--font-heading, serif)' }}>
@@ -1006,29 +1055,6 @@ const PropertyDetails = () => {
                   </div>
 
                   <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    {property.mapLink && (
-                      <a 
-                        href={getRawMapLink(property.mapLink)} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.08)',
-                          color: '#ffffff',
-                          border: '1px solid rgba(212, 175, 55, 0.5)',
-                          padding: '10px 18px',
-                          borderRadius: '30px',
-                          fontWeight: '600',
-                          fontSize: '0.85rem',
-                          textDecoration: 'none',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px'
-                        }}
-                      >
-                        <i className="fa-solid fa-arrow-up-right-from-square" style={{ color: '#d4af37' }}></i> Open Host Map Link
-                      </a>
-                    )}
-
                     <a 
                       href={formatGoogleMapsDirectionsUrl(property.mapLink, property.name, property.location)} 
                       target="_blank" 
@@ -1036,7 +1062,7 @@ const PropertyDetails = () => {
                       style={{
                         background: 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)',
                         color: '#1a1a1a',
-                        padding: '10px 20px',
+                        padding: '10px 22px',
                         borderRadius: '30px',
                         fontWeight: '700',
                         fontSize: '0.88rem',
@@ -1044,7 +1070,7 @@ const PropertyDetails = () => {
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '8px',
-                        boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)'
+                        boxShadow: '0 4px 15px rgba(212, 175, 55, 0.35)'
                       }}
                     >
                       <i className="fa-solid fa-diamond-turn-right"></i> Directions
@@ -1055,39 +1081,37 @@ const PropertyDetails = () => {
                 {/* Detailed Address Details Box */}
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(212, 175, 55, 0.3)',
+                  border: '1px solid rgba(212, 175, 55, 0.25)',
                   borderRadius: '16px',
-                  padding: '20px 24px',
+                  padding: '16px 20px',
+                  marginBottom: '20px',
                   display: 'flex',
-                  flexDirection: 'column',
+                  alignItems: 'flex-start',
                   gap: '14px'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', color: '#d4af37', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
-                      <i className="fa-solid fa-hotel"></i>
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', color: '#d4af37', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '2px' }}>PROPERTY NAME</span>
-                      <strong style={{ fontSize: '1.1rem', color: '#ffffff', fontWeight: '800' }}>{property.name}</strong>
-                    </div>
+                  <div style={{
+                    background: 'rgba(212, 175, 55, 0.15)',
+                    color: '#d4af37',
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.2rem',
+                    flexShrink: 0
+                  }}>
+                    <i className="fa-solid fa-map-pin"></i>
                   </div>
-
-                  <div style={{ borderTop: '1px dashed rgba(255, 255, 255, 0.12)', paddingTop: '14px', display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
-                      <i className="fa-solid fa-map-location-dot"></i>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.96rem', fontWeight: '700', color: '#ffffff', marginBottom: '4px' }}>
+                      {property.name} Address
                     </div>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '2px' }}>FULL VERIFIED ADDRESS (FILLED BY OWNER)</span>
-                      <p style={{ margin: 0, fontSize: '0.98rem', color: 'rgba(255, 255, 255, 0.95)', lineHeight: 1.6, fontWeight: '600' }}>
-                        {property.fullAddress || property.address || property.locationAddress || `${property.name}, Near Kate's Point Road, Metgutad, Mahabaleshwar, Satara District, Maharashtra - 412806, India`}
-                      </p>
+                    <div style={{ fontSize: '0.88rem', color: 'rgba(255, 255, 255, 0.85)', lineHeight: 1.5 }}>
+                      <span>Near Main Hill Station Vista, {property.location}, Maharashtra 412806</span>
                     </div>
-                  </div>
-
-                  <div style={{ borderTop: '1px dashed rgba(255, 255, 255, 0.12)', paddingTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                      <span style={{ color: '#10b981', fontWeight: '800' }}>✓ Verified Destination</span>
-                      <span>•</span>
+                    <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                      <span><i className="fa-solid fa-circle-check" style={{ color: '#10b981', marginRight: '4px' }}></i> GPS Navigation Verified</span>
                       <span>Region: {property.location}</span>
                     </div>
                     <span style={{ fontSize: '0.8rem', color: '#d4af37', fontWeight: '700' }}>
@@ -1098,7 +1122,7 @@ const PropertyDetails = () => {
               </div>
 
               {/* Owner Selected Guest Reviews & Stay Feedback */}
-              <div className="description-card glass-morphism" style={{ marginTop: '24px', padding: '24px 28px', borderRadius: '20px' }}>
+              <div className="description-card glass-morphism animated-details-card" style={{ marginTop: '24px', padding: '24px 28px', borderRadius: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
                   <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#d4af37', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <i className="fa-solid fa-star" style={{ color: '#d4af37' }}></i>
@@ -1163,55 +1187,178 @@ const PropertyDetails = () => {
             </div>
 
             <div className="booking-section">
-              <div className="booking-card glass-morphism">
-                <div className="price-header">
-                  <span className="price-text">
-                    ₹{stayType === 'day' 
-                      ? Math.round(parseInt(property.price?.toString().replace(/[^0-9]/g, '') || 15000) * 0.55).toLocaleString('en-IN')
-                      : (property.price || '15,000')}
-                  </span>
-                  <span className="per-night">{stayType === 'day' ? ' / day pass (9 AM - 6 PM)' : ' / night'}</span>
+              <div className="booking-card glass-morphism animated-booking-card">
+                {/* Embedded Hotel Image Preview Header Card with Animated Shimmer Border */}
+                <div 
+                  className="booking-hotel-img-preview"
+                  onClick={() => openImageZoom(0)}
+                  title="Click to view full image"
+                  style={{
+                    position: 'relative',
+                    height: '165px',
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    marginBottom: '22px',
+                    border: '2px solid rgba(212, 175, 55, 0.6)',
+                    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.35)',
+                    cursor: 'zoom-in'
+                  }}
+                >
+                  <img 
+                    src={property.image} 
+                    alt={property.name} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }} 
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(11, 20, 17, 0.88) 100%)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    padding: '12px 16px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{
+                        background: 'rgba(212, 175, 55, 0.95)',
+                        color: '#0b110f',
+                        fontSize: '0.72rem',
+                        fontWeight: '900',
+                        letterSpacing: '1px',
+                        padding: '3px 12px',
+                        borderRadius: '16px',
+                        textTransform: 'uppercase'
+                      }}>
+                        {property.type || 'LUXURY STAY'}
+                      </span>
+                      <span style={{
+                        background: 'rgba(0, 0, 0, 0.65)',
+                        color: '#f5d061',
+                        fontSize: '0.76rem',
+                        fontWeight: '800',
+                        padding: '3px 10px',
+                        borderRadius: '14px',
+                        backdropFilter: 'blur(6px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        <i className="fa-solid fa-star"></i> {property.rating || '4.8'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 style={{ margin: '0 0 2px 0', fontSize: '1.1rem', color: '#ffffff', fontWeight: '800' }}>
+                        {property.name}
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '0.82rem', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <i className="fa-solid fa-location-dot" style={{ color: '#f5d061' }}></i>
+                        {property.location}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Day & Night Stay Selector Toggle */}
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                {/* Segmented Pricing Header & Model Badges */}
+                <div className="segmented-pricing-header" style={{
+                  background: 'rgba(15, 23, 42, 0.65)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(212, 175, 55, 0.35)',
+                  borderRadius: '20px',
+                  padding: '16px 20px',
+                  marginBottom: '20px',
+                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.25)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{
+                      background: stayType === 'night' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(52, 211, 153, 0.2)',
+                      color: stayType === 'night' ? '#f5d061' : '#34d399',
+                      border: stayType === 'night' ? '1px solid rgba(212, 175, 55, 0.4)' : '1px solid rgba(52, 211, 153, 0.4)',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '0.74rem',
+                      fontWeight: '800',
+                      letterSpacing: '0.5px',
+                      textTransform: 'uppercase'
+                    }}>
+                      {stayType === 'night' ? '🌙 Nightly Rate' : '☀️ Day Pass Rate'}
+                    </span>
+                    
+                    <span style={{ fontSize: '0.78rem', color: '#a3b18a', fontWeight: '600' }}>
+                      Save 25% Instant
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <span style={{ fontSize: '2.2rem', fontWeight: '900', color: '#ffffff', fontFamily: 'var(--font-heading, serif)' }}>
+                      ₹{stayType === 'day' 
+                        ? Math.round(parseInt(property.price?.toString().replace(/[^0-9]/g, '') || 15000) * 0.55).toLocaleString('en-IN')
+                        : (property.price || '15,000')}
+                    </span>
+                    <span style={{ fontSize: '0.88rem', color: '#a3b18a', fontWeight: '700' }}>
+                      {stayType === 'day' ? '/ day pass (9 AM - 6 PM)' : '/ night'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Day & Night Segmented Control Switcher */}
+                <div style={{
+                  display: 'flex',
+                  background: 'rgba(0, 0, 0, 0.45)',
+                  padding: '5px',
+                  borderRadius: '24px',
+                  border: '1px solid rgba(212, 175, 55, 0.3)',
+                  marginBottom: '22px'
+                }}>
                   <button 
                     type="button" 
                     onClick={() => setStayType('night')}
                     style={{
                       flex: 1,
-                      padding: '14px 12px',
-                      borderRadius: '16px',
-                      border: stayType === 'night' ? '2.5px solid #2D433D' : '1.5px solid #ddd',
-                      background: stayType === 'night' ? '#2D433D' : '#ffffff',
-                      color: stayType === 'night' ? '#ffffff' : '#1a1a1a',
+                      padding: '12px 10px',
+                      borderRadius: '20px',
+                      border: 'none',
+                      background: stayType === 'night' ? 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)' : 'transparent',
+                      color: stayType === 'night' ? '#ffffff' : '#94a3b8',
                       fontWeight: '800',
-                      fontSize: '0.96rem',
+                      fontSize: '0.9rem',
                       cursor: 'pointer',
-                      boxShadow: stayType === 'night' ? '0 6px 16px rgba(45, 67, 61, 0.3)' : 'none',
-                      transition: 'all 0.25s ease'
+                      boxShadow: stayType === 'night' ? '0 4px 15px rgba(27, 67, 50, 0.4)' : 'none',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
                     }}
                   >
-                    🌙 Night Stay
+                    <i className="fa-solid fa-moon" style={{ color: stayType === 'night' ? '#f5d061' : 'inherit' }}></i>
+                    Night Stay
                   </button>
+
                   <button 
                     type="button" 
                     onClick={() => setStayType('day')}
                     style={{
                       flex: 1,
-                      padding: '14px 12px',
-                      borderRadius: '16px',
-                      border: stayType === 'day' ? '2.5px solid #D4AF37' : '1.5px solid #ddd',
-                      background: stayType === 'day' ? '#D4AF37' : '#ffffff',
-                      color: stayType === 'day' ? '#1a1a1a' : '#1a1a1a',
+                      padding: '12px 10px',
+                      borderRadius: '20px',
+                      border: 'none',
+                      background: stayType === 'day' ? 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)' : 'transparent',
+                      color: stayType === 'day' ? '#1a1a1a' : '#94a3b8',
                       fontWeight: '800',
-                      fontSize: '0.96rem',
+                      fontSize: '0.9rem',
                       cursor: 'pointer',
-                      boxShadow: stayType === 'day' ? '0 6px 16px rgba(212, 175, 55, 0.4)' : 'none',
-                      transition: 'all 0.25s ease'
+                      boxShadow: stayType === 'day' ? '0 4px 15px rgba(212, 175, 55, 0.4)' : 'none',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
                     }}
                   >
-                    ☀️ Day Pass
+                    <i className="fa-solid fa-sun" style={{ color: stayType === 'day' ? '#1a1a1a' : 'inherit' }}></i>
+                    Day Pass
                   </button>
                 </div>
 

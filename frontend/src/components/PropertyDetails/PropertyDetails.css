@@ -10,11 +10,11 @@
   padding: 36px;
   border-radius: 26px;
   margin-bottom: 32px;
-  background: rgba(18, 38, 30, 0.88) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(212, 175, 55, 0.3) !important;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
   color: #ffffff !important;
 }
 
@@ -88,6 +88,68 @@
   padding-bottom: 100px;
 }
 
+/* ==========================================================================
+   Fade In & Hotel Booking Form Animations
+   ========================================================================== */
+
+@keyframes detailsCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(35px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bookingCardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(45px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes borderShimmerGlow {
+  0% {
+    border-color: rgba(212, 175, 55, 0.4);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15);
+  }
+  50% {
+    border-color: rgba(245, 208, 97, 0.95);
+    box-shadow: 0 10px 30px rgba(245, 208, 97, 0.45);
+  }
+  100% {
+    border-color: rgba(212, 175, 55, 0.4);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15);
+  }
+}
+
+.animated-details-card {
+  animation: detailsCardFadeIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animated-booking-card {
+  animation: bookingCardEntrance 0.9s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  transition: all 0.35s ease;
+}
+
+.animated-booking-card:hover {
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.45), 0 0 30px rgba(212, 175, 55, 0.25) !important;
+}
+
+.booking-hotel-img-preview {
+  animation: borderShimmerGlow 3.5s infinite ease-in-out;
+}
+
+.booking-hotel-img-preview:hover img {
+  transform: scale(1.08);
+}
+
 .details-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(380px, 440px);
@@ -96,14 +158,17 @@
 }
 
 .booking-card {
-  padding: 36px 32px;
+  padding: 32px 28px;
   border-radius: 28px;
   position: sticky;
-  top: 120px;
-  background: rgba(255, 255, 255, 0.96) !important;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.4), 0 0 25px rgba(212, 175, 55, 0.2);
-  border: 2px solid rgba(212, 175, 55, 0.5) !important;
+  top: 95px;
+  z-index: 10;
+  background: rgba(18, 38, 30, 0.75) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.45), 0 0 25px rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  color: #ffffff !important;
 }
 
 .price-header {
@@ -133,11 +198,11 @@
 .booking-form .form-group:hover label,
 .booking-form .form-group:focus-within label {
   display: block;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   text-transform: uppercase;
   font-weight: 800;
   margin-bottom: 10px;
-  color: #2D433D !important;
+  color: #f5d061 !important;
   letter-spacing: 0.8px;
   opacity: 1 !important;
   visibility: visible !important;

@@ -164,6 +164,12 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
     ? property.amenities.slice(0, 3) 
     : ['Pool', 'WiFi', 'View'];
 
+  const handleCardClick = (e) => {
+    if (e) e.stopPropagation();
+    const propertyId = property._id || property.id;
+    navigate(`/property/${propertyId}`, { state: { property } });
+  };
+
   const handleBookNow = (e) => {
     if (e) e.stopPropagation();
     const propertyId = property._id || property.id;
@@ -187,7 +193,7 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
     <div 
       id={`split-card-${property.id}`}
       className={`split-grid-card ${isSelected ? 'selected-card' : ''} ${isHovered ? 'hovered-card' : ''}`}
-      onClick={() => onSelect(property)}
+      onClick={handleCardClick}
       onMouseEnter={() => onHover(property.id)}
       onMouseLeave={onLeave}
     >
@@ -196,11 +202,6 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
         <span className="split-card-tag">
           ☀️ Day & 🌙 Night
         </span>
-        <div className="split-card-amenities-mini">
-          {defaultAmenities.map((am, i) => (
-            <span key={i} className="mini-amenity-pill">{am}</span>
-          ))}
-        </div>
       </div>
 
       <div className="split-card-info">
@@ -229,7 +230,18 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
             </div>
           </div>
 
-          <div className="split-card-actions">
+          <div className="split-card-actions" style={{ display: 'flex', gap: '6px' }}>
+            <button 
+              type="button" 
+              className="btn-locate-map" 
+              onClick={handleCardClick}
+              title="View stay details"
+              style={{ background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)', color: '#ffffff', border: 'none' }}
+            >
+              <i className="fa-solid fa-eye" style={{ color: '#f5d061' }}></i>
+              <span>View Details</span>
+            </button>
+
             <button 
               type="button" 
               className="btn-locate-map" 
@@ -239,15 +251,8 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
               }}
               title="Locate hotel and zoom on interactive map"
             >
-              <i className="fa-solid fa-location-crosshairs"></i>
-              <span>Pin</span>
-            </button>
-            <button 
-              type="button"
-              className="btn-book-now-gold" 
-              onClick={handleBookNow}
-            >
-              Book Stays
+              <i className="fa-solid fa-location-dot" style={{ color: '#d4af37' }}></i>
+              <span>Map Pin</span>
             </button>
           </div>
         </div>
@@ -257,121 +262,338 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
 };
 
 // Redesigned Luxury Property Card for standalone Explore page
-const LuxuryPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover, onLeave, isWishlisted, onToggleWishlist }) => {
+const getPropertyTagBadge = (prop) => {
+  if (prop?.tag) return prop.tag.toUpperCase();
+  if (prop?.type) return `${prop.type.toUpperCase()} COLLECTION`;
+  return 'MAHABALESHWAR LUXURY';
+};
+
+const getPropertyScriptTitle = (prop) => {
+  const titles = ['Peaceful', 'Serene', 'Tranquil', 'Exquisite', 'Breathtaking', 'Majestic', 'Charming', 'Luxurious'];
+  const idStr = String(prop?.id || prop?._id || prop?.name || '');
+  const charSum = idStr.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  return titles[charSum % titles.length];
+};
+
+const getPropertyFeatures = (prop) => {
+  const ams = prop?.amenities && prop.amenities.length > 0 ? prop.amenities : [];
+  
+  const bedFeature = prop?.bedrooms ? `${prop.bedrooms} Bedrooms` : (ams.find(a => a.toLowerCase().includes('bed')) || '3 King Beds');
+  const bathFeature = prop?.bathrooms ? `${prop.bathrooms} Baths` : (ams.find(a => a.toLowerCase().includes('bath')) || 'Modern Baths');
+  const wifiFeature = ams.find(a => a.toLowerCase().includes('wifi') || a.toLowerCase().includes('wi-fi')) || 'Free Wi-Fi';
+  const poolFeature = ams.find(a => a.toLowerCase().includes('pool') || a.toLowerCase().includes('jacuzzi') || a.toLowerCase().includes('lake') || a.toLowerCase().includes('view')) || (prop?.type === 'Villa' ? 'Private Pool' : 'Valley View');
+
+  return [
+    { icon: 'fa-bed', text: bedFeature },
+    { icon: 'fa-bath', text: bathFeature },
+    { icon: 'fa-wifi', text: wifiFeature },
+    { icon: 'fa-water-ladder', text: poolFeature }
+  ];
+};
+
+const LuxuryPropertyCard = ({ property, index = 0, isSelected, isHovered, onSelect, onHover, onLeave, isWishlisted, onToggleWishlist, onOpenFullView }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [isHeartBouncing, setIsHeartBouncing] = useState(false);
+
   const rawPriceNum = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '8500');
   const numericPrice = `₹${rawPriceNum.toLocaleString('en-IN')}`;
   const originalPrice = `₹${Math.round(rawPriceNum * 1.25).toLocaleString('en-IN')}`;
   const reviewsCount = property.reviewsCount || (((String(property._id || property.id || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)) % 80) + 35);
 
-  const defaultAmenities = property.amenities && property.amenities.length > 0 
-    ? property.amenities.slice(0, 3) 
-    : ['Swimming Pool', 'Free WiFi', 'Valley View'];
-
   const handleViewDetails = (e) => {
-    if (e) e.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     const propertyId = property._id || property.id;
     navigate(`/property/${propertyId}`, { state: { property } });
   };
 
-  const handleBookNow = (e) => {
-    if (e) e.stopPropagation();
-    const propertyId = property._id || property.id;
-    const searchParams = new URLSearchParams(location.search);
-    const qCheckIn = searchParams.get('checkIn');
-    const qCheckOut = searchParams.get('checkOut');
-    const qGuests = searchParams.get('guests');
-
-    const query = new URLSearchParams();
-    if (qCheckIn) query.append('checkIn', qCheckIn);
-    if (qCheckOut) query.append('checkOut', qCheckOut);
-    if (qGuests) query.append('guests', qGuests);
-    query.append('autoBook', 'true');
-
-    const targetUrl = `/property/${propertyId}?${query.toString()}`;
-    navigate(targetUrl, { state: { property } });
+  const handleHeartClick = (e) => {
+    e.stopPropagation();
+    setIsHeartBouncing(true);
+    setTimeout(() => setIsHeartBouncing(false), 350);
+    if (onToggleWishlist) {
+      onToggleWishlist(property.id);
+    }
   };
 
   return (
     <div 
       id={`split-card-${property.id}`}
       className={`luxury-explore-card ${isSelected ? 'selected-card' : ''} ${isHovered ? 'hovered-card' : ''}`}
-      onClick={() => onSelect(property)}
-      onMouseEnter={() => onHover(property.id)}
+      onClick={handleViewDetails}
+      onMouseEnter={() => onHover && onHover(property.id)}
       onMouseLeave={onLeave}
-      style={{ cursor: 'pointer' }}
+      style={{
+        animationDelay: `${(index % 10) * 80}ms`
+      }}
     >
-      <div className="card-img-box">
-        <img src={property.image} alt={property.name} loading="lazy" />
+      {/* 1. IMAGE AT TOP OF CARD */}
+      <div 
+        onClick={(e) => {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          if (onOpenFullView) onOpenFullView(property);
+        }}
+        title="Click image to view full screen"
+        className="card-img-box"
+        style={{ position: 'relative', height: '220px', overflow: 'hidden', cursor: 'zoom-in', background: '#f1f5f9' }}
+      >
+        {!imageLoaded && (
+          <div className="skeleton-box" style={{ position: 'absolute', inset: 0, zIndex: 1 }}></div>
+        )}
+
+        <img 
+          src={property.image} 
+          alt={property.name} 
+          loading="lazy" 
+          onLoad={() => setImageLoaded(true)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: imageLoaded ? 1 : 0
+          }} 
+        />
+
+        {/* Hover Quick Action Overlay */}
+        <div className="pro-card-hover-overlay">
+          <span className="pro-hover-action-btn">
+            View Details <i className="fa-solid fa-arrow-right"></i>
+          </span>
+        </div>
         
-        <span className="day-night-badge">
-          Day & Night
+        {/* Category Pill Tag */}
+        <span className="pro-type-badge-media">
+          {property.tag ? property.tag.toUpperCase() : (property.type || 'STAY')}
         </span>
-        
+
+        {/* Wishlist Heart Button */}
         <button 
           type="button"
-          className={`wishlist-heart-btn ${isWishlisted ? 'active' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleWishlist(property.id);
-          }}
+          onClick={handleHeartClick}
           title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          className={`pro-wishlist-btn ${isWishlisted ? 'saved' : ''} ${isHeartBouncing ? 'heart-bounce' : ''}`}
         >
           <i className={`fa-${isWishlisted ? 'solid' : 'regular'} fa-heart`}></i>
         </button>
+      </div>
 
-        {/* Interactive Image Hover Overlay */}
-        <div className="card-img-hover-overlay" onClick={handleViewDetails}>
-          <div className="hover-overlay-inner">
-            <span className="hover-badge-live">⚡ Instant Booking Available</span>
-            <div className="hover-highlights-list">
-              <span><i className="fa-solid fa-square-check"></i> Verified Luxury Host</span>
-              <span><i className="fa-solid fa-mug-hot"></i> Free Breakfast</span>
-              <span><i className="fa-solid fa-shield-halved"></i> 100% Price Match</span>
+      {/* 2. CARD BODY: PRICE BELOW IMAGE & DETAILS */}
+      <div style={{ padding: '18px 20px 20px 20px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+        <div>
+          {/* Price Section Directly Below Image */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+              <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '0.8rem' }}>{originalPrice}</span>
+              <span style={{ fontSize: '1.35rem', fontWeight: '900', color: '#1b4332' }}>{numericPrice}</span>
+              <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: '600' }}>/ night</span>
             </div>
-            <span className="hover-cta-text">Click to View Details <i className="fa-solid fa-arrow-right"></i></span>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#fdfbf7', border: '1px solid rgba(212, 175, 55, 0.3)', padding: '2px 8px', borderRadius: '12px' }}>
+              <i className="fa-solid fa-star" style={{ color: '#d4af37', fontSize: '0.85rem' }}></i>
+              <span style={{ fontWeight: '800', fontSize: '0.85rem', color: '#0f172a' }}>{property.rating || '4.8'}</span>
+              <span style={{ color: '#64748b', fontSize: '0.75rem' }}>({reviewsCount})</span>
+            </div>
+          </div>
+
+          {/* Property Name */}
+          <h3 style={{
+            fontSize: '1.2rem',
+            fontWeight: '800',
+            color: '#0f172a',
+            margin: '0 0 6px 0',
+            lineHeight: '1.3',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }} title={property.name}>
+            {property.name}
+          </h3>
+
+          {/* Location with Pin */}
+          <p style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: '#64748b',
+            fontSize: '0.85rem',
+            margin: '0 0 14px 0',
+            fontWeight: '500'
+          }}>
+            <i className="fa-solid fa-location-dot" style={{ color: '#d4af37' }}></i>
+            <span>{property.location}</span>
+          </p>
+        </div>
+
+        {/* 3. BUTTONS: VIEW DETAILS & MAP PIN */}
+        <div>
+          <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
+            <button
+              type="button"
+              className="btn-animated"
+              onClick={handleViewDetails}
+              title="View property details"
+              style={{
+                flex: 1,
+                background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
+                color: '#ffffff',
+                border: 'none',
+                padding: '11px 12px',
+                borderRadius: '24px',
+                fontSize: '0.86rem',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                boxShadow: '0 4px 12px rgba(27, 67, 50, 0.25)',
+                transition: 'all 0.25s ease'
+              }}
+            >
+              <i className="fa-solid fa-eye" style={{ color: '#f5d061' }}></i> View Details
+            </button>
+
+            <button
+              type="button"
+              className="btn-animated"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(property);
+              }}
+              title="Locate hotel on map"
+              style={{
+                flex: 1,
+                background: '#f8fafc',
+                color: '#1b4332',
+                border: '1px solid #cbd5e1',
+                padding: '11px 12px',
+                borderRadius: '24px',
+                fontSize: '0.86rem',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              <i className="fa-solid fa-location-dot" style={{ color: '#d4af37' }}></i> Map Pin
+            </button>
           </div>
         </div>
       </div>
+    </div>
+  );
+};
 
-      <div className="card-content-box">
-        <h3 className="card-title">{property.name}</h3>
+// Brand New Featured Card for All Hotels List Explorer
+const ViewAllHotelsCard = ({ totalCount, isExpanded, onToggleExpand }) => {
+  return (
+    <div 
+      className="view-all-hotels-special-card"
+      onClick={onToggleExpand}
+      style={{
+        background: 'linear-gradient(135deg, #0b110f 0%, #1b4332 100%)',
+        borderRadius: '24px',
+        overflow: 'hidden',
+        border: '2px solid rgba(212, 175, 55, 0.4)',
+        boxShadow: '0 12px 35px rgba(0, 0, 0, 0.25)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '24px',
+        color: '#ffffff',
+        cursor: 'pointer',
+        minHeight: '380px',
+        position: 'relative',
+        transition: 'all 0.35s ease'
+      }}
+    >
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        backgroundImage: 'radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.18) 0%, transparent 60%)',
+        pointerEvents: 'none'
+      }}></div>
 
-        <p className="card-location">
-          <i className="fa-solid fa-location-dot"></i>
-          <span>{property.location}</span>
+      <div style={{ position: 'relative', zIndex: 2 }}>
+        <span style={{
+          display: 'inline-block',
+          background: 'rgba(212, 175, 55, 0.2)',
+          color: '#d4af37',
+          border: '1px solid rgba(212, 175, 55, 0.4)',
+          padding: '4px 14px',
+          borderRadius: '20px',
+          fontSize: '0.75rem',
+          fontWeight: '800',
+          letterSpacing: '1.5px',
+          textTransform: 'uppercase',
+          marginBottom: '16px'
+        }}>
+          {isExpanded ? 'Full Collection Shown' : 'Complete Collection'}
+        </span>
+
+        <h3 style={{
+          fontFamily: 'var(--font-heading)',
+          fontSize: '1.55rem',
+          fontWeight: '800',
+          color: '#ffffff',
+          lineHeight: '1.3',
+          margin: '0 0 12px 0'
+        }}>
+          Explore All <span style={{ color: '#d4af37' }}>{totalCount}+</span> Luxury Stays & Villas
+        </h3>
+
+        <p style={{ color: '#a3b18a', fontSize: '0.88rem', lineHeight: '1.6', margin: '0 0 18px 0' }}>
+          Browse our complete list of hill view villas, forest cabins, and heritage hotels across Mahabaleshwar.
         </p>
 
-        <div className="card-rating-row">
-          <i className="fa-solid fa-star" style={{ color: '#d4af37' }}></i>
-          <span className="card-rating-star">{property.rating || '4.8'}</span>
-          <span className="card-reviews-count">({reviewsCount} reviews)</span>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
+          <span style={{ background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', color: '#e2e8f0' }}>🏡 Luxury Villas</span>
+          <span style={{ background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', color: '#e2e8f0' }}>🌊 Lake View Resorts</span>
+          <span style={{ background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', color: '#e2e8f0' }}>🌲 Mountain Cabins</span>
         </div>
+      </div>
 
-        <div className="card-price-row">
-          <span className="card-main-price">
-            {numericPrice} <span className="card-price-unit">/night</span>
-          </span>
-        </div>
-
-        <div className="card-actions-group">
-          <button
-            type="button"
-            className="btn-locate-map"
-            onClick={handleViewDetails}
-            title="View property details & photos"
-          >
-            <i className="fa-solid fa-eye"></i> View Details
-          </button>
-          <button 
-            type="button"
-            className="btn-book-now-gold"
-            onClick={handleBookNow}
-          >
-            <i className="fa-solid fa-bolt" style={{ marginRight: '6px' }}></i>Book Now
-          </button>
-        </div>
+      <div style={{ position: 'relative', zIndex: 2, marginTop: 'auto' }}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand();
+          }}
+          style={{
+            width: '100%',
+            background: 'linear-gradient(135deg, #d4af37 0%, #b38b19 100%)',
+            color: '#0b110f',
+            border: 'none',
+            padding: '13px 18px',
+            borderRadius: '30px',
+            fontWeight: '800',
+            fontSize: '0.92rem',
+            cursor: 'pointer',
+            boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          <i className={isExpanded ? "fa-solid fa-compress" : "fa-solid fa-list-check"}></i>
+          <span>{isExpanded ? "Show Featured Top 3" : `View All (${totalCount} Hotels)`}</span>
+          <i className={isExpanded ? "fa-solid fa-chevron-up" : "fa-solid fa-arrow-right"}></i>
+        </button>
       </div>
     </div>
   );
@@ -384,11 +606,26 @@ const PropertyGrid = ({ isHomePage = false }) => {
   const [dbProperties, setDbProperties] = useState([]);
   const [resolvedAllProperties, setResolvedAllProperties] = useState(properties);
   
-  // Search, View, and Selection states
+  // Search, View, Selection, and Layout states
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [hoveredPropertyId, setHoveredPropertyId] = useState(null);
   const [showViewAllModal, setShowViewAllModal] = useState(false);
+  const [showAllList, setShowAllList] = useState(false);
+  const [fullViewImage, setFullViewImage] = useState(null);
+
+  const openFullViewModal = (property) => {
+    const propertyPhotos = property.photos && property.photos.length > 0 ? property.photos : [property.image];
+    setFullViewImage({
+      url: property.image,
+      title: property.name,
+      location: property.location,
+      price: property.price,
+      propertyId: property._id || property.id,
+      photos: propertyPhotos,
+      activeIndex: 0
+    });
+  };
 
   // Advanced Filter States
   const [selectedView, setSelectedView] = useState('All');
@@ -493,14 +730,25 @@ const PropertyGrid = ({ isHomePage = false }) => {
 
   // Filter & Sort properties dynamically by Category + Search + View + Price + Rating + Sort Option
   const filteredProperties = React.useMemo(() => {
+    const cleanSearch = searchQuery ? searchQuery.trim().toLowerCase() : '';
+
     let result = resolvedAllProperties.filter(prop => {
       // 1. Category / Type filter
       const matchesFilter = activeFilter === 'All' || prop.type === activeFilter || (activeFilter === 'Cottage' && prop.type === 'Cottage') || (activeFilter === 'Farm House' && (prop.type === 'Farm House' || prop.type === 'Villa'));
       
-      // 2. Search query filter
-      const matchesSearch = !searchQuery || 
-        prop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        prop.location.toLowerCase().includes(searchQuery.toLowerCase());
+      // 2. Comprehensive Search query filter (matches name, location, type, amenities, view, and description)
+      let matchesSearch = true;
+      if (cleanSearch) {
+        const nameMatch = prop.name ? prop.name.toLowerCase().includes(cleanSearch) : false;
+        const locationMatch = prop.location ? prop.location.toLowerCase().includes(cleanSearch) : false;
+        const typeMatch = prop.type ? prop.type.toLowerCase().includes(cleanSearch) : false;
+        const descMatch = prop.description ? prop.description.toLowerCase().includes(cleanSearch) : false;
+        const viewMatch = prop.viewType ? prop.viewType.toLowerCase().includes(cleanSearch) : false;
+        const tagMatch = prop.tag ? prop.tag.toLowerCase().includes(cleanSearch) : false;
+        const amenitiesMatch = Array.isArray(prop.amenities) ? prop.amenities.some(am => am.toLowerCase().includes(cleanSearch)) : false;
+
+        matchesSearch = nameMatch || locationMatch || typeMatch || descMatch || viewMatch || tagMatch || amenitiesMatch;
+      }
 
       // 3. Price Filter
       const rawPriceNum = parseInt(prop.price?.toString().replace(/[^0-9]/g, '') || '10000');
@@ -549,6 +797,8 @@ const PropertyGrid = ({ isHomePage = false }) => {
     return result;
   }, [resolvedAllProperties, activeFilter, searchQuery, sortOption, selectedView, maxPriceFilter, minRatingFilter]);
 
+  const visibleProperties = filteredProperties;
+
   // Handle Search Location input submission
   const handleSearchSubmit = async (e) => {
     if (e) e.preventDefault();
@@ -595,7 +845,12 @@ const PropertyGrid = ({ isHomePage = false }) => {
       if (!window.L) return false;
       const mapElement = document.getElementById('leaflet-map');
       if (!mapElement) return false;
-      if (mapRef.current) return true;
+      if (mapRef.current) {
+        try {
+          mapRef.current.invalidateSize();
+        } catch (e) {}
+        return true;
+      }
 
       const L = window.L;
 
@@ -637,7 +892,7 @@ const PropertyGrid = ({ isHomePage = false }) => {
         if (initMap()) {
           clearInterval(checkInterval);
         }
-      }, 250);
+      }, 200);
     }
 
     return () => {
@@ -786,285 +1041,215 @@ const PropertyGrid = ({ isHomePage = false }) => {
   }, [hoveredPropertyId, selectedPropertyId]);
 
   return (
-    <section className="property-grid-section" id="explore" style={{ padding: isHomePage ? '90px 0' : '50px 0 90px 0' }}>
-      {isHomePage ? (
-        /* HOME PAGE 4 FEATURED HOTELS LAYOUT */
-        <>
-          <div className="section-header" style={{ maxWidth: '1440px', margin: '0 auto 36px auto', padding: '0 20px', textAlign: 'center' }}>
-            <span className="section-subtitle" style={{ letterSpacing: '3px', color: '#d4af37', fontWeight: '800', display: 'block', marginBottom: '8px', textTransform: 'uppercase', fontSize: '0.88rem' }}>
-              Our Curated Collection
-            </span>
-            <h2 style={{ fontSize: '2.8rem', color: '#0f382c', margin: '0 0 24px 0', fontFamily: 'var(--font-heading)', fontWeight: '800', letterSpacing: '0.5px' }}>
-              Explore <span style={{ color: '#d4af37' }}>Exceptional</span> Stays
-            </h2>
-            
-            {/* Unified Luxury Control Bar: All Controls & View All Button */}
-            <div className="map-control-bar" style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-              gap: '16px',
-              background: 'rgba(255, 255, 255, 0.88)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              borderRadius: '60px',
-              padding: '12px 28px',
-              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.02)',
-              border: '1px solid rgba(212, 175, 55, 0.3)',
-              margin: '0 auto 30px auto',
-              width: 'fit-content',
-              maxWidth: '95%'
-            }}>
-              {/* Category Pills Group */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                {['All', 'Villa', 'Hotel', 'Cabin', 'Resort'].map(tab => (
-                  <button 
-                    key={tab}
-                    className={`filter-btn ${activeFilter === tab ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveFilter(tab);
-                      setSelectedPropertyId(null);
-                    }}
-                    style={{
-                      padding: '7px 16px',
-                      borderRadius: '25px',
-                      fontSize: '0.86rem',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      transition: 'all 0.25s ease',
-                      border: activeFilter === tab ? 'none' : '1px solid #c8d3cc',
-                      background: activeFilter === tab ? 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)' : '#f4f6f4',
-                      color: activeFilter === tab ? '#ffffff' : '#1b4332',
-                      boxShadow: activeFilter === tab ? '0 4px 14px rgba(27, 67, 50, 0.3)' : '0 2px 5px rgba(0,0,0,0.02)'
-                    }}
-                  >
-                    {tab === 'All' && <><i className="fa-solid fa-border-all" style={{ marginRight: '6px' }}></i>All</>}
-                    {tab === 'Villa' && <><i className="fa-solid fa-house-chimney-window" style={{ marginRight: '6px' }}></i>Villas</>}
-                    {tab === 'Hotel' && <><i className="fa-solid fa-hotel" style={{ marginRight: '6px' }}></i>Hotels</>}
-                    {tab === 'Cabin' && <><i className="fa-solid fa-tree" style={{ marginRight: '6px' }}></i>Cabins</>}
-                    {tab === 'Resort' && <><i className="fa-solid fa-spa" style={{ marginRight: '6px' }}></i>Resorts</>}
-                  </button>
-                ))}
-              </div>
-
-              {/* Search Input Box */}
-              <form onSubmit={handleSearchSubmit} className="search-input-wrapper" style={{ margin: 0, border: '1px solid #d4af37', borderRadius: '30px', background: '#fdfbf7', padding: '0', width: '220px', position: 'relative' }}>
-                <i className="fa-solid fa-magnifying-glass" style={{ color: '#d4af37', fontSize: '0.85rem' }}></i>
-                <input 
-                  type="text" 
-                  placeholder="Search hotel name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-location-input"
-                  style={{ border: 'none', outline: 'none', background: 'transparent', padding: '6px 14px 6px 36px', fontSize: '0.85rem', fontWeight: '600', color: '#1b4332', boxShadow: 'none' }}
-                />
-              </form>
-
-              {/* View All Stays Action Button */}
+    <section className="property-grid-section" id="explore" style={{ padding: isHomePage ? '80px 0' : '40px 0 80px 0' }}>
+      {/* Header & Controls Section */}
+      <div className="section-header" style={{ maxWidth: '1440px', margin: '0 auto 30px auto', padding: '0 20px', textAlign: 'center' }}>
+        <span className="section-subtitle" style={{ letterSpacing: '3px', color: '#d4af37', fontWeight: '800', display: 'block', marginBottom: '8px', textTransform: 'uppercase', fontSize: '0.88rem' }}>
+          {isHomePage ? 'Our Curated Collection' : 'Explore Stays'}
+        </span>
+        <h2 style={{ fontSize: '2.6rem', color: '#0f382c', margin: '0 0 20px 0', fontFamily: 'var(--font-heading)', fontWeight: '800', letterSpacing: '0.5px' }}>
+          {isHomePage ? (
+            <>Explore <span style={{ color: '#d4af37' }}>Exceptional</span> Stays</>
+          ) : (
+            <>Stay in <span style={{ color: '#d4af37' }}>Nature</span>, Live in <span style={{ color: '#d4af37' }}>Luxury</span></>
+          )}
+        </h2>
+        
+        {/* Unified Luxury Control Bar */}
+        <div className="map-control-bar" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          gap: '14px',
+          background: 'rgba(255, 255, 255, 0.88)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: '60px',
+          padding: '12px 26px',
+          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.05)',
+          border: '1px solid rgba(212, 175, 55, 0.3)',
+          margin: '0 auto 28px auto',
+          width: 'fit-content',
+          maxWidth: '95%'
+        }}>
+          {/* Category Pills Group */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            {['All', 'Villa', 'Hotel', 'Cabin', 'Resort'].map(tab => (
               <button 
-                onClick={() => navigate('/explore')} 
-                className="btn-primary"
-                style={{
-                  background: 'linear-gradient(135deg, #d4af37 0%, #b38b19 100%)',
-                  color: '#0b110f',
-                  fontWeight: '800',
-                  padding: '8px 22px',
-                  borderRadius: '50px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.86rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: '0 4px 15px rgba(212, 175, 55, 0.35)',
-                  whiteSpace: 'nowrap'
+                key={tab}
+                className={`filter-btn ${activeFilter === tab ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveFilter(tab);
+                  setSelectedPropertyId(null);
                 }}
-              >
-                <i className="fa-solid fa-list-check"></i> View All Stays ({resolvedAllProperties.length})
-              </button>
-            </div>
-          </div>
-          
-          {/* Home Page Featured 3 Hotels Grid */}
-          <div style={{
-            maxWidth: '1280px',
-            margin: '0 auto',
-            padding: '0 20px'
-          }}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '24px',
-              marginBottom: '36px'
-            }}>
-              {filteredProperties.slice(0, 4).map(property => (
-                <LuxuryPropertyCard
-                  key={property.id}
-                  property={property}
-                  isSelected={selectedPropertyId === property.id}
-                  isHovered={hoveredPropertyId === property.id}
-                  onSelect={(p) => navigate(`/property/${p._id || p.id}`)}
-                  onHover={setHoveredPropertyId}
-                  onLeave={() => setHoveredPropertyId(null)}
-                  isWishlisted={!!wishlistMap[property.id || property._id]}
-                  onToggleWishlist={() => toggleWishlist(property.id || property._id)}
-                />
-              ))}
-            </div>
-
-            {/* View All Stays Button Centered below 3 hotels */}
-            <div style={{ textAlign: 'center', marginTop: '30px' }}>
-              <button 
-                onClick={() => navigate('/explore')} 
-                className="btn-primary"
                 style={{
-                  background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
-                  color: '#ffffff',
-                  fontWeight: '800',
-                  padding: '16px 42px',
-                  borderRadius: '50px',
-                  fontSize: '1.05rem',
-                  border: '1px solid #d4af37',
-                  cursor: 'pointer',
-                  boxShadow: '0 8px 25px rgba(27, 67, 50, 0.35)',
-                  transition: 'all 0.3s ease',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}
-              >
-                <i className="fa-solid fa-hotel" style={{ color: '#d4af37' }}></i> View All Stays ({resolvedAllProperties.length} Properties) <i className="fa-solid fa-arrow-right" style={{ color: '#d4af37', marginLeft: '4px' }}></i>
-              </button>
-            </div>
-          </div>
-        </>
-      ) : (
-        /* STANDALONE EXPLORE STAYS PAGE LAYOUT (/explore) */
-        <>
-          {/* Unified Luxury Control Card for Explore Stays Page */}
-          <div className="explore-unified-card" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '14px',
-            background: 'rgba(255, 255, 255, 0.88)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            borderRadius: '28px',
-            padding: '18px 28px',
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.02)',
-            border: '1px solid rgba(212, 175, 55, 0.3)',
-            margin: '0 auto 28px auto',
-            width: 'fit-content',
-            maxWidth: '95%'
-          }}>
-            {/* Title Header Centered */}
-            <h2 style={{ fontSize: '1.85rem', margin: 0, fontFamily: 'var(--font-heading)', color: '#0f382c', fontWeight: '800', textAlign: 'center', letterSpacing: '0.5px' }}>
-              Stay in <span style={{ color: '#d4af37' }}>Nature</span>, Live in <span style={{ color: '#d4af37' }}>Luxury</span>
-            </h2>
-
-            {/* All Controls Centered Together */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '12px',
-              flexWrap: 'wrap'
-            }}>
-              {/* Category Pills */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                {['All', 'Villa', 'Hotel', 'Cabin', 'Resort'].map(tab => (
-                  <button 
-                    key={tab}
-                    className={`filter-btn ${activeFilter === tab ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveFilter(tab);
-                      setSelectedPropertyId(null);
-                    }}
-                    style={{
-                      padding: '7px 16px',
-                      borderRadius: '25px',
-                      fontSize: '0.85rem',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      transition: 'all 0.25s ease',
-                      border: activeFilter === tab ? 'none' : '1px solid #c8d3cc',
-                      background: activeFilter === tab ? 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)' : '#f4f6f4',
-                      color: activeFilter === tab ? '#ffffff' : '#1b4332',
-                      boxShadow: activeFilter === tab ? '0 4px 14px rgba(27, 67, 50, 0.3)' : '0 2px 5px rgba(0,0,0,0.02)'
-                    }}
-                  >
-                    {tab === 'All' ? '✨ All' : (tab === 'Villa' ? '🏡 Villas' : tab === 'Hotel' ? '🏨 Hotels' : tab === 'Cabin' ? '🛖 Cabins' : '🏞️ Resorts')}
-                  </button>
-                ))}
-              </div>
-
-              {/* Search Input Box */}
-              <form onSubmit={handleSearchSubmit} className="explore-search-form" style={{ margin: 0, width: '210px', position: 'relative', border: '1px solid #d4af37', borderRadius: '30px', background: '#fdfbf7', padding: '0' }}>
-                <i className="fa-solid fa-magnifying-glass" style={{ color: '#d4af37', position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.85rem' }}></i>
-                <input 
-                  type="text" 
-                  placeholder="Search location or stay..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="explore-search-input"
-                  style={{ border: 'none', outline: 'none', background: 'transparent', padding: '6px 14px 6px 36px', fontSize: '0.85rem', fontWeight: '600', color: '#1b4332', width: '100%', boxShadow: 'none' }}
-                />
-              </form>
-
-              {/* Filters Button */}
-              <button 
-                type="button"
-                className="filter-toggle-pill-btn"
-                onClick={() => setShowViewAllModal(true)}
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #c8d3cc',
-                  color: '#1b4332',
-                  fontWeight: '700',
                   padding: '7px 16px',
-                  borderRadius: '30px',
-                  fontSize: '0.85rem',
+                  borderRadius: '25px',
+                  fontSize: '0.86rem',
+                  fontWeight: '700',
                   cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px'
+                  transition: 'all 0.25s ease',
+                  border: activeFilter === tab ? 'none' : '1px solid #c8d3cc',
+                  background: activeFilter === tab ? 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)' : '#f4f6f4',
+                  color: activeFilter === tab ? '#ffffff' : '#1b4332',
+                  boxShadow: activeFilter === tab ? '0 4px 14px rgba(27, 67, 50, 0.3)' : '0 2px 5px rgba(0,0,0,0.02)'
                 }}
               >
-                <i className="fa-solid fa-sliders" style={{ color: '#d4af37' }}></i> Filters
+                {tab === 'All' && <><i className="fa-solid fa-border-all" style={{ marginRight: '6px' }}></i>All</>}
+                {tab === 'Villa' && <><i className="fa-solid fa-house-chimney-window" style={{ marginRight: '6px' }}></i>Villas</>}
+                {tab === 'Hotel' && <><i className="fa-solid fa-hotel" style={{ marginRight: '6px' }}></i>Hotels</>}
+                {tab === 'Cabin' && <><i className="fa-solid fa-tree" style={{ marginRight: '6px' }}></i>Cabins</>}
+                {tab === 'Resort' && <><i className="fa-solid fa-spa" style={{ marginRight: '6px' }}></i>Resorts</>}
               </button>
+            ))}
+          </div>
+
+          {/* Search Input Box */}
+          <form onSubmit={handleSearchSubmit} className="search-input-wrapper" style={{ margin: 0, border: '1px solid #d4af37', borderRadius: '30px', background: '#fdfbf7', padding: '0', width: '240px', position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <i className="fa-solid fa-magnifying-glass" style={{ color: '#d4af37', fontSize: '0.85rem', position: 'absolute', left: '12px' }}></i>
+            <input 
+              type="text" 
+              placeholder="Search stay or location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-location-input"
+              style={{ border: 'none', outline: 'none', background: 'transparent', padding: '6px 30px 6px 36px', fontSize: '0.85rem', fontWeight: '600', color: '#1b4332', boxShadow: 'none', width: '100%' }}
+            />
+            {searchQuery && (
+              <button 
+                type="button" 
+                onClick={() => setSearchQuery('')}
+                style={{ position: 'absolute', right: '10px', background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.85rem' }}
+                title="Clear Search"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            )}
+          </form>
+
+          {/* Filter Modal Toggle Button */}
+          <button 
+            type="button"
+            onClick={() => setShowViewAllModal(true)}
+            style={{
+              background: '#ffffff',
+              border: '1px solid #c8d3cc',
+              color: '#1b4332',
+              fontWeight: '700',
+              padding: '7px 18px',
+              borderRadius: '30px',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <i className="fa-solid fa-sliders" style={{ color: '#d4af37' }}></i> Filters
+          </button>
+        </div>
+      </div>
+
+      {/* 1. FIRST SECTION: HOTEL CARDS GRID */}
+      <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '0 20px' }}>
+        {filteredProperties.length > 0 ? (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '24px',
+            marginBottom: '28px'
+          }}>
+            {visibleProperties.map((property, idx) => (
+              <LuxuryPropertyCard
+                key={property.id}
+                index={idx}
+                property={property}
+                isSelected={selectedPropertyId === property.id}
+                isHovered={hoveredPropertyId === property.id}
+                onSelect={selectHotelOnMap}
+                onHover={setHoveredPropertyId}
+                onLeave={() => setHoveredPropertyId(null)}
+                isWishlisted={!!wishlistMap[property.id || property._id]}
+                onToggleWishlist={() => toggleWishlist(property.id || property._id)}
+                onOpenFullView={openFullViewModal}
+              />
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '50px 20px', color: '#666', background: '#fff', borderRadius: '20px', marginBottom: '30px' }}>
+            <i className="fa-solid fa-hotel" style={{ fontSize: '2.5rem', marginBottom: '12px', color: '#d4af37' }}></i>
+            <h3 style={{ fontSize: '1.4rem', color: '#1a1a1a' }}>No luxury stays matching search</h3>
+            <p style={{ fontSize: '0.9rem', marginTop: '6px' }}>Try searching another property name or selecting a different category filter above.</p>
+          </div>
+        )}
+
+        {/* 3. INTERACTIVE MAP SECTION PLACED DIRECTLY BELOW THE HOTEL CARDS */}
+        <div className="hotel-map-container-below" style={{
+          background: '#ffffff',
+          borderRadius: '28px',
+          padding: '24px',
+          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.08)',
+          border: '1px solid rgba(212, 175, 55, 0.35)',
+          marginTop: '20px',
+          marginBottom: '40px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <span style={{ fontSize: '0.78rem', color: '#d4af37', fontWeight: '800', letterSpacing: '2px', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                Interactive Navigation
+              </span>
+              <h3 style={{ margin: 0, fontSize: '1.5rem', fontFamily: 'var(--font-heading)', color: '#0f382c', fontWeight: '800' }}>
+                <i className="fa-solid fa-map-location-dot" style={{ color: '#d4af37', marginRight: '10px' }}></i>
+                Mahabaleshwar Hotel Locations Map
+              </h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: '0.88rem', color: '#666' }}>
+                Interactive OpenStreetMap. Click any pin to view hotel photos, details, & live directions.
+              </p>
+            </div>
+
+            {/* Hotel Quick Select Dropdown */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <select 
+                onChange={(e) => {
+                  const selected = filteredProperties.find(p => String(p.id) === e.target.value);
+                  if (selected) selectHotelOnMap(selected);
+                }}
+                className="hotel-quick-select"
+                style={{
+                  padding: '9px 18px',
+                  borderRadius: '25px',
+                  border: '1.5px solid #d4af37',
+                  background: '#fdfbf7',
+                  fontWeight: '700',
+                  fontSize: '0.85rem',
+                  color: '#1b4332',
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
+              >
+                <option value="">📍 Jump to Hotel Pin...</option>
+                {filteredProperties.map(p => (
+                  <option key={p.id} value={p.id}>{p.name} — {p.location}</option>
+                ))}
+              </select>
             </div>
           </div>
-          
-          {/* Grid of Hotels */}
-          <div className="explore-hotels-container-bottom" style={{ maxWidth: '1440px', margin: '0 auto 60px auto', padding: '0 20px' }}>
-            {filteredProperties.length > 0 ? (
-              <div className="explore-cards-4col-grid">
-                {filteredProperties.map(property => (
-                  <LuxuryPropertyCard 
-                    key={property.id} 
-                    property={property} 
-                    isSelected={selectedPropertyId === property.id}
-                    isHovered={hoveredPropertyId === property.id}
-                    onSelect={selectHotelOnMap}
-                    onHover={setHoveredPropertyId}
-                    onLeave={() => setHoveredPropertyId(null)}
-                    isWishlisted={!!wishlistMap[property.id]}
-                    onToggleWishlist={toggleWishlist}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666', background: '#fff', borderRadius: '20px' }}>
-                <i className="fa-solid fa-hotel" style={{ fontSize: '2.5rem', marginBottom: '12px', color: '#d4af37' }}></i>
-                <h3 style={{ fontSize: '1.4rem', color: '#1a1a1a' }}>No luxury stays matching search</h3>
-                <p style={{ fontSize: '0.9rem', marginTop: '6px' }}>Try searching another property name or selecting a different category filter above.</p>
-              </div>
-            )}
-          </div>
-        </>
-      )}
+
+          {/* The Leaflet Map container element */}
+          <div 
+            id="leaflet-map" 
+            style={{ 
+              width: '100%', 
+              height: '520px', 
+              borderRadius: '20px', 
+              overflow: 'hidden',
+              border: '1px solid rgba(27, 67, 50, 0.15)',
+              boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.06)'
+            }}
+          ></div>
+        </div>
+      </div>
 
       {/* Interactive Filter Stays Modal (View, Pricing, & Rating Options) */}
       {showViewAllModal && (
@@ -1228,6 +1413,203 @@ const PropertyGrid = ({ isHomePage = false }) => {
                 style={{ background: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)', color: '#ffffff', border: 'none', padding: '10px 26px', borderRadius: '30px', fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(27, 67, 50, 0.3)' }}
               >
                 Apply Filters ({filteredProperties.length} Stays)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Screen Image Lightbox Modal */}
+      {fullViewImage && (
+        <div 
+          className="image-fullview-modal-backdrop"
+          onClick={() => setFullViewImage(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(11, 17, 15, 0.95)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+        >
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={() => setFullViewImage(null)}
+            style={{
+              position: 'absolute',
+              top: '24px',
+              right: '28px',
+              background: 'rgba(255, 255, 255, 0.25)',
+              color: '#ffffff',
+              border: '1.5px solid rgba(255, 255, 255, 0.4)',
+              width: '46px',
+              height: '46px',
+              borderRadius: '50%',
+              fontSize: '1.4rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 100000,
+              boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+              transition: 'all 0.25s ease'
+            }}
+            title="Close Full View (Esc)"
+          >
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+
+          {/* Prev Photo Arrow */}
+          {fullViewImage.photos && fullViewImage.photos.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                const newIdx = (fullViewImage.activeIndex - 1 + fullViewImage.photos.length) % fullViewImage.photos.length;
+                setFullViewImage({
+                  ...fullViewImage,
+                  url: fullViewImage.photos[newIdx],
+                  activeIndex: newIdx
+                });
+              }}
+              style={{
+                position: 'absolute',
+                left: '24px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(255, 255, 255, 0.25)',
+                color: '#ffffff',
+                border: '1.5px solid rgba(255, 255, 255, 0.4)',
+                width: '52px',
+                height: '52px',
+                borderRadius: '50%',
+                fontSize: '1.4rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 100000,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+              }}
+            >
+              <i className="fa-solid fa-chevron-left"></i>
+            </button>
+          )}
+
+          {/* Next Photo Arrow */}
+          {fullViewImage.photos && fullViewImage.photos.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                const newIdx = (fullViewImage.activeIndex + 1) % fullViewImage.photos.length;
+                setFullViewImage({
+                  ...fullViewImage,
+                  url: fullViewImage.photos[newIdx],
+                  activeIndex: newIdx
+                });
+              }}
+              style={{
+                position: 'absolute',
+                right: '24px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(255, 255, 255, 0.25)',
+                color: '#ffffff',
+                border: '1.5px solid rgba(255, 255, 255, 0.4)',
+                width: '52px',
+                height: '52px',
+                borderRadius: '50%',
+                fontSize: '1.4rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 100000,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+              }}
+            >
+              <i className="fa-solid fa-chevron-right"></i>
+            </button>
+          )}
+
+          {/* Main Full View Container */}
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              maxWidth: '92vw',
+              maxHeight: '88vh',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6)',
+              border: '1.5px solid rgba(255, 255, 255, 0.35)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              background: '#0b110f'
+            }}
+          >
+            <img 
+              src={fullViewImage.url} 
+              alt={fullViewImage.title}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '76vh',
+                objectFit: 'contain',
+                display: 'block'
+              }} 
+            />
+
+            {/* Bottom Info Bar Overlay */}
+            <div style={{
+              width: '100%',
+              background: 'rgba(15, 23, 42, 0.92)',
+              backdropFilter: 'blur(12px)',
+              padding: '16px 28px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              color: '#ffffff',
+              borderTop: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#f5d061', fontWeight: '800' }}>
+                  {fullViewImage.title}
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: '#cbd5e1' }}>
+                  <i className="fa-solid fa-location-dot" style={{ color: '#f5d061', marginRight: '6px' }}></i>
+                  {fullViewImage.location} • {fullViewImage.price}/night
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  window.open(`/property/${fullViewImage.propertyId}`, '_blank');
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #f5d061 0%, #d4af37 100%)',
+                  color: '#0b110f',
+                  border: 'none',
+                  padding: '11px 24px',
+                  borderRadius: '30px',
+                  fontWeight: '900',
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 15px rgba(212, 175, 55, 0.4)'
+                }}
+              >
+                <i className="fa-solid fa-arrow-up-right-from-square"></i> Open Full Hotel Page
               </button>
             </div>
           </div>

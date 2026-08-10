@@ -201,16 +201,22 @@ const Hero = () => {
         <div className="search-bar-container">
           <div className="search-field">
             <label>TRIP LOCATION</label>
-            <select 
-              className="search-select" 
+            <input 
+              type="text"
+              list="locations-list"
+              className="search-input"
+              placeholder="Where to? (e.g. Mahabaleshwar)"
               value={selectedLocation} 
               onChange={(e) => setSelectedLocation(e.target.value)}
-            >
-              <option value="">Select Location</option>
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearch();
+              }}
+            />
+            <datalist id="locations-list">
               {uniqueLocations.map((loc, idx) => (
-                <option key={idx} value={loc}>{loc}</option>
+                <option key={idx} value={loc} />
               ))}
-            </select>
+            </datalist>
           </div>
 
           <div className="search-field">

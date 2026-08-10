@@ -1087,37 +1087,37 @@
   background: #ffffff;
   border-radius: 24px;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  transition: transform 280ms cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 280ms ease, border-color 280ms ease;
   display: flex;
   flex-direction: column;
-  animation: cardSlideUpFade 0.65s cubic-bezier(0.165, 0.84, 0.44, 1) ease-out forwards;
+  animation: cardEntranceUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) ease-out forwards;
   will-change: transform, opacity;
 }
 
 .luxury-explore-card:hover {
-  transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 22px 45px rgba(27, 67, 50, 0.18);
-  border-color: #DFB23B;
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(27, 67, 50, 0.08);
+  border-color: #d4af37;
 }
 
 .card-img-box {
   position: relative;
-  height: 210px;
+  height: 220px;
   overflow: hidden;
-  background: #f0f0f0;
+  background: #0f172a;
 }
 
 .card-img-box img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.5s ease-out, opacity 0.3s ease;
 }
 
 .luxury-explore-card:hover .card-img-box img {
-  transform: scale(1.06);
+  transform: scale(1.07);
 }
 
 .day-night-badge {
@@ -1367,6 +1367,76 @@
   font-size: 0.85rem;
 }
 
+.zoom-instructions {
+  font-size: 11px;
+  color: #64748b;
+  text-align: center;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   Fade In & Hotel Booking Form Animations
+   ========================================================================== */
+
+@keyframes detailsCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(35px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bookingCardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(45px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes borderShimmerGlow {
+  0% {
+    border-color: rgba(212, 175, 55, 0.4);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15);
+  }
+  50% {
+    border-color: rgba(245, 208, 97, 0.95);
+    box-shadow: 0 10px 30px rgba(245, 208, 97, 0.45);
+  }
+  100% {
+    border-color: rgba(212, 175, 55, 0.4);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15);
+  }
+}
+
+.animated-details-card {
+  animation: detailsCardFadeIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animated-booking-card {
+  animation: bookingCardEntrance 0.9s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  transition: all 0.35s ease;
+}
+
+.animated-booking-card:hover {
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.45), 0 0 30px rgba(212, 175, 55, 0.25) !important;
+}
+
+.booking-hotel-img-preview {
+  animation: borderShimmerGlow 3.5s infinite ease-in-out;
+}
+
+.booking-hotel-img-preview:hover img {
+  transform: scale(1.08);
+}
+
 .hover-cta-text {
   font-size: 0.74rem;
   color: #f5d061;
@@ -1375,6 +1445,63 @@
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* Card & Grid Entrance Animations */
+@keyframes cardFadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseGoldGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+  }
+}
+
+.luxury-explore-card {
+  animation: cardFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.luxury-explore-card:hover {
+  transform: translateY(-8px) scale(1.015);
+  box-shadow: 0 20px 40px rgba(11, 17, 15, 0.16), 0 0 20px rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.6);
+}
+
+.view-all-hotels-special-card {
+  animation: cardFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.view-all-hotels-special-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 22px 45px rgba(11, 17, 15, 0.35), 0 0 25px rgba(212, 175, 55, 0.3);
+}
+
+.btn-animated {
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.btn-animated:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(27, 67, 50, 0.25);
+}
+
+.btn-animated:active {
+  transform: translateY(0) scale(0.97);
 }
 
 

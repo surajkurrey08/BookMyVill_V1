@@ -31,18 +31,35 @@ export const formatGoogleMapsDirectionsUrl = (mapLink, name, location) => {
   if (mapLink && typeof mapLink === 'string') {
     let trimmed = mapLink.trim();
     if (trimmed) {
-      if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
-        trimmed = `https://${trimmed}`;
+      // 1. If it's GPS coordinates like "17.9258,73.6510" or "17.9258, 73.6510"
+      if (/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(trimmed)) {
+        return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(trimmed)}`;
       }
-      if (trimmed.includes('/dir/')) {
+
+      // 2. Add protocol if missing
+      if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        // If it looks like a domain or URL path (e.g., maps.app.goo.gl/xxx or google.com/maps)
+        if (trimmed.includes('.') || trimmed.includes('/')) {
+          trimmed = `https://${trimmed}`;
+        } else {
+          // It's a text address string
+          return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(trimmed + ', Mahabaleshwar, Maharashtra')}`;
+        }
+      }
+
+      // 3. If it's a full URL (google.com/maps, maps.app.goo.gl, goo.gl/maps, etc.), return directly!
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
         return trimmed;
       }
-      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(trimmed)}`;
     }
   }
 
+  // 4. Fallback search query constructed from hotel name and location
   const cleanName = cleanLocationString(name);
   const cleanLoc = cleanLocationString(location);
-  const destinationQuery = cleanLoc ? `${cleanName ? cleanName + ', ' : ''}${cleanLoc}` : (cleanName || 'Mahabaleshwar');
+  const destinationQuery = cleanLoc 
+    ? `${cleanName ? cleanName + ', ' : ''}${cleanLoc}, Mahabaleshwar, Maharashtra` 
+    : (cleanName ? `${cleanName}, Mahabaleshwar, Maharashtra` : 'Mahabaleshwar, Maharashtra');
+
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationQuery)}`;
 };

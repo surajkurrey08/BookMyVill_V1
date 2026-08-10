@@ -1,17 +1,36 @@
-/* Professional Hotel/Stay Luxury Card Styling with Down-to-Up Animation */
+/* Professional Hotel/Stay Luxury Card Styling */
 
-@keyframes cardSlideUpFade {
+@keyframes cardEntranceUp {
   0% {
     opacity: 0;
-    transform: translateY(45px) scale(0.96);
-  }
-  60% {
-    opacity: 0.88;
-    transform: translateY(-4px) scale(1.005);
+    transform: translateY(20px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
+  }
+}
+
+@keyframes subtleBadgePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+}
+
+@keyframes heartClickBounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 
@@ -20,68 +39,102 @@
   border-radius: 20px;
   overflow: hidden;
   border: 1px solid rgba(27, 67, 50, 0.12);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 280ms cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 280ms ease, border-color 280ms ease;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   position: relative;
-  animation: cardSlideUpFade 0.65s cubic-bezier(0.165, 0.84, 0.44, 1) ease-out forwards;
+  animation: cardEntranceUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) ease-out forwards;
+  animation-delay: calc(var(--card-index, 0) * 90ms);
   will-change: transform, opacity;
 }
 
 .pro-hotel-card:hover {
-  transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 22px 45px rgba(27, 67, 50, 0.22);
-  border-color: #d4af37;
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(27, 67, 50, 0.08);
+  border-color: rgba(212, 175, 55, 0.5);
 }
 
 /* Image Media Container */
 .pro-card-media {
   position: relative;
-  height: 230px;
+  height: 220px;
   overflow: hidden;
-  background: #111;
+  background: #0f172a;
 }
 
 .pro-card-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.5s ease-out, opacity 0.3s ease;
 }
 
 .pro-hotel-card:hover .pro-card-media img {
-  transform: scale(1.08);
+  transform: scale(1.07);
 }
 
-/* Floating Badges */
-.pro-media-badges {
+/* Hover Quick Action Overlay */
+.pro-card-hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 25%, rgba(15, 23, 42, 0.68) 100%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 18px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.pro-hotel-card:hover .pro-card-hover-overlay {
+  opacity: 1;
+}
+
+.pro-hover-action-btn {
+  background: rgba(212, 175, 55, 0.95);
+  color: #0b110f;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.3px;
+  transform: translateY(6px);
+  transition: transform 300ms ease;
+}
+
+.pro-hotel-card:hover .pro-hover-action-btn {
+  transform: translateY(0);
+}
+
+/* Floating Category Badge */
+.pro-type-badge-media {
   position: absolute;
   top: 14px;
   left: 14px;
-  display: flex;
-  gap: 8px;
-  z-index: 2;
-}
-
-.pro-badge-stay {
-  background: rgba(27, 67, 50, 0.88);
+  background: rgba(15, 23, 42, 0.82);
   backdrop-filter: blur(8px);
   WebkitBackdropFilter: blur(8px);
-  color: #ffffff;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 30px;
-  border: 1px solid rgba(212, 175, 55, 0.5);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  display: inline-flex;
-  align-items: center;
-  letter-spacing: 0.3px;
+  color: #f5d061;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(245, 208, 97, 0.4);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 5;
+  animation: subtleBadgePulse 3.5s ease-in-out infinite;
 }
 
-/* Wishlist Heart Button */
+/* Floating Wishlist Heart Button */
 .pro-wishlist-btn {
   position: absolute;
   top: 14px;
@@ -89,55 +142,34 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(6px);
-  WebkitBackdropFilter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  color: #555555;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  WebkitBackdropFilter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.05rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.25s ease;
-  z-index: 3;
+  transition: transform 220ms ease, background-color 220ms ease, color 220ms ease;
+  z-index: 6;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .pro-wishlist-btn:hover {
-  transform: scale(1.15);
+  transform: scale(1.12);
   background: #ffffff;
-  color: #e63946;
+  color: #ef4444;
 }
 
 .pro-wishlist-btn.saved {
-  color: #e63946;
+  color: #ef4444;
   background: #ffffff;
 }
 
-/* Amenities Overlay Chips */
-.pro-amenities-overlay {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  right: 12px;
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  z-index: 2;
-}
-
-.pro-amenity-chip {
-  background: rgba(15, 23, 42, 0.72);
-  backdrop-filter: blur(6px);
-  WebkitBackdropFilter: blur(6px);
-  color: #f8fafc;
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  white-space: nowrap;
+.pro-wishlist-btn.heart-bounce {
+  animation: heartClickBounce 350ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* Card Body */
@@ -149,19 +181,39 @@
   background: #ffffff;
 }
 
-.pro-card-top-row {
+/* Price Row Directly Below Image */
+.pro-card-price-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.pro-type-tag {
-  font-size: 0.75rem;
-  font-weight: 800;
+.pro-price-container {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.pro-price-orig {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.pro-price-main {
+  font-size: 1.35rem;
+  font-weight: 900;
   color: #1b4332;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+}
+
+.pro-price-unit {
+  font-size: 0.76rem;
+  color: #64748b;
+  font-weight: 600;
 }
 
 .pro-rating-badge {
@@ -177,7 +229,7 @@
 
 .pro-rating-score {
   font-weight: 800;
-  color: #1a1a1a;
+  color: #0f172a;
 }
 
 .pro-review-count {
@@ -187,7 +239,7 @@
 
 .pro-card-title {
   font-family: 'Cormorant Garamond', 'Plus Jakarta Sans', serif;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 6px 0;
@@ -204,6 +256,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  font-weight: 500;
 }
 
 .pro-card-location i {
@@ -211,133 +264,130 @@
   font-size: 0.95rem;
 }
 
-/* Footer Section */
+/* Footer Action Buttons */
 .pro-card-footer {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  gap: 10px;
   margin-top: auto;
-  padding-top: 14px;
-  border-top: 1px dashed rgba(226, 232, 240, 0.9);
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
 }
 
-.pro-price-block {
-  display: flex;
-  flex-direction: column;
-}
-
-.pro-price-original {
-  font-size: 0.78rem;
-  color: #94a3b8;
-  text-decoration: line-through;
-  font-weight: 500;
-}
-
-.pro-price-main {
-  font-size: 1.35rem;
-  font-weight: 900;
+.pro-btn-action {
+  background: #ffffff;
   color: #1b4332;
-  font-family: var(--font-heading, inherit);
-  line-height: 1.1;
-}
-
-.pro-price-unit {
-  font-size: 0.76rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.pro-book-btn {
-  background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
-  color: #ffffff;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 30px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 12px rgba(27, 67, 50, 0.25);
-}
-
-.pro-book-btn:hover {
-  background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%);
-  transform: translateX(2px);
-  box-shadow: 0 6px 16px rgba(27, 67, 50, 0.38);
-}
-
-/* Interactive Image Hover Info Overlay */
-.pro-image-hover-info {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(11, 17, 15, 0.3) 0%, rgba(11, 17, 15, 0.92) 100%);
-  backdrop-filter: blur(8px);
-  WebkitBackdropFilter: blur(8px);
-  opacity: 0;
-  transform: translateY(100%);
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 16px;
-  z-index: 4;
-}
-
-.pro-hotel-card:hover .pro-image-hover-info {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.pro-hover-info-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.pro-hover-tag {
-  align-self: flex-start;
-  background: rgba(212, 175, 55, 0.25);
-  color: #f5d061;
-  border: 1px solid rgba(212, 175, 55, 0.5);
-  font-size: 0.72rem;
+  border: 1px solid #cbd5e1;
+  padding: 10px 12px;
+  border-radius: 24px;
+  font-size: 0.86rem;
   font-weight: 800;
-  padding: 3px 10px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 220ms ease;
 }
 
-.pro-hover-perks {
+.pro-btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.pro-btn-view-primary:hover {
+  background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%) !important;
+  box-shadow: 0 6px 16px rgba(27, 67, 50, 0.35) !important;
+}
+
+.pro-btn-pin:hover {
+  background: #f8fafc !important;
+  border-color: #d4af37 !important;
+}
+
+/* Shimmer / Skeleton Loading Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-box {
+  background: linear-gradient(
+    90deg,
+    #e2e8f0 0%,
+    #f8fafc 30%,
+    #e2e8f0 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+  border-radius: 8px;
+}
+
+.skeleton-card {
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  height: 420px;
 }
 
-.pro-hover-perks span {
-  font-size: 0.78rem;
-  color: #ffffff;
-  font-weight: 600;
+.skeleton-card-image {
+  height: 220px;
+  width: 100%;
+  border-radius: 0;
+}
+
+.skeleton-card-body {
+  padding: 20px;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
 }
 
-.pro-hover-perks i {
-  color: #34d399;
-  font-size: 0.85rem;
+.skeleton-line {
+  height: 16px;
+  margin-bottom: 12px;
+  border-radius: 6px;
 }
 
-.pro-hover-click-hint {
-  font-size: 0.74rem;
-  color: #f5d061;
-  font-weight: 700;
-  margin-top: 4px;
+.skeleton-line.short {
+  width: 40%;
+}
+
+.skeleton-line.medium {
+  width: 65%;
+}
+
+.skeleton-line.title {
+  height: 24px;
+  width: 85%;
+  margin-bottom: 14px;
+}
+
+.skeleton-buttons {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.skeleton-btn {
+  height: 38px;
+  flex: 1;
+  border-radius: 24px;
+}
+
+/* Touch device & Responsive styles */
+@media (hover: none) {
+  .pro-card-hover-overlay {
+    display: none !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -348,13 +398,27 @@
     padding: 14px 16px 16px 16px;
   }
   .pro-card-title {
-    font-size: 1.18rem;
+    font-size: 1.15rem;
   }
   .pro-price-main {
     font-size: 1.2rem;
   }
-  .pro-book-btn {
-    padding: 8px 14px;
+  .pro-btn-action {
+    padding: 9px 10px;
     font-size: 0.8rem;
+  }
+}
+
+/* Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .pro-hotel-card,
+  .pro-card-media img,
+  .pro-card-hover-overlay,
+  .pro-hover-action-btn,
+  .pro-wishlist-btn,
+  .pro-type-badge-media {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
   }
 }
