@@ -6,11 +6,13 @@ const Room = require('../models/Room');
 const Booking = require('../models/Booking');
 const StaffMember = require('../models/StaffMember');
 const HousekeepingTask = require('../models/HousekeepingTask');
+const { ensureModelIndexes } = require('../utils/modelIndexes');
 
 const router = express.Router();
 router.use(ownerAuth);
 
 const validId = value => mongoose.Types.ObjectId.isValid(value);
+const STAFF_ROLES = StaffMember.schema.path('role').enumValues;
 const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`)) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
 const indiaDate = date => {
   const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(date);
@@ -116,7 +118,7 @@ router.post('/bookings/:bookingId/check-out', async (req, res) => {
     let task = null;
     let warning = null;
     try {
-      await HousekeepingTask.init();
+      await ensureModelIndexes(HousekeepingTask);
       task = await HousekeepingTask.findOneAndUpdate({ dedupeKey: `checkout:${booking._id}` }, {
         $setOnInsert: { property: booking.property, room: booking.room, booking: booking._id, title: 'Clean room after checkout', category: 'turnover', dueDate: indiaDate(now), status: 'open' }
       }, { new: true, upsert: true, setDefaultsOnInsert: true });
@@ -143,7 +145,7 @@ router.post('/staff/:propertyId', async (req, res) => {
     const name = String(req.body.name || '').trim();
     const role = req.body.role;
     const phone = String(req.body.phone || '').trim();
-    if (!name || name.length > 100 || !['caretaker', 'front_desk', 'housekeeping', 'maintenance', 'manager'].includes(role) || phone.length > 20 || (phone && !/^[+\d\s()-]+$/.test(phone))) {
+    if (!name || name.length > 100 || !STAFF_ROLES.includes(role) || phone.length > 20 || (phone && !/^[+\d\s()-]+$/.test(phone))) {
       return res.status(400).json({ msg: 'Enter a valid staff name, role, and optional phone.' });
     }
     res.status(201).json(await StaffMember.create({ property: property._id, name, role, phone }));
@@ -159,7 +161,7 @@ router.patch('/staff-member/:staffId', async (req, res) => {
     if (req.body.role !== undefined) staff.role = req.body.role;
     if (req.body.phone !== undefined) staff.phone = String(req.body.phone).trim();
     if (req.body.active !== undefined) staff.active = req.body.active === true;
-    if (!staff.name || staff.name.length > 100 || !['caretaker', 'front_desk', 'housekeeping', 'maintenance', 'manager'].includes(staff.role) || staff.phone.length > 20 || (staff.phone && !/^[+\d\s()-]+$/.test(staff.phone))) {
+    if (!staff.name || staff.name.length > 100 || !STAFF_ROLES.includes(staff.role) || staff.phone.length > 20 || (staff.phone && !/^[+\d\s()-]+$/.test(staff.phone))) {
       return res.status(400).json({ msg: 'Invalid staff details.' });
     }
     await staff.save();

@@ -7,6 +7,7 @@ const RoomNight = require('../models/RoomNight');
 const Booking = require('../models/Booking');
 const PartnerApplication = require('../models/PartnerApplication');
 const User = require('../models/User');
+const { reserveNights, activeNightFilter } = require('../services/inventory');
 
 const router = express.Router();
 router.use(ownerAuth);
@@ -102,9 +103,9 @@ router.get('/properties/:propertyId/availability', async (req, res) => {
     if (!dates) return res.status(400).json({ msg: 'Choose a valid date range of 1–366 nights.' });
     const [rooms, roomNights, unassignedBookings] = await Promise.all([
       Room.find({ property: property._id }).sort({ number: 1 }),
-      RoomNight.find({ property: property._id, date: { $gte: start, $lt: end } }).sort({ date: 1 }),
+      RoomNight.find({ property: property._id, date: { $gte: start, $lt: end }, ...activeNightFilter() }).sort({ date: 1 }),
       Booking.find({ property: property._id, room: null, status: 'confirmed', checkIn: { $lt: new Date(`${end}T00:00:00.000Z`) }, checkOut: { $gt: new Date(`${start}T00:00:00.000Z`) } })
-        .populate('user', 'name email').select('user checkIn checkOut status')
+        .populate('user', 'name email').select('user guest checkIn checkOut status')
     ]);
     res.json({ property, rooms, nights: roomNights, unassignedBookings, start, end });
   } catch (err) { fail(res, err); }
@@ -155,23 +156,6 @@ router.patch('/rooms/:roomId', async (req, res) => {
   }
 });
 
-async function reserveNights(room, dates, kind, reference, reason = '') {
-  const operationId = new mongoose.Types.ObjectId();
-  try {
-    await RoomNight.init();
-    await RoomNight.insertMany(dates.map(date => ({ property: room.property, room: room._id, date, kind, reference, operationId, reason })), { ordered: true });
-    return operationId;
-  } catch (err) {
-    await RoomNight.deleteMany({ operationId });
-    if (err.code === 11000 || err.writeErrors?.some(item => item.code === 11000)) {
-      const conflict = new Error('Room is already blocked or reserved for one of these nights.');
-      conflict.status = 409;
-      throw conflict;
-    }
-    throw err;
-  }
-}
-
 router.post('/rooms/:roomId/blocks', async (req, res) => {
   try {
     const room = await ownedRoom(req, res, req.params.roomId);
@@ -181,7 +165,7 @@ router.post('/rooms/:roomId/blocks', async (req, res) => {
     const reason = String(req.body.reason || '').trim();
     if (!dates || reason.length > 200) return res.status(400).json({ msg: 'Choose valid dates and a reason under 200 characters.' });
     const reference = new mongoose.Types.ObjectId();
-    await reserveNights(room, dates, 'block', reference, reason);
+    await reserveNights(room, dates, 'block', reference, { reason });
     res.status(201).json({ reference, room: room._id, start: req.body.start, end: req.body.end, reason });
   } catch (err) { if (err.status) res.status(err.status).json({ msg: err.message }); else fail(res, err); }
 });

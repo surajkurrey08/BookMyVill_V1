@@ -1,12 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import AiAssistant from '../AiAssistant/AiAssistant';
 import RoomsAvailability from './RoomsAvailability';
 import GuestOperations from './GuestOperations';
 import OwnerFinance from './OwnerFinance';
+import SalesSnapshot from '../Sales/SalesSnapshot';
 // Owner Dashboard Component - Mahabaleshwar Luxury Stays
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../../config';
+import { API_BASE_URL, GUEST_SITE_URL } from '../../config';
 import './OwnerDashboard.css';
+
+// Sales modules load on first use to keep the dashboard's first paint light.
+const SalesDesk = lazy(() => import('../Sales/SalesDesk'));
+const OffersAddOns = lazy(() => import('../Sales/OffersAddOns'));
+const moduleFallback = <p style={{ color: 'var(--od-muted)' }}>Loading…</p>;
+
+// Guest requirements arrive as plain strings from the API; older records used
+// { label, done } objects. Normalise both so the caretaker tab never crashes.
+const guestRequirementList = guest => (Array.isArray(guest.specialRequests)
+  ? guest.specialRequests
+  : (guest.requests || []).map(item => (typeof item === 'string' ? { label: item, done: false } : item)));
+const bookingGuestName = booking => booking.user?.name || booking.guest?.name || 'Guest';
 
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -217,7 +230,7 @@ const OwnerDashboard = () => {
       }
       setOwnerGuestReqs(prev => prev.map(g => {
         if (g.id !== guestId) return g;
-        return { ...g, specialRequests: g.specialRequests.filter((_, idx) => idx !== reqIdx) };
+        return { ...g, specialRequests: undefined, requests: guestRequirementList(g).filter((_, idx) => idx !== reqIdx) };
       }));
       setActionSuccess('Guest requirement removed.');
     } catch (err) {
@@ -231,12 +244,12 @@ const OwnerDashboard = () => {
       const res = await fetch(`${API_BASE_URL}/inventory/${id}/restock`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-        body: JSON.stringify({ amount })
+        body: JSON.stringify({ quantity: amount })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.msg || 'Failed to restock item');
 
-      setOwnerInventory(prev => prev.map(item => (item.id === id ? data : item)));
+      setOwnerInventory(prev => prev.map(item => ((item._id || item.id) === id ? data : item)));
       setActionSuccess('Inventory restocked and updated.');
     } catch (err) {
       setError(err.message || 'Failed to restock inventory item');
@@ -783,7 +796,22 @@ const OwnerDashboard = () => {
   }));
   const maxMonthlyRevenue = Math.max(1, ...revenueByMonth.map(item => item.amount));
 
+  // Bookings can be created from other tabs (e.g. a converted quotation), so
+  // refresh them quietly when the owner returns to a bookings view.
+  const refreshBookings = async () => {
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/owner`, { headers: { 'x-auth-token': token } });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data)) setBookings(data);
+    } catch (err) {
+      console.error('Bookings refresh failed:', err);
+    }
+  };
+
   const handleTabChange = (tabName) => {
+    if (tabName === 'bookings' || tabName === 'overview') refreshBookings();
     setActiveTab(tabName);
     setPropertySearchQuery('');
     setPropertyFilterType('All');
@@ -822,6 +850,9 @@ const OwnerDashboard = () => {
               onClick={() => handleTabChange('overview')}
             >
               <i className="fa-solid fa-chart-line"></i> Overview
+            </button>
+            <button className={`nav-btn ${activeTab === 'sales' ? 'active' : ''}`} onClick={() => handleTabChange('sales')}>
+              <i className="fa-solid fa-handshake"></i> Inquiries & Quotes
             </button>
             <button
               className={`nav-btn ${activeTab === 'properties' ? 'active' : ''}`}
@@ -865,6 +896,9 @@ const OwnerDashboard = () => {
             >
               <i className="fa-solid fa-wallet"></i> Payments & Reports
             </button>
+            <button className={`nav-btn ${activeTab === 'offers' ? 'active' : ''}`} onClick={() => handleTabChange('offers')}>
+              <i className="fa-solid fa-tags"></i> Offers & Add-ons
+            </button>
             <button
               className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
               onClick={() => handleTabChange('caretakers')}
@@ -880,7 +914,7 @@ const OwnerDashboard = () => {
           </nav>
 
           <div className="sidebar-footer">
-            <a href="http://localhost:5173" className="main-site-btn" target="_blank" rel="noreferrer">
+            <a href={GUEST_SITE_URL} className="main-site-btn" target="_blank" rel="noreferrer">
               <i className="fa-solid fa-globe"></i> View Main Site
             </a>
             <button className="logout-btn" onClick={handleLogout}>
@@ -897,6 +931,8 @@ const OwnerDashboard = () => {
             <div className="header-title-inline">
               <h1 className="header-title-text">
                 {activeTab === 'overview' && <><i className="fa-solid fa-gauge-high"></i> Host Overview</>}
+                {activeTab === 'sales' && <><i className="fa-solid fa-handshake"></i> Inquiries & Quotes</>}
+                {activeTab === 'offers' && <><i className="fa-solid fa-tags"></i> Offers & Add-ons</>}
                 {activeTab === 'properties' && <><i className="fa-solid fa-hotel"></i> Properties ({properties.length})</>}
                 {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check"></i> Bookings ({bookings.length})</>}
                 {activeTab === 'rooms' && <><i className="fa-solid fa-bed"></i> Rooms & Availability</>}
@@ -911,6 +947,8 @@ const OwnerDashboard = () => {
               <span className="header-divider">|</span>
               <span className="header-sub-inline">
                 {activeTab === 'overview' && `Welcome back, ${user?.name || 'Host'}`}
+                {activeTab === 'sales' && 'Leads, follow-ups and quotations'}
+                {activeTab === 'offers' && 'Add-ons and promotions'}
                 {activeTab === 'properties' && 'Listings & pricing'}
                 {activeTab === 'bookings' && 'Reservations'}
                 {activeTab === 'rooms' && 'Property-wise room inventory and calendar'}
@@ -1017,6 +1055,7 @@ const OwnerDashboard = () => {
               {/* TAB 1: OVERVIEW */}
               {activeTab === 'overview' && (
                 <div className="tab-overview">
+                  <SalesSnapshot onOpen={() => handleTabChange('sales')} />
                   {/* High Impact Property Overview Highlight Banner */}
                   {properties.length > 0 && <div className="property-overview-banner glass-morphism">
                     <div className="banner-image-container">
@@ -1187,7 +1226,7 @@ const OwnerDashboard = () => {
                       <div className="activity-feed-list">
                         {bookings.length === 0 ? <p>No reservations yet.</p> : bookings.slice(0, 4).map(booking => <div className="activity-item-row" key={booking._id}>
                           <div className="activity-icon-badge emerald"><i className="fa-solid fa-calendar-check"></i></div>
-                          <div className="activity-meta"><h4>{booking.status} booking · {booking.user?.name || 'Guest'}</h4><p>{booking.property?.name || 'Property'} · {new Date(booking.checkIn).toLocaleDateString('en-IN')} to {new Date(booking.checkOut).toLocaleDateString('en-IN')}</p></div>
+                          <div className="activity-meta"><h4>{booking.status} booking · {bookingGuestName(booking)}</h4><p>{booking.property?.name || 'Property'} · {new Date(booking.checkIn).toLocaleDateString('en-IN')} to {new Date(booking.checkOut).toLocaleDateString('en-IN')}</p></div>
                           <span className="activity-time">{new Date(booking.createdAt).toLocaleDateString('en-IN')}</span>
                         </div>)}
                       </div>
@@ -1251,10 +1290,10 @@ const OwnerDashboard = () => {
                           {bookings.slice(0, 4).map(b => (
                             <div key={b._id} className="preview-booking-item">
                               <div className="guest-avatar">
-                                {b.user?.name ? b.user.name.charAt(0).toUpperCase() : 'G'}
+                                {bookingGuestName(b).charAt(0).toUpperCase()}
                               </div>
                               <div className="booking-info">
-                                <h4>{b.user?.name || 'Guest User'}</h4>
+                                <h4>{bookingGuestName(b)}</h4>
                                 <p className="property-title">{b.property?.name || 'Mahabaleshwar Stay'}</p>
                                 <span className="dates">
                                   {new Date(b.checkIn).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} - {new Date(b.checkOut).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
@@ -1368,7 +1407,7 @@ const OwnerDashboard = () => {
 
                               <div className="card-actions">
                                 <a
-                                  href={`http://localhost:5173/property/${prop._id}`}
+                                  href={`${GUEST_SITE_URL}/property/${prop._id}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="btn-view-live"
@@ -1407,6 +1446,8 @@ const OwnerDashboard = () => {
 
               {/* TAB 3: BOOKINGS */}
               {activeTab === 'rooms' && <RoomsAvailability />}
+              {activeTab === 'sales' && <Suspense fallback={moduleFallback}><SalesDesk /></Suspense>}
+              {activeTab === 'offers' && <Suspense fallback={moduleFallback}><OffersAddOns /></Suspense>}
               {activeTab === 'operations' && <GuestOperations />}
               {activeTab === 'bookings' && (
                 <div className="tab-bookings">
@@ -1458,12 +1499,12 @@ const OwnerDashboard = () => {
                                   <td>
                                     <div className="guest-cell">
                                       <div className="avatar-circle">
-                                        {b.user?.name ? b.user.name.charAt(0).toUpperCase() : 'G'}
+                                        {bookingGuestName(b).charAt(0).toUpperCase()}
                                       </div>
                                       <div className="guest-info-text">
-                                        <strong>{b.user?.name || 'Guest User'}</strong>
-                                        <span className="email">{b.user?.email}</span>
-                                        {b.user?.phone && <span className="phone"><i className="fa-solid fa-phone"></i> {b.user.phone}</span>}
+                                        <strong>{bookingGuestName(b)}</strong>
+                                        <span className="email">{b.user?.email || b.guest?.email}</span>
+                                        {(b.user?.phone || b.guest?.phone) && <span className="phone"><i className="fa-solid fa-phone"></i> {b.user?.phone || b.guest?.phone}</span>}
                                       </div>
                                     </div>
                                   </td>
@@ -1579,8 +1620,8 @@ const OwnerDashboard = () => {
                     </div>
                     <div className="od-mini-stat amber glass-morphism">
                       <div className="lbl">Guest Special Requests</div>
-                      <div className="val">{ownerGuestReqs.reduce((sum, g) => sum + g.specialRequests.length, 0)} Total</div>
-                      <div className="sub">{ownerGuestReqs.reduce((sum, g) => sum + g.specialRequests.filter(r => r.done).length, 0)} Completed</div>
+                      <div className="val">{ownerGuestReqs.reduce((sum, g) => sum + guestRequirementList(g).length, 0)} Total</div>
+                      <div className="sub">{ownerGuestReqs.reduce((sum, g) => sum + guestRequirementList(g).filter(r => r.done).length, 0)} Completed</div>
                     </div>
                   </div>
 
@@ -1724,7 +1765,7 @@ const OwnerDashboard = () => {
                           </div>
 
                           <div className="req-checklist-label">Caretaker Checklist</div>
-                          {g.specialRequests.map((req, idx) => (
+                          {guestRequirementList(g).map((req, idx) => (
                             <div key={idx} className={`req-item ${req.done ? 'done' : ''}`}>
                               <div className="req-item-left">
                                 <i className={`fa-solid ${req.done ? 'fa-circle-check' : 'fa-circle'}`} style={{ color: req.done ? 'var(--od-emerald-bright)' : 'var(--od-faint)' }}></i>
@@ -1752,13 +1793,13 @@ const OwnerDashboard = () => {
 
                     <div className="inventory-grid">
                       {ownerInventory.map(item => (
-                        <div key={item.id} className={`inventory-item-card ${item.status === 'In Stock' ? '' : 'low'}`}>
+                        <div key={item._id || item.id} className={`inventory-item-card ${item.status === 'In Stock' ? '' : 'low'}`}>
                           <div className="inventory-item-top">
-                            <h4>{item.item}</h4>
+                            <h4>{item.itemName || item.item}</h4>
                             <span className={`status ${item.status === 'In Stock' ? 'instock' : 'low'}`}>{item.status}</span>
                           </div>
-                          <div className="inventory-qty">{item.qty} <span>{item.unit}</span></div>
-                          <button className="btn-restock" onClick={() => handleOwnerRestockStock(item.id, 5)}>
+                          <div className="inventory-qty">{item.quantity ?? item.qty} <span>{item.unit}</span></div>
+                          <button className="btn-restock" onClick={() => handleOwnerRestockStock(item._id || item.id, 5)}>
                             <i className="fa-solid fa-cart-plus"></i> Approve +5 Restock
                           </button>
                         </div>

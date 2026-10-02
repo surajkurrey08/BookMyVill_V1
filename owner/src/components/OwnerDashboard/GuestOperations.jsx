@@ -5,7 +5,7 @@ import './GuestOperations.css';
 const dateInput = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 const nextDate = (date, days) => { if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return ''; const copy = new Date(`${date}T12:00:00`); copy.setDate(copy.getDate() + days); return dateInput(copy); };
 const today = dateInput(new Date());
-const roleLabels = { caretaker: 'Caretaker', front_desk: 'Front desk', housekeeping: 'Housekeeping', maintenance: 'Maintenance', manager: 'Manager' };
+const roleLabels = { caretaker: 'Caretaker', front_desk: 'Front desk', housekeeping: 'Housekeeping', maintenance: 'Maintenance', manager: 'Manager', sales: 'Sales', reservations: 'Reservations' };
 const categoryLabels = { turnover: 'Turnover cleaning', cleaning: 'Cleaning', inspection: 'Inspection', maintenance: 'Maintenance' };
 const stayLabels = { expected: 'Expected', in_house: 'In house', checked_out: 'Checked out' };
 const isoDay = value => value ? String(value).slice(0, 10) : '';
@@ -121,7 +121,7 @@ export default function GuestOperations() {
         <div className="ops-section-head"><div><h3>Stay board</h3><p>Confirmed reservations. Assign a room in Rooms & Availability before check-in.</p></div><div className="ops-date-range"><label>From<input type="date" value={start} onChange={event => setStart(event.target.value)} /></label><label>Until<input type="date" min={nextDate(start, 1)} value={end} onChange={event => setEnd(event.target.value)} /></label></div></div>
         {board?.bookings.length === 0 && <p className="ops-muted">No confirmed stays in this date range.</p>}
         <div className="ops-stays">{board?.bookings.map(booking => <article className="ops-stay" key={booking._id}>
-          <div><strong>{booking.user?.name || 'Guest'}</strong><small>{booking.user?.phone || booking.user?.email || 'Contact unavailable'}</small></div>
+          <div><strong>{booking.user?.name || booking.guest?.name || 'Guest'}</strong><small>{booking.user?.phone || booking.user?.email || booking.guest?.phone || booking.guest?.email || 'Contact unavailable'}</small></div>
           <div><span className="ops-field-label">Room</span><strong>{booking.room ? `${booking.room.number} · ${booking.room.name}` : 'Not assigned'}</strong></div>
           <div><span className="ops-field-label">Stay</span><strong>{bookingDate(booking.checkIn)} → {bookingDate(booking.checkOut)}</strong></div>
           <div><span className={`ops-status ${stayState(booking)}`}>{stayLabels[stayState(booking)]}</span></div>

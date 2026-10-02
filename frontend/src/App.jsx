@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Lenis from 'lenis';
 import Navbar from './components/Navbar/Navbar';
@@ -20,6 +20,9 @@ import AiAssistant from './components/AiAssistant/AiAssistant';
 import HomePage from './components/Home/HomePage';
 import './App.css';
 import 'lenis/dist/lenis.css';
+
+// Guest quotation links are opened directly from WhatsApp/email; load the page on demand.
+const QuoteView = lazy(() => import('./components/QuoteView/QuoteView'));
 
 const AccessRestrictedModal = ({ title, message }) => {
   const navigate = useNavigate();
@@ -279,6 +282,7 @@ function App() {
           <Route path="/join-us" element={<JoinUs />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/quote/:token" element={<Suspense fallback={null}><QuoteView /></Suspense>} />
         </Routes>
         <AiAssistant />
       </div>
