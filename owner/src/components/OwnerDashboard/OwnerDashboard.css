@@ -1252,10 +1252,18 @@
   border: 1px solid rgba(79, 216, 168, 0.3);
 }
 
-.status-badge.pending {
+.status-badge.pending,
+.status-badge.under_review {
   background: var(--od-amber-wash);
   color: var(--od-amber);
   border: 1px solid rgba(224, 164, 88, 0.3);
+}
+
+.status-badge.rejected,
+.status-badge.suspended {
+  background: var(--od-danger-wash);
+  color: var(--od-danger);
+  border: 1px solid rgba(224, 102, 90, 0.3);
 }
 
 .guest-avatar {

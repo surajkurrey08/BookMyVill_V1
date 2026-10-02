@@ -21,6 +21,17 @@ const guestRequirementList = guest => (Array.isArray(guest.specialRequests)
   : (guest.requests || []).map(item => (typeof item === 'string' ? { label: item, done: false } : item)));
 const bookingGuestName = booking => booking.user?.name || booking.guest?.name || 'Guest';
 
+// Property listing statuses as defined by the backend Property model. Only
+// 'approved' is public; the rest tell the owner exactly where their listing is.
+const PROPERTY_STATUS_LABELS = {
+  approved: 'Approved & Live',
+  pending: 'Pending Admin Approval',
+  under_review: 'Changes Requested',
+  rejected: 'Rejected',
+  suspended: 'Suspended'
+};
+const propertyStatusLabel = status => PROPERTY_STATUS_LABELS[status] || 'Pending Admin Approval';
+
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [user, setUser] = useState(null);
@@ -1390,7 +1401,7 @@ const OwnerDashboard = () => {
                                 </div>
                               )}
                               <span className={`status-badge ${prop.status}`}>
-                                <i className="fa-solid fa-circle"></i> {prop.status === 'approved' ? 'Approved & Live' : 'Pending Admin Approval'}
+                                <i className="fa-solid fa-circle"></i> {propertyStatusLabel(prop.status)}
                               </span>
                               <span className="property-type-overlay">{prop.type}</span>
                             </div>
@@ -1563,15 +1574,23 @@ const OwnerDashboard = () => {
                                   </td>
                                   <td>
                                     <div className="action-buttons-group">
-                                      {b.status !== 'confirmed' && (
-                                        <button className="btn-action-confirm" onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>
-                                          <i className="fa-solid fa-check"></i> Confirm
-                                        </button>
-                                      )}
-                                      {b.status !== 'cancelled' && (
-                                        <button className="btn-action-cancel" onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')}>
-                                          <i className="fa-solid fa-xmark"></i> Cancel
-                                        </button>
+                                      {['in_house', 'checked_out'].includes(b.stayStatus) ? (
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--od-muted)', whiteSpace: 'nowrap' }}>
+                                          <i className="fa-solid fa-person-walking-luggage"></i> {b.stayStatus === 'in_house' ? 'Checked in' : 'Checked out'}
+                                        </span>
+                                      ) : b.status === 'cancelled' ? (
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--od-muted)', whiteSpace: 'nowrap' }}>No actions</span>
+                                      ) : (
+                                        <>
+                                          {b.status === 'pending' && (
+                                            <button className="btn-action-confirm" onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>
+                                              <i className="fa-solid fa-check"></i> Confirm
+                                            </button>
+                                          )}
+                                          <button className="btn-action-cancel" onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')}>
+                                            <i className="fa-solid fa-xmark"></i> Cancel
+                                          </button>
+                                        </>
                                       )}
                                     </div>
                                   </td>
