@@ -6,6 +6,7 @@ const Room = require('../models/Room');
 const Booking = require('../models/Booking');
 const StaffMember = require('../models/StaffMember');
 const HousekeepingTask = require('../models/HousekeepingTask');
+const GuestRequest = require('../models/GuestRequest');
 const { ensureModelIndexes } = require('../utils/modelIndexes');
 
 const router = express.Router();
@@ -67,14 +68,15 @@ router.get('/board/:propertyId', async (req, res) => {
     const today = indiaDate(new Date());
     const tomorrow = new Date(Date.parse(`${today}T00:00:00Z`) + 86400000);
     const todayStart = new Date(`${today}T00:00:00Z`);
-    const [arrivalsToday, departuresToday, inHouse, openTasks] = await Promise.all([
+    const [arrivalsToday, departuresToday, inHouse, openTasks, openRequests] = await Promise.all([
       Booking.countDocuments({ property: property._id, status: 'confirmed', checkIn: { $gte: todayStart, $lt: tomorrow }, stayStatus: { $in: ['expected', null] } }),
       Booking.countDocuments({ property: property._id, status: 'confirmed', checkOut: { $gte: todayStart, $lt: tomorrow }, stayStatus: 'in_house' }),
       Booking.countDocuments({ property: property._id, status: 'confirmed', stayStatus: 'in_house' }),
-      HousekeepingTask.countDocuments({ property: property._id, status: { $ne: 'done' } })
+      HousekeepingTask.countDocuments({ property: property._id, status: { $ne: 'done' } }),
+      GuestRequest.countDocuments({ property: property._id, status: { $in: GuestRequest.OPEN_STATUSES } })
     ]);
     res.json({ property: { _id: property._id, name: property.name }, start, end, today, bookings, summary: {
-      arrivalsToday, departuresToday, inHouse, openTasks
+      arrivalsToday, departuresToday, inHouse, openTasks, openRequests
     } });
   } catch (err) { failure(res, err); }
 });
@@ -239,6 +241,46 @@ router.patch('/housekeeping-task/:taskId', async (req, res) => {
     if (changes.status && changes.status !== task.status) update.$push = { history: { from: task.status, to: changes.status, by: req.user.id, at: new Date() } };
     const updated = await HousekeepingTask.findOneAndUpdate({ _id: task._id, status: task.status }, update, { new: true }).populate('room', 'name number').populate('assignedStaff', 'name role active');
     if (!updated) return res.status(409).json({ msg: 'Task changed while editing. Refresh and try again.' });
+    res.json(updated);
+  } catch (err) { failure(res, err); }
+});
+
+// --- Guest requests & issues raised by customers during their stay ---------
+const GUEST_OPEN = GuestRequest.OPEN_STATUSES;
+const OWNER_NEXT = ['acknowledged', 'in_progress', 'completed', 'declined'];
+
+router.get('/guest-requests/:propertyId', async (req, res) => {
+  try {
+    const property = await propertyForOwner(req, res, req.params.propertyId);
+    if (!property) return;
+    const filter = { property: property._id, owner: req.user.id };
+    if (req.query.status === 'open') filter.status = { $in: GUEST_OPEN };
+    else if (req.query.status && GuestRequest.STATUSES.includes(req.query.status)) filter.status = req.query.status;
+    const requests = await GuestRequest.find(filter).sort({ status: 1, priority: -1, createdAt: -1 }).limit(200)
+      .populate('booking', 'checkIn checkOut stayStatus guest user').lean();
+    const open = await GuestRequest.countDocuments({ property: property._id, owner: req.user.id, status: { $in: GUEST_OPEN } });
+    res.json({ requests, openCount: open });
+  } catch (err) { failure(res, err); }
+});
+
+router.patch('/guest-request/:id', async (req, res) => {
+  try {
+    if (!validId(req.params.id)) return res.status(400).json({ msg: 'Invalid request ID.' });
+    const request = await GuestRequest.findOne({ _id: req.params.id, owner: req.user.id });
+    if (!request) return res.status(404).json({ msg: 'Guest request not found in your account.' });
+    if (['completed', 'declined', 'cancelled'].includes(request.status)) return res.status(409).json({ msg: 'This request is already closed.' });
+    const status = req.body.status;
+    if (!OWNER_NEXT.includes(status)) return res.status(400).json({ msg: 'Choose a valid status update.' });
+    const note = String(req.body.note || '').trim().slice(0, 500);
+    const eta = String(req.body.eta || '').trim().slice(0, 80);
+    const changes = { status };
+    if (eta !== '') changes.eta = eta;
+    if (['completed', 'declined'].includes(status)) changes.resolvedAt = new Date();
+    const updated = await GuestRequest.findOneAndUpdate({ _id: request._id, owner: req.user.id, status: request.status }, {
+      $set: changes,
+      $push: { updates: { status, note, byRole: 'owner', at: new Date() } }
+    }, { new: true }).populate('booking', 'checkIn checkOut stayStatus guest user');
+    if (!updated) return res.status(409).json({ msg: 'This request changed while you were editing. Refresh and try again.' });
     res.json(updated);
   } catch (err) { failure(res, err); }
 });

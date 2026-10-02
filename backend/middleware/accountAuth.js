@@ -12,7 +12,9 @@ module.exports = async function accountAuth(req, res, next) {
     const id = decoded.id || decoded.user?.id;
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(401).json({ msg: 'Invalid session.' });
     const user = await User.findById(id).select('_id role status');
-    if (!user || ['pending', 'rejected'].includes(user.status)) return res.status(403).json({ msg: 'Account access denied.' });
+    if (!user || ['pending', 'rejected', 'suspended'].includes(user.status)) {
+      return res.status(403).json({ msg: user?.status === 'suspended' ? 'This account has been suspended. Contact BookMyVilla support.' : 'Account access denied.' });
+    }
     req.user = { id: user._id.toString(), role: user.role };
     next();
   } catch (err) {

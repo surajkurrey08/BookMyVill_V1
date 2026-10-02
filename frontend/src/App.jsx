@@ -23,6 +23,7 @@ import 'lenis/dist/lenis.css';
 
 // Guest quotation links are opened directly from WhatsApp/email; load the page on demand.
 const QuoteView = lazy(() => import('./components/QuoteView/QuoteView'));
+const TripPage = lazy(() => import('./components/Trip/TripPage'));
 
 const AccessRestrictedModal = ({ title, message }) => {
   const navigate = useNavigate();
@@ -283,6 +284,7 @@ function App() {
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/quote/:token" element={<Suspense fallback={null}><QuoteView /></Suspense>} />
+          <Route path="/trips/:id" element={<Suspense fallback={null}><TripPage /></Suspense>} />
         </Routes>
         <AiAssistant />
       </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AdminLogin from './components/AdminLogin/AdminLogin';
 import AdminDashboard from './components/AdminDashboard/AdminDashboard';
+import AdminConsole from './components/Console/AdminConsole';
 import './App.css';
 
 // Route protection component
@@ -43,9 +44,17 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/console" 
+            element={
+              <ProtectedRoute>
+                <AdminConsole />
+              </ProtectedRoute>
+            } 
+          />
           {/* Catch-all redirects to dashboard */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/console" replace />} />
+          <Route path="*" element={<Navigate to="/console" replace />} />
         </Routes>
       </div>
     </Router>

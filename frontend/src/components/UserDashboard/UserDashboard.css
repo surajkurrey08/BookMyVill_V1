@@ -777,6 +777,18 @@
   box-sizing: border-box;
 }
 
+.action-buttons-stack .manage-stay-btn {
+  background: linear-gradient(135deg, #d4af37 0%, #b8921f 100%);
+  color: #1a1a1a;
+  border: 1px solid #e8c468;
+  text-decoration: none;
+}
+
+.action-buttons-stack .manage-stay-btn:hover {
+  background: linear-gradient(135deg, #e8c468 0%, #d4af37 100%);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+}
+
 .action-buttons-stack .download-btn {
   background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
   color: #ffffff;

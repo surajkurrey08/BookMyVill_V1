@@ -8,6 +8,15 @@ const today = dateInput(new Date());
 const roleLabels = { caretaker: 'Caretaker', front_desk: 'Front desk', housekeeping: 'Housekeeping', maintenance: 'Maintenance', manager: 'Manager', sales: 'Sales', reservations: 'Reservations' };
 const categoryLabels = { turnover: 'Turnover cleaning', cleaning: 'Cleaning', inspection: 'Inspection', maintenance: 'Maintenance' };
 const stayLabels = { expected: 'Expected', in_house: 'In house', checked_out: 'Checked out' };
+const REQUEST_STATUS = {
+  open: { label: 'New', tone: 'new' }, acknowledged: { label: 'Seen', tone: 'seen' }, in_progress: { label: 'In progress', tone: 'progress' },
+  completed: { label: 'Completed', tone: 'done' }, declined: { label: 'Declined', tone: 'muted' }, cancelled: { label: 'Cancelled by guest', tone: 'muted' }
+};
+const CATEGORY_LABELS = {
+  towels: 'Towels / linen', water: 'Water', housekeeping: 'Cleaning', food: 'Food', extra_bed: 'Extra bed', taxi: 'Taxi', amenities: 'Amenities', checkout_help: 'Checkout help',
+  ac: 'AC / cooling', cleaning: 'Cleanliness', wifi: 'Wi-Fi', noise: 'Noise', pool: 'Pool', staff: 'Staff', billing: 'Billing', safety: 'Safety', maintenance: 'Maintenance', other: 'Other'
+};
+const requestCategory = value => CATEGORY_LABELS[value] || value;
 const isoDay = value => value ? String(value).slice(0, 10) : '';
 
 export default function GuestOperations() {
@@ -19,6 +28,8 @@ export default function GuestOperations() {
   const [staff, setStaff] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [requestAction, setRequestAction] = useState(null);
   const [staffForm, setStaffForm] = useState({ name: '', role: 'housekeeping', phone: '' });
   const [taskForm, setTaskForm] = useState({ roomId: '', title: '', category: 'cleaning', dueDate: today, assignedStaffId: '', notes: '' });
   const [busy, setBusy] = useState(false);
@@ -53,17 +64,18 @@ export default function GuestOperations() {
 
   const reload = useCallback(async () => {
     const sequence = ++loadSequence.current;
-    if (!propertyId) { setBoard(null); setStaff([]); setTasks([]); setRooms([]); return; }
+    if (!propertyId) { setBoard(null); setStaff([]); setTasks([]); setRooms([]); setRequests([]); return; }
     setLoading(true);
-    setBoard(null); setStaff([]); setTasks([]); setRooms([]);
+    setBoard(null); setStaff([]); setTasks([]); setRooms([]); setRequests([]);
     try {
-      const [nextBoard, nextStaff, nextTasks, nextRooms] = await Promise.all([
+      const [nextBoard, nextStaff, nextTasks, nextRooms, nextRequests] = await Promise.all([
         request(`/board/${propertyId}?start=${start}&end=${end}`),
         request(`/staff/${propertyId}`),
         request(`/housekeeping/${propertyId}`),
-        request(`/rooms/${propertyId}`)
+        request(`/rooms/${propertyId}`),
+        request(`/guest-requests/${propertyId}`)
       ]);
-      if (sequence === loadSequence.current) { setBoard(nextBoard); setStaff(nextStaff); setTasks(nextTasks); setRooms(nextRooms); setError(''); }
+      if (sequence === loadSequence.current) { setBoard(nextBoard); setStaff(nextStaff); setTasks(nextTasks); setRooms(nextRooms); setRequests(nextRequests.requests || []); setError(''); }
     } catch (err) { if (sequence === loadSequence.current) { setBoard(null); setError(err.message); } }
     finally { if (sequence === loadSequence.current) setLoading(false); }
   }, [propertyId, start, end, request]);
@@ -115,7 +127,44 @@ export default function GuestOperations() {
         <div className="ops-kpi"><span>Scheduled departures today</span><strong>{board?.summary.departuresToday ?? '—'}</strong></div>
         <div className="ops-kpi"><span>Stays in house</span><strong>{board?.summary.inHouse ?? '—'}</strong></div>
         <div className="ops-kpi"><span>Open room tasks</span><strong>{board?.summary.openTasks ?? '—'}</strong></div>
+        <div className="ops-kpi"><span>Open guest requests</span><strong>{board?.summary.openRequests ?? '—'}</strong></div>
       </div>
+
+      <section className="ops-card">
+        <div className="ops-section-head"><div><h3>Guest requests & issues</h3><p>Raised by guests from their stay page. Update the status and the guest sees it live.</p></div></div>
+        {requests.length === 0 ? <p className="ops-muted">No guest requests yet.</p> : <div className="ops-request-list">{requests.map(item => {
+          const meta = REQUEST_STATUS[item.status] || {};
+          const open = ['open', 'acknowledged', 'in_progress'].includes(item.status);
+          const latestNote = (item.updates || []).filter(u => u.note).slice(-1)[0];
+          return <article className={`ops-request ${item.kind === 'issue' ? 'issue' : ''} ${item.priority === 'high' ? 'high' : ''}`} key={item._id}>
+            <div className="ops-request-main">
+              <div className="ops-request-top">
+                <strong>{item.kind === 'issue' ? '⚠ Issue' : 'Request'} · {requestCategory(item.category)}</strong>
+                <span className={`ops-req-status ${meta.tone || ''}`}>{meta.label || item.status}</span>
+              </div>
+              <p>{item.description}</p>
+              <small>{item.code} · {item.booking?.guest?.name || 'Guest'} · {bookingDate(item.createdAt)}{item.eta ? ` · ETA ${item.eta}` : ''}{latestNote ? ` · “${latestNote.note}”` : ''}</small>
+              {item.photos?.length > 0 && <div className="ops-request-photos">{item.photos.map((src, i) => <a key={i} href={src} target="_blank" rel="noreferrer"><img src={src} alt={`Attachment ${i + 1}`} /></a>)}</div>}
+            </div>
+            {open && <div className="ops-request-actions">
+              {requestAction?.id === item._id ? <form className="ops-request-form" onSubmit={event => {
+                event.preventDefault();
+                perform(() => request(`/guest-request/${item._id}`, { method: 'PATCH', body: JSON.stringify({ status: requestAction.status, note: requestAction.note, eta: requestAction.eta }) }), 'Guest request updated.').then(() => setRequestAction(null));
+              }}>
+                <select value={requestAction.status} onChange={event => setRequestAction({ ...requestAction, status: event.target.value })} aria-label="New status">
+                  <option value="acknowledged">Acknowledge</option>
+                  <option value="in_progress">In progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="declined">Can't do</option>
+                </select>
+                <input placeholder="ETA e.g. 15 min" maxLength="80" value={requestAction.eta} onChange={event => setRequestAction({ ...requestAction, eta: event.target.value })} />
+                <input placeholder="Note to guest (optional)" maxLength="500" value={requestAction.note} onChange={event => setRequestAction({ ...requestAction, note: event.target.value })} />
+                <div className="ops-request-form-btns"><button type="button" className="ops-secondary" onClick={() => setRequestAction(null)}>Cancel</button><button type="submit" disabled={busy}>Update</button></div>
+              </form> : <button type="button" disabled={busy} onClick={() => setRequestAction({ id: item._id, status: item.status === 'open' ? 'acknowledged' : 'in_progress', note: '', eta: item.eta || '' })}>Update status</button>}
+            </div>}
+          </article>;
+        })}</div>}
+      </section>
 
       <section className="ops-card">
         <div className="ops-section-head"><div><h3>Stay board</h3><p>Confirmed reservations. Assign a room in Rooms & Availability before check-in.</p></div><div className="ops-date-range"><label>From<input type="date" value={start} onChange={event => setStart(event.target.value)} /></label><label>Until<input type="date" min={nextDate(start, 1)} value={end} onChange={event => setEnd(event.target.value)} /></label></div></div>
