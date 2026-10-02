@@ -33,7 +33,10 @@ const PropertySchema = new mongoose.Schema({
     arrivalNotes: { type: String, default: '', maxlength: 1000 },
     foodInfo: { type: String, default: '', maxlength: 1000 }
   },
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
+  // 'under_review' (changes requested) and 'suspended' (admin takedown) hide
+  // the property from customers like 'pending'/'rejected' do — only 'approved'
+  // is public — without deleting its bookings.
+  status: { type: String, enum: ['pending', 'under_review', 'approved', 'rejected', 'suspended'], default: 'approved' },
   createdAt: { type: Date, default: Date.now }
 });
 

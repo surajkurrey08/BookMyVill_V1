@@ -10,7 +10,14 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, unique: true, sparse: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['user', 'owner', 'admin'], default: 'user' },
-  status: { type: String, enum: ['approved', 'rejected', 'pending', 'active'], default: 'active' },
+  // 'suspended' locks the account (accountAuth denies it); 'restricted' is a
+  // soft flag the admin can set without locking sign-in.
+  status: { type: String, enum: ['approved', 'rejected', 'pending', 'active', 'suspended', 'restricted'], default: 'active' },
+  // Admin-console RBAC (only meaningful when role === 'admin'). A legacy admin
+  // with no adminRole is treated as super_admin for backward compatibility.
+  adminRole: { type: String, enum: ['super_admin', 'operations', 'finance', 'support', 'risk', 'content', 'read_only', null], default: null },
+  adminPermissions: { type: [String], default: [] },
+  statusReason: { type: String, default: '' },
   phone: { type: String, default: '' },
   bio: { type: String, default: '' },
   resetOtp: { type: String, default: null },

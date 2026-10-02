@@ -19,7 +19,7 @@ const AdminLogin = () => {
       try {
         const user = JSON.parse(userStr);
         if (user.role === 'admin') {
-          navigate('/dashboard');
+          navigate('/console');
         }
       } catch (e) {
         sessionStorage.clear();
@@ -92,7 +92,7 @@ const AdminLogin = () => {
           sessionStorage.setItem('user', JSON.stringify(data.user));
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          navigate('/dashboard');
+          navigate('/console');
         } else {
           setError('Access Denied. This portal is restricted to Administrators only.');
         }

@@ -22,7 +22,9 @@ const routers = {
   ownerCatalog: require('../routes/ownerCatalog'),
   publicQuotes: require('../routes/publicQuotes'),
   booking: require('../routes/booking'),
-  customerStay: require('../routes/customerStay')
+  customerStay: require('../routes/customerStay'),
+  adminConsole: require('../routes/adminConsole'),
+  property: require('../routes/property')
 };
 
 let memoryServer = null;
@@ -53,6 +55,8 @@ async function start() {
   app.use('/api/public/quotes', routers.publicQuotes);
   app.use('/api/bookings', routers.booking);
   app.use('/api/stay', routers.customerStay);
+  app.use('/api/admin-console', routers.adminConsole);
+  app.use('/api/properties', routers.property);
   await new Promise(resolve => { server = app.listen(0, '127.0.0.1', resolve); });
   baseUrl = `http://127.0.0.1:${server.address().port}`;
 }
@@ -98,6 +102,12 @@ function day(days = 0) {
   return addDays(indiaDate(), days);
 }
 
+async function createAdmin(adminRole = null, label = 'admin') {
+  const user = await User().create({ name: `Admin ${label}`, email: `${label}-${crypto.randomBytes(4).toString('hex')}@example.com`, password: 'password-123', role: 'admin', adminRole });
+  const token = jwt.sign({ id: user._id, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  return { user, token };
+}
+
 async function createCustomer(label = 'guest') {
   const user = await User().create({ name: `Test ${label}`, email: `${label}-${crypto.randomBytes(4).toString('hex')}@example.com`, password: 'password-123', role: 'user', phone: '9811111111' });
   const token = jwt.sign({ id: user._id, role: 'user' }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -114,4 +124,4 @@ async function createBooking(customer, property, overrides = {}) {
   });
 }
 
-module.exports = { start, stop, api, createOwner, createCustomer, createProperty, createBooking, day };
+module.exports = { start, stop, api, createOwner, createCustomer, createAdmin, createProperty, createBooking, day };
