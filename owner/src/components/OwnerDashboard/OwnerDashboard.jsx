@@ -57,6 +57,11 @@ const OwnerDashboard = () => {
 
   const [customAmenityInput, setCustomAmenityInput] = useState('');
 
+  // Guest stay-pass details shown to the customer on their trip page. Edited
+  // separately from the main property form so existing resets stay untouched.
+  const emptyStayInfo = { checkInTime: '', checkOutTime: '', wifiName: '', wifiPassword: '', houseRules: '', arrivalNotes: '', foodInfo: '' };
+  const [stayInfoForm, setStayInfoForm] = useState(emptyStayInfo);
+
   const [propertyForm, setPropertyForm] = useState({
     name: '',
     type: 'Villa',
@@ -627,7 +632,16 @@ const OwnerDashboard = () => {
       mapLink: propertyForm.mapLink || '',
       amenities: propertyForm.amenities || [],
       photos: photoList,
-      videos: propertyForm.videos ? (Array.isArray(propertyForm.videos) ? propertyForm.videos : propertyForm.videos.split(',').map(s => s.trim()).filter(Boolean)) : []
+      videos: propertyForm.videos ? (Array.isArray(propertyForm.videos) ? propertyForm.videos : propertyForm.videos.split(',').map(s => s.trim()).filter(Boolean)) : [],
+      stayInfo: {
+        checkInTime: stayInfoForm.checkInTime.trim(),
+        checkOutTime: stayInfoForm.checkOutTime.trim(),
+        wifiName: stayInfoForm.wifiName.trim(),
+        wifiPassword: stayInfoForm.wifiPassword.trim(),
+        houseRules: stayInfoForm.houseRules.split('\n').map(r => r.trim()).filter(Boolean),
+        arrivalNotes: stayInfoForm.arrivalNotes.trim(),
+        foodInfo: stayInfoForm.foodInfo.trim()
+      }
     };
 
     try {
@@ -655,6 +669,7 @@ const OwnerDashboard = () => {
       setShowAddModal(false);
       setEditingProperty(null);
       setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', amenities: [], photos: [], videos: [] });
+      setStayInfoForm(emptyStayInfo);
       fetchOwnerData(token);
     } catch (err) {
       setError(err.message);
@@ -672,6 +687,12 @@ const OwnerDashboard = () => {
       amenities: prop.amenities || [],
       photos: prop.photos || [],
       videos: prop.videos || []
+    });
+    const info = prop.stayInfo || {};
+    setStayInfoForm({
+      checkInTime: info.checkInTime || '', checkOutTime: info.checkOutTime || '',
+      wifiName: info.wifiName || '', wifiPassword: info.wifiPassword || '',
+      houseRules: (info.houseRules || []).join('\n'), arrivalNotes: info.arrivalNotes || '', foodInfo: info.foodInfo || ''
     });
     setShowAddModal(true);
   };
@@ -1019,6 +1040,7 @@ const OwnerDashboard = () => {
                   onClick={() => {
                     setEditingProperty(null);
                     setPropertyForm({ name: '', type: 'Villa', location: 'Mahabaleshwar', price: 15000, mapLink: '', photos: [], videos: '' });
+                    setStayInfoForm(emptyStayInfo);
                     setShowAddModal(true);
                   }}
                 >
@@ -2201,6 +2223,40 @@ const OwnerDashboard = () => {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Guest stay-pass details — shown to the guest on their trip page */}
+                <div className="form-group">
+                  <label><i className="fa-solid fa-id-card-clip"></i> Guest Stay Pass Details (shown after booking)</label>
+                  <p style={{ color: 'var(--od-muted)', fontSize: '0.78rem', marginTop: '-4px', marginBottom: '10px' }}>
+                    Help guests self-serve on arrival. Wi-Fi is only revealed to guests with a confirmed booking. All fields are optional.
+                  </p>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Check-in time</label>
+                      <input type="text" value={stayInfoForm.checkInTime} onChange={(e) => setStayInfoForm({ ...stayInfoForm, checkInTime: e.target.value })} placeholder="e.g. 2:00 PM" maxLength={40} />
+                    </div>
+                    <div className="form-group">
+                      <label>Check-out time</label>
+                      <input type="text" value={stayInfoForm.checkOutTime} onChange={(e) => setStayInfoForm({ ...stayInfoForm, checkOutTime: e.target.value })} placeholder="e.g. 11:00 AM" maxLength={40} />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Wi-Fi network name</label>
+                      <input type="text" value={stayInfoForm.wifiName} onChange={(e) => setStayInfoForm({ ...stayInfoForm, wifiName: e.target.value })} placeholder="e.g. VillaParadise_5G" maxLength={60} />
+                    </div>
+                    <div className="form-group">
+                      <label>Wi-Fi password</label>
+                      <input type="text" value={stayInfoForm.wifiPassword} onChange={(e) => setStayInfoForm({ ...stayInfoForm, wifiPassword: e.target.value })} placeholder="Shared only with confirmed guests" maxLength={60} />
+                    </div>
+                  </div>
+                  <label style={{ fontSize: '0.82rem', marginTop: '6px', display: 'block' }}>House rules (one per line)</label>
+                  <textarea rows="3" value={stayInfoForm.houseRules} onChange={(e) => setStayInfoForm({ ...stayInfoForm, houseRules: e.target.value })} placeholder={'No loud music after 11 PM\nNo smoking indoors\nPool closes at 9 PM'} />
+                  <label style={{ fontSize: '0.82rem', marginTop: '6px', display: 'block' }}>Arrival notes (narrow road, parking, last-mile guidance)</label>
+                  <textarea rows="2" value={stayInfoForm.arrivalNotes} onChange={(e) => setStayInfoForm({ ...stayInfoForm, arrivalNotes: e.target.value })} maxLength={1000} placeholder="The last 500m is a narrow road; park near the blue gate and call the caretaker." />
+                  <label style={{ fontSize: '0.82rem', marginTop: '6px', display: 'block' }}>Food / meals info</label>
+                  <textarea rows="2" value={stayInfoForm.foodInfo} onChange={(e) => setStayInfoForm({ ...stayInfoForm, foodInfo: e.target.value })} maxLength={1000} placeholder="Breakfast included 8–10 AM. Lunch and dinner on request via the caretaker." />
                 </div>
 
                 <div className="modal-footer">

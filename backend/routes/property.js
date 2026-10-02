@@ -142,6 +142,21 @@ router.put('/:id', require('../middleware/accountAuth'), async (req, res) => {
     if (status && req.user.role === 'admin') property.status = status;
     if (!property.owner) property.owner = req.user.id;
 
+    // Optional guest stay-pass details (check-in times, Wi-Fi, house rules…).
+    if (req.body.stayInfo && typeof req.body.stayInfo === 'object') {
+      const s = req.body.stayInfo;
+      const str = (value, max) => (typeof value === 'string' ? value.slice(0, max) : '');
+      property.stayInfo = {
+        checkInTime: str(s.checkInTime, 40),
+        checkOutTime: str(s.checkOutTime, 40),
+        wifiName: str(s.wifiName, 60),
+        wifiPassword: str(s.wifiPassword, 60),
+        houseRules: Array.isArray(s.houseRules) ? s.houseRules.map(r => String(r).slice(0, 160)).filter(Boolean).slice(0, 20) : (property.stayInfo?.houseRules || []),
+        arrivalNotes: str(s.arrivalNotes, 1000),
+        foodInfo: str(s.foodInfo, 1000)
+      };
+    }
+
     await property.save();
     res.json(property);
   } catch (err) {

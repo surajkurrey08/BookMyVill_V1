@@ -40,6 +40,7 @@ app.use('/api/owner-crm', require('./routes/ownerCrm'));
 app.use('/api/owner-quotes', require('./routes/ownerQuotes'));
 app.use('/api/owner-catalog', require('./routes/ownerCatalog'));
 app.use('/api/public/quotes', require('./routes/publicQuotes'));
+app.use('/api/stay', require('./routes/customerStay'));
 app.use('/api/caretaker', require('./routes/caretaker'));
 app.use('/api/partner', require('./routes/partner'));
 app.use('/api/inventory', require('./routes/inventory'));

@@ -545,7 +545,16 @@ const UserDashboard = () => {
                 </div>
 
                 <div className="action-buttons-stack">
-                  <button 
+                  {selectedPropertyId === 'personal' && (
+                    <Link
+                      to={`/trips/${booking._id}`}
+                      className="view-details-btn manage-stay-btn"
+                    >
+                      <i className="fa-solid fa-compass"></i>
+                      Manage Stay
+                    </Link>
+                  )}
+                  <button
                     className="view-details-btn download-btn"
                     onClick={() => setActiveReceiptBooking(booking)}
                   >

@@ -20,6 +20,19 @@ const PropertySchema = new mongoose.Schema({
     govtIdStatus: { type: String, default: 'Verified' },
     assignedDate: { type: Date, default: Date.now }
   },
+  // Optional stay-pass details the owner can fill so guests self-serve on
+  // arrival instead of calling. Wi-Fi is only ever returned to a guest with a
+  // confirmed booking (see the trip endpoint). Everything here is optional and
+  // falls back to sensible defaults on the customer trip page.
+  stayInfo: {
+    checkInTime: { type: String, default: '', maxlength: 40 },
+    checkOutTime: { type: String, default: '', maxlength: 40 },
+    wifiName: { type: String, default: '', maxlength: 60 },
+    wifiPassword: { type: String, default: '', maxlength: 60 },
+    houseRules: { type: [String], default: [] },
+    arrivalNotes: { type: String, default: '', maxlength: 1000 },
+    foodInfo: { type: String, default: '', maxlength: 1000 }
+  },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
   createdAt: { type: Date, default: Date.now }
 });
