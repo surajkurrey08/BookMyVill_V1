@@ -4,179 +4,6 @@ const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const Property = require('../models/Property');
 const auth = require('../middleware/auth');
-const Razorpay = require('razorpay');
-const crypto = require('crypto');
-
-// Initialize Razorpay with fallback for fake/test mode
-let razorpay;
-try {
-  razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_fake',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || 'fake_secret'
-  });
-} catch (err) {
-  console.log('Razorpay initialization skipped or failed. Using fake mode.');
-}
-
-// Create a booking & Payment Order (supports Fake mode)
-router.post('/', auth, async (req, res) => {
-  try {
-    const { propertyId, checkIn, checkOut, totalPrice, isFake } = req.body;
-    
-    let orderId = `fake_order_${Date.now()}`;
-    
-    // Attempt real Razorpay order if not in fake mode
-    if (!isFake && process.env.RAZORPAY_KEY_ID !== 'rzp_test_placeholder_id') {
-      try {
-        const options = {
-          amount: totalPrice * 100,
-          currency: "INR",
-          receipt: `receipt_${Date.now()}`
-        };
-        const order = await razorpay.orders.create(options);
-        orderId = order.id;
-      } catch (rzpErr) {
-        console.log('Razorpay order creation failed, falling back to fake order ID');
-      }
-    }
-
-    // Handle property ID resolution to ensure exact hotel name, location and photo are linked
-    let validPropertyId = propertyId;
-    if (mongoose.Types.ObjectId.isValid(propertyId)) {
-      const existingProp = await Property.findById(propertyId);
-      if (!existingProp && req.body.propertyName) {
-        const newProp = new Property({
-          owner: req.user.id,
-          name: req.body.propertyName,
-          type: req.body.propertyType || 'Villa',
-          location: req.body.propertyLocation || 'Mahabaleshwar, Maharashtra',
-          price: totalPrice || 15000,
-          photos: req.body.propertyImage ? [req.body.propertyImage] : [],
-          status: 'approved'
-        });
-        await newProp.save();
-        validPropertyId = newProp._id;
-      }
-    } else {
-      const actualName = req.body.propertyName || `Mahabaleshwar Stay #${propertyId}`;
-      const actualLocation = req.body.propertyLocation || 'Mahabaleshwar, Maharashtra';
-      const actualType = req.body.propertyType || 'Villa';
-      const actualImage = req.body.propertyImage || '';
-
-      let mockProperty = await Property.findOne({ name: actualName });
-      if (!mockProperty) {
-        mockProperty = new Property({
-          owner: req.user.id,
-          name: actualName,
-          type: actualType,
-          location: actualLocation,
-          price: totalPrice || 15000,
-          photos: actualImage ? [actualImage] : [],
-          status: 'approved'
-        });
-        await mockProperty.save();
-      } else {
-        if (actualLocation && mockProperty.location !== actualLocation) {
-          mockProperty.location = actualLocation;
-        }
-        if (actualImage && (!mockProperty.photos || mockProperty.photos.length === 0)) {
-          mockProperty.photos = [actualImage];
-        }
-        await mockProperty.save();
-      }
-      validPropertyId = mockProperty._id;
-    }
-
-    // Save Booking to DB
-    const User = require('../models/User');
-    const userObj = await User.findById(req.user.id);
-    const userEmail = userObj ? userObj.email : 'Traveler';
-    const userName = userObj ? userObj.name : 'Guest';
-
-    const booking = new Booking({
-      user: req.user.id,
-      property: validPropertyId,
-      checkIn,
-      checkOut,
-      totalPrice,
-      razorpayOrderId: orderId,
-      paymentStatus: 'pending',
-      actionHistory: [{
-        action: 'Booking Reserved',
-        performedBy: `Traveler (${userName} - ${userEmail})`,
-        targetUser: `Property Owner & System`,
-        reason: `Initial stay reservation from ${new Date(checkIn).toLocaleDateString()} to ${new Date(checkOut).toLocaleDateString()}`,
-        timestamp: new Date()
-      }]
-    });
-    
-    await booking.save();
-
-    res.status(201).json({
-      booking: booking,
-      order_id: String(orderId),
-      key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_fake',
-      isFake: true
-    });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Booking initialization failed', error: err.message });
-  }
-});
-
-// Verify Payment (supports Fake verification)
-router.post('/verify', auth, async (req, res) => {
-  try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, isFake, bookingId } = req.body;
-
-    let booking;
-    if (razorpay_order_id) {
-      booking = await Booking.findOne({ razorpayOrderId: razorpay_order_id });
-    }
-    if (!booking && bookingId) {
-      booking = await Booking.findById(bookingId);
-    }
-    if (!booking) {
-      booking = await Booking.findOne({ user: req.user.id, paymentStatus: 'pending' }).sort({ createdAt: -1 });
-    }
-
-    if (booking) {
-      booking.paymentStatus = 'paid';
-      booking.status = 'confirmed';
-      const User = require('../models/User');
-      const u = await User.findById(req.user.id || booking.user);
-      const uEmail = u ? u.email : 'Traveler';
-      booking.actionHistory.push({
-        action: 'Payment Verified & Stay Confirmed',
-        performedBy: `Payment System (Razorpay)`,
-        targetUser: `Traveler (${uEmail}) & Host`,
-        reason: `Payment of ₹${booking.totalPrice} verified successfully. Status set to Confirmed.`,
-        timestamp: new Date()
-      });
-      await booking.save();
-      return res.status(200).json({ msg: "Payment verified successfully", booking });
-    }
-
-    if (isFake || (razorpay_order_id && razorpay_order_id.startsWith('fake_'))) {
-      return res.status(200).json({ msg: "Fake Payment verified successfully" });
-    }
-
-    const sign = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSign = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(sign.toString())
-      .digest("hex");
-
-    if (razorpay_signature === expectedSign) {
-      return res.status(200).json({ msg: "Payment verified successfully" });
-    } else {
-      return res.status(400).json({ msg: "Invalid signature sent!" });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server Error" });
-  }
-});
 
 // Get logged in user's bookings
 router.get('/my-bookings', auth, async (req, res) => {
@@ -211,60 +38,14 @@ router.get('/my-bookings', auth, async (req, res) => {
 });
 
 // Get all bookings for all properties belonging to logged in Property Owner
-router.get('/owner', auth, async (req, res) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json([
-      {
-        _id: 'bk-101',
-        bookingId: 'BK-2026-8801',
-        guestName: 'Vikram Sharma',
-        user: { name: 'Vikram Sharma', email: 'vikram.sharma@example.com', phone: '+91 98230 11223' },
-        property: { name: 'Royal Mist Villa Estate' },
-        checkIn: '2026-08-10',
-        checkOut: '2026-08-12',
-        guests: 4,
-        totalPrice: 37000,
-        paymentStatus: 'paid',
-        status: 'confirmed',
-        createdAt: new Date().toISOString()
-      }
-    ]);
-  }
+router.get('/owner', require('../middleware/ownerAuth'), async (req, res) => {
   try {
-    const User = require('../models/User');
-    const user = await User.findById(req.user.id);
-    const cleanEmail = user ? user.email.toLowerCase().trim() : '';
-
-    const PartnerApplication = require('../models/PartnerApplication');
-
-    const ownerProperties = await Property.find({
-      $or: [
-        { owner: req.user.id },
-        { ownerEmail: cleanEmail }
-      ]
-    });
-
-    const partnerApps = await PartnerApplication.find({
-      email: { $regex: new RegExp('^' + cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') }
-    });
-
-    const propNames = [
-      ...ownerProperties.map(p => p.name?.toLowerCase().trim()),
-      ...partnerApps.map(a => a.propertyName?.toLowerCase().trim())
-    ].filter(Boolean);
-
-    const propertyIds = ownerProperties.map(p => p._id);
-
-    const allBookings = await Booking.find()
+    const propertyIds = await Property.find({ owner: req.user.id }).distinct('_id');
+    const ownerBookings = await Booking.find({ property: { $in: propertyIds } })
       .populate('user', 'name email phone')
       .populate('property')
+      .populate('room', 'name number')
       .sort({ createdAt: -1 });
-
-    const ownerBookings = allBookings.filter(b => {
-      if (b.property && propertyIds.some(id => id.toString() === b.property._id?.toString())) return true;
-      if (b.property && propNames.includes(b.property.name?.toLowerCase().trim())) return true;
-      return false;
-    });
 
     // Auto-confirm status if payment is completed
     for (let b of ownerBookings) {
@@ -284,12 +65,12 @@ router.get('/owner', auth, async (req, res) => {
     res.json(ownerBookings);
   } catch (err) {
     console.error('Error fetching owner bookings:', err.message);
-    res.json([]);
+    res.status(500).json({ msg: 'Could not load owner bookings.' });
   }
 });
 
 // Update booking status (Owner or Admin)
-router.put('/status/:id', auth, async (req, res) => {
+router.put('/status/:id', require('../middleware/accountAuth'), async (req, res) => {
   try {
     const { status, reason } = req.body;
     if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
@@ -303,36 +84,32 @@ router.put('/status/:id', auth, async (req, res) => {
 
     const User = require('../models/User');
     const user = await User.findById(req.user.id);
-    const cleanEmail = user ? user.email.toLowerCase().trim() : '';
 
     let ownerIdStr = '';
     if (booking.property && booking.property.owner) {
       ownerIdStr = booking.property.owner._id ? booking.property.owner._id.toString() : booking.property.owner.toString();
     }
 
-    const isOwnerOrAdmin = 
-      req.user.role === 'admin' ||
-      req.user.role === 'owner' ||
-      ownerIdStr === req.user.id ||
-      (booking.property && booking.property.ownerEmail && booking.property.ownerEmail.toLowerCase() === cleanEmail);
+    const isOwnerOrAdmin = req.user.role === 'admin' || (req.user.role === 'owner' && ownerIdStr === req.user.id);
 
     if (!isOwnerOrAdmin) {
       return res.status(403).json({ msg: 'Not authorized to update this booking' });
     }
+    if (['in_house', 'checked_out'].includes(booking.stayStatus) && status !== booking.status) {
+      return res.status(409).json({ msg: 'Check-in/out has started. Resolve the stay in Guest Operations before changing booking status.' });
+    }
 
     const actorRole = req.user.role === 'admin' ? 'Admin' : 'Property Owner';
-    const actorName = user ? `${user.name} (${user.email})` : 'Property Owner';
-    const targetName = booking.user ? `${booking.user.name} (${booking.user.email})` : 'Traveler';
+    const actorName = user ? `${user.name} (${user.email || user.phone || 'N/A'})` : 'Property Owner';
+    const targetName = booking.user ? `${booking.user.name} (${booking.user.email || booking.user.phone || 'N/A'})` : 'Traveler';
 
     booking.status = status;
     if (status === 'cancelled' && booking.paymentStatus === 'paid') {
-      booking.refundStatus = 'initiated';
-      booking.refundAmount = booking.totalPrice;
       booking.actionHistory.push({
-        action: 'Payment Refund Initiated',
-        performedBy: 'Razorpay Refund Gateway System',
+        action: 'Refund Review Required',
+        performedBy: `${actorRole}: ${actorName}`,
         targetUser: `Traveler: ${targetName}`,
-        reason: `Full refund of ₹${booking.totalPrice} initiated back to original payment source (UPI / Credit Card / Debit Card / NetBanking). Expected in 3-5 business days.`,
+        reason: 'Paid booking cancelled. Process and verify the refund through the payment provider.',
         timestamp: new Date()
       });
     }
@@ -350,6 +127,13 @@ router.put('/status/:id', auth, async (req, res) => {
     });
 
     await booking.save();
+
+    if (status === 'cancelled' && booking.room) {
+      const RoomNight = require('../models/RoomNight');
+      await RoomNight.deleteMany({ kind: 'booking', reference: booking._id });
+      booking.room = null;
+      await booking.save();
+    }
 
     res.json(booking);
   } catch (err) {
@@ -402,7 +186,7 @@ router.get('/all', auth, async (req, res) => {
 });
 
 // Cancel a booking (Only within 24 hours)
-router.post('/cancel/:id', auth, async (req, res) => {
+router.post('/cancel/:id', require('../middleware/accountAuth'), async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ msg: 'Booking not found' });
@@ -410,6 +194,9 @@ router.post('/cancel/:id', auth, async (req, res) => {
     // Check ownership
     if (booking.user.toString() !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
+    }
+    if (['in_house', 'checked_out'].includes(booking.stayStatus)) {
+      return res.status(409).json({ msg: 'A checked-in or completed stay cannot be cancelled here.' });
     }
 
     // 24 Hour Logic
@@ -423,17 +210,15 @@ router.post('/cancel/:id', auth, async (req, res) => {
 
     const User = require('../models/User');
     const u = await User.findById(req.user.id);
-    const uName = u ? `${u.name} (${u.email})` : 'Traveler';
+    const uName = u ? `${u.name} (${u.email || u.phone || 'N/A'})` : 'Traveler';
 
     booking.status = 'cancelled';
     if (booking.paymentStatus === 'paid') {
-      booking.refundStatus = 'initiated';
-      booking.refundAmount = booking.totalPrice;
       booking.actionHistory.push({
-        action: 'Payment Refund Initiated',
-        performedBy: 'Razorpay Refund Gateway',
+        action: 'Refund Review Required',
+        performedBy: `Traveler (${uName})`,
         targetUser: `Traveler (${uName})`,
-        reason: `Full refund of ₹${booking.totalPrice} initiated back to original payment source (UPI / Card / NetBanking). Processed in 3-5 business days.`,
+        reason: 'Paid booking cancelled. Process and verify the refund through the payment provider.',
         timestamp: new Date()
       });
     }
@@ -447,6 +232,12 @@ router.post('/cancel/:id', auth, async (req, res) => {
     });
 
     await booking.save();
+    if (booking.room) {
+      const RoomNight = require('../models/RoomNight');
+      await RoomNight.deleteMany({ kind: 'booking', reference: booking._id });
+      booking.room = null;
+      await booking.save();
+    }
     res.json({ msg: 'Booking cancelled successfully', booking });
   } catch (err) {
     console.error(err.message);

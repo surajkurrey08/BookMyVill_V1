@@ -2,14 +2,10 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Lenis from 'lenis';
 import Navbar from './components/Navbar/Navbar';
-import Hero from './components/Hero/Hero';
-import Destinations from './components/Destinations/Destinations';
-import PopularPoints from './components/PopularPoints/PopularPoints';
-import GuestReviews from './components/GuestReviews/GuestReviews';
-import PropertyGrid from './components/PropertyGrid/PropertyGrid';
 import Footer from './components/Footer/Footer';
 import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
+import OwnerSetup from './components/OwnerSetup/OwnerSetup';
 import PropertyDetails from './components/PropertyDetails/PropertyDetails';
 import UserDashboard from './components/UserDashboard/UserDashboard';
 import UserProfile from './components/UserProfile/UserProfile';
@@ -21,6 +17,7 @@ import CaretakerDashboard from './components/Caretaker/CaretakerDashboard';
 import RegistrationForm from './components/RegistrationForm/RegistrationForm';
 import ExploreStaysPage from './components/ExploreStays/ExploreStaysPage';
 import AiAssistant from './components/AiAssistant/AiAssistant';
+import HomePage from './components/Home/HomePage';
 import './App.css';
 import 'lenis/dist/lenis.css';
 
@@ -222,21 +219,6 @@ const ProtectedCaretakerDashboard = () => {
   return <CaretakerDashboard />;
 };
 
-const Home = () => {
-  return (
-    <>
-      <Navbar />
-      <main>
-        <Hero />
-        <Destinations />
-        <PropertyGrid isHomePage={true} />
-        <GuestReviews />
-      </main>
-      <Footer />
-    </>
-  );
-};
-
 function App() {
   useEffect(() => {
     const lenis = new Lenis({
@@ -254,8 +236,14 @@ function App() {
 
     requestAnimationFrame(raf);
 
+    // Exposed so overlays (e.g. the login modal) can pause/resume Lenis —
+    // Lenis drives scroll via JS, so `overflow: hidden` on the body alone
+    // doesn't stop it.
+    window.__lenis = lenis;
+
     return () => {
       lenis.destroy();
+      if (window.__lenis === lenis) window.__lenis = null;
     };
   }, []);
 
@@ -263,10 +251,11 @@ function App() {
     <Router>
       <div className="app">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/login" element={<SignIn />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/owner-setup" element={<OwnerSetup />} />
           <Route path="/register-property" element={
             <>
               <Navbar />

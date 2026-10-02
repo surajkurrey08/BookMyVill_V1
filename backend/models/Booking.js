@@ -11,6 +11,12 @@ const BookingSchema = new mongoose.Schema({
     ref: 'Property',
     required: true
   },
+  room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', default: null },
+  stayType: { type: String, enum: ['night', 'day'], default: 'night' },
+  guests: { type: Number, min: 1, max: 50, default: 1 },
+  stayStatus: { type: String, enum: ['expected', 'in_house', 'checked_out'], default: 'expected' },
+  actualCheckIn: { type: Date, default: null },
+  actualCheckOut: { type: Date, default: null },
   checkIn: {
     type: Date,
     required: true
@@ -36,6 +42,13 @@ const BookingSchema = new mongoose.Schema({
   razorpayOrderId: {
     type: String
   },
+  razorpayPaymentId: { type: String, unique: true, sparse: true },
+  paidAt: { type: Date, default: null },
+  paymentSource: { type: String, enum: ['razorpay', 'manual'], default: null },
+  paymentMode: { type: String, enum: ['test', 'live', 'manual'], default: null },
+  manualPaymentMethod: { type: String, enum: ['cash', 'bank_transfer', 'upi'], default: null },
+  manualPaymentReference: { type: String, default: '' },
+  manualPaymentRecordedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   refundStatus: {
     type: String,
     enum: ['none', 'initiated', 'processed', 'failed'],

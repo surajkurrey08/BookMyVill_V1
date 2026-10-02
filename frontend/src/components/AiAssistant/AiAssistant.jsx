@@ -95,11 +95,11 @@ const AI_KNOWLEDGE_BASE = [
   },
   {
     keywords: ['caretaker', 'staff', 'host', 'service', 'key', 'clean', 'food'],
-    response: "👤 **24/7 Caretaker Staff Support:**\nEvery villa on Mahabaleshwar Luxury Stays includes a certified local caretaker for:\n• Instant key handover & gate security\n• Home-cooked authentic Maharashtrian meals\n• Daily housekeeping & bonfire setup\n• Emergency assistance"
+    response: "👤 **24/7 Caretaker Staff Support:**\nEvery villa on BookMyVilla includes a certified local caretaker for:\n• Instant key handover & gate security\n• Home-cooked authentic Maharashtrian meals\n• Daily housekeeping & bonfire setup\n• Emergency assistance"
   },
   {
     keywords: ['contact', 'help', 'phone', 'support', 'owner', 'number'],
-    response: "📞 **Support & Direct Contact:**\n• Admin Helpline: +91 98765 43210\n• WhatsApp Support: Instant Live Support via bottom WhatsApp button\n• Email: support@mahabaleshwarstays.com"
+    response: "📞 **Support & Direct Contact:**\n• Admin Helpline: +91 98765 43210\n• WhatsApp Support: Instant Live Support via bottom WhatsApp button\n• Email: support@bookmyvilla.com"
   },
   {
     keywords: ['list', 'partner', 'owner', 'add property', 'join'],
@@ -227,10 +227,10 @@ const DYNAMIC_NLP_TOPICS = [
 
     // 4. Intelligent Smart NLP Generator for Any Custom User Defined Input
     const cleanQuery = userQuery.replace(/[?.,!]/g, '').trim();
-    return `🤖 **Mahabaleshwar AI Luxury Assistant**\n\n` +
+    return `🤖 **BookMyVilla AI Luxury Assistant**\n\n` +
            `Regarding your query: **"${cleanQuery}"**\n\n` +
            `✨ **Assistance & Guidance:**\n` +
-           `All properties on Mahabaleshwar Luxury Stays are fully serviced to accommodate custom guest requirements regarding **${cleanQuery}**!\n\n` +
+           `All properties on BookMyVilla are fully serviced to accommodate custom guest requirements regarding **${cleanQuery}**!\n\n` +
            `• **24/7 Caretaker Assistance:** Certified local caretakers manage check-in, key handovers, meals & custom guest preferences.\n` +
            `• **Premium Amenities:** Private pool, high-speed Wi-Fi, 24/7 generator power backup, gated SUV parking & lawn bonfire.\n` +
            `• **Flexible Booking:** Instant confirmation with 100% flexible 48-hour cancellation policy.\n\n` +
@@ -282,7 +282,7 @@ const DYNAMIC_NLP_TOPICS = [
       <button 
         className="ai-assistant-trigger-btn"
         onClick={() => setIsOpen(!isOpen)}
-        title="Mahabaleshwar AI Luxury Assistant"
+        title="BookMyVilla AI Luxury Assistant"
       >
         <i className="fa-solid fa-wand-magic-sparkles ai-trigger-icon"></i>
       </button>

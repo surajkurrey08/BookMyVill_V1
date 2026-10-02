@@ -27,6 +27,7 @@ dist-ssr
 frontend/node_modules/
 frontend/dist/
 backend/node_modules/
+backend/uploads/
 
 # Local environment variables
 **/.env

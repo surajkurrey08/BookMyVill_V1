@@ -1,0 +1,47 @@
+/* Shared wordmark styling — used on both dark (hero/footer) and light
+   (site-wide navbar) backgrounds, so the gold tone and glow are tuned to
+   read clearly on either. 'Playfair Display' is already loaded globally
+   via index.html. */
+
+.bmv-logo {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.bmv-logo-row {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.bmv-logo-name {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #d4af37;
+  letter-spacing: 0.2px;
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
+}
+
+.bmv-logo-peaks {
+  width: 38px;
+  height: 18px;
+  color: #d4af37;
+  margin-bottom: 4px;
+}
+
+.bmv-logo-line {
+  display: block;
+  margin-top: 7px;
+  width: 54px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #d4af37, transparent);
+}
+
+@media (max-width: 640px) {
+  .bmv-logo-name { font-size: 1.35rem; }
+  .bmv-logo-peaks { width: 30px; }
+  .bmv-logo-line { width: 42px; }
+}

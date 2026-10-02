@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const PartnerApplication = require('../models/PartnerApplication');
-const Property = require('../models/Property');
 
 const parseUserPrice = (val, fallback = 10000) => {
   if (val === undefined || val === null || val === '') return fallback;
@@ -21,6 +20,9 @@ const handleApply = async (req, res) => {
       propertyType, 
       price, 
       city, 
+      mapLink,
+      photos,
+      videos,
       govtId, 
       experience, 
       services, 
@@ -47,7 +49,12 @@ const handleApply = async (req, res) => {
       application.propertyType = propertyType || application.propertyType;
       application.price = price ? numericPrice : application.price;
       application.city = city || application.city;
+      application.mapLink = mapLink || application.mapLink;
+      if (Array.isArray(photos)) application.photos = photos;
+      if (Array.isArray(videos)) application.videos = videos;
       application.message = message || application.message;
+      application.status = 'pending';
+      application.appliedAt = new Date();
       await application.save();
     } else {
       application = new PartnerApplication({
@@ -59,6 +66,9 @@ const handleApply = async (req, res) => {
         propertyType: propertyType || 'Villa',
         price: numericPrice,
         city: city || 'Mahabaleshwar',
+        mapLink: mapLink || '',
+        photos: Array.isArray(photos) ? photos : [],
+        videos: Array.isArray(videos) ? videos : [],
         govtId: govtId || '',
         experience: experience || '',
         services: services || '',
@@ -66,24 +76,6 @@ const handleApply = async (req, res) => {
         status: 'pending'
       });
       await application.save();
-    }
-
-    // 2. If Property Owner, also create a pending Property record in DB
-    if ((partnerType === 'Property Owner' || partnerType === 'Villa Host') && propertyName && propertyName !== 'N/A') {
-      try {
-        const newProperty = new Property({
-          name: propertyName,
-          type: propertyType || 'Villa',
-          location: city || 'Mahabaleshwar',
-          price: numericPrice,
-          photos: [],
-          videos: [],
-          status: 'pending'
-        });
-        await newProperty.save();
-      } catch (propErr) {
-        console.error('Error saving property record alongside partner application:', propErr);
-      }
     }
 
     res.status(201).json({ 

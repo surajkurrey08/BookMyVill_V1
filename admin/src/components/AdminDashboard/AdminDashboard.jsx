@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
 import { API_BASE_URL } from '../../config';
+import HeroImageManager from '../HeroImageManager/HeroImageManager';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('owner-requests');
@@ -37,6 +38,8 @@ const AdminDashboard = () => {
   const [isCardsHidden, setIsCardsHidden] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [rejectTarget, setRejectTarget] = useState(null);
+  const [ownerSetupLink, setOwnerSetupLink] = useState(null);
+  const [setupLinkBusyId, setSetupLinkBusyId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -251,6 +254,10 @@ const AdminDashboard = () => {
   }, [activeTab, navigate]);
 
   const fetchAdminData = async () => {
+    if (activeTab === 'hero-images') {
+      setLoading(false);
+      return;
+    }
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
     if (activeTab === 'owner-requests' || activeTab === 'caretakers') {
@@ -260,7 +267,18 @@ const AdminDashboard = () => {
           fetch(`${API_BASE_URL}/api/admin/caretaker-applications`, { headers: { 'x-auth-token': token } })
         ]);
 
-        const partnersData = resPartners.ok ? await resPartners.json() : [];
+        if (resPartners.status === 401 || resPartners.status === 403) {
+          sessionStorage.clear();
+          localStorage.clear();
+          navigate('/login');
+          return;
+        }
+        if (!resPartners.ok) {
+          const errorData = await resPartners.json().catch(() => ({}));
+          throw new Error(errorData.msg || 'Could not load property owner requests.');
+        }
+
+        const partnersData = await resPartners.json();
         const caretakersData = resCaretakers.ok ? await resCaretakers.json() : [];
 
         const formattedPartners = (Array.isArray(partnersData) ? partnersData : []).map(p => ({
@@ -285,6 +303,9 @@ const AdminDashboard = () => {
         return;
       } catch (err) {
         console.error('Owner & Caretaker requests fetch error:', err);
+        showNotice('error', err.message || 'Could not load property owner requests.');
+        setLoading(false);
+        return;
       }
     }
 
@@ -381,7 +402,7 @@ const AdminDashboard = () => {
       'owner-requests': (prev['owner-requests'] || []).map(p => p._id === id ? { ...p, status } : p)
     }));
     try {
-      await fetch(`${API_BASE_URL}/api/admin/partner-application/${id}/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/partner-application/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -389,11 +410,35 @@ const AdminDashboard = () => {
         },
         body: JSON.stringify({ status })
       });
-      showNotice('success', `Property Listing Request ${status} successfully!`);
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.msg || 'Could not update the request.');
+      showNotice('success', status === 'approved' ? 'Request approved. Create an Owner Login Link to let the owner set a password.' : `Property Listing Request ${status} successfully!`);
       fetchAdminData();
     } catch (err) {
-      showNotice('success', `Property Listing Request ${status} successfully!`);
+      showNotice('error', err.message || 'Could not update the request.');
       fetchAdminData();
+    }
+  };
+
+  const handleCreateOwnerSetupLink = async (id) => {
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    setSetupLinkBusyId(id);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/partner-application/${id}/setup-link`, {
+        method: 'POST',
+        headers: { 'x-auth-token': token }
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.msg || 'Could not create owner setup link.');
+      const ownerAppBase = import.meta.env.VITE_OWNER_APP_URL ||
+        (import.meta.env.DEV ? 'http://localhost:5173' : window.location.origin);
+      const url = new URL('/owner-setup', ownerAppBase);
+      url.hash = `token=${encodeURIComponent(result.token)}`;
+      setOwnerSetupLink({ email: result.email, url: url.toString(), expiresAt: result.expiresAt });
+    } catch (err) {
+      showNotice('error', err.message || 'Could not create owner setup link.');
+    } finally {
+      setSetupLinkBusyId(null);
     }
   };
 
@@ -668,6 +713,12 @@ const AdminDashboard = () => {
           >
             Tourist Feedback
           </button>
+          <button
+            className={`nav-item ${activeTab === 'hero-images' ? 'active' : ''}`}
+            onClick={() => { handleTabSwitch('hero-images'); setIsDrawerOpen(false); }}
+          >
+            Hero Images
+          </button>
         </nav>
 
         <div className="sidebar-footer" style={{ paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
@@ -724,6 +775,12 @@ const AdminDashboard = () => {
               >
                 Tourist Feedback
               </button>
+              <button
+                className={`nav-item ${activeTab === 'hero-images' ? 'active' : ''}`}
+                onClick={() => handleTabSwitch('hero-images')}
+              >
+                Hero Images
+              </button>
             </nav>
 
             <div className="sidebar-footer">
@@ -746,6 +803,7 @@ const AdminDashboard = () => {
                 {activeTab === 'users' && 'System Users & Account Management'}
                 {activeTab === 'bookings' && 'Guest Reservations Master Log'}
                 {activeTab === 'feedback' && '💬 Tourist Stay Reviews & Feedback Center'}
+                {activeTab === 'hero-images' && 'Website Hero Images'}
               </h1>
               <p className="header-subtitle">
                 {activeTab === 'owner-requests' && 'Centralized hub for receiving, evaluating, and taking action on property listing registrations & caretaker staff requests from hosts.'}
@@ -755,6 +813,7 @@ const AdminDashboard = () => {
                 {activeTab === 'users' && 'View all registered guest, host owner, caretaker and administrator accounts.'}
                 {activeTab === 'bookings' && 'Track check-ins, guest payments, and stay reservation statuses.'}
                 {activeTab === 'feedback' && 'Monitor, feature, and manage tourist review ratings and feedback submitted for Mahabaleshwar properties.'}
+                {activeTab === 'hero-images' && 'Upload and manage the cover image shown at the top of each website page.'}
               </p>
             </div>
           </header>
@@ -782,6 +841,8 @@ const AdminDashboard = () => {
                 <button onClick={() => setActionNotice({ type: '', msg: '' })} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.1rem' }}>×</button>
               </div>
             )}
+
+            {activeTab === 'hero-images' && <HeroImageManager />}
 
             {/* Summary Metrics Bar - Rendered only on Main Dashboard page when Cards are not hidden */}
             {activeTab === 'owner-requests' && !isCardsHidden && (
@@ -1299,6 +1360,16 @@ const AdminDashboard = () => {
                                         style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', padding: '6px 12px', borderRadius: '16px', cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem' }}
                                       >
                                         Approve
+                                      </button>
+                                    )}
+                                    {isListingReq && req.status === 'approved' && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleCreateOwnerSetupLink(req._id)}
+                                        disabled={setupLinkBusyId === req._id}
+                                        style={{ background: '#d4af37', color: '#1a1a1a', border: 'none', padding: '6px 12px', borderRadius: '16px', cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem' }}
+                                      >
+                                        {setupLinkBusyId === req._id ? 'Creating…' : 'Create Owner Login Link'}
                                       </button>
                                     )}
                                   </div>
@@ -2012,6 +2083,23 @@ const AdminDashboard = () => {
       )}
 
       {/* REJECTION CONFIRMATION CARD MODAL */}
+      {ownerSetupLink && (
+        <div className="admin-modal-overlay" onClick={() => setOwnerSetupLink(null)} style={{ zIndex: 100020 }}>
+          <div className="admin-modal-container" onClick={event => event.stopPropagation()} style={{ maxWidth: '620px', color: '#fff' }}>
+            <h3 style={{ marginTop: 0 }}>Owner Login Link</h3>
+            <p>Owner login ID: <strong>{ownerSetupLink.email}</strong></p>
+            <p>Share this link only with the approved owner. It expires in 24 hours and works once.</p>
+            <input aria-label="Owner password setup link" readOnly value={ownerSetupLink.url} onFocus={event => event.target.select()} style={{ width: '100%', padding: '12px', boxSizing: 'border-box' }} />
+            <p style={{ fontSize: '0.85rem' }}>Expires: {new Date(ownerSetupLink.expiresAt).toLocaleString()}</p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button type="button" onClick={() => navigator.clipboard.writeText(ownerSetupLink.url).then(() => showNotice('success', 'Link copied.')).catch(() => showNotice('error', 'Select and copy the link manually.'))}>
+                Copy Link
+              </button>
+              <button type="button" onClick={() => setOwnerSetupLink(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
       {rejectTarget && (
         <div className="admin-modal-overlay" onClick={() => setRejectTarget(null)} style={{ zIndex: 100010 }}>
           <div 

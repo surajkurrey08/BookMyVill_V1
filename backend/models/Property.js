@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const PropertySchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  sourceApplication: { type: mongoose.Schema.Types.ObjectId, ref: 'PartnerApplication', unique: true, sparse: true },
   name: { type: String, required: true },
   type: { type: String, default: 'Villa' },
   location: { type: String, required: true },

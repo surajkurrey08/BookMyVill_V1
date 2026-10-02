@@ -657,7 +657,7 @@ const CaretakerDashboard = () => {
               <i className="fa-solid fa-house-user"></i>
             </div>
             <div className="brand-text">
-              <h2>MAHABALESHWAR</h2>
+              <h2>BOOKMYVILLA</h2>
               <span>CARETAKER PORTAL</span>
             </div>
           </div>
@@ -2124,7 +2124,7 @@ const CaretakerDashboard = () => {
 
       {/* Footer Bar */}
       <footer className="caretaker-footer">
-        MAHABLESHWAR LUXURY RETREATS • CARETAKER COMMAND CENTER © 2026
+        BOOKMYVILLA LUXURY RETREATS • CARETAKER COMMAND CENTER © 2026
       </footer>
     </div>
   );

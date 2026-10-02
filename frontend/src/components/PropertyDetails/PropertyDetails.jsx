@@ -7,11 +7,12 @@ import '../PropertyGrid/MapContainer.css';
 import { properties as mockProperties } from '../../data/mockData';
 import { API_BASE_URL } from '../../config';
 import { getRawMapLink, formatGoogleMapsDirectionsUrl } from '../../utils/locationUtils';
+import { launchRazorpayCheckout } from '../../utils/razorpayCheckout';
 
 const getPropertyTagBadge = (prop) => {
   if (prop?.tag) return prop.tag.toUpperCase();
   if (prop?.type) return `${prop.type.toUpperCase()} COLLECTION`;
-  return 'MAHABALESHWAR LUXURY';
+  return 'BOOKMYVILLA LUXURY';
 };
 
 const getPropertyScriptTitle = (prop) => {
@@ -55,22 +56,9 @@ const PropertyDetails = () => {
     }
     return 1;
   });
-  const [showFakeModal, setShowFakeModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [pendingData, setPendingData] = useState(null);
   const [bookingNotice, setBookingNotice] = useState({ type: '', msg: '' });
   const [stayType, setStayType] = useState('night');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('card');
-  const [cardDetails, setCardDetails] = useState({
-    number: '',
-    name: '',
-    expiry: '',
-    cvv: ''
-  });
-  const [upiId, setUpiId] = useState('');
-  const [selectedBank, setSelectedBank] = useState('HDFC Bank');
-  const [feeExpanded, setFeeExpanded] = useState(true);
-  const [discountExpanded, setDiscountExpanded] = useState(true);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [activeMediaType, setActiveMediaType] = useState('photo'); // 'photo' or 'video'
 
@@ -102,25 +90,6 @@ const PropertyDetails = () => {
       fetchPropertyFeedback();
     }
   }, [id, property]);
-
-  const formatCardNumber = (value) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    return parts.length ? parts.join(' ') : value;
-  };
-
-  const formatExpiry = (value) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    if (v.length >= 2) {
-      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
-    }
-    return v;
-  };
 
   const mapRef = useRef(null);
 
@@ -212,9 +181,9 @@ const PropertyDetails = () => {
           propertyImage: property?.image || (property?.photos && property?.photos[0] ? property.photos[0] : ''),
           checkIn: cIn,
           checkOut: cOut || cIn,
+          stayType: stayType === 'day' || cIn === cOut ? 'day' : 'night',
           guests: guests,
-          totalPrice: total,
-          isFake: true 
+          totalPrice: total
         })
       });
 
@@ -231,8 +200,9 @@ const PropertyDetails = () => {
       }
 
       if (response.ok && data) {
-        setPendingData(data);
-        setShowFakeModal(true);
+        await handlePaymentOrder(data, token);
+      } else {
+        setBookingNotice({ type: 'error', msg: data.msg || 'Booking request failed.' });
       }
     } catch (err) {
       console.error('Auto payment initiation error:', err);
@@ -563,9 +533,9 @@ const PropertyDetails = () => {
           propertyImage: property?.image || (property?.photos && property?.photos[0] ? property.photos[0] : ''),
           checkIn: bookingDates.checkIn,
           checkOut: bookingDates.checkOut || bookingDates.checkIn,
+          stayType: stayType === 'day' || bookingDates.checkIn === bookingDates.checkOut ? 'day' : 'night',
           guests: guests,
-          totalPrice: total,
-          isFake: true 
+          totalPrice: total
         })
       });
 
@@ -582,10 +552,7 @@ const PropertyDetails = () => {
 
       if (!response.ok) throw new Error(data.msg || 'Booking failed');
 
-      setPendingData(data);
-      setTimeout(() => {
-        setShowFakeModal(true);
-      }, 100);
+      await handlePaymentOrder(data, token);
     } catch (err) {
       setBookingNotice({ type: 'error', msg: err.message });
     } finally {
@@ -593,75 +560,32 @@ const PropertyDetails = () => {
     }
   };
 
-  const confirmFakePayment = async () => {
-    if (!pendingData) {
-      setBookingNotice({ type: 'error', msg: 'Session lost. Please refresh and try again.' });
-      setShowFakeModal(false);
+  const handlePaymentOrder = async (order, token) => {
+    if (!order.paymentAvailable) {
+      setBookingNotice({ type: 'info', msg: order.msg || 'Booking request saved. Payment is pending.' });
       return;
     }
-
-    if (!pendingData.order_id) {
-      setBookingNotice({ type: 'error', msg: 'Order ID missing. Please try reserving again.' });
-      setShowFakeModal(false);
-      return;
-    }
-
-    if (selectedPaymentMethod === 'card') {
-      const cleanNum = cardDetails.number.replace(/\s+/g, '');
-      if (!cleanNum || cleanNum.length < 15) {
-        setBookingNotice({ type: 'error', msg: 'Please enter a valid 16-digit credit/debit card number.' });
-        return;
-      }
-      if (!cardDetails.expiry || cardDetails.expiry.length < 5) {
-        setBookingNotice({ type: 'error', msg: 'Please enter valid card expiry date (MM/YY).' });
-        return;
-      }
-      if (!cardDetails.cvv || cardDetails.cvv.length < 3) {
-        setBookingNotice({ type: 'error', msg: 'Please enter a valid 3-digit CVV code.' });
-        return;
-      }
-    } else if (selectedPaymentMethod === 'upi') {
-      if (!upiId.trim() || !upiId.includes('@')) {
-        setBookingNotice({ type: 'error', msg: 'Please enter a valid UPI ID (e.g. name@upi or 9876543210@paytm).' });
-        return;
-      }
-    }
-
-    setIsProcessing(true);
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    let user = null;
+    try { user = JSON.parse(sessionStorage.getItem('user') || localStorage.getItem('user') || 'null'); } catch (_) {}
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bookings/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token
+      await launchRazorpayCheckout({
+        order,
+        token,
+        propertyName: property?.name,
+        user,
+        onPaid: result => {
+          const isTest = result.booking?.paymentMode === 'test';
+          setBookingNotice({ type: 'success', msg: isTest ? 'Test payment captured. No real money was charged.' : 'Payment captured and booking confirmed.' });
+          if (!isTest) setShowBookingAnimation(true);
+          setTimeout(() => navigate('/dashboard'), 3500);
         },
-        body: JSON.stringify({
-          razorpay_order_id: pendingData.order_id,
-          isFake: true
-        })
+        onError: error => setBookingNotice({ type: 'error', msg: error.message || 'Payment could not be verified. Booking remains pending.' }),
+        onDismiss: () => setBookingNotice(current => current.type === 'success' ? current : { type: 'info', msg: 'Payment window closed. Booking remains pending until payment is verified.' })
       });
-
-      const resData = await response.json();
-      if (response.ok) {
-        setShowFakeModal(false);
-        setShowBookingAnimation(true);
-        setBookingNotice({ type: 'success', msg: 'Payment Successful! Your reservation has been confirmed.' });
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 3500);
-      } else {
-        setBookingNotice({ type: 'error', msg: `Payment simulation failed: ${resData.msg || 'Unknown error'}` });
-        setShowFakeModal(false);
-      }
-    } catch (err) {
-      setBookingNotice({ type: 'error', msg: 'Network Error: Could not reach the server.' });
-      setShowFakeModal(false);
-    } finally {
-      setIsProcessing(false);
+    } catch (error) {
+      setBookingNotice({ type: 'error', msg: `${error.message} Booking remains pending.` });
     }
   };
-
   if (loading) return <div className="loading">Loading your luxury experience...</div>;
 
   if (!property) {
@@ -1424,7 +1348,7 @@ const PropertyDetails = () => {
 
                   <div className="booking-actions-group" style={{ display: 'flex', gap: '14px', marginTop: '26px' }}>
                     <button type="submit" disabled={isProcessing} className="btn-primary" style={{ flex: '1.8', padding: '16px 24px', borderRadius: '50px', fontSize: '1.08rem', fontWeight: '800' }}>
-                      {isProcessing ? 'Processing...' : 'Reserve & Pay'}
+                      {isProcessing ? 'Processing...' : 'Continue to Payment'}
                     </button>
                     <button 
                       type="button" 
@@ -1436,322 +1360,12 @@ const PropertyDetails = () => {
                     </button>
                   </div>
                 </form>
-                <p className="no-charge">Secure Simulation Mode Active</p>
+                <p className="no-charge">Payment details are entered only in Razorpay Checkout. If online payment is unavailable, your request stays pending.</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Flipkart-Style Revamped Complete Payment Gateway Modal */}
-        {showFakeModal && (
-          <div className="fake-payment-overlay">
-            <div className="flipkart-payment-modal">
-              {/* Flipkart Header */}
-              <div className="fk-payment-header">
-                <div className="fk-header-left" onClick={() => setShowFakeModal(false)}>
-                  <i className="fa-solid fa-arrow-left" style={{ marginRight: '12px', fontSize: '1.1rem', cursor: 'pointer' }}></i>
-                  <h2>Complete Payment</h2>
-                </div>
-                <div className="fk-secure-badge">
-                  <i className="fa-solid fa-shield-halved" style={{ color: '#10b981', marginRight: '6px' }}></i> 100% Secure
-                </div>
-              </div>
-
-              {/* Flipkart Main 2-Column Body */}
-              <div className="fk-payment-body">
-                {/* Left Column: Payment Accordion Tabs */}
-                <div className="fk-payment-left-col">
-                  {/* Recommended Header */}
-                  <div className="fk-section-subhead">
-                    <i className="fa-solid fa-thumbs-up" style={{ color: '#d4af37', marginRight: '8px' }}></i> Recommended for You
-                  </div>
-
-                  {/* Option 1: UPI */}
-                  <div className={`fk-option-card ${selectedPaymentMethod === 'upi' ? 'active' : ''}`}>
-                    <div className="fk-option-header" onClick={() => setSelectedPaymentMethod('upi')}>
-                      <div className="fk-radio-custom">
-                        <span className={`fk-radio-dot ${selectedPaymentMethod === 'upi' ? 'checked' : ''}`}></span>
-                      </div>
-                      <div className="fk-option-title-block">
-                        <span className="fk-option-title">UPI</span>
-                        <span className="fk-option-sub">Pay by any UPI app (Google Pay, PhonePe, Paytm)</span>
-                      </div>
-                    </div>
-
-                    {selectedPaymentMethod === 'upi' && (
-                      <div className="fk-option-content">
-                        <div className="fk-upi-app-grid">
-                          {['Google Pay', 'PhonePe', 'Paytm', 'BHIM UPI'].map(app => (
-                            <button
-                              key={app}
-                              type="button"
-                              onClick={() => setUpiId(`user@${app.toLowerCase().replace(/[^a-z]/g, '')}`)}
-                              className="fk-upi-chip"
-                            >
-                              ⚡ {app}
-                            </button>
-                          ))}
-                        </div>
-                        <div style={{ marginTop: '12px' }}>
-                          <label className="fk-input-label">Virtual Payment Address (VPA)</label>
-                          <input
-                            type="text"
-                            placeholder="Enter UPI ID (e.g. 9876543210@paytm)"
-                            value={upiId}
-                            onChange={(e) => setUpiId(e.target.value)}
-                            className="payment-input-field"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={confirmFakePayment}
-                          disabled={isProcessing}
-                          className="fk-pay-btn"
-                        >
-                          {isProcessing ? 'Processing Payment...' : `Pay ₹${calculateTotalPrice().toLocaleString('en-IN')} Now`}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Option 2: Credit / Debit / ATM Card */}
-                  <div className={`fk-option-card ${selectedPaymentMethod === 'card' ? 'active' : ''}`}>
-                    <div className="fk-option-header" onClick={() => setSelectedPaymentMethod('card')}>
-                      <div className="fk-radio-custom">
-                        <span className={`fk-radio-dot ${selectedPaymentMethod === 'card' ? 'checked' : ''}`}></span>
-                      </div>
-                      <div className="fk-option-title-block">
-                        <span className="fk-option-title">Credit / Debit / ATM Card</span>
-                        <span className="fk-option-sub">Add and secure cards as per RBI guidelines</span>
-                      </div>
-                    </div>
-
-                    {selectedPaymentMethod === 'card' && (
-                      <div className="fk-option-content">
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          <div>
-                            <label className="fk-input-label">Card Number</label>
-                            <input
-                              type="text"
-                              placeholder="4111 2222 3333 4444"
-                              maxLength={19}
-                              value={cardDetails.number}
-                              onChange={(e) => setCardDetails(prev => ({ ...prev, number: formatCardNumber(e.target.value) }))}
-                              className="payment-input-field"
-                            />
-                          </div>
-                          <div>
-                            <label className="fk-input-label">Cardholder Name</label>
-                            <input
-                              type="text"
-                              placeholder="Name as printed on card"
-                              value={cardDetails.name}
-                              onChange={(e) => setCardDetails(prev => ({ ...prev, name: e.target.value.toUpperCase() }))}
-                              className="payment-input-field"
-                            />
-                          </div>
-                          <div className="card-input-grid">
-                            <div>
-                              <label className="fk-input-label">Expiry Date</label>
-                              <input
-                                type="text"
-                                placeholder="MM/YY"
-                                maxLength={5}
-                                value={cardDetails.expiry}
-                                onChange={(e) => setCardDetails(prev => ({ ...prev, expiry: formatExpiry(e.target.value) }))}
-                                className="payment-input-field"
-                              />
-                            </div>
-                            <div>
-                              <label className="fk-input-label">CVV / CVC</label>
-                              <input
-                                type="password"
-                                placeholder="123"
-                                maxLength={4}
-                                value={cardDetails.cvv}
-                                onChange={(e) => setCardDetails(prev => ({ ...prev, cvv: e.target.value.replace(/[^0-9]/g, '') }))}
-                                className="payment-input-field"
-                              />
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={confirmFakePayment}
-                            disabled={isProcessing}
-                            className="fk-pay-btn"
-                          >
-                            {isProcessing ? 'Verifying Card...' : `Pay ₹${calculateTotalPrice().toLocaleString('en-IN')} & Confirm`}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Option 3: Pay at Hotel / Cash on Delivery */}
-                  <div className={`fk-option-card ${selectedPaymentMethod === 'pay_at_hotel' ? 'active' : ''}`}>
-                    <div className="fk-option-header" onClick={() => setSelectedPaymentMethod('pay_at_hotel')}>
-                      <div className="fk-radio-custom">
-                        <span className={`fk-radio-dot ${selectedPaymentMethod === 'pay_at_hotel' ? 'checked' : ''}`}></span>
-                      </div>
-                      <div className="fk-option-title-block">
-                        <span className="fk-option-title">Cash on Delivery / Pay at Hotel</span>
-                        <span className="fk-option-sub">Pay 20% token amount now to confirm slot</span>
-                      </div>
-                    </div>
-
-                    {selectedPaymentMethod === 'pay_at_hotel' && (
-                      <div className="fk-option-content">
-                        <div className="fk-cod-notice-box">
-                          <p style={{ margin: 0 }}>
-                            Due to handling costs, a nominal fee of ₹10 will be charged for orders placed using this option. Avoid this fee by paying online now.
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={confirmFakePayment}
-                          disabled={isProcessing}
-                          className="fk-place-order-btn"
-                        >
-                          {isProcessing ? 'Processing Booking...' : 'Place Order'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Option 5: Net Banking */}
-                  <div className={`fk-option-card ${selectedPaymentMethod === 'netbanking' ? 'active' : ''}`}>
-                    <div className="fk-option-header" onClick={() => setSelectedPaymentMethod('netbanking')}>
-                      <div className="fk-radio-custom">
-                        <span className={`fk-radio-dot ${selectedPaymentMethod === 'netbanking' ? 'checked' : ''}`}></span>
-                      </div>
-                      <div className="fk-option-title-block">
-                        <span className="fk-option-title">Net Banking</span>
-                        <span className="fk-option-sub">All Major Indian Banks Supported</span>
-                      </div>
-                    </div>
-
-                    {selectedPaymentMethod === 'netbanking' && (
-                      <div className="fk-option-content">
-                        <label className="fk-input-label">Select Primary Indian Bank</label>
-                        <select
-                          value={selectedBank}
-                          onChange={(e) => setSelectedBank(e.target.value)}
-                          className="payment-input-field"
-                        >
-                          <option value="HDFC Bank">HDFC Bank</option>
-                          <option value="State Bank of India">State Bank of India (SBI)</option>
-                          <option value="ICICI Bank">ICICI Bank</option>
-                          <option value="Axis Bank">Axis Bank</option>
-                          <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
-                          <option value="Punjab National Bank">Punjab National Bank (PNB)</option>
-                          <option value="Bank of Baroda">Bank of Baroda</option>
-                          <option value="IndusInd Bank">IndusInd Bank</option>
-                          <option value="YES Bank">YES Bank</option>
-                          <option value="IDFC FIRST Bank">IDFC FIRST Bank</option>
-                        </select>
-                        <button
-                          type="button"
-                          onClick={confirmFakePayment}
-                          disabled={isProcessing}
-                          className="fk-pay-btn"
-                          style={{ marginTop: '14px' }}
-                        >
-                          {isProcessing ? 'Redirecting to Bank...' : `Pay ₹${calculateTotalPrice().toLocaleString('en-IN')} via NetBanking`}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Option 6: EMI (Easy Installments) - Disabled */}
-                  <div className="fk-option-card disabled">
-                    <div className="fk-option-header" style={{ cursor: 'not-allowed', opacity: 0.6 }}>
-                      <div className="fk-radio-custom">
-                        <span className="fk-radio-dot"></span>
-                      </div>
-                      <div className="fk-option-title-block" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <span className="fk-option-title">EMI (Easy Installments)</span>
-                          <span className="fk-option-sub">No Cost EMI available on select cards</span>
-                        </div>
-                        <span className="fk-unavailable-badge">Unavailable <i className="fa-solid fa-circle-info"></i></span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column: Flipkart Price Details Sidebar */}
-                <div className="fk-payment-right-col">
-                  <div className="fk-price-details-card">
-                    <div className="fk-price-head">PRICE DETAILS</div>
-                    
-                    <div className="fk-price-row">
-                      <span>MRP (incl. of all taxes)</span>
-                      <span>₹{(calculateTotalPrice() + 2667).toLocaleString('en-IN')}</span>
-                    </div>
-
-                    {/* Fees Accordion */}
-                    <div className="fk-price-section">
-                      <div className="fk-price-accordion-head" onClick={() => setFeeExpanded(!feeExpanded)}>
-                        <span>Fees</span>
-                        <span>{feeExpanded ? '▲' : '▼'}</span>
-                      </div>
-                      {feeExpanded && (
-                        <div className="fk-price-sub-rows">
-                          <div className="fk-price-row sub">
-                            <span>Payment Handling Fee</span>
-                            <span>₹10</span>
-                          </div>
-                          <div className="fk-price-row sub">
-                            <span>Platform Fee</span>
-                            <span>₹9</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Discounts Accordion */}
-                    <div className="fk-price-section">
-                      <div className="fk-price-accordion-head" onClick={() => setDiscountExpanded(!discountExpanded)}>
-                        <span>Discounts</span>
-                        <span>{discountExpanded ? '▲' : '▼'}</span>
-                      </div>
-                      {discountExpanded && (
-                        <div className="fk-price-sub-rows">
-                          <div className="fk-price-row sub green">
-                            <span>MRP Discount</span>
-                            <span>-₹2,621</span>
-                          </div>
-                          <div className="fk-price-row sub green">
-                            <span>Coupons for you</span>
-                            <span>-₹46</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="fk-total-row">
-                      <span>Total Amount</span>
-                      <span className="fk-total-amount">₹{calculateTotalPrice().toLocaleString('en-IN')}</span>
-                    </div>
-                  </div>
-
-                  {/* 5% Cashback Offer Banner */}
-                  <div className="fk-cashback-banner">
-                    <div className="fk-cashback-text">
-                      <strong>5% Cashback</strong>
-                      <span>Claim now with payment offers</span>
-                    </div>
-                    <div className="fk-bank-icons">
-                      <span className="fk-bank-chip">💳</span>
-                      <span className="fk-bank-chip">🏦</span>
-                      <span className="fk-bank-more">+3</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
         {/* Fullscreen Zoom Lightbox Modal for Images and Videos */}
         {lightboxState.isOpen && (
           <div className="media-zoom-overlay" onClick={closeLightbox}>

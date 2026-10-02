@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import AiAssistant from '../AiAssistant/AiAssistant';
+import RoomsAvailability from './RoomsAvailability';
+import GuestOperations from './GuestOperations';
+import OwnerFinance from './OwnerFinance';
 // Owner Dashboard Component - Mahabaleshwar Luxury Stays
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config';
@@ -282,6 +285,7 @@ const OwnerDashboard = () => {
       const propRes = await fetch(`${API_BASE_URL}/properties/my-properties`, {
         headers: { 'x-auth-token': authToken }
       });
+      if (!propRes.ok) throw new Error('Could not load owner properties. Please sign in again or check the backend.');
       const propData = await propRes.json();
       if (Array.isArray(propData)) {
         setProperties(propData);
@@ -291,6 +295,7 @@ const OwnerDashboard = () => {
       const bookRes = await fetch(`${API_BASE_URL}/bookings/owner`, {
         headers: { 'x-auth-token': authToken }
       });
+      if (!bookRes.ok) throw new Error('Could not load owner bookings. Please sign in again or check the backend.');
       const bookData = await bookRes.json();
       if (Array.isArray(bookData)) {
         setBookings(bookData);
@@ -760,8 +765,23 @@ const OwnerDashboard = () => {
   // Stats Calculations
   const totalProperties = properties.length;
   const totalBookings = bookings.length;
-  const totalRevenue = bookings.reduce((sum, b) => b.paymentStatus === 'paid' ? sum + (b.totalPrice || 0) : sum, 0);
+  const totalRevenue = bookings.reduce((sum, b) => b.paymentStatus === 'paid' && ['live', 'manual'].includes(b.paymentMode) ? sum + (b.totalPrice || 0) : sum, 0);
   const pendingBookings = bookings.filter(b => b.status === 'pending').length;
+  const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
+  const paidBookings = bookings.filter(b => b.paymentStatus === 'paid' && ['live', 'manual'].includes(b.paymentMode));
+  const thisMonthRevenue = paidBookings.filter(b => {
+    const date = new Date(b.paidAt || b.createdAt);
+    const now = new Date();
+    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+  }).reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+  const revenueByMonth = Array.from({ length: 12 }, (_, month) => ({
+    name: new Date(new Date().getFullYear(), month, 1).toLocaleDateString('en-IN', { month: 'short' }),
+    amount: paidBookings.filter(b => {
+      const date = new Date(b.paidAt || b.createdAt);
+      return date.getFullYear() === new Date().getFullYear() && date.getMonth() === month;
+    }).reduce((sum, b) => sum + (b.totalPrice || 0), 0)
+  }));
+  const maxMonthlyRevenue = Math.max(1, ...revenueByMonth.map(item => item.amount));
 
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
@@ -791,7 +811,7 @@ const OwnerDashboard = () => {
               {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
             </div>
             <div className="user-info">
-              <h4>{user?.name || 'Saroj Naydu'}</h4>
+              <h4>{user?.name || 'Owner'}</h4>
               <span className="role-tag"><i className="fa-solid fa-circle-check"></i> Verified Host</span>
             </div>
           </div>
@@ -815,6 +835,12 @@ const OwnerDashboard = () => {
             >
               <i className="fa-solid fa-calendar-check"></i> Bookings
             </button>
+            <button className={`nav-btn ${activeTab === 'rooms' ? 'active' : ''}`} onClick={() => handleTabChange('rooms')}>
+              <i className="fa-solid fa-bed"></i> Rooms & Availability
+            </button>
+            <button className={`nav-btn ${activeTab === 'operations' ? 'active' : ''}`} onClick={() => handleTabChange('operations')}>
+              <i className="fa-solid fa-concierge-bell"></i> Guest Operations
+            </button>
             <button
               className={`nav-btn ${activeTab === 'tourists' ? 'active' : ''}`}
               onClick={() => handleTabChange('tourists')}
@@ -837,7 +863,7 @@ const OwnerDashboard = () => {
               className={`nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
               onClick={() => handleTabChange('analytics')}
             >
-              <i className="fa-solid fa-wallet"></i> Revenue
+              <i className="fa-solid fa-wallet"></i> Payments & Reports
             </button>
             <button
               className={`nav-btn ${activeTab === 'caretakers' ? 'active' : ''}`}
@@ -873,11 +899,13 @@ const OwnerDashboard = () => {
                 {activeTab === 'overview' && <><i className="fa-solid fa-gauge-high"></i> Host Overview</>}
                 {activeTab === 'properties' && <><i className="fa-solid fa-hotel"></i> Properties ({properties.length})</>}
                 {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check"></i> Bookings ({bookings.length})</>}
+                {activeTab === 'rooms' && <><i className="fa-solid fa-bed"></i> Rooms & Availability</>}
+                {activeTab === 'operations' && <><i className="fa-solid fa-concierge-bell"></i> Guest Operations</>}
                 {activeTab === 'caretakers' && <><i className="fa-solid fa-user-shield"></i> Caretaker Tasks & Requests ({caretakerApps.length})</>}
                 {activeTab === 'tourists' && <><i className="fa-solid fa-users-viewfinder"></i> Tourist Register</>}
                 {activeTab === 'inventory' && <><i className="fa-solid fa-boxes-stacked"></i> Inventory</>}
                 {activeTab === 'feedback' && <><i className="fa-solid fa-comments"></i> Feedback</>}
-                {activeTab === 'analytics' && <><i className="fa-solid fa-chart-line"></i> Financials</>}
+                {activeTab === 'analytics' && <><i className="fa-solid fa-chart-line"></i> Payments & Reports</>}
                 {activeTab === 'profile' && <><i className="fa-solid fa-user-gear"></i> Host Profile</>}
               </h1>
               <span className="header-divider">|</span>
@@ -885,11 +913,13 @@ const OwnerDashboard = () => {
                 {activeTab === 'overview' && `Welcome back, ${user?.name || 'Host'}`}
                 {activeTab === 'properties' && 'Listings & pricing'}
                 {activeTab === 'bookings' && 'Reservations'}
+                {activeTab === 'rooms' && 'Property-wise room inventory and calendar'}
+                {activeTab === 'operations' && 'Arrivals, departures, staff and housekeeping'}
                 {activeTab === 'caretakers' && 'Staff allocation & daily duties'}
                 {activeTab === 'tourists' && 'Arrivals & headcount'}
                 {activeTab === 'inventory' && 'Supplies & restocking'}
                 {activeTab === 'feedback' && 'Ratings & reviews'}
-                {activeTab === 'analytics' && 'Financial insights'}
+                {activeTab === 'analytics' && 'Payment records and expenses'}
                 {activeTab === 'profile' && 'Account settings'}
               </span>
             </div>
@@ -988,30 +1018,25 @@ const OwnerDashboard = () => {
               {activeTab === 'overview' && (
                 <div className="tab-overview">
                   {/* High Impact Property Overview Highlight Banner */}
-                  <div className="property-overview-banner glass-morphism">
+                  {properties.length > 0 && <div className="property-overview-banner glass-morphism">
                     <div className="banner-image-container">
                       <img
-                        src={properties.length > 0 && properties[0].photos && properties[0].photos[0] ? properties[0].photos[0] : 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80'}
+                        src={properties[0].photos?.[0] || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80'}
                         alt="Primary Property Banner"
                       />
                       <div className="banner-type-tag">
-                        <i className="fa-solid fa-crown"></i> Primary Luxury Estate
+                        <i className="fa-solid fa-building"></i> {properties[0].type || 'Property'}
                       </div>
                     </div>
 
                     <div className="banner-details">
                       <div className="banner-header-row">
                         <div>
-                          <h2 className="banner-title">{properties.length > 0 ? properties[0].name : 'Ganesh kuj Villa Estate'}</h2>
+                          <h2 className="banner-title">{properties[0].name}</h2>
                           <p className="banner-location">
-                            <i className="fa-solid fa-location-dot"></i> {properties.length > 0 ? properties[0].location : 'Pune & Outskirts, Mahabaleshwar'}
-                            <span className="verified-chip"><i className="fa-solid fa-circle-check"></i> Verified Stay</span>
+                            <i className="fa-solid fa-location-dot"></i> {properties[0].location}
+                            <span className="verified-chip">{properties[0].status}</span>
                           </p>
-                        </div>
-                        <div className="banner-rating-pill">
-                          <i className="fa-solid fa-star"></i>
-                          <span className="rating-score">4.9</span>
-                          <span className="rating-count">(124 reviews)</span>
                         </div>
                       </div>
 
@@ -1019,8 +1044,8 @@ const OwnerDashboard = () => {
                         <div className="banner-stat-chip">
                           <div className="chip-icon gold"><i className="fa-solid fa-chart-line"></i></div>
                           <div>
-                            <span className="chip-label">Occupancy Rate</span>
-                            <span className="chip-value">85%</span>
+                            <span className="chip-label">Confirmed Bookings</span>
+                            <span className="chip-value">{confirmedBookings}</span>
                           </div>
                         </div>
 
@@ -1028,28 +1053,28 @@ const OwnerDashboard = () => {
                           <div className="chip-icon emerald"><i className="fa-solid fa-calendar-check"></i></div>
                           <div>
                             <span className="chip-label">Active Reservations</span>
-                            <span className="chip-value">{bookings.length > 0 ? bookings.length : '4 Active'}</span>
+                            <span className="chip-value">{confirmedBookings}</span>
                           </div>
                         </div>
 
                         <div className="banner-stat-chip">
                           <div className="chip-icon blue"><i className="fa-solid fa-indian-rupee-sign"></i></div>
                           <div>
-                            <span className="chip-label">Monthly Payout</span>
-                            <span className="chip-value">₹{totalRevenue > 0 ? totalRevenue.toLocaleString('en-IN') : '2,40,000'}</span>
+                            <span className="chip-label">Paid bookings this month</span>
+                            <span className="chip-value">₹{thisMonthRevenue.toLocaleString('en-IN')}</span>
                           </div>
                         </div>
 
                         <div className="banner-stat-chip">
                           <div className="chip-icon yellow"><i className="fa-solid fa-users"></i></div>
                           <div>
-                            <span className="chip-label">Total Guests</span>
-                            <span className="chip-value">48 Guests</span>
+                            <span className="chip-label">Pending Requests</span>
+                            <span className="chip-value">{pendingBookings}</span>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div>}
 
                   {/* Stats Cards Grid */}
                   {!isCardsHidden && (
@@ -1059,7 +1084,7 @@ const OwnerDashboard = () => {
                         <div className="stat-info">
                           <span className="stat-label">Listed Properties</span>
                           <h3 className="stat-value">{totalProperties}</h3>
-                          <span className="stat-sub font-green">Active in Mahabaleshwar</span>
+                          <span className="stat-sub font-green">Saved properties</span>
                         </div>
                       </div>
 
@@ -1095,29 +1120,19 @@ const OwnerDashboard = () => {
                   <div className="revenue-analytics-grid">
                     <div className="chart-card-box glass-morphism">
                       <div className="chart-header">
-                        <h3><i className="fa-solid fa-chart-area"></i> Monthly Revenue Trend</h3>
+                        <h3><i className="fa-solid fa-chart-area"></i> Paid Bookings by Month ({new Date().getFullYear()})</h3>
                         <div className="chart-legend">
-                          <span><span className="legend-dot gold"></span> Direct Earnings</span>
-                          <span><span className="legend-dot emerald"></span> Occupancy Peak</span>
+                          <span><span className="legend-dot gold"></span> Booking value</span>
                         </div>
                       </div>
 
                       <div className="bar-chart-visual">
-                        {[
-                          { m: 'Jan', val: 40, col: 'gold' },
-                          { m: 'Feb', val: 55, col: 'gold' },
-                          { m: 'Mar', val: 70, col: 'emerald' },
-                          { m: 'Apr', val: 65, col: 'gold' },
-                          { m: 'May', val: 90, col: 'emerald' },
-                          { m: 'Jun', val: 80, col: 'emerald' },
-                          { m: 'Jul', val: 75, col: 'gold' },
-                          { m: 'Aug', val: 95, col: 'emerald' }
-                        ].map((b, i) => (
+                        {revenueByMonth.map((b, i) => (
                           <div key={i} className="chart-bar-column">
                             <div className="bar-track">
-                              <div className={`bar-fill ${b.col}`} style={{ height: `${b.val}%` }}></div>
+                              <div className="bar-fill gold" style={{ height: `${Math.round(b.amount / maxMonthlyRevenue * 100)}%` }} title={`₹${b.amount.toLocaleString('en-IN')}`}></div>
                             </div>
-                            <span className="bar-month-label">{b.m}</span>
+                            <span className="bar-month-label">{b.name}</span>
                           </div>
                         ))}
                       </div>
@@ -1125,37 +1140,37 @@ const OwnerDashboard = () => {
 
                     <div className="chart-card-box glass-morphism">
                       <div className="chart-header">
-                        <h3><i className="fa-solid fa-pie-chart"></i> Estate Performance Metrics</h3>
+                        <h3><i className="fa-solid fa-pie-chart"></i> Booking Status</h3>
                       </div>
 
                       <div className="progress-meters-list">
                         <div className="meter-unit">
                           <div className="meter-meta">
-                            <span className="meter-title">Occupancy Rate</span>
-                            <span className="meter-val">85%</span>
+                            <span className="meter-title">Confirmed</span>
+                            <span className="meter-val">{confirmedBookings}</span>
                           </div>
                           <div className="meter-bar-track">
-                            <div className="meter-bar-fill gold" style={{ width: '85%' }}></div>
+                            <div className="meter-bar-fill gold" style={{ width: `${totalBookings ? confirmedBookings / totalBookings * 100 : 0}%` }}></div>
                           </div>
                         </div>
 
                         <div className="meter-unit">
                           <div className="meter-meta">
-                            <span className="meter-title">Guest Satisfaction</span>
-                            <span className="meter-val">98%</span>
+                            <span className="meter-title">Paid</span>
+                            <span className="meter-val">{paidBookings.length}</span>
                           </div>
                           <div className="meter-bar-track">
-                            <div className="meter-bar-fill emerald" style={{ width: '98%' }}></div>
+                            <div className="meter-bar-fill emerald" style={{ width: `${totalBookings ? paidBookings.length / totalBookings * 100 : 0}%` }}></div>
                           </div>
                         </div>
 
                         <div className="meter-unit">
                           <div className="meter-meta">
-                            <span className="meter-title">Caretaker Inventory</span>
-                            <span className="meter-val">92%</span>
+                            <span className="meter-title">Pending</span>
+                            <span className="meter-val">{pendingBookings}</span>
                           </div>
                           <div className="meter-bar-track">
-                            <div className="meter-bar-fill blue" style={{ width: '92%' }}></div>
+                            <div className="meter-bar-fill blue" style={{ width: `${totalBookings ? pendingBookings / totalBookings * 100 : 0}%` }}></div>
                           </div>
                         </div>
                       </div>
@@ -1166,45 +1181,15 @@ const OwnerDashboard = () => {
                   <div className="revenue-analytics-grid">
                     <div className="activity-feed-card glass-morphism" style={{ gridColumn: '1 / -1' }}>
                       <div className="chart-header">
-                        <h3><i className="fa-solid fa-clock-rotate-left"></i> Recent Activity Feed</h3>
-                        <span className="verified-chip">Live Updates</span>
+                        <h3><i className="fa-solid fa-clock-rotate-left"></i> Recent Reservations</h3>
                       </div>
 
                       <div className="activity-feed-list">
-                        <div className="activity-item-row">
+                        {bookings.length === 0 ? <p>No reservations yet.</p> : bookings.slice(0, 4).map(booking => <div className="activity-item-row" key={booking._id}>
                           <div className="activity-icon-badge emerald"><i className="fa-solid fa-calendar-check"></i></div>
-                          <div className="activity-meta">
-                            <h4>New Booking Confirmed</h4>
-                            <p>Mr. Rajesh Kumar reserved Ganesh kuj Villa Estate for 3 nights.</p>
-                          </div>
-                          <span className="activity-time">15m ago</span>
-                        </div>
-
-                        <div className="activity-item-row">
-                          <div className="activity-icon-badge gold"><i className="fa-solid fa-user-shield"></i></div>
-                          <div className="activity-meta">
-                            <h4>Caretaker Duty Completed</h4>
-                            <p>Caretaker Ramesh completed Pool & Garden Linen Sanitation.</p>
-                          </div>
-                          <span className="activity-time">1h ago</span>
-                        </div>
-
-                        <div className="activity-item-row">
-                          <div className="activity-icon-badge blue"><i className="fa-solid fa-building-columns"></i></div>
-                          <div className="activity-meta">
-                            <h4>Bank Payout Settled</h4>
-                            <p>Direct payout ₹45,000 processed to registered HDFC Bank account.</p>
-                          </div>
-                          <span className="activity-time">3h ago</span>
-                        </div>
-
-                        <div className="activity-item-row">
-                          <div className="activity-icon-badge yellow"><i className="fa-solid fa-wine-glass"></i></div>
-                          <div className="activity-meta">
-                            <h4>Guest Special Request Added</h4>
-                            <p>Complimentary Welcome Drinks & Campfire setup requested for Check-In.</p>
-                          </div>
-                        </div>
+                          <div className="activity-meta"><h4>{booking.status} booking · {booking.user?.name || 'Guest'}</h4><p>{booking.property?.name || 'Property'} · {new Date(booking.checkIn).toLocaleDateString('en-IN')} to {new Date(booking.checkOut).toLocaleDateString('en-IN')}</p></div>
+                          <span className="activity-time">{new Date(booking.createdAt).toLocaleDateString('en-IN')}</span>
+                        </div>)}
                       </div>
                     </div>
                   </div>
@@ -1421,6 +1406,8 @@ const OwnerDashboard = () => {
               )}
 
               {/* TAB 3: BOOKINGS */}
+              {activeTab === 'rooms' && <RoomsAvailability />}
+              {activeTab === 'operations' && <GuestOperations />}
               {activeTab === 'bookings' && (
                 <div className="tab-bookings">
                   {/* Booking Filter Bar */}
@@ -1484,6 +1471,7 @@ const OwnerDashboard = () => {
                                     <div className="property-stay-cell">
                                       <strong>{b.property?.name || 'Mahabaleshwar Stay'}</strong>
                                       <span className="sub-location"><i className="fa-solid fa-location-dot"></i> {b.property?.location || 'Mahabaleshwar'}</span>
+                                      <span className="sub-location">{b.room ? `Room ${b.room.number} · ${b.room.name}` : 'Room not assigned'}</span>
                                     </div>
                                   </td>
                                   <td>
@@ -1498,8 +1486,8 @@ const OwnerDashboard = () => {
                                     <strong className="price font-gold">₹{b.totalPrice?.toLocaleString('en-IN')}</strong>
                                   </td>
                                   <td>
-                                    <span className={`payment-pill ${b.paymentStatus || 'paid'}`}>
-                                      <i className="fa-solid fa-shield-check"></i> {b.paymentStatus || 'paid'}
+                                    <span className={`payment-pill ${b.paymentStatus || 'pending'}`}>
+                                      <i className="fa-solid fa-shield-check"></i> {b.paymentStatus || 'pending'}
                                     </span>
                                   </td>
                                   <td>
@@ -1534,83 +1522,8 @@ const OwnerDashboard = () => {
                 </div>
               )}
 
-              {/* TAB 4: ANALYTICS & FINANCIALS */}
-              {activeTab === 'analytics' && (
-                <div className="tab-analytics">
-                  <div className="analytics-summary-cards">
-                    <div className="financial-card glass-morphism">
-                      <div className="fin-icon gold"><i className="fa-solid fa-wallet"></i></div>
-                      <h4>Total Gross Earnings</h4>
-                      <h2>₹{totalRevenue.toLocaleString('en-IN')}</h2>
-                      <p className="trend-up"><i className="fa-solid fa-arrow-trend-up"></i> +24% vs last month</p>
-                    </div>
-
-                    <div className="financial-card glass-morphism">
-                      <div className="fin-icon emerald"><i className="fa-solid fa-chart-pie"></i></div>
-                      <h4>Average Stay Value</h4>
-                      <h2>₹{bookings.length > 0 ? Math.round(totalRevenue / bookings.length).toLocaleString('en-IN') : 0}</h2>
-                      <p><i className="fa-solid fa-circle-check"></i> Based on {totalBookings} guest stays</p>
-                    </div>
-
-                    <div className="financial-card glass-morphism">
-                      <div className="fin-icon blue"><i className="fa-solid fa-building-columns"></i></div>
-                      <h4>Bank Payout Status</h4>
-                      <h2>₹{totalRevenue.toLocaleString('en-IN')}</h2>
-                      <p className="trend-up"><i className="fa-solid fa-shield-halved"></i> Direct Bank Transfer Active</p>
-                    </div>
-                  </div>
-
-                  {/* Property-by-Property Financial Breakdown */}
-                  <div className="financial-breakdown-card glass-morphism">
-                    <div className="breakdown-header">
-                      <h3><i className="fa-solid fa-money-bill-trend-up"></i> Payout & Property Revenue Distribution</h3>
-                      <span className="payout-status-badge"><i className="fa-solid fa-circle-check"></i> Auto-settlement active</span>
-                    </div>
-
-                    <div className="payout-list">
-                      {properties.length === 0 ? (
-                        <p className="no-data-text">No property revenue records available.</p>
-                      ) : (
-                        properties.map(p => {
-                          const propBookings = bookings.filter(b => b.property?._id === p._id || b.property?.name === p.name);
-                          const propRevenue = propBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-                          const occupancy = Math.min(100, Math.round((propBookings.length / 5) * 100));
-                          return (
-                            <div key={p._id} className="payout-row-fancy">
-                              <div className="payout-prop-thumb">
-                                {p.photos && p.photos.length > 0 ? (
-                                  <img src={p.photos[0]} alt={p.name} />
-                                ) : (
-                                  <div className="no-img"><i className="fa-solid fa-building"></i></div>
-                                )}
-                              </div>
-
-                              <div className="payout-prop-info">
-                                <h4>{p.name}</h4>
-                                <p><i className="fa-solid fa-location-dot"></i> {p.location} • <span className="type-tag">{p.type}</span></p>
-                                <div className="occupancy-bar-wrap">
-                                  <div className="occupancy-progress" style={{ width: `${occupancy || 20}%` }}></div>
-                                </div>
-                              </div>
-
-                              <div className="payout-stats-group">
-                                <div className="stat-unit">
-                                  <span className="label">Total Stays</span>
-                                  <span className="val">{propBookings.length} Bookings</span>
-                                </div>
-                                <div className="stat-unit">
-                                  <span className="label">Gross Earnings</span>
-                                  <span className="val gold">₹{propRevenue.toLocaleString('en-IN')}</span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* TAB 4: PAYMENTS & REPORTS */}
+              {activeTab === 'analytics' && <OwnerFinance />}
 
               {/* TAB: CARETAKER HUB (TASKS & REQUESTS IN ONE PAGE) */}
               {activeTab === 'caretakers' && (

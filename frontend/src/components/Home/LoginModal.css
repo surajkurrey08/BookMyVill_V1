@@ -1,0 +1,316 @@
+/* ==========================================================================
+   Log In / Register popup — matches the Home page's luxury styling.
+   All selectors prefixed .hp-modal- so nothing leaks into other pages.
+   ========================================================================== */
+
+.hp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(15, 33, 24, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: hp-modal-fade 0.25s ease;
+}
+
+.hp-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 20px;
+  padding: 34px 28px 26px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+  font-family: var(--hp-sans, 'Outfit', sans-serif);
+  color: var(--hp-ink, #1d1d1b);
+  animation: hp-modal-pop 0.3s cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+.hp-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--hp-cream, #f8f4ec);
+  color: var(--hp-ink, #1d1d1b);
+  display: grid;
+  place-items: center;
+  font-size: 0.95rem;
+}
+
+.hp-modal-close:hover {
+  background: var(--hp-line, #e7e0d2);
+}
+
+.hp-modal-head {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.hp-modal-head .hp-eyebrow {
+  display: block;
+}
+
+.hp-modal-head h3 {
+  margin-top: 4px;
+  font-family: var(--hp-serif, 'Playfair Display', serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--hp-ink, #1d1d1b);
+}
+
+.hp-modal-tabs {
+  display: flex;
+  background: var(--hp-cream, #f8f4ec);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 22px;
+}
+
+.hp-modal-tabs button {
+  flex: 1;
+  padding: 9px 0;
+  border-radius: 999px;
+  background: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--hp-muted, #6e6c64);
+}
+
+.hp-modal-tabs button.is-active {
+  background: var(--hp-green-700, #1f4d36);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(31, 77, 54, 0.3);
+}
+
+.hp-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hp-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.hp-modal-field > span {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--hp-muted, #6e6c64);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.hp-modal-field input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--hp-line, #e7e0d2);
+  font-family: inherit;
+  font-size: 0.94rem;
+  color: var(--hp-ink, #1d1d1b);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.hp-modal-field input:focus {
+  border-color: var(--hp-green-700, #1f4d36);
+}
+
+.hp-modal-phone-row {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--hp-line, #e7e0d2);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.hp-modal-phone-row:focus-within {
+  border-color: var(--hp-green-700, #1f4d36);
+}
+
+.hp-modal-phone-prefix {
+  padding: 11px 10px 11px 14px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--hp-ink, #1d1d1b);
+  border-right: 1.5px solid var(--hp-line, #e7e0d2);
+}
+
+.hp-modal-phone-row input {
+  border: none;
+  flex: 1;
+  padding: 11px 14px;
+  font-size: 0.94rem;
+  outline: none;
+  font-family: inherit;
+}
+
+.hp-modal-password-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.hp-modal-password-row input {
+  flex: 1;
+  padding-right: 40px;
+}
+
+.hp-modal-eye {
+  position: absolute;
+  right: 10px;
+  background: none;
+  color: var(--hp-muted, #6e6c64);
+  font-size: 0.95rem;
+  padding: 4px;
+}
+
+.hp-modal-phone-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--hp-cream, #f8f4ec);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.hp-modal-phone-chip i {
+  color: var(--hp-green-700, #1f4d36);
+  margin-right: 6px;
+}
+
+.hp-modal-phone-chip button {
+  background: none;
+  color: var(--hp-green-700, #1f4d36);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+
+.hp-modal-dev-otp {
+  background: rgba(217, 165, 32, 0.12);
+  border: 1px dashed var(--hp-gold, #d9a520);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  color: var(--hp-ink-2, #3b3b37);
+  line-height: 1.5;
+}
+
+.hp-modal-dev-otp i {
+  color: var(--hp-gold-deep, #b9861a);
+  margin-right: 4px;
+}
+
+.hp-modal-dev-otp strong {
+  letter-spacing: 1px;
+  font-size: 0.95rem;
+}
+
+.hp-modal-resend {
+  align-self: flex-start;
+  background: none;
+  color: var(--hp-green-700, #1f4d36);
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: -6px;
+}
+
+.hp-modal-resend:disabled {
+  color: var(--hp-muted, #6e6c64);
+  cursor: default;
+}
+
+.hp-modal-error {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(214, 40, 40, 0.08);
+  color: #c0392b;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.hp-modal-submit {
+  margin-top: 4px;
+  padding: 13px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--hp-gold-light, #f0c24b), var(--hp-gold, #d9a520));
+  color: var(--hp-green-950, #0f2118);
+  font-weight: 700;
+  font-size: 0.92rem;
+  box-shadow: 0 8px 20px rgba(217, 165, 32, 0.35);
+}
+
+.hp-modal-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(217, 165, 32, 0.45);
+}
+
+.hp-modal-submit:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.hp-modal-switch {
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--hp-muted, #6e6c64);
+  margin-top: 4px;
+}
+
+.hp-modal-switch button {
+  background: none;
+  color: var(--hp-green-700, #1f4d36);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.hp-modal-footnote {
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--hp-line, #e7e0d2);
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--hp-muted, #6e6c64);
+}
+
+.hp-modal-footnote a {
+  color: var(--hp-green-700, #1f4d36);
+  font-weight: 700;
+}
+
+@keyframes hp-modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes hp-modal-pop {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-modal-overlay, .hp-modal-card { animation: none; }
+}
+
+@media (max-width: 480px) {
+  .hp-modal-card { padding: 28px 20px 20px; border-radius: 16px; }
+}

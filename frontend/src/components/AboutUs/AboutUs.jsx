@@ -1,83 +1,121 @@
-import React from 'react';
-import Navbar from '../Navbar/Navbar';
-import Footer from '../Footer/Footer';
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import HomeHeader from '../Home/HomeHeader';
+import HomeFooter from '../Home/HomeFooter';
+import '../Home/Home.css';
 import './AboutUs.css';
-import bgImage from '../../assets/hillstationhome (1).jpg';
+import heroImage from '../../assets/hero_page1.png';
+import storyImage from '../../assets/home/lakeside-resort.jpg';
+import journeyImage from '../../assets/Home_page3.png';
+import useSiteHero from '../../hooks/useSiteHero';
+
+const highlights = [
+  { icon: 'fa-user-group', value: '500+', label: 'Happy Travelers' },
+  { icon: 'fa-house', value: '120+', label: 'Premium Stays' },
+  { icon: 'fa-clock', value: '5+', label: 'Years Experience' },
+  { icon: 'fa-star', value: '4.8', label: 'Average Rating' },
+];
+
+const values = [
+  { icon: 'fa-shield-halved', title: 'Quality', description: 'Handpicked properties for the best experience' },
+  { icon: 'fa-handshake', title: 'Trust', description: 'Transparent and reliable services' },
+  { icon: 'fa-heart', title: 'Customer First', description: 'Your happiness is our priority' },
+  { icon: 'fa-leaf', title: 'Sustainability', description: 'Promoting responsible and eco-friendly travel' },
+];
 
 const AboutUs = () => {
+  const currentHeroImage = useSiteHero('about', heroImage);
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   return (
-    <div className="aboutus-page">
-      <Navbar />
-
-      <div className="aboutus-bg">
-        <img src={bgImage} alt="Background" />
-        <div className="aboutus-overlay"></div>
-      </div>
-
-      <div className="aboutus-container">
-        <div className="aboutus-header">
-          <h1>About Mahabaleshwar Luxury Stays</h1>
-          <p>Redefining hill station hospitality with handpicked private villas, boutique heritage estates, and bespoke local experiences.</p>
-        </div>
-
-        <div className="aboutus-main-card">
-          <div className="aboutus-story-section">
-            <h2><i className="fa-solid fa-gem" style={{ color: '#d4af37', marginRight: '10px' }}></i> Our Story</h2>
-            <p>
-              Founded in the serene Western Ghats, <strong>Mahabaleshwar Luxury Stays</strong> was born from a passion for preserving colonial charm while delivering modern 5-star comfort. We connect discerning travelers with private luxury villas, heritage bungalows, and hillside retreats nestled among strawberry fields and misty mountain peaks.
-            </p>
-            <p>
-              Every property listed on our platform is personally verified for architectural excellence, private pool standards, hygiene, and authentic Mahabaleshwar hospitality.
-            </p>
+    <div className="hp-root aboutus-page">
+      <HomeHeader />
+      <main>
+        <section className="aboutus-hero" aria-labelledby="aboutus-title">
+          <img className="aboutus-hero-image" src={currentHeroImage} alt="" />
+          <div className="aboutus-hero-shade" />
+          <div className="hp-container aboutus-hero-content">
+            <nav className="aboutus-breadcrumb" aria-label="Breadcrumb">
+              <Link to="/">Home</Link><span aria-hidden="true">›</span><span>About Us</span>
+            </nav>
+            <h1 id="aboutus-title">About <span>BookMyVilla</span></h1>
+            <p>Your trusted travel partner for unforgettable stays and experiences in Mahabaleshwar.</p>
           </div>
+        </section>
 
-          <div className="aboutus-stats-grid">
-            <div className="stat-item">
-              <span className="stat-number">50+</span>
-              <span className="stat-label">Luxury Stays Listed</span>
+        <section className="aboutus-story" aria-labelledby="aboutus-story-title">
+          <div className="hp-container aboutus-story-grid">
+            <div className="aboutus-story-copy">
+              <p className="aboutus-overline">Our Story</p>
+              <h2 id="aboutus-story-title">Creating Memorable<br />Travel Experiences</h2>
+              <p>At BookMyVilla, we believe travel is more than just a journey — it's about creating memories that last a lifetime. We started with a simple vision: to make it easy for travelers to find the perfect stay in the beautiful hills of Mahabaleshwar.</p>
+              <p>From luxurious villas to cozy homestays, we handpick properties that offer comfort, authentic experiences and the breathtaking beauty of nature.</p>
             </div>
-            <div className="stat-item">
-              <span className="stat-number">12,500+</span>
-              <span className="stat-label">Happy Guests</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">4.9 ★</span>
-              <span className="stat-label">Average Guest Rating</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">100%</span>
-              <span className="stat-label">Verified Caretakers</span>
+            <div className="aboutus-story-visual">
+              <img src={storyImage} alt="Hillside villas and an infinity pool at sunset" loading="lazy" />
             </div>
           </div>
+          <div className="hp-container">
+            <div className="aboutus-stats" aria-label="BookMyVilla at a glance">
+              {highlights.map((item) => (
+                <div className="aboutus-stat" key={item.label}>
+                  <i className={`fa-solid ${item.icon}`} aria-hidden="true" />
+                  <strong>{item.value}{item.label === 'Average Rating' && <span className="aboutus-stat-star">★</span>}</strong>
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-          <div style={{ marginTop: '40px' }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: '#ffffff', marginBottom: '20px' }}>
-              Why Choose Mahabaleshwar Luxury Stays
-            </h3>
+        <section className="aboutus-purpose" aria-label="Our purpose">
+          <div className="hp-container aboutus-purpose-grid">
+            <article className="aboutus-purpose-item">
+              <span className="aboutus-purpose-icon"><i className="fa-solid fa-map" aria-hidden="true" /></span>
+              <div>
+                <p className="aboutus-overline">Our Mission</p>
+                <h2>Why We Do What We Do</h2>
+                <p>To make travel simple, comfortable and memorable by providing the best stays, local experiences and personalized support for every traveler.</p>
+              </div>
+            </article>
+            <article className="aboutus-purpose-item">
+              <span className="aboutus-purpose-icon"><i className="fa-solid fa-bullseye" aria-hidden="true" /></span>
+              <div>
+                <p className="aboutus-overline">Our Vision</p>
+                <h2>Our Vision</h2>
+                <p>To be the most trusted travel platform for hill destinations, known for quality stays, authentic experiences and exceptional customer service.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section className="aboutus-values" aria-labelledby="aboutus-values-title">
+          <div className="hp-container">
+            <p className="aboutus-overline">Our Values</p>
+            <h2 id="aboutus-values-title">What We Stand For</h2>
             <div className="aboutus-values-grid">
-              <div className="value-card">
-                <i className="fa-solid fa-house-circle-check"></i>
-                <h4>Handpicked Estates</h4>
-                <p>Only top-tier villas with private infinity pools, valley views, and manicured lawns make it to our catalog.</p>
-              </div>
-
-              <div className="value-card">
-                <i className="fa-solid fa-user-shield"></i>
-                <h4>Dedicated Caretakers</h4>
-                <p>24/7 on-site certified caretakers ensure seamless check-ins, home-cooked Maharashtrian meals, and property care.</p>
-              </div>
-
-              <div className="value-card">
-                <i className="fa-solid fa-utensils"></i>
-                <h4>Local Culinary Delights</h4>
-                <p>Enjoy fresh farm-to-table strawberry desserts, wood-fired barbecues, and traditional local cuisine prepared by expert chefs.</p>
-              </div>
+              {values.map((value) => (
+                <article className="aboutus-value-card" key={value.title}>
+                  <i className={`fa-solid ${value.icon}`} aria-hidden="true" />
+                  <h3>{value.title}</h3>
+                  <p>{value.description}</p>
+                </article>
+              ))}
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <Footer />
+        <section className="aboutus-journey" aria-labelledby="aboutus-journey-title">
+          <img src={journeyImage} alt="" loading="lazy" />
+          <div className="aboutus-journey-shade" />
+          <div className="hp-container aboutus-journey-content">
+            <h2 id="aboutus-journey-title">Let’s Explore Together</h2>
+            <p>Join thousands of happy travelers who have experienced the magic of Mahabaleshwar with us.</p>
+            <Link to="/explore" className="aboutus-journey-cta">Explore Stays <i className="fa-solid fa-arrow-right" aria-hidden="true" /></Link>
+          </div>
+        </section>
+      </main>
+      <HomeFooter />
     </div>
   );
 };

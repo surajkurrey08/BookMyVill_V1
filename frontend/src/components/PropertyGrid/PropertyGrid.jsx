@@ -265,7 +265,7 @@ const SplitPropertyCard = ({ property, isSelected, isHovered, onSelect, onHover,
 const getPropertyTagBadge = (prop) => {
   if (prop?.tag) return prop.tag.toUpperCase();
   if (prop?.type) return `${prop.type.toUpperCase()} COLLECTION`;
-  return 'MAHABALESHWAR LUXURY';
+  return 'BOOKMYVILLA LUXURY';
 };
 
 const getPropertyScriptTitle = (prop) => {

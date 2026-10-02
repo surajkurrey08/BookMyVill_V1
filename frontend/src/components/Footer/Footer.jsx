@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="footer-container">
         <div className="footer-brand">
           <div className="logo">
-            <span className="logo-text">Mahabaleshwar</span>
+            <span className="logo-text">BookMyVilla</span>
             <span className="logo-subtext">LUXURY STAYS</span>
           </div>
           <p>Curating India's most extraordinary hill station resorts, private villas, and boutique stay experiences.</p>
@@ -42,7 +42,7 @@ const Footer = () => {
           <div className="link-group">
             <h4>Contact & Support</h4>
             <p className="contact-item"><i className="fa-solid fa-phone" style={{ marginRight: '6px' }}></i> +91 98765 43210</p>
-            <p className="contact-item"><i className="fa-solid fa-envelope" style={{ marginRight: '6px' }}></i> concierge@mahabaleshwarstays.com</p>
+            <p className="contact-item"><i className="fa-solid fa-envelope" style={{ marginRight: '6px' }}></i> concierge@bookmyvilla.com</p>
             <p className="contact-item"><i className="fa-solid fa-location-dot" style={{ marginRight: '6px' }}></i> Mahabaleshwar, Maharashtra 412806</p>
           </div>
         </div>
@@ -50,7 +50,7 @@ const Footer = () => {
 
       <div className="footer-bottom">
         <div className="footer-bottom-container">
-          <p>&copy; 2026 Mahabaleshwar Luxury Stays. All rights reserved.</p>
+          <p>&copy; 2026 BookMyVilla. All rights reserved.</p>
           <div className="footer-legal">
             <a href="#privacy">Privacy Policy</a>
             <a href="#terms">Terms of Service</a>

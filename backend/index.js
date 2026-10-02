@@ -26,7 +26,12 @@ app.use((req, res, next) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/properties', require('./routes/property'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/site-heroes', require('./routes/siteHeroes'));
+app.use('/api/bookings', require('./routes/payment'));
 app.use('/api/bookings', require('./routes/booking'));
+app.use('/api/owner-pms', require('./routes/ownerPms'));
+app.use('/api/owner-ops', require('./routes/ownerOps'));
+app.use('/api/owner-finance', require('./routes/ownerFinance'));
 app.use('/api/caretaker', require('./routes/caretaker'));
 app.use('/api/partner', require('./routes/partner'));
 app.use('/api/inventory', require('./routes/inventory'));
@@ -88,6 +93,14 @@ async function connectDB() {
     console.log('Connecting to primary MongoDB URI:', primaryUri);
     await mongoose.connect(primaryUri, { serverSelectionTimeoutMS: 2000, bufferCommands: false });
     console.log('✅ Primary MongoDB Connected Successfully.');
+    // Rebuild indexes so the User.email unique+sparse change (needed for
+    // phone-only guest accounts) replaces any old non-sparse index already
+    // on disk from before this field became optional.
+    try {
+      await User.syncIndexes();
+    } catch (idxErr) {
+      console.error('User index sync notice:', idxErr.message);
+    }
     await seedAdminUser();
   } catch (err) {
     console.log('Local DB Connection Notice:', err.message);

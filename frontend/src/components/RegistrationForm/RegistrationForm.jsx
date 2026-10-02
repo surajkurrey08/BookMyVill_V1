@@ -179,8 +179,6 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
 
     setShowErrorSummary(false);
     setIsSubmitting(true);
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
-
     try {
       const cleanPrice = formData.price ? parseInt(formData.price.toString().replace(/[^0-9]/g, ''), 10) : 10000;
       const payload = {
@@ -205,42 +203,16 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
         body: JSON.stringify(payload)
       });
 
-      // Fallback if running server hasn't restarted yet
-      if (resPartner.status === 404) {
-        resPartner = await fetch(`${API_BASE_URL}/api/admin/partner-apply`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+      if (!resPartner.ok) {
+        const errorData = await resPartner.json().catch(() => ({}));
+        throw new Error(errorData.msg || 'Could not submit your application. Please try again.');
       }
 
-      // 2. If token exists, also submit property to properties endpoint
-      if (token) {
-        await fetch(`${API_BASE_URL}/api/properties/add`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'x-auth-token': token
-          },
-          body: JSON.stringify({
-            name: formData.propertyName,
-            type: formData.propertyType,
-            location: formData.location,
-            price: isNaN(cleanPrice) || cleanPrice <= 0 ? 10000 : cleanPrice,
-            mapLink: formData.mapLink,
-            amenities: formData.amenities || [],
-            photos: formData.photos,
-            videos: formData.videos,
-            description: formData.description
-          })
-        });
-      }
-
-      // Do NOT set tokens or log in unauthenticated users without password creation and admin approval
-      setSubmittedMsg('Property listing submitted successfully! Your application is currently pending Admin Approval. Once the Admin accepts your property, you will be able to set your password and log in to the Property Owner Portal.');
+      setSubmittedMsg('Property listing submitted successfully! Your application is pending Admin Approval. Once approved, the Admin will give you a one-time link to set your password. Use your application email to sign in to the Property Owner Portal.');
     } catch (err) {
       console.error('Registration error:', err);
-      setSubmittedMsg('Property listing submitted successfully! Your application is currently pending Admin Approval. Once the Admin accepts your property, you will be able to log in.');
+      setErrors(prev => ({ ...prev, submission: err.message || 'Could not submit your application. Please try again.' }));
+      setShowErrorSummary(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -329,9 +301,9 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
               {/* TOP VALIDATION SUMMARY ALERT */}
               {showErrorSummary && Object.keys(errors).length > 0 && (
                 <div className="form-error-banner fade-in">
-                  <h4><i className="fa-solid fa-triangle-exclamation"></i> Host Verification Validation Required</h4>
+                  <h4><i className="fa-solid fa-triangle-exclamation"></i> {errors.submission ? 'Submission Failed' : 'Host Verification Validation Required'}</h4>
                   <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem' }}>
-                    Please complete and correct the following mandatory verification fields:
+                    {errors.submission ? 'Your application could not be submitted:' : 'Please complete and correct the following mandatory verification fields:'}
                   </p>
                   <ul>
                     {Object.entries(errors).map(([key, errText]) => (

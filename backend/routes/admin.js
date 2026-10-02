@@ -1,4 +1,7 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const router = express.Router();
 const User = require('../models/User');
 const Property = require('../models/Property');
@@ -12,6 +15,21 @@ const adminAuth = (req, res, next) => {
     return res.status(403).json({ msg: 'Access denied. Admins only.' });
   }
   next();
+};
+
+// Credential setup links require a verified admin account, not the legacy
+// auth middleware's development fallback.
+const strictAdminAuth = async (req, res, next) => {
+  try {
+    const token = req.header('x-auth-token');
+    if (!token) return res.status(401).json({ msg: 'Admin login required.' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026');
+    const admin = await User.findById(decoded.id).select('role');
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ msg: 'Admins only.' });
+    next();
+  } catch (err) {
+    res.status(401).json({ msg: 'Admin session expired. Please sign in again.' });
+  }
 };
 
 const dummyUsersList = [
@@ -29,22 +47,6 @@ const dummyPropertyList = [
     price: 18500,
     status: 'approved',
     owner: { name: 'Saroj Naydu', email: 'owner@mahabaleshwarstays.com' }
-  }
-];
-
-const dummyPartnerApps = [
-  {
-    _id: 'pa1',
-    fullName: 'Rajesh Sharma (Property Owner)',
-    email: 'rajesh.sharma@mahabaleshwarvillas.com',
-    phone: '+91 98234 56789',
-    partnerType: 'Property Owner',
-    propertyName: 'Royal Mist Luxury Villa',
-    propertyType: 'Villa',
-    city: 'Mahabaleshwar',
-    price: '18500',
-    message: '4 Bedroom Luxury Villa with Heated Private Pool, Valley View & BBQ Lawn.',
-    status: 'pending'
   }
 ];
 
@@ -77,16 +79,14 @@ router.get('/properties', auth, adminAuth, async (req, res) => {
 // Get all Join Us Partner applications (Admin only)
 router.get('/partner-applications', auth, adminAuth, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
-    return res.json(dummyPartnerApps);
+    return res.status(503).json({ msg: 'Database unavailable. Please try again.' });
   }
   try {
-    let applications = await PartnerApplication.find().sort({ appliedAt: -1 });
-    if (applications.length === 0) {
-      applications = dummyPartnerApps;
-    }
+    const applications = await PartnerApplication.find().sort({ appliedAt: -1 });
     res.json(applications);
   } catch (err) {
-    res.json(dummyPartnerApps);
+    console.error('Error fetching partner applications:', err);
+    res.status(500).json({ msg: 'Failed to load partner applications.' });
   }
 });
 router.post('/partner-apply', async (req, res) => {
@@ -151,32 +151,30 @@ router.put('/partner-application/:id/status', auth, adminAuth, async (req, res) 
   try {
     const { status } = req.body; // 'approved' or 'rejected'
     const id = req.params.id;
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ msg: 'Invalid application status.' });
+    }
 
     if (id.startsWith('dummy-')) {
       return res.json({ _id: id, status });
     }
 
-    let application;
-    try {
-      application = await PartnerApplication.findByIdAndUpdate(id, { status }, { new: true });
-    } catch (dbErr) {
-      application = { _id: id, status };
-    }
+    const application = await PartnerApplication.findByIdAndUpdate(id, { status }, { new: true });
+    if (!application) return res.status(404).json({ msg: 'Application not found.' });
     
     let approvedUser = null;
     // Create/Enable Owner Credentials IF AND ONLY IF Admin accepted the matching email
-    if (status === 'approved' && application && application.email) {
+    if (status === 'approved' && ['Property Owner', 'Villa Host'].includes(application.partnerType) && application.email) {
       try {
         approvedUser = await User.findOne({ email: application.email.toLowerCase().trim() });
         if (!approvedUser) {
-          const bcrypt = require('bcryptjs');
-          const salt = await bcrypt.genSalt(10);
-          const hashedPassword = await bcrypt.hash('owner123', salt);
           approvedUser = new User({
             name: application.fullName,
             email: application.email.toLowerCase().trim(),
             phone: application.phone || '',
-            password: hashedPassword,
+            // An unusable random placeholder until the owner sets a password.
+            // UserSchema hashes it once on save.
+            password: crypto.randomBytes(32).toString('hex'),
             role: 'owner'
           });
           await approvedUser.save();
@@ -188,6 +186,7 @@ router.put('/partner-application/:id/status', auth, adminAuth, async (req, res) 
         }
       } catch (userErr) {
         console.error('Error creating owner credentials for accepted email:', userErr);
+        throw userErr;
       }
     }
 
@@ -230,7 +229,44 @@ router.put('/partner-application/:id/status', auth, adminAuth, async (req, res) 
     
     res.json(application || { _id: id, status });
   } catch (err) {
-    res.json({ _id: req.params.id, status: req.body.status || 'approved' });
+    console.error('Partner application status error:', err);
+    res.status(500).json({ msg: 'Could not update partner application.' });
+  }
+});
+
+// Give an approved owner a one-time password setup link for manual handoff.
+router.post('/partner-application/:id/setup-link', strictAdminAuth, async (req, res) => {
+  try {
+    const application = await PartnerApplication.findById(req.params.id);
+    if (!application || application.status !== 'approved' ||
+        !['Property Owner', 'Villa Host'].includes(application.partnerType)) {
+      return res.status(400).json({ msg: 'Approve the property owner application first.' });
+    }
+
+    const email = application.email.toLowerCase().trim();
+    let owner = await User.findOne({ email });
+    if (!owner) {
+      owner = new User({
+        name: application.fullName,
+        email,
+        phone: application.phone || '',
+        password: crypto.randomBytes(32).toString('hex'),
+        role: 'owner'
+      });
+    } else if (owner.role !== 'owner') {
+      owner.role = 'owner';
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    owner.ownerSetupTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    owner.ownerSetupExpiresAt = expiresAt;
+    await owner.save();
+
+    res.json({ email, token, expiresAt });
+  } catch (err) {
+    console.error('Owner setup link error:', err);
+    res.status(500).json({ msg: 'Could not create owner setup link.' });
   }
 });
 

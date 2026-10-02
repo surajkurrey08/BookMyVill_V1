@@ -5,7 +5,7 @@ const Property = require('../models/Property');
 const auth = require('../middleware/auth');
 
 // Add Property (Protected - Owners only)
-router.post('/add', auth, async (req, res) => {
+router.post('/add', require('../middleware/ownerAuth'), async (req, res) => {
   if (req.user.role !== 'owner') return res.status(403).json({ msg: 'Access denied' });
 
   try {
@@ -22,9 +22,7 @@ router.post('/add', auth, async (req, res) => {
       videos: videos || [],
       status: 'pending' // Enforce Admin Approval before publishing to public website
     });
-    if (mongoose.connection.readyState === 1) {
-      await newProperty.save();
-    }
+    await newProperty.save();
     res.json(newProperty);
   } catch (err) {
     res.status(500).send('Server error');
@@ -32,74 +30,16 @@ router.post('/add', auth, async (req, res) => {
 });
 
 // Get all properties for an owner
-router.get('/my-properties', auth, async (req, res) => {
+router.get('/my-properties', require('../middleware/ownerAuth'), async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
-    return res.json([
-      {
-        _id: 'prop-101',
-        name: 'Royal Mist Villa Estate',
-        type: 'Luxury Villa',
-        location: 'Mahabaleshwar Peak View',
-        price: 18500,
-        mapLink: '',
-        amenities: ['Private Swimming Pool', 'Free High-Speed Wi-Fi', 'Mountain & Valley View', 'Complimentary Breakfast'],
-        photos: ['https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1000&q=80'],
-        videos: [],
-        status: 'approved',
-        owner: req.user?.id || 'owner123'
-      }
-    ]);
+    return res.status(503).json({ msg: 'Database unavailable.' });
   }
   try {
-    const User = require('../models/User');
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ msg: 'User not found' });
-
-    const cleanEmail = (user.email || '').toLowerCase().trim();
-
-    // 1. Find properties in Property collection matching owner ID OR matching owner's email
-    let properties = await Property.find({
-      $or: [
-        { owner: req.user.id },
-        { ownerEmail: cleanEmail }
-      ]
-    });
-
-    // Convert Mongoose documents to plain objects if needed
-    properties = properties.map(p => p.toObject ? p.toObject() : p);
-
-    // 2. Also check PartnerApplications submitted with this owner's email
-    const PartnerApplication = require('../models/PartnerApplication');
-    const partnerApps = await PartnerApplication.find({
-      email: { $regex: new RegExp('^' + cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') }
-    });
-
-    // Map any partner application property not yet present in properties array
-    partnerApps.forEach(app => {
-      if (app.propertyName && app.propertyName !== 'N/A') {
-        const exists = properties.some(p => p.name?.toLowerCase().trim() === app.propertyName?.toLowerCase().trim());
-        if (!exists) {
-          properties.push({
-            _id: app._id,
-            name: app.propertyName,
-            type: app.propertyType || 'Villa',
-            location: app.city || 'Mahabaleshwar',
-            price: app.price ? (typeof app.price === 'number' ? app.price : parseInt(app.price) || 12000) : 12000,
-            mapLink: app.mapLink || '',
-            amenities: ['Private Pool', 'Valley View', 'Wi-Fi', 'Garden'],
-            photos: app.photos || [],
-            videos: app.videos || [],
-            status: app.status || 'pending',
-            owner: user._id
-          });
-        }
-      }
-    });
-
+    const properties = await Property.find({ owner: req.user.id }).sort({ createdAt: -1 });
     res.json(properties);
   } catch (err) {
     console.error('Error fetching owner properties:', err);
-    res.json([]);
+    res.status(500).json({ msg: 'Could not load owner properties.' });
   }
 });
 
@@ -168,7 +108,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update property (Protected - Owner or Admin)
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', require('../middleware/accountAuth'), async (req, res) => {
   try {
     const mongoose = require('mongoose');
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -177,50 +117,14 @@ router.put('/:id', auth, async (req, res) => {
 
     let property = await Property.findById(req.params.id);
 
-    // If not in Property collection, check PartnerApplication model and auto-upsert into Property
-    if (!property) {
-      const PartnerApplication = require('../models/PartnerApplication');
-      const partnerApp = await PartnerApplication.findById(req.params.id);
-      if (partnerApp) {
-        const { name, type, location, price, mapLink, amenities, photos, videos } = req.body;
-        property = new Property({
-          owner: req.user.id,
-          name: name || partnerApp.propertyName,
-          type: type || partnerApp.propertyType || 'Villa',
-          location: location || partnerApp.city || 'Mahabaleshwar',
-          price: price ? Math.max(1, Math.abs(parseInt(price) || 10000)) : (partnerApp.price ? parseInt(partnerApp.price) : 10000),
-          mapLink: mapLink !== undefined ? mapLink : (partnerApp.mapLink || ''),
-          amenities: amenities !== undefined ? (Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map(s => s.trim()).filter(Boolean) : [])) : ['Private Pool', 'Valley View', 'Wi-Fi', 'Garden'],
-          photos: photos || partnerApp.photos || [],
-          videos: videos || partnerApp.videos || [],
-          status: partnerApp.status || 'pending'
-        });
-        await property.save();
-
-        partnerApp.propertyName = property.name;
-        partnerApp.city = property.location;
-        await partnerApp.save();
-
-        return res.json(property);
-      }
-    }
-
     if (!property) return res.status(404).json({ msg: 'Property not found' });
-
-    const User = require('../models/User');
-    const user = await User.findById(req.user.id);
-    const cleanEmail = user ? user.email.toLowerCase().trim() : '';
 
     let ownerIdStr = '';
     if (property.owner) {
       ownerIdStr = property.owner._id ? property.owner._id.toString() : property.owner.toString();
     }
 
-    const isOwnerOrAdmin = 
-      req.user.role === 'admin' ||
-      req.user.role === 'owner' ||
-      ownerIdStr === req.user.id ||
-      (property.ownerEmail && property.ownerEmail.toLowerCase() === cleanEmail);
+    const isOwnerOrAdmin = req.user.role === 'admin' || (req.user.role === 'owner' && ownerIdStr === req.user.id);
 
     if (!isOwnerOrAdmin) {
       return res.status(403).json({ msg: 'Not authorized to update this property' });
@@ -247,7 +151,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // Delete property (Protected - Owner or Admin)
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', require('../middleware/accountAuth'), async (req, res) => {
   try {
     const mongoose = require('mongoose');
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -256,21 +160,17 @@ router.delete('/:id', auth, async (req, res) => {
 
     let property = await Property.findById(req.params.id);
 
-    if (!property) {
-      const PartnerApplication = require('../models/PartnerApplication');
-      const partnerApp = await PartnerApplication.findById(req.params.id);
-      if (partnerApp) {
-        await PartnerApplication.findByIdAndDelete(req.params.id);
-        return res.json({ msg: 'Property deleted successfully' });
-      }
-    }
-
     if (!property) return res.status(404).json({ msg: 'Property not found' });
 
     if (property.owner && property.owner.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ msg: 'Not authorized to delete this property' });
     }
 
+    const Booking = require('../models/Booking');
+    const Room = require('../models/Room');
+    if (await Booking.exists({ property: property._id }) || await Room.exists({ property: property._id })) {
+      return res.status(409).json({ msg: 'Remove rooms and resolve bookings before deleting this property.' });
+    }
     await Property.findByIdAndDelete(req.params.id);
     res.json({ msg: 'Property deleted successfully' });
   } catch (err) {

@@ -226,7 +226,7 @@ const SignIn = () => {
       <div className="signin-card glass-morphism fade-in">
         <div className="signin-header">
           <div className="logo">
-            <span className="logo-text">MAHABLESHWAR</span>
+            <span className="logo-text">BookMyVilla</span>
             <span className="logo-subtext">LUXURY RETREATS</span>
           </div>
           <h2>Welcome Back</h2>

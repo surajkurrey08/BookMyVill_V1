@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import BrandLogo from '../Brand/BrandLogo';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -8,11 +9,23 @@ const Navbar = () => {
   const [menuMode, setMenuMode] = useState(() => localStorage.getItem('navbarMode') || 'auto-hide');
   const [user, setUser] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const profileRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    if (!showProfileDropdown) return undefined;
+    const onClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) setShowProfileDropdown(false);
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [showProfileDropdown]);
+
+  useEffect(() => {
     setIsMobileMenuOpen(false);
+    setShowProfileDropdown(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -98,12 +111,8 @@ const Navbar = () => {
       <header className={`navbar-header ${isScrolled ? 'scrolled' : ''} ${isNavHidden ? 'hidden-nav' : ''}`}>
         <div className="navbar-container">
           <Link to="/" className="logo-link">
-            <div className="logo">
-              <span className="logo-text">Mahabaleshwar</span>
-              <span className="logo-subtext">LUXURY STAYS</span>
-            </div>
+            <BrandLogo />
           </Link>
-
 
           <nav className={`nav-links-center ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
             <Link to="/" onClick={() => { scrollToSection('home'); setIsMobileMenuOpen(false); }}>
@@ -115,18 +124,20 @@ const Navbar = () => {
             <Link to="/packages" onClick={() => setIsMobileMenuOpen(false)}>
               Packages
             </Link>
-            {(!user || (user.role !== 'user' && user.role !== 'traveller')) && (
-              <Link to="/join-us" onClick={() => setIsMobileMenuOpen(false)}>
-                Join Us
-              </Link>
-            )}
             <Link to="/about-us" onClick={() => setIsMobileMenuOpen(false)}>
               About Us
             </Link>
           </nav>
 
           <div className="nav-right-container">
-            <button 
+            {(!user || (user.role !== 'user' && user.role !== 'traveller')) && (
+              <Link to="/join-us" className="navbar-join-btn" onClick={() => setIsMobileMenuOpen(false)}>
+                <i className="fa-solid fa-handshake"></i>
+                <span>Join Us</span>
+              </Link>
+            )}
+
+            <button
               type="button"
               className="mobile-hamburger-btn"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -135,8 +146,8 @@ const Navbar = () => {
               <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
             </button>
             {user ? (
-              <div className="user-profile-menu-container" style={{ position: 'relative' }}>
-                <button 
+              <div className="user-profile-menu-container" style={{ position: 'relative' }} ref={profileRef}>
+                <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                   className="profile-pill-btn"
                   style={{

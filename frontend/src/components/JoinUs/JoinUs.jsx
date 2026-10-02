@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import './JoinUs.css';
 import bgImage from '../../assets/hillstationhome (1).jpg';
 import { API_BASE_URL } from '../../config';
+import useSiteHero from '../../hooks/useSiteHero';
 
 const JoinUs = () => {
-  const navigate = useNavigate();
+  const currentHeroImage = useSiteHero('join', bgImage);
   const [filter, setFilter] = useState('all');
   const [livePartners, setLivePartners] = useState([]);
 
@@ -24,7 +25,7 @@ const JoinUs = () => {
           setLivePartners(data);
         }
       }
-    } catch (err) {
+    } catch {
       console.log('Using static verified partners list');
     }
   };
@@ -140,14 +141,14 @@ const JoinUs = () => {
       <Navbar />
 
       <div className="joinus-bg">
-        <img src={bgImage} alt="Background" />
+        <img src={currentHeroImage} alt="" />
         <div className="joinus-overlay"></div>
       </div>
 
       <div className="joinus-container">
         {/* Header */}
         <div className="joinus-header">
-          <h1>Partner With Mahabaleshwar Stays</h1>
+          <h1>Partner With BookMyVilla</h1>
           <p>Join Maharashtra’s premier luxury hospitality network as a Property Owner or Certified Caretaker.</p>
         </div>
 
@@ -202,7 +203,7 @@ const JoinUs = () => {
               <i className="fa-solid fa-shield-check"></i> Verified Community Network
             </div>
             <h2>Meet Our Verified Property Owners & Caretakers</h2>
-            <p>Certified hosts and professional estate managers bringing luxury hospitality to Mahabaleshwar Stays.</p>
+            <p>Certified hosts and professional estate managers bringing luxury hospitality to BookMyVilla.</p>
             
             {/* Filter Tabs */}
             <div className="community-tabs">
