@@ -1,11 +1,41 @@
 const mongoose = require('mongoose');
 
+const LineItemSchema = new mongoose.Schema({
+  kind: { type: String, enum: ['accommodation', 'addon', 'fee', 'discount'], required: true },
+  label: { type: String, required: true, maxlength: 140 },
+  quantity: { type: Number, default: 1 },
+  unitPrice: { type: Number, default: 0 },
+  amount: { type: Number, required: true },
+  taxRate: { type: Number, default: 0 },
+  tax: { type: Number, default: 0 }
+}, { _id: false });
+
 const BookingSchema = new mongoose.Schema({
+  // Guest account, when the guest booked while signed in. Bookings converted
+  // from an owner quotation may have no account; `guest` then identifies them.
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    default: null
   },
+  guest: {
+    name: { type: String, maxlength: 100 },
+    phone: { type: String, maxlength: 20 },
+    phoneKey: { type: String, maxlength: 20 },
+    email: { type: String, maxlength: 120 }
+  },
+  source: { type: String, enum: ['website', 'quotation', 'walk_in', 'phone', 'whatsapp', 'agent', 'ota', 'other'], default: 'website' },
+  quotation: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation', default: null },
+  inquiry: { type: mongoose.Schema.Types.ObjectId, ref: 'Inquiry', default: null },
+  adults: { type: Number, min: 0, max: 50, default: null },
+  children: { type: Number, min: 0, max: 50, default: null },
+  infants: { type: Number, min: 0, max: 20, default: null },
+  pets: { type: Number, min: 0, max: 10, default: null },
+  lineItems: { type: [LineItemSchema], default: undefined },
+  taxAmount: { type: Number, default: null },
+  discountAmount: { type: Number, default: null },
+  securityDepositAmount: { type: Number, default: 0 },
+  cancellationPolicy: { type: String, default: '', maxlength: 1200 },
   property: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Property',

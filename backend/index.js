@@ -12,6 +12,10 @@ mongoose.set('bufferCommands', false);
 
 const app = express();
 
+// nginx on the same host terminates TLS and forwards the client address;
+// trusting only the loopback hop gives rate limiting the real guest IP.
+app.set('trust proxy', 'loopback');
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -32,6 +36,10 @@ app.use('/api/bookings', require('./routes/booking'));
 app.use('/api/owner-pms', require('./routes/ownerPms'));
 app.use('/api/owner-ops', require('./routes/ownerOps'));
 app.use('/api/owner-finance', require('./routes/ownerFinance'));
+app.use('/api/owner-crm', require('./routes/ownerCrm'));
+app.use('/api/owner-quotes', require('./routes/ownerQuotes'));
+app.use('/api/owner-catalog', require('./routes/ownerCatalog'));
+app.use('/api/public/quotes', require('./routes/publicQuotes'));
 app.use('/api/caretaker', require('./routes/caretaker'));
 app.use('/api/partner', require('./routes/partner'));
 app.use('/api/inventory', require('./routes/inventory'));
@@ -101,6 +109,13 @@ async function connectDB() {
     } catch (idxErr) {
       console.error('User index sync notice:', idxErr.message);
     }
+    // Build every model's indexes now that the database is reachable; the
+    // unique ones (room nights, quotation tokens, promo codes) guard data
+    // integrity. See utils/modelIndexes.js for why this is needed.
+    const { ensureModelIndexes } = require('./utils/modelIndexes');
+    await Promise.all(Object.values(mongoose.models).map(model => ensureModelIndexes(model).catch(idxErr => {
+      console.error(`Index build notice for ${model.modelName}:`, idxErr.message);
+    })));
     await seedAdminUser();
   } catch (err) {
     console.log('Local DB Connection Notice:', err.message);

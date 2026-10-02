@@ -58,6 +58,7 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL: https://api.lonavala.fun
+          VITE_GUEST_SITE_URL: https://lonavala.fun
 
       # ── 3.5 Caretaker Build ───────────────────────────────────────────────
       - name: Install Caretaker Dependencies

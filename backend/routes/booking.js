@@ -192,7 +192,7 @@ router.post('/cancel/:id', require('../middleware/accountAuth'), async (req, res
     if (!booking) return res.status(404).json({ msg: 'Booking not found' });
 
     // Check ownership
-    if (booking.user.toString() !== req.user.id) {
+    if (String(booking.user || '') !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
     if (['in_house', 'checked_out'].includes(booking.stayStatus)) {

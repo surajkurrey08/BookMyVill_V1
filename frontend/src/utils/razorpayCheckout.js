@@ -45,3 +45,4 @@ export async function launchRazorpayCheckout({ order, token, propertyName, user,
   checkout.on('payment.failed', response => onError(new Error(response.error?.description || 'Payment failed. Your booking remains pending.')));
   checkout.open();
 }
+export { loadCheckout as loadRazorpayCheckout };

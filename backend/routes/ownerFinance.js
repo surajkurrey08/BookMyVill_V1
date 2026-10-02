@@ -40,7 +40,7 @@ async function reportData(req, res) {
     Booking.find({ property: { $in: propertyIds }, $or: [
       { createdAt: { $gte: startDate, $lt: untilDate } },
       { paidAt: { $gte: startDate, $lt: untilDate } }
-    ] }).select('property user checkIn checkOut totalPrice status paymentStatus paymentMode paymentSource manualPaymentMethod manualPaymentReference razorpayOrderId razorpayPaymentId paidAt refundStatus refundAmount createdAt').populate('user', 'name email').lean(),
+    ] }).select('property user guest checkIn checkOut totalPrice status paymentStatus paymentMode paymentSource manualPaymentMethod manualPaymentReference razorpayOrderId razorpayPaymentId paidAt refundStatus refundAmount createdAt').populate('user', 'name email').lean(),
     OwnerExpense.find({ property: { $in: propertyIds }, incurredOn: { $gte: start, $lte: end } }).sort({ incurredOn: -1, createdAt: -1 }).lean()
   ]);
   const propertyName = new Map(properties.map(item => [String(item._id), item.name]));
