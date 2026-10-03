@@ -92,7 +92,14 @@ jobs:
             StrictHostKeyChecking yes
             IdentitiesOnly yes
           EOF
-          ssh bookmyvilla-vps 'echo SSH connection ready'
+          if ! ssh_output=$(ssh -o BatchMode=yes -o ConnectTimeout=15 bookmyvilla-vps 'echo SSH connection ready' 2>&1); then
+            ssh_error=${ssh_output//$'\r'/}
+            ssh_error=${ssh_error//$'\n'/'; '}
+            ssh_error=${ssh_error//%/%25}
+            echo "::error title=VPS SSH connection failed::$ssh_error"
+            exit 1
+          fi
+          printf '%s\n' "$ssh_output"
 
       - name: Prepare VPS and HTTPS
         env:
