@@ -23,23 +23,25 @@ services:
     networks:
       - bookmyvilla-network
 
+
   frontend:
-  build:
-    context: ./frontend
-    dockerfile: Dockerfile
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
 
-  container_name: bookmyvilla-frontend
+    container_name: bookmyvilla-frontend
 
-  ports:
-    - "5173:5173"
+    ports:
+      - "5173:5173"
 
-  depends_on:
-    - backend
+    depends_on:
+      - backend
 
-  restart: unless-stopped
+    restart: unless-stopped
 
-  networks:
-    - bookmyvilla-network
+    networks:
+      - bookmyvilla-network
+
 
   admin:
     build:
@@ -59,6 +61,7 @@ services:
     networks:
       - bookmyvilla-network
 
+
   owner:
     build:
       context: ./owner
@@ -77,6 +80,7 @@ services:
     networks:
       - bookmyvilla-network
 
+
   caretaker:
     build:
       context: ./caretaker
@@ -94,6 +98,7 @@ services:
 
     networks:
       - bookmyvilla-network
+
 
 networks:
   bookmyvilla-network:
