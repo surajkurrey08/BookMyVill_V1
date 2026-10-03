@@ -2,45 +2,100 @@ name: bookmyvilla
 
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
     container_name: bookmyvilla-backend
+
     ports:
       - "5001:5001"
+
     env_file:
       - path: ./backend/.env
-        required: false
+        required: true
+
     volumes:
       - ./backend/uploads:/app/uploads
+
     restart: unless-stopped
 
+    networks:
+      - bookmyvilla-network
+
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
     container_name: bookmyvilla-frontend
+
     ports:
       - "5173:5173"
+
     depends_on:
       - backend
+
+    restart: unless-stopped
+
+    networks:
+      - bookmyvilla-network
 
   admin:
-    build: ./admin
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+
     container_name: bookmyvilla-admin
+
     ports:
       - "5174:5174"
+
     depends_on:
       - backend
+
+    restart: unless-stopped
+
+    networks:
+      - bookmyvilla-network
 
   owner:
-    build: ./owner
+    build:
+      context: ./owner
+      dockerfile: Dockerfile
+
     container_name: bookmyvilla-owner
+
     ports:
       - "5175:5175"
+
     depends_on:
       - backend
 
+    restart: unless-stopped
+
+    networks:
+      - bookmyvilla-network
+
   caretaker:
-    build: ./caretaker
+    build:
+      context: ./caretaker
+      dockerfile: Dockerfile
+
     container_name: bookmyvilla-caretaker
+
     ports:
       - "5176:5176"
+
     depends_on:
       - backend
+
+    restart: unless-stopped
+
+    networks:
+      - bookmyvilla-network
+
+
+networks:
+  bookmyvilla-network:
+    driver: bridge

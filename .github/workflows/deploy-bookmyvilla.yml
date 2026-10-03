@@ -16,41 +16,57 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+
     env:
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
 
     steps:
-      - uses: actions/checkout@v4
+      # ============================================================
+      # 1. Checkout
+      # ============================================================
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ============================================================
+      # 2. Validate deployment settings
+      # ============================================================
 
       - name: Check deployment settings
         env:
-          VPS_USER: ${{ secrets.VPS_USER }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
-          CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
         run: |
           set -euo pipefail
-          for name in VPS_HOST VPS_PORT VPS_USER VPS_SSH_KEY VPS_KNOWN_HOSTS CERTBOT_EMAIL; do
+
+          for name in VPS_HOST VPS_PORT VPS_USER VPS_SSH_KEY VPS_KNOWN_HOSTS; do
             if [[ -z "${!name}" ]]; then
-              echo "$name is missing in GitHub settings" >&2
+              echo "::error::$name is missing in GitHub repository secrets"
               exit 1
             fi
           done
-          [[ "$VPS_HOST" == '31.97.61.172' ]] || {
-            echo 'VPS_HOST must be updated to 31.97.61.172' >&2
-            exit 1
-          }
-          [[ "$VPS_PORT" =~ ^[0-9]+$ ]] && (( 10#$VPS_PORT >= 1 && 10#$VPS_PORT <= 65535 )) || {
-            echo 'VPS_PORT must be a valid TCP port' >&2
-            exit 1
-          }
-          [[ "$CERTBOT_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]] || {
-            echo 'CERTBOT_EMAIL is invalid' >&2
-            exit 1
-          }
 
-      - uses: actions/setup-node@v4
+          if ! [[ "$VPS_PORT" =~ ^[0-9]+$ ]]; then
+            echo "::error::VPS_PORT must be numeric"
+            exit 1
+          fi
+
+          if (( 10#$VPS_PORT < 1 || 10#$VPS_PORT > 65535 )); then
+            echo "::error::VPS_PORT must be between 1 and 65535"
+            exit 1
+          fi
+
+          echo "Deployment settings OK"
+
+      # ============================================================
+      # 3. Setup Node
+      # Used only to verify frontend builds before deployment
+      # ============================================================
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
@@ -58,8 +74,13 @@ jobs:
             frontend/package-lock.json
             admin/package-lock.json
             owner/package-lock.json
+            caretaker/package-lock.json
 
-      - name: Build public and portal sites
+      # ============================================================
+      # 4. Verify all frontend builds
+      # ============================================================
+
+      - name: Verify frontend builds
         env:
           VITE_API_URL: https://api.bookmyvilla.online
           VITE_GUEST_SITE_URL: https://bookmyvilla.online
@@ -68,21 +89,40 @@ jobs:
           VITE_OWNER_APP_URL: https://bookmyvilla.online
         run: |
           set -euo pipefail
-          for app in frontend admin owner; do
-            (cd "$app" && npm ci && npm run build)
+
+          for app in frontend admin owner caretaker; do
+            echo "======================================"
+            echo "Building $app"
+            echo "======================================"
+
+            cd "$GITHUB_WORKSPACE/$app"
+
+            npm ci
+            npm run build
           done
+
+          echo "All frontend builds passed"
+
+      # ============================================================
+      # 5. Setup SSH
+      # ============================================================
 
       - name: Configure SSH
         env:
-          VPS_USER: ${{ secrets.VPS_USER }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
+
           umask 077
           mkdir -p ~/.ssh
+
           printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
           printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+          chmod 600 ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/known_hosts
+
           cat > ~/.ssh/config <<EOF
           Host bookmyvilla-vps
             HostName ${VPS_HOST}
@@ -91,59 +131,404 @@ jobs:
             IdentityFile ~/.ssh/deploy_key
             StrictHostKeyChecking yes
             IdentitiesOnly yes
+            ServerAliveInterval 30
+            ServerAliveCountMax 3
           EOF
-          if ! ssh_output=$(ssh -o BatchMode=yes -o ConnectTimeout=15 bookmyvilla-vps 'echo SSH connection ready' 2>&1); then
+
+          chmod 600 ~/.ssh/config
+
+          if ! ssh_output=$(
+            ssh \
+              -o BatchMode=yes \
+              -o ConnectTimeout=15 \
+              bookmyvilla-vps \
+              'echo "SSH connection ready"' \
+              2>&1
+          ); then
+
             ssh_error=${ssh_output//$'\r'/}
             ssh_error=${ssh_error//$'\n'/'; '}
             ssh_error=${ssh_error//%/%25}
+
             echo "::error title=VPS SSH connection failed::$ssh_error"
             exit 1
           fi
+
           printf '%s\n' "$ssh_output"
 
-      - name: Prepare VPS and HTTPS
-        env:
-          CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
+      # ============================================================
+      # 6. Check Docker
+      #
+      # IMPORTANT:
+      # No nginx
+      # No certbot
+      # No port 80/443 changes
+      # ============================================================
+
+      - name: Check VPS Docker
         run: |
           set -euo pipefail
-          port_details=$(ssh bookmyvilla-vps 'ss -H -ltnp "( sport = :80 or sport = :443 )" || true; if command -v docker >/dev/null 2>&1; then docker ps --format "{{.Names}} {{.Ports}}" || true; fi' 2>&1)
-          port_details=${port_details//$'\r'/}
-          port_details=${port_details//$'\n'/'; '}
-          port_details=${port_details//%/%25}
-          echo "::notice title=VPS web port diagnostics::${port_details:-No listeners or containers}"
-          ssh bookmyvilla-vps 'install -d /tmp/bookmyvilla-deploy'
-          scp nginx/bookmyvilla.online.conf nginx/bookmyvilla.online.http.conf \
-            scripts/prepare-vps.sh scripts/activate-backend.sh \
-            bookmyvilla-vps:/tmp/bookmyvilla-deploy/
-          if ! ssh bookmyvilla-vps "CERTBOT_EMAIL=$CERTBOT_EMAIL bash /tmp/bookmyvilla-deploy/prepare-vps.sh" 2>&1 | tee "$RUNNER_TEMP/bookmyvilla-prepare.log"; then
-            error_lines=$(tail -n 12 "$RUNNER_TEMP/bookmyvilla-prepare.log" | tr '\n' '; ')
-            error_lines=${error_lines//%/%25}
-            echo "::error title=VPS preparation failed::$error_lines"
+
+          ssh bookmyvilla-vps <<'REMOTE'
+            set -euo pipefail
+
+            echo "Checking Docker..."
+
+            if ! command -v docker >/dev/null 2>&1; then
+              echo "Docker is not installed on VPS"
+              exit 1
+            fi
+
+            docker --version
+
+            if ! docker compose version >/dev/null 2>&1; then
+              echo "Docker Compose plugin is not available"
+              exit 1
+            fi
+
+            docker compose version
+
+            echo ""
+            echo "Existing containers:"
+            docker ps \
+              --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+            echo ""
+            echo "BookMyVilla deployment prerequisites OK"
+          REMOTE
+
+      # ============================================================
+      # 7. Create deployment directory
+      # ============================================================
+
+      - name: Prepare BookMyVilla directory
+        run: |
+          set -euo pipefail
+
+          ssh bookmyvilla-vps '
+            mkdir -p /var/www/bookmyvilla
+            mkdir -p /var/www/bookmyvilla/backend/uploads
+          '
+
+      # ============================================================
+      # 8. Upload BookMyVilla project
+      #
+      # Existing backend/.env is NOT deleted/overwritten.
+      # Existing uploads are NOT deleted.
+      # ============================================================
+
+      - name: Upload BookMyVilla application
+        run: |
+          set -euo pipefail
+
+          rsync \
+            -az \
+            --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='node_modules/' \
+            --exclude='*/node_modules/' \
+            --exclude='dist/' \
+            --exclude='*/dist/' \
+            --exclude='backend/.env' \
+            --exclude='backend/uploads/' \
+            --exclude='*.log' \
+            ./ \
+            bookmyvilla-vps:/var/www/bookmyvilla/
+
+          echo "Application uploaded"
+
+      # ============================================================
+      # 9. Validate required backend environment
+      # ============================================================
+
+      - name: Check backend environment
+        run: |
+          set -euo pipefail
+
+          ssh bookmyvilla-vps <<'REMOTE'
+            set -euo pipefail
+
+            ENV_FILE="/var/www/bookmyvilla/backend/.env"
+
+            if [ ! -f "$ENV_FILE" ]; then
+              echo "ERROR: backend/.env does not exist:"
+              echo "$ENV_FILE"
+              echo ""
+              echo "Create the production backend/.env before deployment."
+              exit 1
+            fi
+
+            echo "backend/.env found"
+
+            if grep -Eq '^(MONGO_URI|MONGODB_URI|MONGO_URL)=' "$ENV_FILE"; then
+              echo "MongoDB environment variable found"
+            else
+              echo "WARNING: Could not find MONGO_URI, MONGODB_URI or MONGO_URL"
+            fi
+          REMOTE
+
+      # ============================================================
+      # 10. Validate Docker Compose
+      # ============================================================
+
+      - name: Validate Docker Compose
+        run: |
+          set -euo pipefail
+
+          ssh bookmyvilla-vps <<'REMOTE'
+            set -euo pipefail
+
+            cd /var/www/bookmyvilla
+
+            echo "Validating docker-compose.yaml..."
+
+            docker compose config >/dev/null
+
+            echo "Docker Compose configuration valid"
+          REMOTE
+
+      # ============================================================
+      # 11. Build BookMyVilla containers
+      # ============================================================
+
+      - name: Build BookMyVilla containers
+        run: |
+          set -euo pipefail
+
+          if ! ssh bookmyvilla-vps <<'REMOTE'
+            set -euo pipefail
+
+            cd /var/www/bookmyvilla
+
+            echo "======================================"
+            echo "Building BookMyVilla containers"
+            echo "======================================"
+
+            docker compose build --pull
+
+          REMOTE
+          then
+
+            echo "::error::BookMyVilla Docker build failed"
+
+            ssh bookmyvilla-vps '
+              cd /var/www/bookmyvilla &&
+              docker compose ps || true
+            '
+
             exit 1
           fi
 
-      - name: Upload application
+      # ============================================================
+      # 12. Start/update ONLY BookMyVilla
+      # ============================================================
+
+      - name: Start BookMyVilla containers
         run: |
           set -euo pipefail
-          rsync -az --delete frontend/dist/ bookmyvilla-vps:/var/www/bookmyvilla/frontend/
-          rsync -az --delete admin/dist/ bookmyvilla-vps:/var/www/bookmyvilla/admin/
-          rsync -az --delete owner/dist/ bookmyvilla-vps:/var/www/bookmyvilla/owner/
-          rsync -az --delete --exclude='.env' --exclude='uploads/' \
-            --exclude='node_modules/' backend/ bookmyvilla-vps:/var/www/bookmyvilla/backend/
 
-      - name: Start backend
-        run: ssh bookmyvilla-vps 'bash /tmp/bookmyvilla-deploy/activate-backend.sh'
+          if ! ssh bookmyvilla-vps <<'REMOTE'
+            set -euo pipefail
 
-      - name: Check live sites
+            cd /var/www/bookmyvilla
+
+            echo "======================================"
+            echo "Starting BookMyVilla"
+            echo "======================================"
+
+            docker compose up -d --remove-orphans
+
+            echo ""
+            echo "Container status:"
+            docker compose ps
+
+          REMOTE
+          then
+
+            echo "::error::BookMyVilla containers failed to start"
+
+            ssh bookmyvilla-vps <<'REMOTE'
+              cd /var/www/bookmyvilla || exit 0
+
+              echo "======================================"
+              echo "Container status"
+              echo "======================================"
+
+              docker compose ps || true
+
+              echo ""
+              echo "======================================"
+              echo "Container logs"
+              echo "======================================"
+
+              docker compose logs --tail=150 || true
+          REMOTE
+
+            exit 1
+          fi
+
+      # ============================================================
+      # 13. Wait until containers initialize
+      # ============================================================
+
+      - name: Wait for BookMyVilla
+        run: |
+          sleep 10
+
+      # ============================================================
+      # 14. Check backend
+      # ============================================================
+
+      - name: Check backend
         run: |
           set -euo pipefail
-          for url in \
-            https://bookmyvilla.online/ \
-            https://admin.bookmyvilla.online/ \
-            https://owner.bookmyvilla.online/ \
-            https://api.bookmyvilla.online/api/health; do
-            curl --fail --silent --show-error --location \
-              --retry 12 --retry-delay 5 --retry-all-errors \
-              --max-time 15 --output /dev/null "$url"
-            echo "Healthy: $url"
-          done
+
+          ssh bookmyvilla-vps <<'REMOTE'
+            set -euo pipefail
+
+            cd /var/www/bookmyvilla
+
+            echo "Checking backend..."
+
+            success=false
+
+            for attempt in $(seq 1 12); do
+
+              if curl \
+                --fail \
+                --silent \
+                --show-error \
+                --max-time 10 \
+                http://127.0.0.1:5001/api/health \
+                >/dev/null
+              then
+
+                echo "Backend healthy on port 5001"
+                success=true
+                break
+              fi
+
+              echo "Backend not ready - attempt ${attempt}/12"
+
+              sleep 5
+            done
+
+            if [ "$success" != "true" ]; then
+
+              echo ""
+              echo "Backend health check failed"
+
+              echo ""
+              echo "Container status:"
+              docker compose ps
+
+              echo ""
+              echo "Backend logs:"
+              docker compose logs --tail=150 backend
+
+              exit 1
+            fi
+          REMOTE
+
+      # ============================================================
+      # 15. Check frontend containers
+      # ============================================================
+
+      - name: Check frontend applications
+        run: |
+          set -euo pipefail
+
+          ssh bookmyvilla-vps <<'REMOTE'
+            set -euo pipefail
+
+            cd /var/www/bookmyvilla
+
+            check_port() {
+
+              name="$1"
+              port="$2"
+
+              echo ""
+              echo "Checking ${name} on ${port}..."
+
+              success=false
+
+              for attempt in $(seq 1 10); do
+
+                if curl \
+                  --fail \
+                  --silent \
+                  --show-error \
+                  --max-time 10 \
+                  "http://127.0.0.1:${port}/" \
+                  >/dev/null
+                then
+
+                  echo "${name}: healthy"
+                  success=true
+                  break
+                fi
+
+                echo "${name}: waiting (${attempt}/10)"
+
+                sleep 3
+              done
+
+              if [ "$success" != "true" ]; then
+
+                echo "${name} failed health check"
+
+                docker compose ps
+                docker compose logs --tail=100
+
+                exit 1
+              fi
+            }
+
+            check_port "Frontend" 5173
+            check_port "Admin" 5174
+            check_port "Owner" 5175
+            check_port "Caretaker" 5176
+
+          REMOTE
+
+      # ============================================================
+      # 16. Show final deployment status
+      # ============================================================
+
+      - name: Deployment status
+        run: |
+          ssh bookmyvilla-vps <<'REMOTE'
+            set -euo pipefail
+
+            cd /var/www/bookmyvilla
+
+            echo ""
+            echo "======================================"
+            echo "BOOKMYVILLA DEPLOYMENT SUCCESSFUL"
+            echo "======================================"
+
+            docker compose ps
+
+            echo ""
+            echo "Internal VPS services:"
+            echo "Frontend  : http://127.0.0.1:5173"
+            echo "Admin     : http://127.0.0.1:5174"
+            echo "Owner     : http://127.0.0.1:5175"
+            echo "Caretaker : http://127.0.0.1:5176"
+            echo "Backend   : http://127.0.0.1:5001"
+
+          REMOTE
+
+      # ============================================================
+      # 17. Clean unused build images
+      # Does NOT stop existing containers
+      # ============================================================
+
+      - name: Clean unused Docker images
+        if: success()
+        run: |
+          ssh bookmyvilla-vps '
+            docker image prune -f
+          '
