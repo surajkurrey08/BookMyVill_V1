@@ -26,19 +26,27 @@ install -d /var/www/bookmyvilla/frontend /var/www/bookmyvilla/admin \
 rm -f /etc/nginx/sites-enabled/default
 
 cert_dir=/etc/letsencrypt/live/bookmyvilla.online
+report_nginx_failure() {
+  local listeners containers journal
+  listeners=$(ss -H -ltnp '( sport = :80 or sport = :443 )' 2>&1 | tr '\n' '; ' || true)
+  containers=$(docker ps --format '{{.Names}} {{.Ports}}' 2>&1 | tr '\n' '; ' || true)
+  journal=$(journalctl -u nginx -n 8 --no-pager -o cat 2>&1 | tr '\n' '; ' || true)
+  echo "::error title=Nginx could not serve web ports::Port listeners: ${listeners:-none}; Containers: ${containers:-none}; Nginx journal: $journal"
+}
 if [[ ! -f "$cert_dir/fullchain.pem" || ! -f "$cert_dir/privkey.pem" ]]; then
   install -m 644 /tmp/bookmyvilla-deploy/bookmyvilla.online.http.conf \
     /etc/nginx/sites-available/bookmyvilla.online
   ln -sfn /etc/nginx/sites-available/bookmyvilla.online \
     /etc/nginx/sites-enabled/bookmyvilla.online
   nginx -t
-  if ! systemctl enable --now nginx; then
-    listeners=$(ss -H -ltnp '( sport = :80 or sport = :443 )' 2>&1 | tr '\n' '; ')
-    journal=$(journalctl -u nginx -n 8 --no-pager -o cat 2>&1 | tr '\n' '; ')
-    echo "::error title=Nginx failed to start::Port listeners: ${listeners:-none}; Nginx journal: $journal"
+  if ! systemctl enable --now nginx || ! systemctl is-active --quiet nginx; then
+    report_nginx_failure
     exit 1
   fi
-  systemctl reload nginx
+  if ! systemctl reload nginx; then
+    report_nginx_failure
+    exit 1
+  fi
 
   certbot certonly --webroot --webroot-path /var/www/certbot \
     --cert-name bookmyvilla.online \
@@ -52,7 +60,10 @@ install -m 644 /tmp/bookmyvilla-deploy/bookmyvilla.online.conf \
 ln -sfn /etc/nginx/sites-available/bookmyvilla.online \
   /etc/nginx/sites-enabled/bookmyvilla.online
 nginx -t
-systemctl reload nginx
+if ! systemctl reload nginx; then
+  report_nginx_failure
+  exit 1
+fi
 
 install -d /etc/letsencrypt/renewal-hooks/deploy
 printf '%s\n' '#!/usr/bin/env bash' 'systemctl reload nginx' \

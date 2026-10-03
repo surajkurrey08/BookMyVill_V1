@@ -106,11 +106,21 @@ jobs:
           CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
         run: |
           set -euo pipefail
+          port_details=$(ssh bookmyvilla-vps 'ss -H -ltnp "( sport = :80 or sport = :443 )" || true; if command -v docker >/dev/null 2>&1; then docker ps --format "{{.Names}} {{.Ports}}" || true; fi' 2>&1)
+          port_details=${port_details//$'\r'/}
+          port_details=${port_details//$'\n'/'; '}
+          port_details=${port_details//%/%25}
+          echo "::notice title=VPS web port diagnostics::${port_details:-No listeners or containers}"
           ssh bookmyvilla-vps 'install -d /tmp/bookmyvilla-deploy'
           scp nginx/bookmyvilla.online.conf nginx/bookmyvilla.online.http.conf \
             scripts/prepare-vps.sh scripts/activate-backend.sh \
             bookmyvilla-vps:/tmp/bookmyvilla-deploy/
-          ssh bookmyvilla-vps "CERTBOT_EMAIL=$CERTBOT_EMAIL bash /tmp/bookmyvilla-deploy/prepare-vps.sh"
+          if ! ssh bookmyvilla-vps "CERTBOT_EMAIL=$CERTBOT_EMAIL bash /tmp/bookmyvilla-deploy/prepare-vps.sh" 2>&1 | tee "$RUNNER_TEMP/bookmyvilla-prepare.log"; then
+            error_lines=$(tail -n 12 "$RUNNER_TEMP/bookmyvilla-prepare.log" | tr '\n' '; ')
+            error_lines=${error_lines//%/%25}
+            echo "::error title=VPS preparation failed::$error_lines"
+            exit 1
+          fi
 
       - name: Upload application
         run: |
