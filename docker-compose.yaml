@@ -20,9 +20,11 @@ services:
 
     restart: unless-stopped
 
+    # Start order only. Readiness is handled by the backend's own connection
+    # retry loop and the deployment /api/health check, so a slow mongo health
+    # probe can never block the stack from starting.
     depends_on:
-      mongo:
-        condition: service_healthy
+      - mongo
 
     networks:
       - bookmyvilla-network
@@ -117,12 +119,15 @@ services:
     networks:
       - bookmyvilla-network
 
+    # mongosh is Node-based and slow to cold-start on a loaded host, so the
+    # timeout and start_period are generous. This only reports status; it does
+    # not gate the backend (see the backend depends_on note above).
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
+      interval: 15s
+      timeout: 20s
+      retries: 10
+      start_period: 60s
 
 
 networks:
