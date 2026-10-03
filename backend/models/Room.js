@@ -7,6 +7,12 @@ const RoomSchema = new mongoose.Schema({
   type: { type: String, required: true, trim: true, maxlength: 60 },
   capacity: { type: Number, required: true, min: 1, max: 50 },
   baseRate: { type: Number, required: true, min: 0 },
+  bedType: { type: String, default: '', maxlength: 60 },
+  view: { type: String, default: '', maxlength: 80 },
+  sizeSqFt: { type: Number, default: null, min: 0 },
+  photos: { type: [String], default: [] },
+  amenities: { type: [String], default: [] },
+  cancellationPolicy: { type: String, default: '', maxlength: 1200 },
   active: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now }
 });

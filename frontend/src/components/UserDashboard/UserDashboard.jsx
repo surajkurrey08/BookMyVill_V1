@@ -4,7 +4,7 @@ import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import './UserDashboard.css';
 import bgImage from '../../assets/hillstationhome (1).jpg';
-import { API_BASE_URL } from '../../config';
+import { API_BASE_URL, OWNER_PORTAL_URL } from '../../config';
 
 const UserDashboard = () => {
   const [bookings, setBookings] = useState([]);
@@ -161,7 +161,7 @@ const UserDashboard = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     if (isOwner) {
-      window.location.href = 'http://localhost:5175/login';
+      window.location.href = `${OWNER_PORTAL_URL}/login`;
     } else {
       navigate('/signin');
     }

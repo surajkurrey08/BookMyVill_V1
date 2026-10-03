@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { API_BASE_URL } from '../../config';
+import { API_BASE_URL, OWNER_PORTAL_URL } from '../../config';
 import '../SignIn/SignIn.css';
 
 const OwnerSetup = () => {
-  const ownerPortalLoginUrl = import.meta.env.VITE_OWNER_PORTAL_URL ||
-    (import.meta.env.DEV ? 'http://localhost:5175/login' : '/owner');
+  const ownerPortalLoginUrl = `${OWNER_PORTAL_URL}/login`;
   const [token] = useState(() => new URLSearchParams(window.location.hash.slice(1)).get('token') || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

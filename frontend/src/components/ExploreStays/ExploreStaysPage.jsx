@@ -92,6 +92,18 @@ const formatDate = (iso) => {
   const [year, month, day] = iso.split('-').map(Number);
   return new Date(year, month - 1, day).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 };
+const revealResults = (section, pane) => {
+  if (!section) return;
+  pane?.scrollTo({ top: 0 });
+  const top = section.getBoundingClientRect().top + window.scrollY - 76;
+  if (window.__lenis) window.__lenis.scrollTo(top, { immediate: true });
+  else {
+    const previous = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = 'auto';
+    window.scrollTo({ top, behavior: 'auto' });
+    document.documentElement.style.scrollBehavior = previous;
+  }
+};
 
 const DateInput = ({ label, value, min, onChange }) => {
   const inputRef = useRef(null);
@@ -118,6 +130,7 @@ const ExploreStaysPage = () => {
   const { search } = useLocation();
   const navigate = useNavigate();
   const resultsRef = useRef(null);
+  const resultsPaneRef = useRef(null);
   const params = useMemo(() => new URLSearchParams(search), [search]);
   const searchTerm = params.has('search') ? params.get('search').trim() : 'Mahabaleshwar';
   const [destination, setDestination] = useState(searchTerm);
@@ -140,6 +153,13 @@ const ExploreStaysPage = () => {
     setGuests(Math.max(1, Number(params.get('guests')) || 2));
     setPage(1);
   }, [params, searchTerm]);
+  useEffect(() => {
+    if (!params.has('search')) return undefined;
+    const frame = requestAnimationFrame(() => {
+      revealResults(resultsRef.current, resultsPaneRef.current);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [params]);
   useEffect(() => {
     const controller = new AbortController();
     fetch(`${API_BASE_URL}/api/properties/all`, { signal: controller.signal })
@@ -181,24 +201,25 @@ const ExploreStaysPage = () => {
   if (!cardParams.has('guests')) cardParams.set('guests', String(guests));
   const updateList = (key, value) => setDraft((current) => ({ ...current, [key]: current[key].includes(value) ? current[key].filter((item) => item !== value) : [...current[key], value] }));
   const clearFilters = () => { setDraft(emptyFilters()); setApplied(emptyFilters()); setPage(1); };
-  const applyFilters = () => { setApplied({ ...draft }); setPage(1); setFiltersOpen(false); resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-  const changePage = (number) => { setPage(number); resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  const showResults = () => revealResults(resultsRef.current, resultsPaneRef.current);
+  const applyFilters = () => { setApplied({ ...draft }); setPage(1); setFiltersOpen(false); showResults(); };
+  const changePage = (number) => { setPage(number); showResults(); };
   const toggleFavorite = (id) => setFavorites((current) => { const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id]; try { localStorage.setItem('bookmyvilla-explore-favorites', JSON.stringify(next)); } catch { /* storage unavailable */ } return next; });
-  const handleSearch = (event) => { event.preventDefault(); const next = new URLSearchParams(); next.set('search', destination.trim()); if (checkIn) next.set('checkIn', checkIn); if (checkOut) next.set('checkOut', checkOut); next.set('guests', String(guests)); navigate(`/explore?${next}`); resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  const handleSearch = (event) => { event.preventDefault(); const next = new URLSearchParams(); next.set('search', destination.trim()); if (checkIn) next.set('checkIn', checkIn); if (checkOut) next.set('checkOut', checkOut); next.set('guests', String(guests)); navigate(`/explore?${next}`); showResults(); };
   const handleCheckIn = (value) => { setCheckIn(value); if (checkOut && value && checkOut <= value) setCheckOut(addDays(value, 1)); };
 
   return <div className="hp-root es-page"><HomeHeader /><main>
     <section className="es-hero" style={{ backgroundImage: `url(${heroImage})` }}><div className="es-hero-shade" /><div className="es-hero-inner"><nav className="es-breadcrumb" aria-label="Breadcrumb"><Link to="/">Home</Link><span>›</span><span>Explore Stays</span></nav><div className="es-hero-copy"><h1><span>Explore Stays in</span><br />Mahabaleshwar</h1><p>Find the perfect stay for your next trip</p></div>
       <form className="es-search" onSubmit={handleSearch}><label className="es-search-field es-location-field"><Icon name="location-dot" /><span className="es-search-copy"><span>Location</span><input value={destination} onChange={(event) => setDestination(event.target.value)} list="es-locations" placeholder="Where to?" /></span></label><datalist id="es-locations"><option value="Mahabaleshwar" /><option value="Panchgani" /><option value="Pune" /><option value="Lonavala" /></datalist><DateInput label="Check In" value={checkIn} min={todayISO()} onChange={handleCheckIn} /><DateInput label="Check Out" value={checkOut} min={checkIn ? addDays(checkIn, 1) : todayISO()} onChange={setCheckOut} /><label className="es-search-field es-guests-field"><Icon name="user" /><span className="es-search-copy"><span>Guests</span><select value={guests} onChange={(event) => setGuests(Number(event.target.value))} aria-label="Guests">{Array.from({ length: 16 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1} Guest{index ? 's' : ''}</option>)}</select></span></label><button type="submit" className="es-search-submit"><Icon name="magnifying-glass" /> Search</button></form>
     </div></section>
-    <section className="es-listing-section" ref={resultsRef}><div className="es-layout"><button type="button" className="es-mobile-filter-toggle" onClick={() => setFiltersOpen((open) => !open)} aria-expanded={filtersOpen} aria-controls="es-filters"><Icon name="sliders" /> Filters <Icon name={filtersOpen ? 'chevron-up' : 'chevron-down'} /></button><aside id="es-filters" className={`es-sidebar ${filtersOpen ? 'is-open' : ''}`} aria-label="Filter stays"><div className="es-filter-top"><h2>Filter Stays</h2><button type="button" onClick={clearFilters}>Clear All</button></div>
+    <section className="es-listing-section" ref={resultsRef}><div className="es-layout"><button type="button" className="es-mobile-filter-toggle" onClick={() => setFiltersOpen((open) => !open)} aria-expanded={filtersOpen} aria-controls="es-filters"><Icon name="sliders" /> Filters <Icon name={filtersOpen ? 'chevron-up' : 'chevron-down'} /></button><aside id="es-filters" className={`es-sidebar ${filtersOpen ? 'is-open' : ''}`} aria-label="Filter stays" tabIndex={0}><div className="es-filter-top"><h2>Filter Stays</h2><button type="button" onClick={clearFilters}>Clear All</button></div>
       <FilterGroup title="Price Range (per night)"><input className="es-price-slider" type="range" min="0" max={PRICE_LIMIT} step="500" value={draft.maxPrice} onChange={(event) => setDraft((current) => ({ ...current, maxPrice: Number(event.target.value) }))} aria-label="Maximum nightly price" style={{ '--fill': `${draft.maxPrice / PRICE_LIMIT * 100}%` }} /><div className="es-price-ends"><span>₹0</span><span>{priceLabel(draft.maxPrice)}{draft.maxPrice === PRICE_LIMIT ? '+' : ''}</span></div></FilterGroup>
       <FilterGroup title="Property Type">{typeOptions.map(([label, value]) => <label className="es-filter-option" key={value}><input type="checkbox" checked={draft.types.includes(value)} onChange={() => updateList('types', value)} /><span>{label}</span><small>{allProperties.filter((property) => isType(property, value)).length}</small></label>)}</FilterGroup>
       <FilterGroup title="Amenities">{amenityOptions.map((amenity) => <label className="es-filter-option" key={amenity}><input type="checkbox" checked={draft.amenities.includes(amenity)} onChange={() => updateList('amenities', amenity)} /><span>{amenity}</span></label>)}</FilterGroup>
       <FilterGroup title="Ideal For">{idealOptions.map((ideal) => <label className="es-filter-option" key={ideal}><input type="checkbox" checked={draft.idealFor.includes(ideal)} onChange={() => updateList('idealFor', ideal)} /><span>{ideal}</span></label>)}</FilterGroup>
       <FilterGroup title="Guest Rating">{[4.5, 4, 3.5].map((rating) => <label className="es-filter-option es-rating-option" key={rating}><input type="radio" name="rating" checked={draft.rating === rating} onChange={() => setDraft((current) => ({ ...current, rating }))} /><span className="es-rating-stars">★★★</span><span>{rating} &amp; above</span></label>)}</FilterGroup>
       <button type="button" className="es-apply-btn" onClick={applyFilters}>Apply Filters</button><div className="es-help-card"><span className="es-help-icon"><Icon name="phone" /></span><div><strong>Need Help?</strong><span>Talk to our travel expert</span></div><a href="tel:+919876543210">+91 98765 43210</a><small>24/7 Support · Free Consultation</small></div>
-    </aside><div className="es-results"><div className="es-results-head"><div><h2>{filtered.length} Stays in {searchTerm || 'All Destinations'}</h2><p>Most loved properties in the hills.</p></div><label>Sort by <select value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }}><option value="popular">Most Popular</option><option value="rating">Top Rated</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option></select></label></div>
+    </aside><div className="es-results" ref={resultsPaneRef} role="region" aria-label="Stay search results" tabIndex={0}><div className="es-results-head"><div><h2 aria-live="polite">{filtered.length} Stays in {searchTerm || 'All Destinations'}</h2><p>Explore the matching properties below.</p></div><label>Sort by <select value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); resultsPaneRef.current?.scrollTo({ top: 0 }); }}><option value="popular">Most Popular</option><option value="rating">Top Rated</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option></select></label></div>
       {visibleProperties.length ? <div className="es-card-grid">{visibleProperties.map((property) => <PropertyCard key={`${property.source}-${property.id}`} property={property} favorite={favorites.includes(property.id)} onFavorite={toggleFavorite} searchParams={cardParams} />)}</div> : <div className="es-empty"><Icon name="mountain-sun" /><h3>No stays found</h3><p>Try another destination or clear some filters to see more stays.</p><button type="button" onClick={() => { clearFilters(); navigate('/explore?search=Mahabaleshwar'); }}>Show All Stays</button></div>}
       {filtered.length > PAGE_SIZE && <nav className="es-pagination" aria-label="Stay pages">{Array.from({ length: pages }, (_, index) => <button key={index + 1} type="button" className={currentPage === index + 1 ? 'is-current' : ''} onClick={() => changePage(index + 1)} aria-current={currentPage === index + 1 ? 'page' : undefined}>{index + 1}</button>)}<button type="button" disabled={currentPage === pages} onClick={() => changePage(currentPage + 1)} aria-label="Next page"><Icon name="arrow-right" /></button></nav>}
     </div></div></section>

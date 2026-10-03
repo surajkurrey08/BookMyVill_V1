@@ -6,7 +6,6 @@ import Footer from './components/Footer/Footer';
 import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
 import OwnerSetup from './components/OwnerSetup/OwnerSetup';
-import PropertyDetails from './components/PropertyDetails/PropertyDetails';
 import UserDashboard from './components/UserDashboard/UserDashboard';
 import UserProfile from './components/UserProfile/UserProfile';
 import CaretakerApply from './components/Caretaker/CaretakerApply';
@@ -18,12 +17,17 @@ import RegistrationForm from './components/RegistrationForm/RegistrationForm';
 import ExploreStaysPage from './components/ExploreStays/ExploreStaysPage';
 import AiAssistant from './components/AiAssistant/AiAssistant';
 import HomePage from './components/Home/HomePage';
+import { ADMIN_PORTAL_URL, OWNER_PORTAL_URL } from './config';
 import './App.css';
 import 'lenis/dist/lenis.css';
 
 // Guest quotation links are opened directly from WhatsApp/email; load the page on demand.
 const QuoteView = lazy(() => import('./components/QuoteView/QuoteView'));
 const TripPage = lazy(() => import('./components/Trip/TripPage'));
+const PropertyPage = lazy(() => import('./components/BookingFlow/PropertyPage'));
+const RoomsPage = lazy(() => import('./components/BookingFlow/RoomsPage'));
+const CheckoutPage = lazy(() => import('./components/BookingFlow/CheckoutPage'));
+const ConfirmedPage = lazy(() => import('./components/BookingFlow/ConfirmedPage'));
 
 const AccessRestrictedModal = ({ title, message }) => {
   const navigate = useNavigate();
@@ -136,7 +140,7 @@ const AdminRedirect = () => {
 
   useEffect(() => {
     if (!isTraveler) {
-      window.location.replace('http://localhost:5174');
+      window.location.replace(ADMIN_PORTAL_URL);
     }
   }, [isTraveler]);
 
@@ -179,7 +183,7 @@ const OwnerRedirect = () => {
 
   useEffect(() => {
     if (!isTraveler) {
-      window.location.replace('http://localhost:5175');
+      window.location.replace(OWNER_PORTAL_URL);
     }
   }, [isTraveler]);
 
@@ -204,7 +208,7 @@ const OwnerRedirect = () => {
         Redirecting to Property Owner Portal
       </h2>
       <p style={{ color: '#859690', fontSize: '0.9rem' }}>
-        Opening your host command center on port 5175...
+        Opening your host command center...
       </p>
     </div>
   );
@@ -272,7 +276,10 @@ function App() {
           <Route path="/admin" element={<AdminRedirect />} />
           <Route path="/owner" element={<OwnerRedirect />} />
           <Route path="/owner-dashboard" element={<OwnerRedirect />} />
-          <Route path="/property/:id" element={<PropertyDetails />} />
+          <Route path="/property/:id" element={<Suspense fallback={null}><PropertyPage /></Suspense>} />
+          <Route path="/property/:id/rooms" element={<Suspense fallback={null}><RoomsPage /></Suspense>} />
+          <Route path="/booking/checkout/:holdId" element={<Suspense fallback={null}><CheckoutPage /></Suspense>} />
+          <Route path="/booking/:bookingId/confirmed" element={<Suspense fallback={null}><ConfirmedPage /></Suspense>} />
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/caretaker-apply" element={<CaretakerApply />} />

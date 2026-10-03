@@ -17,7 +17,7 @@ function loadCheckout() {
   return scriptPromise;
 }
 
-export async function launchRazorpayCheckout({ order, token, propertyName, user, onPaid, onError, onDismiss }) {
+export async function launchRazorpayCheckout({ order, token, propertyName, user, verifyPath = '/api/bookings/verify', onPaid, onError, onDismiss }) {
   await loadCheckout();
   const checkout = new window.Razorpay({
     key: order.key_id,
@@ -30,7 +30,7 @@ export async function launchRazorpayCheckout({ order, token, propertyName, user,
     theme: { color: '#c9a227' },
     handler: async payment => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/bookings/verify`, {
+        const response = await fetch(`${API_BASE_URL}${verifyPath}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
           body: JSON.stringify(payment)

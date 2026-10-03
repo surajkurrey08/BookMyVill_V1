@@ -123,7 +123,12 @@ router.post('/properties/:propertyId/rooms', async (req, res) => {
     if (!name || name.length > 80 || !number || number.length > 30 || !type || type.length > 60 || !Number.isInteger(capacity) || capacity < 1 || capacity > 50 || req.body.baseRate === '' || !Number.isFinite(baseRate) || baseRate < 0) {
       return res.status(400).json({ msg: 'Enter a room name, unique number, type, capacity (1–50), and valid base rate.' });
     }
-    const room = await Room.create({ property: property._id, name, number, type, capacity, baseRate });
+    const room = await Room.create({ property: property._id, name, number, type, capacity, baseRate,
+      bedType: String(req.body.bedType || '').slice(0, 60), view: String(req.body.view || '').slice(0, 80),
+      sizeSqFt: req.body.sizeSqFt ? Number(req.body.sizeSqFt) : null,
+      photos: Array.isArray(req.body.photos) ? req.body.photos.filter(value => typeof value === 'string' && value.length <= 2048).slice(0, 12) : [],
+      amenities: Array.isArray(req.body.amenities) ? req.body.amenities.filter(value => typeof value === 'string' && value.length <= 80).slice(0, 20) : [],
+      cancellationPolicy: String(req.body.cancellationPolicy || '').slice(0, 1200) });
     res.status(201).json(room);
   } catch (err) {
     if (err.code === 11000) return res.status(409).json({ msg: 'This room number already exists for this property.' });
@@ -135,14 +140,20 @@ router.patch('/rooms/:roomId', async (req, res) => {
   try {
     const room = await ownedRoom(req, res, req.params.roomId);
     if (!room) return;
-    const { name, number, type, capacity, baseRate, active } = req.body;
+    const { name, number, type, capacity, baseRate, active, bedType, view, sizeSqFt, photos, amenities, cancellationPolicy } = req.body;
     if (name !== undefined) room.name = String(name).trim();
     if (number !== undefined) room.number = String(number).trim();
     if (type !== undefined) room.type = String(type).trim();
     if (capacity !== undefined) room.capacity = Number(capacity);
     if (baseRate !== undefined) room.baseRate = Number(baseRate);
     if (active !== undefined) room.active = active === true;
-    if (!room.name || room.name.length > 80 || !room.number || room.number.length > 30 || !room.type || room.type.length > 60 || !Number.isInteger(room.capacity) || room.capacity < 1 || room.capacity > 50 || baseRate === '' || !Number.isFinite(room.baseRate) || room.baseRate < 0) {
+    if (bedType !== undefined) room.bedType = String(bedType).slice(0, 60);
+    if (view !== undefined) room.view = String(view).slice(0, 80);
+    if (sizeSqFt !== undefined) room.sizeSqFt = sizeSqFt === '' || sizeSqFt === null ? null : Number(sizeSqFt);
+    if (photos !== undefined) room.photos = Array.isArray(photos) ? photos.filter(value => typeof value === 'string' && value.length <= 2048).slice(0, 12) : room.photos;
+    if (amenities !== undefined) room.amenities = Array.isArray(amenities) ? amenities.filter(value => typeof value === 'string' && value.length <= 80).slice(0, 20) : room.amenities;
+    if (cancellationPolicy !== undefined) room.cancellationPolicy = String(cancellationPolicy).slice(0, 1200);
+    if (!room.name || room.name.length > 80 || !room.number || room.number.length > 30 || !room.type || room.type.length > 60 || !Number.isInteger(room.capacity) || room.capacity < 1 || room.capacity > 50 || baseRate === '' || !Number.isFinite(room.baseRate) || room.baseRate < 0 || (room.sizeSqFt !== null && (!Number.isFinite(room.sizeSqFt) || room.sizeSqFt < 0))) {
       return res.status(400).json({ msg: 'Invalid room details.' });
     }
     if (!room.active && await RoomNight.exists({ room: room._id, date: { $gte: new Date().toISOString().slice(0, 10) }, kind: 'booking' })) {

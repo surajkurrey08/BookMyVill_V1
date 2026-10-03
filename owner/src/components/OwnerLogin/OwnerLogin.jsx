@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../../config';
+import { API_BASE_URL, GUEST_SITE_URL } from '../../config';
 import './OwnerLogin.css';
 
 const OwnerLogin = () => {
@@ -184,11 +184,11 @@ const OwnerLogin = () => {
 
         <div className="login-footer-toggle">
           <p>Approved owner without a password? Ask the admin for your one-time Owner Login Link.</p>
-          <p>New Villa Host or Resort Owner? <a href="http://localhost:5173/register-property">Apply to list your property</a></p>
+          <p>New Villa Host or Resort Owner? <a href={`${GUEST_SITE_URL}/register-property`}>Apply to list your property</a></p>
         </div>
 
         <div className="back-to-main">
-          <a href="http://localhost:5173" className="back-link">
+          <a href={GUEST_SITE_URL} className="back-link">
             <i className="fa-solid fa-arrow-left"></i> Return to Main Website
           </a>
         </div>

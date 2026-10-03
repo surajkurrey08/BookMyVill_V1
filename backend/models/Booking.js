@@ -24,6 +24,15 @@ const BookingSchema = new mongoose.Schema({
     phoneKey: { type: String, maxlength: 20 },
     email: { type: String, maxlength: 120 }
   },
+  guestDetails: {
+    arrivalTime: { type: String, default: '', maxlength: 40 },
+    idType: { type: String, default: '', maxlength: 40 },
+    idLastFour: { type: String, default: '', maxlength: 4 },
+    specialRequests: { type: String, default: '', maxlength: 500 },
+    additionalGuests: { type: [String], default: [] },
+    idProof: { type: String, default: '', maxlength: 2000000 }
+  },
+  promotion: { type: mongoose.Schema.Types.ObjectId, ref: 'Promotion', default: null },
   source: { type: String, enum: ['website', 'quotation', 'walk_in', 'phone', 'whatsapp', 'agent', 'ota', 'other'], default: 'website' },
   quotation: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation', default: null },
   inquiry: { type: mongoose.Schema.Types.ObjectId, ref: 'Inquiry', default: null },

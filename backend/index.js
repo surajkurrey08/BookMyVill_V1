@@ -21,6 +21,11 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+app.get('/api/health', (req, res) => {
+  const databaseReady = mongoose.connection.readyState === 1;
+  res.status(databaseReady ? 200 : 503).json({ status: databaseReady ? 'ok' : 'database_unavailable' });
+});
+
 app.use((req, res, next) => {
   console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
   next();
@@ -41,6 +46,7 @@ app.use('/api/owner-quotes', require('./routes/ownerQuotes'));
 app.use('/api/owner-catalog', require('./routes/ownerCatalog'));
 app.use('/api/public/quotes', require('./routes/publicQuotes'));
 app.use('/api/stay', require('./routes/customerStay'));
+app.use('/api/customer-booking', require('./routes/customerBooking'));
 app.use('/api/admin-console', require('./routes/adminConsole'));
 app.use('/api/caretaker', require('./routes/caretaker'));
 app.use('/api/partner', require('./routes/partner'));
@@ -57,6 +63,7 @@ console.log('Using JWT Secret:', process.env.JWT_SECRET ? 'FOUND' : 'MISSING');
 const User = require('./models/User');
 
 async function seedAdminUser() {
+  if (process.env.NODE_ENV === 'production') return;
   try {
     const adminEmail = 'admin@gmail.com';
     let admin = await User.findOne({ email: adminEmail });

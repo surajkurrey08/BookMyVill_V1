@@ -4,7 +4,7 @@ import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import './JoinUs.css';
 import bgImage from '../../assets/hillstationhome (1).jpg';
-import { API_BASE_URL } from '../../config';
+import { API_BASE_URL, OWNER_PORTAL_URL } from '../../config';
 import useSiteHero from '../../hooks/useSiteHero';
 
 const JoinUs = () => {
@@ -171,7 +171,7 @@ const JoinUs = () => {
               <Link to="/register-property" className="btn-join-action">
                 Fill Property Owner Form <i className="fa-solid fa-arrow-right"></i>
               </Link>
-              <a href="http://localhost:5175" className="btn-portal-action" target="_blank" rel="noreferrer">
+              <a href={OWNER_PORTAL_URL} className="btn-portal-action" target="_blank" rel="noreferrer">
                 <i className="fa-solid fa-vihara"></i> Owner Portal Sign In ↗
               </a>
             </div>

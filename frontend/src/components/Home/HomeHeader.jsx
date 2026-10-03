@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LoginModal from './LoginModal';
 import BrandLogo from '../Brand/BrandLogo';
+import { OWNER_PORTAL_URL, CARETAKER_PORTAL_URL } from '../../config';
 
 const readUser = () => {
   try {
@@ -66,7 +67,7 @@ const HomeHeader = () => {
     });
     setUser(null);
     setProfileOpen(false);
-    if (isOwner) window.location.href = 'http://localhost:5175/login';
+    if (isOwner) window.location.href = `${OWNER_PORTAL_URL}/login`;
   };
 
   const handleLoginSuccess = (token, loggedInUser) => {
@@ -121,10 +122,10 @@ const HomeHeader = () => {
                   <Link to="/dashboard"><i className="fa-solid fa-suitcase-rolling"></i> My Bookings</Link>
                   <Link to="/profile"><i className="fa-solid fa-user-pen"></i> Edit Profile</Link>
                   {user.role === 'owner' && (
-                    <a href="http://localhost:5175"><i className="fa-solid fa-building-user"></i> Host Portal</a>
+                    <a href={OWNER_PORTAL_URL}><i className="fa-solid fa-building-user"></i> Host Portal</a>
                   )}
                   {user.role === 'caretaker' && (
-                    <a href="http://localhost:5176"><i className="fa-solid fa-user-gear"></i> Caretaker Portal</a>
+                    <a href={CARETAKER_PORTAL_URL}><i className="fa-solid fa-user-gear"></i> Caretaker Portal</a>
                   )}
                   <button type="button" className="hp-logout" onClick={handleLogout}>
                     <i className="fa-solid fa-right-from-bracket"></i> Logout

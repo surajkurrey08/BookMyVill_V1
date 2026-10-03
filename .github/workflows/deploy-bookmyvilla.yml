@@ -1,0 +1,132 @@
+name: Deploy BookMyVilla
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bookmyvilla-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check deployment settings
+        env:
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          CERTBOT_EMAIL: ${{ vars.CERTBOT_EMAIL }}
+        run: |
+          set -euo pipefail
+          for name in VPS_HOST VPS_PORT VPS_USER VPS_SSH_KEY VPS_KNOWN_HOSTS CERTBOT_EMAIL; do
+            if [[ -z "${!name}" ]]; then
+              echo "$name is missing in GitHub settings" >&2
+              exit 1
+            fi
+          done
+          [[ "$VPS_HOST" == '31.97.61.172' ]] || {
+            echo 'VPS_HOST must be updated to 31.97.61.172' >&2
+            exit 1
+          }
+          [[ "$VPS_PORT" =~ ^[0-9]+$ ]] && (( 10#$VPS_PORT >= 1 && 10#$VPS_PORT <= 65535 )) || {
+            echo 'VPS_PORT must be a valid TCP port' >&2
+            exit 1
+          }
+          [[ "$CERTBOT_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]] || {
+            echo 'CERTBOT_EMAIL is invalid' >&2
+            exit 1
+          }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            admin/package-lock.json
+            owner/package-lock.json
+
+      - name: Build public and portal sites
+        env:
+          VITE_API_URL: https://api.bookmyvilla.online
+          VITE_GUEST_SITE_URL: https://bookmyvilla.online
+          VITE_OWNER_PORTAL_URL: https://owner.bookmyvilla.online
+          VITE_ADMIN_PORTAL_URL: https://admin.bookmyvilla.online
+          VITE_OWNER_APP_URL: https://bookmyvilla.online
+        run: |
+          set -euo pipefail
+          for app in frontend admin owner; do
+            (cd "$app" && npm ci && npm run build)
+          done
+
+      - name: Configure SSH
+        env:
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host bookmyvilla-vps
+            HostName ${VPS_HOST}
+            Port ${VPS_PORT}
+            User ${VPS_USER}
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking yes
+            IdentitiesOnly yes
+          EOF
+          ssh bookmyvilla-vps 'echo SSH connection ready'
+
+      - name: Prepare VPS and HTTPS
+        env:
+          CERTBOT_EMAIL: ${{ vars.CERTBOT_EMAIL }}
+        run: |
+          set -euo pipefail
+          ssh bookmyvilla-vps 'install -d /tmp/bookmyvilla-deploy'
+          scp nginx/bookmyvilla.online.conf nginx/bookmyvilla.online.http.conf \
+            scripts/prepare-vps.sh scripts/activate-backend.sh \
+            bookmyvilla-vps:/tmp/bookmyvilla-deploy/
+          ssh bookmyvilla-vps "CERTBOT_EMAIL=$CERTBOT_EMAIL bash /tmp/bookmyvilla-deploy/prepare-vps.sh"
+
+      - name: Upload application
+        run: |
+          set -euo pipefail
+          rsync -az --delete frontend/dist/ bookmyvilla-vps:/var/www/bookmyvilla/frontend/
+          rsync -az --delete admin/dist/ bookmyvilla-vps:/var/www/bookmyvilla/admin/
+          rsync -az --delete owner/dist/ bookmyvilla-vps:/var/www/bookmyvilla/owner/
+          rsync -az --delete --exclude='.env' --exclude='uploads/' \
+            --exclude='node_modules/' backend/ bookmyvilla-vps:/var/www/bookmyvilla/backend/
+
+      - name: Start backend
+        run: ssh bookmyvilla-vps 'bash /tmp/bookmyvilla-deploy/activate-backend.sh'
+
+      - name: Check live sites
+        run: |
+          set -euo pipefail
+          for url in \
+            https://bookmyvilla.online/ \
+            https://admin.bookmyvilla.online/ \
+            https://owner.bookmyvilla.online/ \
+            https://api.bookmyvilla.online/api/health; do
+            curl --fail --silent --show-error --location \
+              --retry 12 --retry-delay 5 --retry-all-errors \
+              --max-time 15 --output /dev/null "$url"
+            echo "Healthy: $url"
+          done

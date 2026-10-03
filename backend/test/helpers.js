@@ -23,6 +23,7 @@ const routers = {
   publicQuotes: require('../routes/publicQuotes'),
   booking: require('../routes/booking'),
   customerStay: require('../routes/customerStay'),
+  customerBooking: require('../routes/customerBooking'),
   adminConsole: require('../routes/adminConsole'),
   property: require('../routes/property')
 };
@@ -55,6 +56,7 @@ async function start() {
   app.use('/api/public/quotes', routers.publicQuotes);
   app.use('/api/bookings', routers.booking);
   app.use('/api/stay', routers.customerStay);
+  app.use('/api/customer-booking', routers.customerBooking);
   app.use('/api/admin-console', routers.adminConsole);
   app.use('/api/properties', routers.property);
   await new Promise(resolve => { server = app.listen(0, '127.0.0.1', resolve); });

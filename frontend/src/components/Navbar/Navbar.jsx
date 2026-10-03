@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import BrandLogo from '../Brand/BrandLogo';
+import { OWNER_PORTAL_URL, CARETAKER_PORTAL_URL } from '../../config';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -88,7 +89,7 @@ const Navbar = () => {
     localStorage.removeItem('user');
     setUser(null);
     if (isOwner) {
-      window.location.href = 'http://localhost:5175/login';
+      window.location.href = `${OWNER_PORTAL_URL}/login`;
     } else {
       navigate('/');
       window.location.reload();
@@ -248,7 +249,7 @@ const Navbar = () => {
                       </Link>
                       {user.role === 'owner' && (
                         <a 
-                          href="http://localhost:5175" 
+                          href={OWNER_PORTAL_URL}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => setShowProfileDropdown(false)}
@@ -270,7 +271,7 @@ const Navbar = () => {
                       )}
                       {user.role === 'caretaker' && (
                         <a 
-                          href="http://localhost:5176" 
+                          href={CARETAKER_PORTAL_URL}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => setShowProfileDropdown(false)}
