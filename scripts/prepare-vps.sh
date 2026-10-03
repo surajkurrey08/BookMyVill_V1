@@ -32,7 +32,12 @@ if [[ ! -f "$cert_dir/fullchain.pem" || ! -f "$cert_dir/privkey.pem" ]]; then
   ln -sfn /etc/nginx/sites-available/bookmyvilla.online \
     /etc/nginx/sites-enabled/bookmyvilla.online
   nginx -t
-  systemctl enable --now nginx
+  if ! systemctl enable --now nginx; then
+    listeners=$(ss -H -ltnp '( sport = :80 or sport = :443 )' 2>&1 | tr '\n' '; ')
+    journal=$(journalctl -u nginx -n 8 --no-pager -o cat 2>&1 | tr '\n' '; ')
+    echo "::error title=Nginx failed to start::Port listeners: ${listeners:-none}; Nginx journal: $journal"
+    exit 1
+  fi
   systemctl reload nginx
 
   certbot certonly --webroot --webroot-path /var/www/certbot \
