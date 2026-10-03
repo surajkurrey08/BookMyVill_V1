@@ -16,10 +16,10 @@ The [deployment workflow](../.github/workflows/deploy-bookmyvilla.yml) builds th
    | `VPS_USER` | `root` |
    | `VPS_SSH_KEY` | Complete private SSH key, including BEGIN and END lines |
    | `VPS_KNOWN_HOSTS` | Verified SSH host-key line for `31.97.61.172` |
+   | `CERTBOT_EMAIL` | An email address you control for certificate expiry notices |
 
    Obtain the host-key line with `ssh-keyscan -p YOUR_SSH_PORT -H 31.97.61.172`. Verify its fingerprint through your VPS provider or an independent SSH connection before saving it. For a non-default SSH port, keep the `[31.97.61.172]:PORT` host field produced by `ssh-keyscan`.
-5. In **Repository variables**, set `CERTBOT_EMAIL` to an email address you control for certificate expiry notices.
-6. Push the repository changes to `main`. The workflow then deploys automatically on each later `main` push. You can also run it from **Actions → Deploy BookMyVilla → Run workflow**.
+5. Push the repository changes to `main`. The workflow then deploys automatically on each later `main` push. You can also run it from **Actions → Deploy BookMyVilla → Run workflow**.
 
 The workflow checks that `VPS_HOST` is `31.97.61.172` before connecting.
 

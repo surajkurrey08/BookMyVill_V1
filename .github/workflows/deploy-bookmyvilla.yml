@@ -28,7 +28,7 @@ jobs:
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
-          CERTBOT_EMAIL: ${{ vars.CERTBOT_EMAIL }}
+          CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
         run: |
           set -euo pipefail
           for name in VPS_HOST VPS_PORT VPS_USER VPS_SSH_KEY VPS_KNOWN_HOSTS CERTBOT_EMAIL; do
@@ -96,7 +96,7 @@ jobs:
 
       - name: Prepare VPS and HTTPS
         env:
-          CERTBOT_EMAIL: ${{ vars.CERTBOT_EMAIL }}
+          CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
         run: |
           set -euo pipefail
           ssh bookmyvilla-vps 'install -d /tmp/bookmyvilla-deploy'
