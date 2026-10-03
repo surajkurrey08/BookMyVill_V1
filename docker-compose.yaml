@@ -20,6 +20,10 @@ services:
 
     restart: unless-stopped
 
+    depends_on:
+      mongo:
+        condition: service_healthy
+
     networks:
       - bookmyvilla-network
 
@@ -100,6 +104,30 @@ services:
       - bookmyvilla-network
 
 
+  mongo:
+    image: mongo:7
+
+    container_name: bookmyvilla-mongo
+
+    restart: unless-stopped
+
+    volumes:
+      - bookmyvilla-mongo-data:/data/db
+
+    networks:
+      - bookmyvilla-network
+
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+
 networks:
   bookmyvilla-network:
     driver: bridge
+
+volumes:
+  bookmyvilla-mongo-data:

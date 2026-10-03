@@ -104,32 +104,61 @@ async function seedAdminUser() {
 
 let mongoMemoryServerInstance = null;
 
-async function connectDB() {
-  const primaryUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/hillstation';
-  try {
-    console.log('Connecting to primary MongoDB URI:', primaryUri);
-    await mongoose.connect(primaryUri, { serverSelectionTimeoutMS: 2000, bufferCommands: false });
-    console.log('✅ Primary MongoDB Connected Successfully.');
-    // Rebuild indexes so the User.email unique+sparse change (needed for
-    // phone-only guest accounts) replaces any old non-sparse index already
-    // on disk from before this field became optional.
-    try {
-      await User.syncIndexes();
-    } catch (idxErr) {
-      console.error('User index sync notice:', idxErr.message);
-    }
-    // Build every model's indexes now that the database is reachable; the
-    // unique ones (room nights, quotation tokens, promo codes) guard data
-    // integrity. See utils/modelIndexes.js for why this is needed.
-    const { ensureModelIndexes } = require('./utils/modelIndexes');
-    await Promise.all(Object.values(mongoose.models).map(model => ensureModelIndexes(model).catch(idxErr => {
-      console.error(`Index build notice for ${model.modelName}:`, idxErr.message);
-    })));
-    await seedAdminUser();
-  } catch (err) {
-    console.log('Local DB Connection Notice:', err.message);
-    console.log('⚡ Serving API requests cleanly via built-in high-performance data handlers on port 5001.');
+// Resolve the MongoDB connection string. A configured MONGODB_URI is honoured
+// only when it is a real connection string; a missing or placeholder value
+// (e.g. the sample "YOUR_MONGODB_CONNECTION_STRING") is ignored in favour of the
+// MongoDB service bundled with docker-compose, so the stack is self-contained.
+function resolveMongoUri() {
+  const configured = (process.env.MONGODB_URI || '').trim();
+  if (/^mongodb(\+srv)?:\/\//i.test(configured)) return configured;
+  if (configured) {
+    console.log('Configured MONGODB_URI is not a valid connection string; using the bundled MongoDB service instead.');
   }
+  return process.env.MONGODB_FALLBACK_URI || 'mongodb://mongo:27017/bookmyvilla';
+}
+
+// Hide any credentials before logging a connection string.
+const redactUri = uri => uri.replace(/\/\/[^@/]+@/, '//***@');
+
+async function initializeDatabase() {
+  // Rebuild indexes so the User.email unique+sparse change (needed for
+  // phone-only guest accounts) replaces any old non-sparse index already
+  // on disk from before this field became optional.
+  try {
+    await User.syncIndexes();
+  } catch (idxErr) {
+    console.error('User index sync notice:', idxErr.message);
+  }
+  // Build every model's indexes now that the database is reachable; the
+  // unique ones (room nights, quotation tokens, promo codes) guard data
+  // integrity. See utils/modelIndexes.js for why this is needed.
+  const { ensureModelIndexes } = require('./utils/modelIndexes');
+  await Promise.all(Object.values(mongoose.models).map(model => ensureModelIndexes(model).catch(idxErr => {
+    console.error(`Index build notice for ${model.modelName}:`, idxErr.message);
+  })));
+  await seedAdminUser();
+}
+
+async function connectDB() {
+  const uri = resolveMongoUri();
+  const maxAttempts = Number(process.env.MONGODB_CONNECT_ATTEMPTS) || 30;
+  const retryDelayMs = Number(process.env.MONGODB_CONNECT_RETRY_MS) || 3000;
+  console.log('Connecting to MongoDB at', redactUri(uri));
+  // Retry so a database that is still starting up (e.g. the mongo container
+  // during a fresh deploy) is waited for instead of dropping into a DB-less
+  // state that makes /api/health fail the deployment health check.
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000, bufferCommands: false });
+      console.log(`✅ MongoDB connected successfully (attempt ${attempt}/${maxAttempts}).`);
+      await initializeDatabase();
+      return;
+    } catch (err) {
+      console.log(`MongoDB connection attempt ${attempt}/${maxAttempts} failed:`, err.message);
+      if (attempt < maxAttempts) await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+    }
+  }
+  console.log('⚠️ Could not reach MongoDB after multiple attempts. /api/health will report 503 until the database is reachable.');
 }
 
 const PORT = process.env.PORT || 5001;
