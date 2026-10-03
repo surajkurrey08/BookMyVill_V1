@@ -9,7 +9,7 @@ services:
     container_name: bookmyvilla-backend
 
     ports:
-      - "5001:5001"
+      - "5001:5000"
 
     env_file:
       - path: ./backend/.env
@@ -94,7 +94,6 @@ services:
 
     networks:
       - bookmyvilla-network
-
 
 networks:
   bookmyvilla-network:

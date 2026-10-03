@@ -24,24 +24,25 @@ jobs:
 
     steps:
       # ============================================================
-      # 1. Checkout
+      # 1. Checkout source code
       # ============================================================
 
       - name: Checkout repository
         uses: actions/checkout@v4
 
       # ============================================================
-      # 2. Validate deployment settings
+      # 2. Validate deployment secrets
       # ============================================================
 
       - name: Check deployment settings
         env:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
         run: |
           set -euo pipefail
 
-          for name in VPS_HOST VPS_PORT VPS_USER VPS_SSH_KEY VPS_KNOWN_HOSTS; do
+          for name in VPS_HOST VPS_PORT VPS_USER VPS_SSH_KEY VPS_KNOWN_HOSTS BACKEND_ENV; do
             if [[ -z "${!name}" ]]; then
               echo "::error::$name is missing in GitHub repository secrets"
               exit 1
@@ -58,11 +59,10 @@ jobs:
             exit 1
           fi
 
-          echo "Deployment settings OK"
+          echo "Deployment configuration OK"
 
       # ============================================================
       # 3. Setup Node
-      # Used only to verify frontend builds before deployment
       # ============================================================
 
       - name: Setup Node.js
@@ -77,7 +77,7 @@ jobs:
             caretaker/package-lock.json
 
       # ============================================================
-      # 4. Verify all frontend builds
+      # 4. Verify frontend builds
       # ============================================================
 
       - name: Verify frontend builds
@@ -91,6 +91,7 @@ jobs:
           set -euo pipefail
 
           for app in frontend admin owner caretaker; do
+            echo ""
             echo "======================================"
             echo "Building $app"
             echo "======================================"
@@ -101,10 +102,11 @@ jobs:
             npm run build
           done
 
+          echo ""
           echo "All frontend builds passed"
 
       # ============================================================
-      # 5. Setup SSH
+      # 5. Configure SSH
       # ============================================================
 
       - name: Configure SSH
@@ -115,6 +117,7 @@ jobs:
           set -euo pipefail
 
           umask 077
+
           mkdir -p ~/.ssh
 
           printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
@@ -151,18 +154,19 @@ jobs:
             ssh_error=${ssh_error//%/%25}
 
             echo "::error title=VPS SSH connection failed::$ssh_error"
+
             exit 1
           fi
 
           printf '%s\n' "$ssh_output"
 
       # ============================================================
-      # 6. Check Docker
+      # 6. Verify Docker on VPS
       #
       # IMPORTANT:
-      # No nginx
-      # No certbot
-      # No port 80/443 changes
+      # Existing nginx is NOT touched.
+      # Ports 80/443 are NOT touched.
+      # Certbot is NOT touched.
       # ============================================================
 
       - name: Check VPS Docker
@@ -175,46 +179,51 @@ jobs:
             echo "Checking Docker..."
 
             if ! command -v docker >/dev/null 2>&1; then
-              echo "Docker is not installed on VPS"
+              echo "ERROR: Docker is not installed"
               exit 1
             fi
 
             docker --version
 
             if ! docker compose version >/dev/null 2>&1; then
-              echo "Docker Compose plugin is not available"
+              echo "ERROR: Docker Compose plugin is unavailable"
               exit 1
             fi
 
             docker compose version
 
             echo ""
-            echo "Existing containers:"
+            echo "Existing running containers:"
             docker ps \
               --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
             echo ""
-            echo "BookMyVilla deployment prerequisites OK"
+            echo "Docker check completed"
           REMOTE
 
       # ============================================================
-      # 7. Create deployment directory
+      # 7. Prepare only BookMyVilla directory
       # ============================================================
 
       - name: Prepare BookMyVilla directory
         run: |
           set -euo pipefail
 
-          ssh bookmyvilla-vps '
+          ssh bookmyvilla-vps <<'REMOTE'
+            set -euo pipefail
+
             mkdir -p /var/www/bookmyvilla
+            mkdir -p /var/www/bookmyvilla/backend
             mkdir -p /var/www/bookmyvilla/backend/uploads
-          '
+
+            echo "BookMyVilla deployment directory ready"
+          REMOTE
 
       # ============================================================
-      # 8. Upload BookMyVilla project
+      # 8. Upload source
       #
-      # Existing backend/.env is NOT deleted/overwritten.
-      # Existing uploads are NOT deleted.
+      # .env is excluded because it will come from GitHub Secrets.
+      # uploads directory is preserved.
       # ============================================================
 
       - name: Upload BookMyVilla application
@@ -230,19 +239,52 @@ jobs:
             --exclude='*/node_modules/' \
             --exclude='dist/' \
             --exclude='*/dist/' \
-            --exclude='backend/.env' \
+            --exclude='.env' \
+            --exclude='*/.env' \
             --exclude='backend/uploads/' \
             --exclude='*.log' \
             ./ \
             bookmyvilla-vps:/var/www/bookmyvilla/
 
-          echo "Application uploaded"
+          echo "BookMyVilla source uploaded"
 
       # ============================================================
-      # 9. Validate required backend environment
+      # 9. Create backend/.env automatically from GitHub Secret
       # ============================================================
 
-      - name: Check backend environment
+      - name: Create backend production environment
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$BACKEND_ENV" ]]; then
+            echo "::error::BACKEND_ENV GitHub secret is missing"
+            exit 1
+          fi
+
+          ENV_TEMP="$RUNNER_TEMP/bookmyvilla-backend.env"
+
+          printf '%s' "$BACKEND_ENV" > "$ENV_TEMP"
+
+          scp \
+            "$ENV_TEMP" \
+            bookmyvilla-vps:/var/www/bookmyvilla/backend/.env
+
+          ssh bookmyvilla-vps \
+            'chmod 600 /var/www/bookmyvilla/backend/.env'
+
+          rm -f "$ENV_TEMP"
+
+          echo "Backend production environment created"
+
+      # ============================================================
+      # 10. Verify backend .env
+      #
+      # Secret values are NOT printed.
+      # ============================================================
+
+      - name: Verify backend environment
         run: |
           set -euo pipefail
 
@@ -252,24 +294,30 @@ jobs:
             ENV_FILE="/var/www/bookmyvilla/backend/.env"
 
             if [ ! -f "$ENV_FILE" ]; then
-              echo "ERROR: backend/.env does not exist:"
-              echo "$ENV_FILE"
-              echo ""
-              echo "Create the production backend/.env before deployment."
+              echo "ERROR: backend/.env was not created"
               exit 1
             fi
 
-            echo "backend/.env found"
+            if [ ! -s "$ENV_FILE" ]; then
+              echo "ERROR: backend/.env is empty"
+              exit 1
+            fi
+
+            echo "backend/.env exists"
 
             if grep -Eq '^(MONGO_URI|MONGODB_URI|MONGO_URL)=' "$ENV_FILE"; then
-              echo "MongoDB environment variable found"
+              echo "MongoDB configuration found"
             else
-              echo "WARNING: Could not find MONGO_URI, MONGODB_URI or MONGO_URL"
+              echo "WARNING: MongoDB variable not detected"
             fi
+
+            chmod 600 "$ENV_FILE"
+
+            echo "Environment verification completed"
           REMOTE
 
       # ============================================================
-      # 10. Validate Docker Compose
+      # 11. Validate docker-compose.yaml
       # ============================================================
 
       - name: Validate Docker Compose
@@ -281,7 +329,7 @@ jobs:
 
             cd /var/www/bookmyvilla
 
-            echo "Validating docker-compose.yaml..."
+            echo "Validating Docker Compose configuration..."
 
             docker compose config >/dev/null
 
@@ -289,7 +337,7 @@ jobs:
           REMOTE
 
       # ============================================================
-      # 11. Build BookMyVilla containers
+      # 12. Build ONLY BookMyVilla containers
       # ============================================================
 
       - name: Build BookMyVilla containers
@@ -301,6 +349,7 @@ jobs:
 
             cd /var/www/bookmyvilla
 
+            echo ""
             echo "======================================"
             echo "Building BookMyVilla containers"
             echo "======================================"
@@ -310,18 +359,23 @@ jobs:
           REMOTE
           then
 
-            echo "::error::BookMyVilla Docker build failed"
+            echo "::error title=BookMyVilla build failed::Docker build failed"
 
-            ssh bookmyvilla-vps '
-              cd /var/www/bookmyvilla &&
+            ssh bookmyvilla-vps <<'REMOTE'
+              cd /var/www/bookmyvilla || exit 0
+
               docker compose ps || true
-            '
+              docker compose logs --tail=100 || true
+          REMOTE
 
             exit 1
           fi
 
       # ============================================================
-      # 12. Start/update ONLY BookMyVilla
+      # 13. Start/update ONLY BookMyVilla
+      #
+      # docker compose down is intentionally NOT used.
+      # Other VPS containers are untouched.
       # ============================================================
 
       - name: Start BookMyVilla containers
@@ -333,6 +387,7 @@ jobs:
 
             cd /var/www/bookmyvilla
 
+            echo ""
             echo "======================================"
             echo "Starting BookMyVilla"
             echo "======================================"
@@ -340,28 +395,24 @@ jobs:
             docker compose up -d --remove-orphans
 
             echo ""
-            echo "Container status:"
+            echo "BookMyVilla container status:"
+
             docker compose ps
 
           REMOTE
           then
 
-            echo "::error::BookMyVilla containers failed to start"
+            echo "::error title=BookMyVilla startup failed::Containers could not start"
 
             ssh bookmyvilla-vps <<'REMOTE'
               cd /var/www/bookmyvilla || exit 0
 
-              echo "======================================"
-              echo "Container status"
-              echo "======================================"
-
+              echo ""
+              echo "Container status:"
               docker compose ps || true
 
               echo ""
-              echo "======================================"
-              echo "Container logs"
-              echo "======================================"
-
+              echo "Container logs:"
               docker compose logs --tail=150 || true
           REMOTE
 
@@ -369,15 +420,16 @@ jobs:
           fi
 
       # ============================================================
-      # 13. Wait until containers initialize
+      # 14. Wait for startup
       # ============================================================
 
-      - name: Wait for BookMyVilla
+      - name: Wait for services
         run: |
+          echo "Waiting for BookMyVilla services..."
           sleep 10
 
       # ============================================================
-      # 14. Check backend
+      # 15. Check backend
       # ============================================================
 
       - name: Check backend
@@ -389,7 +441,7 @@ jobs:
 
             cd /var/www/bookmyvilla
 
-            echo "Checking backend..."
+            echo "Checking backend on port 5001..."
 
             success=false
 
@@ -404,7 +456,7 @@ jobs:
                 >/dev/null
               then
 
-                echo "Backend healthy on port 5001"
+                echo "Backend healthy"
                 success=true
                 break
               fi
@@ -417,7 +469,7 @@ jobs:
             if [ "$success" != "true" ]; then
 
               echo ""
-              echo "Backend health check failed"
+              echo "ERROR: Backend health check failed"
 
               echo ""
               echo "Container status:"
@@ -432,7 +484,7 @@ jobs:
           REMOTE
 
       # ============================================================
-      # 15. Check frontend containers
+      # 16. Check frontend/admin/owner/caretaker
       # ============================================================
 
       - name: Check frontend applications
@@ -444,15 +496,15 @@ jobs:
 
             cd /var/www/bookmyvilla
 
-            check_port() {
+            check_service() {
 
-              name="$1"
-              port="$2"
+              NAME="$1"
+              PORT="$2"
 
               echo ""
-              echo "Checking ${name} on ${port}..."
+              echo "Checking ${NAME} on port ${PORT}..."
 
-              success=false
+              SUCCESS=false
 
               for attempt in $(seq 1 10); do
 
@@ -461,44 +513,51 @@ jobs:
                   --silent \
                   --show-error \
                   --max-time 10 \
-                  "http://127.0.0.1:${port}/" \
+                  "http://127.0.0.1:${PORT}/" \
                   >/dev/null
                 then
 
-                  echo "${name}: healthy"
-                  success=true
+                  echo "${NAME}: healthy"
+
+                  SUCCESS=true
                   break
                 fi
 
-                echo "${name}: waiting (${attempt}/10)"
+                echo "${NAME}: waiting (${attempt}/10)"
 
                 sleep 3
               done
 
-              if [ "$success" != "true" ]; then
+              if [ "$SUCCESS" != "true" ]; then
 
-                echo "${name} failed health check"
+                echo ""
+                echo "ERROR: ${NAME} health check failed"
 
+                echo ""
                 docker compose ps
+
+                echo ""
                 docker compose logs --tail=100
 
                 exit 1
               fi
             }
 
-            check_port "Frontend" 5173
-            check_port "Admin" 5174
-            check_port "Owner" 5175
-            check_port "Caretaker" 5176
+            check_service "Frontend" 5173
+            check_service "Admin" 5174
+            check_service "Owner" 5175
+            check_service "Caretaker" 5176
 
           REMOTE
 
       # ============================================================
-      # 16. Show final deployment status
+      # 17. Final deployment status
       # ============================================================
 
       - name: Deployment status
         run: |
+          set -euo pipefail
+
           ssh bookmyvilla-vps <<'REMOTE'
             set -euo pipefail
 
@@ -506,29 +565,32 @@ jobs:
 
             echo ""
             echo "======================================"
-            echo "BOOKMYVILLA DEPLOYMENT SUCCESSFUL"
+            echo " BOOKMYVILLA DEPLOYMENT SUCCESSFUL"
             echo "======================================"
+            echo ""
 
             docker compose ps
 
             echo ""
-            echo "Internal VPS services:"
+            echo "BookMyVilla internal endpoints:"
+            echo "--------------------------------------"
             echo "Frontend  : http://127.0.0.1:5173"
             echo "Admin     : http://127.0.0.1:5174"
             echo "Owner     : http://127.0.0.1:5175"
             echo "Caretaker : http://127.0.0.1:5176"
             echo "Backend   : http://127.0.0.1:5001"
+            echo "--------------------------------------"
 
           REMOTE
 
       # ============================================================
-      # 17. Clean unused build images
-      # Does NOT stop existing containers
+      # 18. Cleanup unused Docker build images
+      #
+      # Running containers are NOT removed/stopped.
       # ============================================================
 
       - name: Clean unused Docker images
         if: success()
         run: |
-          ssh bookmyvilla-vps '
-            docker image prune -f
-          '
+          ssh bookmyvilla-vps \
+            'docker image prune -f'
