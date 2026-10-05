@@ -432,6 +432,9 @@ jobs:
 
             docker compose up -d --remove-orphans
 
+            # Retry a backend whose initial Atlas connection attempts expired.
+            docker compose restart backend
+
             echo ""
             echo "BookMyVilla container status:"
 
