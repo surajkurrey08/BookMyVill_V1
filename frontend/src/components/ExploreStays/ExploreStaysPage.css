@@ -23,7 +23,8 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(90deg, rgba(4, 17, 17, .66) 0%, rgba(4, 17, 17, .24) 55%, rgba(4, 17, 17, .02) 100%),
+  /* Darkest behind the centred heading so it reads on any hero photo. */
+  background: radial-gradient(ellipse 60% 55% at 50% 46%, rgba(4, 17, 17, .5) 0%, rgba(4, 17, 17, .16) 70%, transparent 100%),
               linear-gradient(180deg, rgba(3, 20, 25, .33) 0%, transparent 35%, rgba(3, 20, 19, .13) 63%, rgba(3, 20, 19, .48) 100%);
 }
 
@@ -31,18 +32,27 @@
   max-width: 1280px;
   min-height: 350px;
   margin: auto;
-  padding: 90px 32px 20px;
+  /* Bottom padding leaves room for the search bar that overlaps this edge. */
+  padding: 28px 32px 116px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
+
+.es-hero-top { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 18px; }
+/* A bare arrow; the padding only enlarges the click target. */
+.es-back { flex: 0 0 auto; display: grid; place-items: center; margin-left: -8px; padding: 8px; border: 0; background: none; color: #fff; font-size: 1.35rem; line-height: 1; cursor: pointer; text-shadow: 0 2px 10px rgba(0, 0, 0, .45); transition: color .2s ease; }
+.es-back i { transition: transform .2s ease; }
+.es-back:hover { color: var(--es-gold); }
+.es-back:hover i { transform: translateX(-3px); }
 
 .es-breadcrumb { display: flex; align-items: center; gap: 8px; color: #fff; font-size: .83rem; font-weight: 500; }
 .es-breadcrumb a { color: inherit; }
 .es-breadcrumb a:hover { color: var(--es-gold); }
 .es-breadcrumb span:nth-child(2) { color: var(--es-gold); font-size: 1.2rem; line-height: 1; }
 
-.es-hero-copy { margin: auto 0 14px; }
+/* Vertically centred between the back/breadcrumb row and the search bar. */
+.es-hero-copy { align-self: center; margin: auto 0; padding-bottom: 12px; text-align: center; }
 .es-page .es-hero-copy h1 {
   margin: 0;
   color: #fff;
@@ -52,41 +62,35 @@
   line-height: 1.1;
   letter-spacing: -.035em;
   text-shadow: 0 3px 20px rgba(0, 0, 0, .25);
+  text-wrap: balance;
 }
 .es-page .es-hero-copy h1 span { color: var(--es-gold); font-family: inherit; }
 .es-hero-copy p { margin: 8px 0 0; color: #fff; font-size: .95rem; }
 
-.es-search {
-  width: 100%;
-  min-height: 70px;
-  display: flex;
-  align-items: center;
-  padding: 6px 8px 6px 15px;
-  color: var(--es-ink);
-  background: #fff;
-  border-radius: 999px;
-  box-shadow: 0 18px 38px rgba(0, 0, 0, .25);
+/* The search bar is the first child of the listing section and is sticky
+   inside it: the negative margin places it over the hero's bottom edge, it
+   pins to the top while the stays scroll by, and the section's end releases
+   it. Being in normal flow, the filters and results always sit below it. */
+/* Sizes are constant so pinning never shifts the content below:
+   12px + 78px bar + 12px = a 102px band; -114px puts the bar 24px above the
+   hero's bottom edge. */
+.es-search-dock { position: sticky; top: 0; z-index: 30; margin: -114px 0 16px; padding: 12px 0; border-bottom: 1px solid transparent; transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease; }
+.es-search-dock-inner { max-width: 1280px; margin: auto; padding: 0 32px; }
+@media (min-width: 851px) {
+  /* Pinned: an opaque band in the page colour, so nothing scrolls visibly
+     above or behind the bar, and the bar drops to the cards' quiet elevation. */
+  .es-search-dock.is-stuck { background: #faf9f5; border-bottom-color: #ecefe9; box-shadow: 0 8px 20px rgba(20, 42, 29, .05); }
+  .es-search-dock.is-stuck .es-search { box-shadow: 0 0 0 1px #ecefe9, 0 6px 24px rgba(20, 42, 29, .055); }
 }
-.es-search-field { position: relative; min-width: 0; flex: 1 1 0; display: flex; align-items: center; gap: 14px; padding: 5px 14px; min-height: 48px; border-right: 1px solid #e6e5de; }
-.es-location-field { flex: 1.3 1 0; padding-left: 7px; }
-.es-search-field > i { color: var(--es-green); font-size: 1.23rem; }
-.es-search-copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.es-search-copy > span { color: #879088; font-size: .76rem; font-weight: 500; }
-.es-search-copy > strong,
-.es-search-copy > input,
-.es-search-copy > select { width: 100%; min-width: 0; margin: 0; padding: 0; border: 0; outline: 0; background: none; color: var(--es-ink); font-size: .92rem; font-weight: 700; }
-.es-search-copy > input::placeholder { color: #879088; }
-.es-search-copy > select { cursor: pointer; appearance: none; }
-.es-date-field { cursor: pointer; }
-.es-date-field input[type='date'] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-.es-guests-field { flex: .75 1 0; border: 0; }
-.es-search-submit { flex: 0 0 auto; min-width: 136px; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #facb4b, var(--es-gold)); color: #182016; font-size: .94rem; font-weight: 800; cursor: pointer; box-shadow: 0 7px 18px rgba(215, 161, 33, .27); }
-.es-search-submit:hover { background: #ffd35e; transform: translateY(-1px); }
 
-.hp-root .es-listing-section { padding: 32px 0 56px; scroll-margin-top: 76px; }
-.es-layout { width: 100%; max-width: 1280px; height: min(760px, calc(100dvh - 112px)); min-height: 520px; display: grid; grid-template-columns: 270px minmax(0, 1fr); align-items: stretch; gap: 24px; margin: auto; padding: 0 32px; }
+/* flow-root keeps the search dock's negative margin from collapsing through. */
+.hp-root .es-listing-section { display: flow-root; padding: 0 0 56px; }
+/* The page scrolls as one document. The filter panel stays pinned beside the
+   results and only scrolls itself when it is taller than the viewport. */
+.es-layout { width: 100%; max-width: 1280px; display: grid; grid-template-columns: 270px minmax(0, 1fr); align-items: start; gap: 28px; margin: auto; padding: 0 32px; }
 .es-mobile-filter-toggle { display: none; }
-.es-sidebar { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 21px 19px 0; background: #fff; border: 1px solid #efeee8; border-radius: 12px; box-shadow: 0 8px 28px rgba(22, 45, 32, .055); }
+/* Pinned below the search band: 102px + 18px gap. */
+.es-sidebar { position: sticky; top: 120px; max-height: calc(100dvh - 136px); overflow-y: auto; overscroll-behavior: contain; padding: 21px 19px 0; background: #fff; border: 1px solid #efeee8; border-radius: 14px; box-shadow: 0 8px 28px rgba(22, 45, 32, .055); }
 .es-filter-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 20px; border-bottom: 1px solid #e9ece6; }
 .es-page .es-filter-top h2 { margin: 0; color: var(--es-ink); font-size: 1.06rem; font-weight: 800; }
 .es-filter-top button { padding: 0; border: 0; background: none; color: var(--es-green); font-size: .76rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
@@ -114,10 +118,13 @@
 .es-help-card a { grid-column: 1 / -1; color: var(--es-ink); font-size: .91rem; font-weight: 800; }
 .es-help-card small { grid-column: 1 / -1; }
 
-.es-results { min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 8px; }
-.es-sidebar, .es-results { scrollbar-width: thin !important; scrollbar-color: #9fb8a8 transparent !important; }
-.es-sidebar::-webkit-scrollbar, .es-results::-webkit-scrollbar { display: block !important; width: 7px !important; }
-.es-sidebar::-webkit-scrollbar-thumb, .es-results::-webkit-scrollbar-thumb { display: block !important; background: #9fb8a8 !important; border-radius: 999px; }
+.es-results { min-width: 0; }
+/* Scrollbars are hidden site-wide; the filter panel shows a slim one only on hover. */
+.es-sidebar { scrollbar-width: thin !important; scrollbar-color: transparent transparent !important; }
+.es-sidebar:hover { scrollbar-color: #b9cbbf transparent !important; }
+.es-sidebar::-webkit-scrollbar { display: block !important; width: 6px !important; }
+.es-sidebar::-webkit-scrollbar-thumb { display: block !important; background: transparent !important; border-radius: 999px; }
+.es-sidebar:hover::-webkit-scrollbar-thumb { background: #b9cbbf !important; }
 .es-results-head { min-height: 70px; display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 21px; }
 .es-page .es-results-head h2 { margin: 0 0 4px; color: var(--es-ink); font-size: clamp(1.38rem, 2vw, 1.7rem); font-weight: 800; line-height: 1.2; }
 .es-results-head p { margin: 0; color: #7b847c; font-size: .84rem; }
@@ -184,37 +191,29 @@
   .es-card-bottom { align-items: flex-start; }
 }
 @media (max-width: 850px) {
-  .hp-root .es-hero, .es-hero-inner { min-height: 480px; }
-  .es-hero-inner { padding-left: 24px; padding-right: 24px; }
-  .es-search { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); border-radius: 16px; }
-  .es-search-field { border: 0; }
-  .es-location-field, .es-date-field:nth-of-type(2) { border-right: 1px solid #e6e5de; }
-  .es-search-submit { min-width: 0; grid-column: 1 / -1; }
+  .hp-root .es-hero, .es-hero-inner { min-height: 420px; }
+  .es-hero-inner { padding-left: 24px; padding-right: 24px; padding-bottom: 64px; }
+  /* The stacked search form is too tall to stay pinned on small screens. */
+  .es-search-dock { position: static; margin: -40px 0 24px; padding: 0; }
+  .es-search-dock-inner { padding: 0 24px; }
   .es-layout { grid-template-columns: 220px minmax(0,1fr); padding: 0 24px; }
   .es-card-grid { grid-template-columns: 1fr; }
   .es-card-photo { height: 160px; }
   .es-testimonials-inner { padding: 0 24px; }
 }
 @media (max-width: 650px) {
-  .es-page .hp-join-btn { display: none; }
-  .hp-root .es-hero, .es-hero-inner { min-height: 450px; }
-  .es-hero-inner { padding: 88px 16px 18px; }
+  .hp-root .es-hero, .es-hero-inner { min-height: 380px; }
+  .es-hero-inner { padding: 20px 16px 60px; }
+  .es-search-dock-inner { padding: 0 16px; }
   .es-hero-copy { margin-bottom: 14px; }
   .es-page .es-hero-copy h1 { font-size: clamp(2.25rem, 9vw, 3.4rem); }
   .es-hero-copy p { font-size: .92rem; }
-  .es-search { gap: 0; padding: 8px; }
-  .es-search-field { min-height: 58px; padding: 8px 10px; gap: 9px; }
-  .es-search-field > i { font-size: .93rem; }
-  .es-search-copy > strong, .es-search-copy > input, .es-search-copy > select { font-size: .78rem; }
-  .es-search-copy > span { font-size: .65rem; }
-  .es-search-submit { min-height: 45px; font-size: .84rem; }
-  .hp-root .es-listing-section { padding: 28px 0 46px; }
-  .es-layout { display: block; height: auto; min-height: 0; padding: 0 16px; }
+  .hp-root .es-listing-section { padding: 0 0 46px; }
+  .es-layout { display: block; padding: 0 16px; }
   .es-mobile-filter-toggle { width: 100%; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 13px 16px; border: 1px solid #e8ece6; border-radius: 9px; background: #fff; color: var(--es-green); font-size: .85rem; font-weight: 800; cursor: pointer; }
   .es-mobile-filter-toggle i:last-child { margin-left: auto; }
-  .es-sidebar { display: none; max-height: 55vh; margin-bottom: 20px; padding: 18px; }
+  .es-sidebar { position: static; display: none; max-height: 60vh; margin-bottom: 20px; padding: 18px; }
   .es-sidebar.is-open { display: block; }
-  .es-results { overflow: visible; padding-right: 0; }
   .es-help-card { margin: 0 -18px; }
   .es-results-head { min-height: 0; flex-direction: column; align-items: flex-start; gap: 10px; }
   .es-page .es-results-head h2 { font-size: 1.34rem; }

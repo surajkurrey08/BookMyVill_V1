@@ -1,0 +1,117 @@
+/* Shared stay search bar (home hero and Explore Stays). One pill of segments;
+   the active segment lifts out of a slightly dimmed bar. Popovers (location
+   suggestions, calendars) open below by default, or above with .is-top. */
+.es-search {
+  --es-green: #073f30;
+  --es-gold: #f3bc2e;
+  --es-ink: #14201b;
+  position: relative;
+  width: 100%;
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 8px;
+  color: var(--es-ink);
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, .16), 0 24px 60px rgba(3, 20, 15, .35);
+  text-align: left;
+  transition: background-color .25s ease, box-shadow .25s ease;
+}
+.es-search:has(.es-search-field:is(:focus-within, .is-open)) { background: #eff1ec; }
+.es-search-field { position: relative; min-width: 0; flex: 1 1 0; display: flex; align-items: center; gap: 12px; min-height: 62px; padding: 8px 16px; border-radius: 999px; cursor: pointer; transition: background-color .2s ease, box-shadow .2s ease; }
+.es-search-field + .es-search-field::before { content: ''; position: absolute; left: -2px; top: 18px; bottom: 18px; width: 1px; background: #e2e4dd; transition: opacity .2s ease; }
+.es-search-field:hover { background: #f3f4ef; }
+.es-search-field:is(:focus-within, .is-open) { background: #fff; box-shadow: 0 8px 24px rgba(12, 40, 29, .16); }
+.es-search-field:is(:hover, :focus-within, .is-open)::before,
+.es-search-field:is(:hover, :focus-within, .is-open) + .es-search-field::before { opacity: 0; }
+/* The segment's lift and green icon already mark focus. */
+.es-search .es-search-field:focus-visible,
+.es-search .es-search-copy > input:focus-visible { outline: none; }
+.es-search-field > i { flex: 0 0 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: #edf4ef; color: var(--es-green); font-size: .95rem; transition: background-color .2s ease, color .2s ease; }
+.es-search-field:is(:focus-within, .is-open) > i { background: var(--es-green); color: #fff; }
+.es-search-copy { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 4px; }
+.es-search-copy > span { color: #7d877f; font-size: .66rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+.es-search-copy > strong,
+.es-search-copy > input { width: 100%; min-width: 0; margin: 0; padding: 0; border: 0; outline: 0; background: none; color: var(--es-ink); font-family: inherit; font-size: .95rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.es-search-copy > input::placeholder { color: #9aa29b; font-weight: 600; }
+.es-search-copy small { margin-left: 7px; padding: 2px 7px; border-radius: 999px; background: #fdf3d6; color: #8a6510; font-size: .66rem; font-weight: 700; vertical-align: 1px; }
+
+/* Location */
+.es-location-field { flex: 1.25 1 0; cursor: text; }
+.es-location-clear { flex: 0 0 auto; width: 26px; height: 26px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: #eceee9; color: #59635b; font-size: .72rem; cursor: pointer; opacity: 0; visibility: hidden; transition: opacity .15s ease, background-color .15s ease; }
+.es-location-field:is(:hover, :focus-within) .es-location-clear { opacity: 1; visibility: visible; }
+.es-location-clear:hover { background: #dfe3dc; color: var(--es-ink); }
+.es-location-list { margin: 0; padding: 8px; list-style: none; width: max(100%, 320px); }
+.es-location-list li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; cursor: pointer; }
+.es-location-list li.is-active { background: #f2f5f1; }
+.es-location-pin { flex: 0 0 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: #edf4ef; color: var(--es-green); font-size: .85rem; }
+.es-location-list li strong { display: block; color: var(--es-ink); font-size: .9rem; font-weight: 700; }
+.es-location-list li small { display: block; margin-top: 2px; color: #7d877f; font-size: .74rem; }
+
+/* Popover shell shared by the suggestions and the calendars. */
+.es-popover { position: absolute; top: calc(100% + 12px); left: 0; z-index: 40; background: #fff; border: 1px solid #ecefe9; border-radius: 18px; box-shadow: 0 18px 44px rgba(12, 40, 29, .18); cursor: default; animation: es-pop-down .16s ease-out; }
+.es-search.is-top .es-popover { top: auto; bottom: calc(100% + 12px); box-shadow: 0 -10px 44px rgba(12, 40, 29, .2); animation-name: es-pop-up; }
+@keyframes es-pop-down { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes es-pop-up { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* Calendar */
+.es-calendar { width: 316px; padding: 16px; }
+.es-calendar-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.es-calendar-head strong { color: var(--es-ink); font-size: .95rem; font-weight: 800; }
+.es-calendar-head button { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid #e3e7e1; border-radius: 50%; background: #fff; color: var(--es-ink); font-size: .75rem; cursor: pointer; transition: border-color .15s ease, color .15s ease; }
+.es-calendar-head button:hover:not(:disabled) { border-color: var(--es-green); color: var(--es-green); }
+.es-calendar-head button:disabled { opacity: .3; cursor: not-allowed; }
+.es-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 2px; }
+.es-calendar-weekday { padding: 6px 0; color: #8a948c; font-size: .68rem; font-weight: 700; text-align: center; text-transform: uppercase; }
+.es-calendar-grid button { position: relative; height: 38px; padding: 0; border: 0; background: none; color: var(--es-ink); font-family: inherit; font-size: .84rem; font-weight: 600; cursor: pointer; }
+.es-calendar-grid button::after { content: ''; position: absolute; inset: 2px; z-index: -1; border-radius: 50%; transition: background-color .15s ease; }
+.es-calendar-grid button { isolation: isolate; }
+.es-calendar-grid button:hover:not(:disabled)::after { background: #eef3ef; }
+.es-calendar-grid button:disabled { color: #c3c9c3; cursor: not-allowed; }
+.es-calendar-grid button.is-today { color: var(--es-green); font-weight: 800; }
+.es-calendar-grid button.in-range { background: #eef5f0; }
+.es-calendar-grid button.is-start { background: linear-gradient(90deg, transparent 50%, #eef5f0 50%); }
+.es-calendar-grid button.is-end { background: linear-gradient(90deg, #eef5f0 50%, transparent 50%); }
+.es-calendar-grid button.is-start.is-end { background: none; }
+.es-calendar-grid button:is(.is-start, .is-end, .is-selected) { color: #fff; font-weight: 800; }
+.es-calendar-grid button:is(.is-start, .is-end, .is-selected)::after { background: var(--es-green); }
+.es-calendar-grid button:focus-visible { outline: 2px solid var(--es-gold); outline-offset: -2px; border-radius: 50%; }
+
+/* Guests */
+.es-guests-field { flex: 1 1 0; cursor: default; }
+.es-stepper { flex: 0 0 auto; display: flex; gap: 6px; }
+.es-stepper button { width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 1px solid #d8ddd6; border-radius: 50%; background: #fff; color: var(--es-ink); font-size: .7rem; cursor: pointer; transition: border-color .2s ease, color .2s ease, transform .15s ease; }
+.es-stepper button:hover:not(:disabled) { border-color: var(--es-green); color: var(--es-green); }
+.es-stepper button:active:not(:disabled) { transform: scale(.92); }
+.es-stepper button:disabled { opacity: .35; cursor: not-allowed; }
+
+/* Submit */
+.es-search-submit { flex: 0 0 auto; min-width: 150px; min-height: 62px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 0 28px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #ffd45f, #f2b520); color: #14201b; font-family: inherit; font-size: .98rem; font-weight: 800; letter-spacing: .01em; cursor: pointer; box-shadow: 0 10px 24px rgba(215, 161, 33, .35), inset 0 1px 0 rgba(255, 255, 255, .55); transition: transform .2s ease, box-shadow .2s ease, filter .2s ease; }
+.es-search-submit:hover { transform: translateY(-1px); filter: brightness(1.04); box-shadow: 0 14px 30px rgba(215, 161, 33, .45), inset 0 1px 0 rgba(255, 255, 255, .55); }
+.es-search-submit:active { transform: translateY(0) scale(.98); }
+
+@media (prefers-reduced-motion: reduce) { .es-popover { animation: none; } }
+
+@media (max-width: 850px) {
+  .es-search { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; border-radius: 22px; }
+  .es-search-field { border-radius: 14px; background: #f6f7f3; }
+  .es-search-field + .es-search-field::before { display: none; }
+  .es-search-submit { min-width: 0; min-height: 54px; grid-column: 1 / -1; border-radius: 14px; }
+  /* Fields are narrow here, so popovers centre on the whole form. */
+  .es-search-field { position: static; }
+  .es-popover { left: 50%; translate: -50% 0; }
+}
+@media (max-width: 650px) {
+  .es-search { padding: 8px; }
+  .es-search-field { min-height: 58px; padding: 8px 10px; gap: 9px; }
+  .es-search-field > i { flex-basis: 30px; height: 30px; font-size: .8rem; }
+  .es-search-copy > strong, .es-search-copy > input { font-size: .8rem; }
+  .es-search-copy > span { font-size: .6rem; }
+  .es-search-copy small { display: none; }
+  .es-guests-field { grid-column: 1 / -1; }
+  .es-search-submit { min-height: 48px; font-size: .88rem; }
+  .es-location-list { width: min(320px, calc(100vw - 48px)); }
+  .es-calendar { width: min(316px, calc(100vw - 48px)); }
+}
