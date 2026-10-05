@@ -4,7 +4,7 @@ The [GitHub Actions workflow](../.github/workflows/deploy-bookmyvilla.yml) build
 
 ## VPS and DNS setup
 
-1. Use a Debian/Ubuntu VPS at `31.97.61.172` with root SSH access, Docker Compose, and host Nginx using `/etc/nginx/sites-enabled`. Nginx must own ports 80 and 443. If a Docker container owns those ports, first migrate or configure that existing proxy; the workflow stops with a diagnostic instead of replacing an unknown container.
+1. Use a Debian/Ubuntu VPS at `31.97.61.172` with root SSH access, Docker Compose, and host Nginx using `/etc/nginx/sites-enabled`. Ports 80 and 443 belong to a shared gateway Nginx container from another project (currently `carhub-nginx`). Deployment does not edit that project's files. It adds only `conf.d/bookmyvilla.conf` and the BookMyVilla certificate inside that container, from [nginx/gateway.conf](../nginx/gateway.conf), and removes them again if `nginx -t` fails. Host Nginx serves BookMyVilla on the private port 8090 behind it. Recreating the gateway container drops the BookMyVilla routing until the next deployment. Do not run `scripts/prepare-vps.sh` on this VPS; it expects host Nginx on port 80.
 2. Point A records for `bookmyvilla.online`, `api.bookmyvilla.online`, and `admin.bookmyvilla.online` to `31.97.61.172`. Also add `owner.bookmyvilla.online` for the owner portal. Remove stale AAAA records and allow inbound TCP 80, 443, and the SSH port. The workflow issues a certificate for the first three names and adds `owner.bookmyvilla.online` when its A record points to the VPS. Rerun deployment after adding that record.
 3. Set these repository secrets under **Settings → Secrets and variables → Actions**:
 
@@ -35,4 +35,4 @@ The [GitHub Actions workflow](../.github/workflows/deploy-bookmyvilla.yml) build
 
 Point the `dataentry` and `villamanage` A records to `31.97.61.172`. Deployment adds these names to the TLS certificate when their records point to this VPS. Admin creates their accounts under **Team & Access** and assigns properties under **Properties**.
 
-If public checks fail, inspect the **Configure public Nginx and TLS** step. A 403 from Nginx while local Docker checks pass means the web server is still serving an unrelated or empty directory. Confirm which process owns ports 80 and 443 with `ss -ltnp '( sport = :80 or sport = :443 )'` and inspect the active Nginx configuration with `nginx -T` on the VPS.
+If public checks fail, inspect the **Configure public Nginx and TLS** step. A 403 from Nginx while local Docker checks pass means the web server is still serving an unrelated or empty directory. Inspect the gateway routing with `docker exec carhub-nginx cat /etc/nginx/conf.d/bookmyvilla.conf` and the host side with `curl -H 'Host: bookmyvilla.online' http://127.0.0.1:8090/` on the VPS.
