@@ -1,4 +1,4 @@
-const configured = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
+const configured = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:2001/api').replace(/\/+$/, '');
 const BASE = configured.endsWith('/api') ? configured : `${configured}/api`;
 const KEY = 'bookmyvilla.dataEntry.token';
 export const session = { token: () => sessionStorage.getItem(KEY) || '', save: token => sessionStorage.setItem(KEY, token), clear: () => sessionStorage.removeItem(KEY) };

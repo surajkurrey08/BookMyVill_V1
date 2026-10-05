@@ -9,11 +9,14 @@ services:
     container_name: bookmyvilla-backend
 
     ports:
-      - "5001:5000"
+      - "127.0.0.1:2001:2001"
 
     env_file:
       - path: ./backend/.env
         required: true
+
+    environment:
+      PORT: "2001"
 
     volumes:
       - ./backend/uploads:/app/uploads

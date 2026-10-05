@@ -87,12 +87,22 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: |
+            backend/package-lock.json
             frontend/package-lock.json
             admin/package-lock.json
             owner/package-lock.json
             caretaker/package-lock.json
             data-entry/package-lock.json
             villa-manager/package-lock.json
+
+      - name: Validate backend production environment
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+          ATLAS_MONGODB_URI: ${{ secrets.ATLAS_MONGODB_URI }}
+        run: |
+          set -euo pipefail
+          npm ci --omit=dev --no-audit --no-fund --prefix backend
+          node scripts/validate-backend-env.js
 
       # ============================================================
       # 4. Verify frontend builds
@@ -282,6 +292,7 @@ jobs:
       - name: Create backend production environment
         env:
           BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+          ATLAS_MONGODB_URI: ${{ secrets.ATLAS_MONGODB_URI }}
         run: |
           set -euo pipefail
 
@@ -292,7 +303,7 @@ jobs:
 
           ENV_TEMP="$RUNNER_TEMP/bookmyvilla-backend.env"
 
-          printf '%s' "$BACKEND_ENV" > "$ENV_TEMP"
+          node scripts/validate-backend-env.js --write "$ENV_TEMP"
 
           scp \
             "$ENV_TEMP" \
@@ -468,7 +479,7 @@ jobs:
 
             cd /var/www/bookmyvilla
 
-            echo "Checking backend on port 5001..."
+            echo "Checking backend on port 2001..."
 
             success=false
 
@@ -479,7 +490,7 @@ jobs:
                 --silent \
                 --show-error \
                 --max-time 10 \
-                http://127.0.0.1:5001/api/health \
+                http://127.0.0.1:2001/api/health \
                 >/dev/null
               then
 
@@ -657,7 +668,7 @@ jobs:
             echo "Admin     : http://127.0.0.1:5174"
             echo "Owner     : http://127.0.0.1:5175"
             echo "Caretaker : http://127.0.0.1:5176"
-            echo "Backend   : http://127.0.0.1:5001"
+            echo "Backend   : http://127.0.0.1:2001"
             echo "--------------------------------------"
 
           REMOTE

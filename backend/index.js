@@ -306,61 +306,7 @@ async function seedAdminUser() {
 // MongoDB URI Resolver
 // ======================================================
 
-function resolveMongoUri() {
-  const configured = (
-    process.env.MONGODB_URI || ''
-  ).trim();
-
-  // Atlas connection
-  if (
-    configured.startsWith(
-      'mongodb+srv://'
-    )
-  ) {
-    return configured;
-  }
-
-  // Normal MongoDB connection
-  if (
-    configured.startsWith(
-      'mongodb://'
-    )
-  ) {
-    return configured;
-  }
-
-  // If MONGODB_URI exists but is invalid
-  if (configured) {
-    throw new Error(
-      'MONGODB_URI is invalid. It must start with mongodb:// or mongodb+srv://'
-    );
-  }
-
-  // Optional fallback ONLY if explicitly configured
-  const fallback = (
-    process.env.MONGODB_FALLBACK_URI ||
-    ''
-  ).trim();
-
-  if (
-    fallback.startsWith(
-      'mongodb+srv://'
-    ) ||
-    fallback.startsWith(
-      'mongodb://'
-    )
-  ) {
-    console.warn(
-      '⚠️ MONGODB_URI missing. Using MONGODB_FALLBACK_URI.'
-    );
-
-    return fallback;
-  }
-
-  throw new Error(
-    'MONGODB_URI is missing. Add MongoDB connection string to .env'
-  );
-}
+const { resolveMongoUri } = require('./services/databaseConfig');
 
 // ======================================================
 // Redact MongoDB Credentials
@@ -592,7 +538,7 @@ app.use(
 // ======================================================
 
 const PORT =
-  process.env.PORT || 5000;
+  process.env.PORT || 2001;
 
 app.listen(
   PORT,

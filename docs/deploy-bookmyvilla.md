@@ -16,11 +16,12 @@ The [GitHub Actions workflow](../.github/workflows/deploy-bookmyvilla.yml) build
    | `VPS_SSH_KEY` | Complete private SSH key |
    | `VPS_KNOWN_HOSTS` | Verified SSH host-key line |
    | `BACKEND_ENV` | Complete production `backend/.env` contents |
+   | `ATLAS_MONGODB_URI` | Atlas connection string; overrides only the database URI in `BACKEND_ENV` |
    | `CERTBOT_EMAIL` | Recommended email address for certificate notices |
 
    Obtain the host-key line with `ssh-keyscan -p YOUR_SSH_PORT -H 31.97.61.172` and verify its fingerprint independently before saving it.
 
-4. Set `MONGODB_URI`, `JWT_SECRET`, and `PORT=5000` in `BACKEND_ENV` (`docker-compose.yaml` maps VPS port 5001 to container port 5000). Add payment secrets when live payments are enabled. Preserve or migrate production database data and `backend/uploads` separately. The workflow excludes uploads from `rsync --delete` and writes the backend environment with mode `600`.
+4. Set `MONGODB_URI` and `JWT_SECRET` in `BACKEND_ENV`. The MongoDB URI must start with `mongodb://` or `mongodb+srv://`; keep the intended production database connection. Deployment validates this secret before uploading or restarting the application. `docker-compose.yaml` forces `PORT=2001` and maps only `127.0.0.1:2001` to backend port 2001; Nginx serves the public HTTPS API. Add payment secrets when live payments are enabled. Preserve or migrate production database data and `backend/uploads` separately. The workflow excludes uploads from `rsync --delete` and writes the backend environment with mode `600`.
 5. Push to `main` or run **Actions → Deploy BookMyVilla → Run workflow**. A green run now includes the public HTTPS site and API checks. A green Docker-only run from an older workflow did not verify the domains.
 
 ## Public checks

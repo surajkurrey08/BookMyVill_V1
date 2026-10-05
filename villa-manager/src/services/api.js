@@ -1,4 +1,4 @@
-const configured = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
+const configured = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:2001/api').replace(/\/+$/, '');
 const BASE = configured.endsWith('/api') ? configured : `${configured}/api`;
 export const session = { get: () => sessionStorage.getItem('bmv_vm_token'), set: token => sessionStorage.setItem('bmv_vm_token', token), clear: () => sessionStorage.removeItem('bmv_vm_token') };
 export async function api(path, { method = 'GET', body, signal, token = session.get() } = {}) {
