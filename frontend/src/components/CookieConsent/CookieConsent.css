@@ -1,0 +1,160 @@
+/* Full-width bar along the bottom of the screen. */
+.bmv-cookie {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  bottom: 20px;
+  z-index: 1900; /* below the login modal (2000) and the AI assistant */
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px 12px 18px;
+  background: var(--hp-card, #ffffff);
+  color: var(--hp-ink-2, #3b3b37);
+  border: 1px solid var(--hp-line, #e7e0d2);
+  border-radius: 16px;
+  box-shadow: 0 22px 48px rgba(15, 33, 24, 0.18);
+  font-family: var(--hp-sans, 'Outfit', 'Inter', system-ui, sans-serif);
+  animation: bmv-cookie-in 0.45s cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+/* Pages that still show the floating AI button (60px wide, 30px from the
+   right edge): keep the bar's buttons clear of it. */
+body:has(.ai-assistant-trigger-btn) .bmv-cookie {
+  padding-right: 108px;
+}
+
+.bmv-cookie-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(217, 165, 32, 0.14);
+  color: var(--hp-gold-deep, #b9861a);
+  font-size: 1.05rem;
+}
+
+.bmv-cookie-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.bmv-cookie-body strong {
+  display: block;
+  margin-bottom: 1px;
+  color: var(--hp-ink, #1d1d1b);
+  font-size: 0.92rem;
+}
+
+.bmv-cookie-body p {
+  margin: 0;
+  max-width: 820px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--hp-muted, #6e6c64);
+}
+
+.bmv-cookie-actions {
+  flex: none;
+  display: flex;
+  gap: 10px;
+}
+
+.bmv-cookie-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--hp-line, #e7e0d2);
+  background: var(--hp-cream, #f8f4ec);
+  color: var(--hp-green-700, #1f4d36);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.bmv-cookie-btn:hover {
+  transform: translateY(-1px);
+  background: var(--hp-cream-2, #f2ecdf);
+}
+
+.bmv-cookie-btn.is-primary {
+  border-color: transparent;
+  background: var(--hp-green-700, #1f4d36);
+  color: #ffffff;
+}
+
+.bmv-cookie-btn.is-primary:hover {
+  background: var(--hp-green-800, #1a3a2a);
+}
+
+.bmv-cookie-btn:focus-visible {
+  outline: 2px solid var(--hp-gold, #d9a520);
+  outline-offset: 2px;
+}
+
+/* Tablet: text on top, buttons below it. */
+@media (max-width: 900px) {
+  .bmv-cookie {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .bmv-cookie-body {
+    flex-basis: calc(100% - 54px);
+  }
+
+  .bmv-cookie-actions {
+    width: 100%;
+    padding-left: 54px;
+  }
+}
+
+@media (max-width: 560px) {
+  .bmv-cookie {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  /* The floating AI button sits at the bottom here, so lift the bar above it. */
+  body:has(.ai-assistant-trigger-btn) .bmv-cookie {
+    bottom: 104px;
+    padding-right: 14px;
+  }
+
+  .bmv-cookie-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 0.95rem;
+  }
+
+  .bmv-cookie-body {
+    flex-basis: calc(100% - 46px);
+  }
+
+  .bmv-cookie-actions {
+    padding-left: 0;
+  }
+
+  .bmv-cookie-btn {
+    flex: 1;
+    padding: 8px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bmv-cookie {
+    animation: none;
+  }
+}
+
+@keyframes bmv-cookie-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}

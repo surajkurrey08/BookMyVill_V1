@@ -35,10 +35,8 @@ const AboutUs = () => {
           <img className="aboutus-hero-image" src={currentHeroImage} alt="" />
           <div className="aboutus-hero-shade" />
           <div className="hp-container aboutus-hero-content">
-            <nav className="aboutus-breadcrumb" aria-label="Breadcrumb">
-              <Link to="/">Home</Link><span aria-hidden="true">›</span><span>About Us</span>
-            </nav>
-            <h1 id="aboutus-title">About <span>BookMyVilla</span></h1>
+            <p className="aboutus-eyebrow">About Us</p>
+            <h1 id="aboutus-title">About<br /><span>BookMyVilla</span></h1>
             <p>Your trusted travel partner for unforgettable stays and experiences in Mahabaleshwar.</p>
           </div>
         </section>

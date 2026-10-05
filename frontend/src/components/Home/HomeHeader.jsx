@@ -2,16 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LoginModal from './LoginModal';
 import BrandLogo from '../Brand/BrandLogo';
+import AiAssistantButton from '../AiAssistant/AiAssistantButton';
 import { OWNER_PORTAL_URL, CARETAKER_PORTAL_URL } from '../../config';
-
-const readUser = () => {
-  try {
-    const stored = sessionStorage.getItem('user');
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
-};
+import { AUTH_EVENT, clearSession, getSessionUser, saveSession } from '../../lib/session';
 
 // Same links as the site-wide Navbar, so both headers offer one menu.
 const navItems = [
@@ -27,10 +20,17 @@ const HomeHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [user, setUser] = useState(readUser);
+  const [user, setUser] = useState(getSessionUser);
   const profileRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Picks up logins/logouts done elsewhere (e.g. the first-visit login prompt).
+  useEffect(() => {
+    const sync = () => setUser(getSessionUser());
+    window.addEventListener(AUTH_EVENT, sync);
+    return () => window.removeEventListener(AUTH_EVENT, sync);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -62,18 +62,14 @@ const HomeHeader = () => {
 
   const handleLogout = () => {
     const isOwner = user?.role === 'owner';
-    ['token', 'user'].forEach((key) => {
-      sessionStorage.removeItem(key);
-      localStorage.removeItem(key);
-    });
+    clearSession();
     setUser(null);
     setProfileOpen(false);
     if (isOwner) window.location.href = `${OWNER_PORTAL_URL}/login`;
   };
 
   const handleLoginSuccess = (token, loggedInUser) => {
-    sessionStorage.setItem('token', token);
-    sessionStorage.setItem('user', JSON.stringify(loggedInUser));
+    saveSession(token, loggedInUser);
     setUser(loggedInUser);
     setLoginOpen(false);
     setMenuOpen(false);
@@ -134,6 +130,8 @@ const HomeHeader = () => {
               Log In
             </button>
           )}
+
+          <AiAssistantButton />
 
           <button
             type="button"

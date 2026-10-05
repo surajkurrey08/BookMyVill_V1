@@ -262,30 +262,67 @@ const PhoneOtp = require('../models/PhoneOtp');
 const cleanPhoneNumber = (phone) => (phone || '').toString().replace(/\D/g, '').slice(-10);
 const isValidIndianMobile = (phone) => /^[6-9]\d{9}$/.test(phone);
 
-// Step 1: Request a 6-digit OTP for mobile-number registration
+const INACTIVE_STATUSES = ['pending', 'rejected', 'suspended'];
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_RESEND_COOLDOWN_MS = 30 * 1000;
+const MAX_OTP_ATTEMPTS = 5;
+
+// Checks a submitted OTP. Wrong guesses are counted on the record so a code
+// can't be brute-forced; after MAX_OTP_ATTEMPTS a new OTP must be requested.
+const checkPhoneOtp = async (phone, purpose, otp) => {
+  const record = await PhoneOtp.findOne({ phone, purpose });
+  if (!record) return { error: 'Please request an OTP first.' };
+  if (new Date() > new Date(record.expiresAt)) return { error: 'OTP has expired. Please request a new one.' };
+  if (record.attempts >= MAX_OTP_ATTEMPTS) return { error: 'Too many wrong attempts. Please request a new OTP.' };
+  if (record.otp !== (otp || '').toString().trim()) {
+    record.attempts += 1;
+    await record.save();
+    return { error: 'Invalid OTP. Please check the code and try again.' };
+  }
+  return { record };
+};
+
+const signGuestToken = (user) => {
+  const secret = process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026';
+  return jwt.sign({ id: user._id, role: user.role }, secret, { expiresIn: '7d' });
+};
+
+const guestPayload = (user) => ({ id: user._id, name: user.name, email: user.email || '', phone: user.phone, role: user.role });
+
+// Step 1: Request a 6-digit OTP — `purpose: 'register'` (default) for a new
+// number, `purpose: 'login'` for an existing account signing in without a password.
 router.post('/phone/send-otp', async (req, res) => {
   if (process.env.NODE_ENV !== 'test' && !(process.env.NODE_ENV !== 'production' && process.env.ALLOW_DEMO_OTP === 'true')) return res.status(503).json({ msg: 'OTP delivery is not configured. Use password sign in or contact Admin.' });
   try {
     const cleanPhone = cleanPhoneNumber(req.body.phone);
+    const purpose = req.body.purpose === 'login' ? 'login' : 'register';
     if (!isValidIndianMobile(cleanPhone)) {
       return res.status(400).json({ msg: 'Please enter a valid 10-digit mobile number.' });
     }
 
     const existingUser = await User.findOne({ phone: cleanPhone });
-    if (existingUser) {
+    if (purpose === 'register' && existingUser) {
       return res.status(409).json({ msg: 'This mobile number is already registered. Please log in instead.' });
+    }
+    if (purpose === 'login' && !existingUser) {
+      return res.status(404).json({ msg: 'No account found with this mobile number. Please create one first.' });
+    }
+
+    const previous = await PhoneOtp.findOne({ phone: cleanPhone, purpose });
+    if (previous && Date.now() - new Date(previous.createdAt).getTime() < OTP_RESEND_COOLDOWN_MS) {
+      return res.status(429).json({ msg: 'Please wait a few seconds before requesting another OTP.' });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes validity
+    const expiresAt = new Date(Date.now() + OTP_TTL_MS);
 
     await PhoneOtp.findOneAndUpdate(
-      { phone: cleanPhone, purpose: 'register' },
-      { otp, expiresAt },
+      { phone: cleanPhone, purpose },
+      { otp, expiresAt, attempts: 0, createdAt: new Date() },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    console.log(`🔑 [DEV OTP] Registration OTP for +91${cleanPhone}: [ ${otp} ] (expires in 10 mins)`);
+    console.log(`🔑 [DEV OTP] ${purpose === 'login' ? 'Login' : 'Registration'} OTP for +91${cleanPhone}: [ ${otp} ] (expires in 10 mins)`);
 
     res.json({
       success: true,
@@ -299,7 +336,27 @@ router.post('/phone/send-otp', async (req, res) => {
   }
 });
 
-// Step 2: Verify OTP + create the new guest/traveler account
+// Step 2 (sign-up): check the OTP before the guest is asked to create a
+// password. The code isn't used up here — /phone/register checks it again.
+router.post('/phone/verify-otp', async (req, res) => {
+  try {
+    const cleanPhone = cleanPhoneNumber(req.body.phone);
+    if (!isValidIndianMobile(cleanPhone)) {
+      return res.status(400).json({ msg: 'Please enter a valid 10-digit mobile number.' });
+    }
+    if (!req.body.otp) {
+      return res.status(400).json({ msg: 'Please enter the OTP sent to your mobile number.' });
+    }
+    const { error } = await checkPhoneOtp(cleanPhone, 'register', req.body.otp);
+    if (error) return res.status(400).json({ msg: error });
+    res.json({ verified: true });
+  } catch (err) {
+    console.error('Phone OTP verify error:', err);
+    res.status(500).json({ msg: 'Server error verifying OTP. Please try again.' });
+  }
+});
+
+// Step 3 (sign-up): verify OTP + create the new guest/traveler account
 router.post('/phone/register', async (req, res) => {
   try {
     const { otp, name, password, email } = req.body;
@@ -323,12 +380,9 @@ router.post('/phone/register', async (req, res) => {
       return res.status(400).json({ msg: 'Please enter a valid email address, or leave it blank.' });
     }
 
-    const otpRecord = await PhoneOtp.findOne({ phone: cleanPhone, purpose: 'register' });
-    if (!otpRecord || otpRecord.otp !== otp.toString().trim()) {
-      return res.status(400).json({ msg: 'Invalid OTP. Please check the code or request a new one.' });
-    }
-    if (new Date() > new Date(otpRecord.expiresAt)) {
-      return res.status(400).json({ msg: 'OTP has expired. Please request a new one.' });
+    const { record: otpRecord, error: otpError } = await checkPhoneOtp(cleanPhone, 'register', otp);
+    if (otpError) {
+      return res.status(400).json({ msg: otpError });
     }
 
     const existingPhoneUser = await User.findOne({ phone: cleanPhone });
@@ -352,12 +406,7 @@ router.post('/phone/register', async (req, res) => {
     await newUser.save();
     await PhoneOtp.deleteOne({ _id: otpRecord._id });
 
-    const secret = process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026';
-    const token = jwt.sign({ id: newUser._id, role: newUser.role }, secret, { expiresIn: '7d' });
-    res.status(201).json({
-      token,
-      user: { id: newUser._id, name: newUser.name, email: newUser.email || '', phone: newUser.phone, role: newUser.role }
-    });
+    res.status(201).json({ token: signGuestToken(newUser), user: guestPayload(newUser) });
   } catch (err) {
     console.error('Phone registration error:', err);
     res.status(500).json({ msg: 'Server error creating your account. Please try again.' });
@@ -386,15 +435,43 @@ router.post('/phone/login', async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ msg: 'Incorrect password. Please try again.' });
     }
+    if (INACTIVE_STATUSES.includes(user.status)) {
+      return res.status(403).json({ msg: 'This account is not active. Contact Admin.' });
+    }
 
-    const secret = process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026';
-    const token = jwt.sign({ id: user._id, role: user.role }, secret, { expiresIn: '7d' });
-    res.json({
-      token,
-      user: { id: user._id, name: user.name, email: user.email || '', phone: user.phone, role: user.role }
-    });
+    res.json({ token: signGuestToken(user), user: guestPayload(user) });
   } catch (err) {
     console.error('Phone login error:', err);
+    res.status(500).json({ msg: 'Server error during login. Please try again.' });
+  }
+});
+
+// Returning guest/traveler login: mobile number + OTP (from /phone/send-otp with purpose 'login')
+router.post('/phone/login-otp', async (req, res) => {
+  try {
+    const cleanPhone = cleanPhoneNumber(req.body.phone);
+    if (!isValidIndianMobile(cleanPhone)) {
+      return res.status(400).json({ msg: 'Please enter a valid 10-digit mobile number.' });
+    }
+    if (!req.body.otp) {
+      return res.status(400).json({ msg: 'Please enter the OTP sent to your mobile number.' });
+    }
+
+    const { record, error } = await checkPhoneOtp(cleanPhone, 'login', req.body.otp);
+    if (error) return res.status(400).json({ msg: error });
+
+    const user = await User.findOne({ phone: cleanPhone });
+    if (!user) {
+      return res.status(400).json({ msg: 'No account found with this mobile number. Please create one first.' });
+    }
+    if (INACTIVE_STATUSES.includes(user.status)) {
+      return res.status(403).json({ msg: 'This account is not active. Contact Admin.' });
+    }
+
+    await PhoneOtp.deleteOne({ _id: record._id });
+    res.json({ token: signGuestToken(user), user: guestPayload(user) });
+  } catch (err) {
+    console.error('Phone OTP login error:', err);
     res.status(500).json({ msg: 'Server error during login. Please try again.' });
   }
 });

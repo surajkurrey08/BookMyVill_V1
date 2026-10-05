@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './CaretakerDashboard.css';
 import { API_BASE_URL } from '../../config';
+import { clearSession, updateSessionUser } from '../../lib/session';
 
 const CaretakerDashboard = () => {
   // Navigation & Drawer State
@@ -606,7 +607,7 @@ const CaretakerDashboard = () => {
     e.preventDefault();
     setProfileMsg('✅ Caretaker Profile Details Updated Successfully!');
     const updatedUser = { ...user, name: profileData.name, phone: profileData.phone, email: profileData.email };
-    sessionStorage.setItem('user', JSON.stringify(updatedUser));
+    updateSessionUser(updatedUser);
     setUser(updatedUser);
     setTimeout(() => setProfileMsg(''), 5000);
   };
@@ -732,6 +733,7 @@ const CaretakerDashboard = () => {
               onClick={() => {
                 sessionStorage.clear();
                 localStorage.clear();
+                clearSession();
                 window.location.href = '/';
               }}
             >
@@ -2111,6 +2113,7 @@ const CaretakerDashboard = () => {
                 onClick={() => {
                   sessionStorage.clear();
                   localStorage.clear();
+                  clearSession();
                   window.location.href = '/';
                 }}
                 className="mob-drawer-logout-btn"

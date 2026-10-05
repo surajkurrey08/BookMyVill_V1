@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { openCookieSettings } from '../../lib/cookies';
 import './Footer.css';
 
 const Footer = () => {
@@ -54,7 +55,7 @@ const Footer = () => {
           <div className="footer-legal">
             <a href="#privacy">Privacy Policy</a>
             <a href="#terms">Terms of Service</a>
-            <a href="#cookies">Cookie Settings</a>
+            <a href="#cookies" onClick={(e) => { e.preventDefault(); openCookieSettings(); }}>Cookie Settings</a>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { API_BASE_URL, OWNER_PORTAL_URL } from '../../config';
-import '../SignIn/SignIn.css';
+import './OwnerSetup.css';
 
 const OwnerSetup = () => {
   const ownerPortalLoginUrl = `${OWNER_PORTAL_URL}/login`;

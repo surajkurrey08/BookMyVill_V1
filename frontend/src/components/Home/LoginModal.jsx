@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { API_BASE_URL } from '../../config';
+import { useEffect, useRef, useState } from 'react';
+import { API_BASE_URL, ADMIN_PORTAL_URL, OWNER_PORTAL_URL } from '../../config';
 import './LoginModal.css';
 
 const RESEND_COOLDOWN = 30; // seconds
@@ -72,53 +71,186 @@ const PasswordField = ({ label, value, onChange, placeholder }) => {
   );
 };
 
-const LoginTab = ({ onSuccess }) => {
+// POSTs JSON to the auth API; resolves to { ok, status, data }.
+const postAuth = async (path, body) => {
+  const res = await fetch(`${API_BASE_URL}/api/auth/phone/${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, data };
+};
+
+const NETWORK_ERROR = 'Could not reach the server. Please check your connection.';
+
+const useCooldown = () => {
+  const [cooldown, setCooldown] = useState(0);
+  useEffect(() => {
+    if (cooldown <= 0) return undefined;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+  return [cooldown, () => setCooldown(RESEND_COOLDOWN)];
+};
+
+// No SMS gateway yet: the backend returns the code and we show it here so the
+// guest can type it in.
+const DemoOtpNotice = ({ otp }) => (otp ? (
+  <div className="hp-modal-dev-otp" role="status">
+    <span><i className="fa-solid fa-circle-info"></i> Demo OTP (SMS not set up yet)</span>
+    <strong>{otp}</strong>
+  </div>
+) : null);
+
+const OtpField = ({ value, onChange, autoFocus }) => (
+  <label className="hp-modal-field">
+    <span>Enter OTP</span>
+    <input
+      type="text"
+      inputMode="numeric"
+      autoComplete="one-time-code"
+      maxLength={6}
+      placeholder="6-digit code"
+      className="hp-modal-otp-input"
+      value={value}
+      autoFocus={autoFocus}
+      onChange={(e) => onChange(cleanDigits(e.target.value).slice(0, 6))}
+    />
+  </label>
+);
+
+const PhoneChip = ({ phone, verified, onChange }) => (
+  <div className="hp-modal-phone-chip">
+    <span>
+      <i className={`fa-solid ${verified ? 'fa-circle-check' : 'fa-mobile-screen'}`}></i> +91 {phone}
+      {verified && <em> Verified</em>}
+    </span>
+    <button type="button" onClick={onChange}>Change</button>
+  </div>
+);
+
+const ResendButton = ({ cooldown, loading, onClick }) => (
+  <button type="button" className="hp-modal-resend" onClick={onClick} disabled={cooldown > 0 || loading}>
+    {cooldown > 0 ? `Resend OTP in ${cooldown}s` : 'Resend OTP'}
+  </button>
+);
+
+// Returning guest: mobile number, then either password or OTP.
+const LoginTab = ({ onSuccess, onSwitchToRegister }) => {
+  const [method, setMethod] = useState('password'); // 'password' | 'otp'
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [devOtp, setDevOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [cooldown, startCooldown] = useCooldown();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const resetOtp = () => {
+    setOtpSent(false);
+    setOtp('');
+    setDevOtp('');
+  };
+
+  const switchMethod = (next) => {
+    setMethod(next);
+    setError('');
+    resetOtp();
+  };
+
+  const changePhone = (value) => {
+    setPhone(value);
+    if (otpSent) resetOtp();
+  };
+
+  const sendOtp = async () => {
     const phoneErr = validatePhone(phone);
     if (phoneErr) return setError(phoneErr);
-    if (!password) return setError('Please enter your password.');
-
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/phone/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.msg || 'Login failed. Please try again.');
-        return;
-      }
-      onSuccess(data.token, data.user);
+      const { ok, data } = await postAuth('send-otp', { phone, purpose: 'login' });
+      if (!ok) return setError(data.msg || 'Could not send OTP. Please try again.');
+      setDevOtp(data.otp || '');
+      setOtp('');
+      setOtpSent(true);
+      startCooldown();
     } catch {
-      setError('Could not reach the server. Please check your connection.');
+      setError(NETWORK_ERROR);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const phoneErr = validatePhone(phone);
+    if (phoneErr) return setError(phoneErr);
+    if (method === 'password' && !password) return setError('Please enter your password.');
+    if (method === 'otp' && !otpSent) return sendOtp();
+    if (method === 'otp' && otp.length !== 6) return setError('Please enter the 6-digit OTP.');
+
+    setError('');
+    setLoading(true);
+    try {
+      const { ok, data } = method === 'password'
+        ? await postAuth('login', { phone, password })
+        : await postAuth('login-otp', { phone, otp });
+      if (!ok) return setError(data.msg || 'Login failed. Please try again.');
+      onSuccess(data.token, data.user);
+    } catch {
+      setError(NETWORK_ERROR);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitLabel = method === 'otp' && !otpSent ? 'Send OTP' : 'Log In';
+
   return (
     <form className="hp-modal-form" onSubmit={handleSubmit}>
-      <PhoneField value={phone} onChange={setPhone} autoFocus />
-      <PasswordField label="Password" value={password} onChange={setPassword} placeholder="Your password" />
+      <PhoneField value={phone} onChange={changePhone} autoFocus />
+
+      <div className="hp-modal-method" role="radiogroup" aria-label="Log in with">
+        <button type="button" role="radio" aria-checked={method === 'password'} className={method === 'password' ? 'is-active' : ''} onClick={() => switchMethod('password')}>
+          <i className="fa-solid fa-lock"></i> Password
+        </button>
+        <button type="button" role="radio" aria-checked={method === 'otp'} className={method === 'otp' ? 'is-active' : ''} onClick={() => switchMethod('otp')}>
+          <i className="fa-solid fa-message"></i> OTP
+        </button>
+      </div>
+
+      {method === 'password' && (
+        <PasswordField label="Password" value={password} onChange={setPassword} placeholder="Your password" />
+      )}
+
+      {method === 'otp' && otpSent && (
+        <>
+          <DemoOtpNotice otp={devOtp} />
+          <OtpField value={otp} onChange={setOtp} autoFocus />
+          <ResendButton cooldown={cooldown} loading={loading} onClick={sendOtp} />
+        </>
+      )}
+
       {error && <p className="hp-modal-error">{error}</p>}
       <button type="submit" className="hp-modal-submit" disabled={loading}>
-        {loading ? 'Logging in…' : 'Log In'}
+        {loading ? 'Please wait…' : submitLabel}
       </button>
+      <p className="hp-modal-switch">
+        New to BookMyVilla?{' '}
+        <button type="button" onClick={onSwitchToRegister}>Create an account</button>
+      </p>
     </form>
   );
 };
 
+const REGISTER_STEPS = ['phone', 'otp', 'details'];
+
+// New guest: mobile number → OTP → create password (then signed in).
 const RegisterTab = ({ onSuccess, onSwitchToLogin }) => {
-  const [step, setStep] = useState('phone'); // 'phone' | 'details'
+  const [step, setStep] = useState('phone');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [devOtp, setDevOtp] = useState('');
@@ -128,40 +260,38 @@ const RegisterTab = ({ onSuccess, onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
-
-  useEffect(() => {
-    if (cooldown <= 0) return undefined;
-    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
-    return () => clearTimeout(t);
-  }, [cooldown]);
+  const [cooldown, startCooldown] = useCooldown();
 
   const sendOtp = async () => {
     const phoneErr = validatePhone(phone);
     if (phoneErr) return setError(phoneErr);
-
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/phone/send-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        if (res.status === 409) {
-          setError(data.msg || 'This number is already registered.');
-          return;
-        }
-        setError(data.msg || 'Could not send OTP. Please try again.');
-        return;
-      }
+      const { ok, data } = await postAuth('send-otp', { phone, purpose: 'register' });
+      if (!ok) return setError(data.msg || 'Could not send OTP. Please try again.');
       setDevOtp(data.otp || '');
-      setStep('details');
-      setCooldown(RESEND_COOLDOWN);
+      setOtp('');
+      setStep('otp');
+      startCooldown();
     } catch {
-      setError('Could not reach the server. Please check your connection.');
+      setError(NETWORK_ERROR);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyOtp = async (e) => {
+    e.preventDefault();
+    if (otp.length !== 6) return setError('Please enter the 6-digit OTP.');
+    setError('');
+    setLoading(true);
+    try {
+      const { ok, data } = await postAuth('verify-otp', { phone, otp });
+      if (!ok) return setError(data.msg || 'Invalid OTP. Please try again.');
+      setStep('details');
+    } catch {
+      setError(NETWORK_ERROR);
     } finally {
       setLoading(false);
     }
@@ -179,7 +309,6 @@ const RegisterTab = ({ onSuccess, onSwitchToLogin }) => {
     const nameErr = validateName(name);
     const passErr = validatePassword(password);
     const emailErr = validateEmail(email);
-    if (!otp.trim()) return setError('Please enter the OTP sent to your mobile number.');
     if (nameErr) return setError(nameErr);
     if (passErr) return setError(passErr);
     if (password !== confirmPassword) return setError('Passwords do not match.');
@@ -188,77 +317,69 @@ const RegisterTab = ({ onSuccess, onSwitchToLogin }) => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/phone/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, otp: otp.trim(), name, password, email: email.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.msg || 'Could not create your account. Please try again.');
-        return;
-      }
+      const { ok, data } = await postAuth('register', { phone, otp, name, password, email: email.trim() });
+      if (!ok) return setError(data.msg || 'Could not create your account. Please try again.');
       onSuccess(data.token, data.user);
     } catch {
-      setError('Could not reach the server. Please check your connection.');
+      setError(NETWORK_ERROR);
     } finally {
       setLoading(false);
     }
   };
 
+  const stepIndex = REGISTER_STEPS.indexOf(step);
+  const stepper = (
+    <ol className="hp-modal-steps" aria-label="Sign-up progress">
+      {['Mobile', 'OTP', 'Password'].map((label, i) => (
+        <li key={label} className={i < stepIndex ? 'is-done' : i === stepIndex ? 'is-current' : ''} aria-current={i === stepIndex ? 'step' : undefined}>
+          <span>{i < stepIndex ? <i className="fa-solid fa-check"></i> : i + 1}</span>
+          {label}
+        </li>
+      ))}
+    </ol>
+  );
+
   if (step === 'phone') {
     return (
-      <div className="hp-modal-form">
+      <form className="hp-modal-form" onSubmit={(e) => { e.preventDefault(); sendOtp(); }}>
+        {stepper}
         <PhoneField value={phone} onChange={setPhone} autoFocus />
         {error && <p className="hp-modal-error">{error}</p>}
-        <button type="button" className="hp-modal-submit" onClick={sendOtp} disabled={loading}>
+        <button type="submit" className="hp-modal-submit" disabled={loading}>
           {loading ? 'Sending OTP…' : 'Send OTP'}
         </button>
         <p className="hp-modal-switch">
           Already have an account?{' '}
           <button type="button" onClick={onSwitchToLogin}>Log In</button>
         </p>
-      </div>
+      </form>
+    );
+  }
+
+  if (step === 'otp') {
+    return (
+      <form className="hp-modal-form" onSubmit={verifyOtp}>
+        {stepper}
+        <PhoneChip phone={phone} onChange={changeNumber} />
+        <DemoOtpNotice otp={devOtp} />
+        <OtpField value={otp} onChange={setOtp} autoFocus />
+        <ResendButton cooldown={cooldown} loading={loading} onClick={sendOtp} />
+        {error && <p className="hp-modal-error">{error}</p>}
+        <button type="submit" className="hp-modal-submit" disabled={loading}>
+          {loading ? 'Verifying…' : 'Verify OTP'}
+        </button>
+      </form>
     );
   }
 
   return (
     <form className="hp-modal-form" onSubmit={handleRegister}>
-      <div className="hp-modal-phone-chip">
-        <span><i className="fa-solid fa-mobile-screen"></i> +91 {phone}</span>
-        <button type="button" onClick={changeNumber}>Change</button>
-      </div>
-
-      {devOtp && (
-        <p className="hp-modal-dev-otp">
-          <i className="fa-solid fa-circle-info"></i> Dev mode — no SMS set up yet. Your OTP is <strong>{devOtp}</strong>.
-        </p>
-      )}
-
-      <label className="hp-modal-field">
-        <span>Enter OTP</span>
-        <input
-          type="text"
-          inputMode="numeric"
-          maxLength={6}
-          placeholder="6-digit code"
-          value={otp}
-          onChange={(e) => setOtp(cleanDigits(e.target.value).slice(0, 6))}
-        />
-      </label>
-
-      <button
-        type="button"
-        className="hp-modal-resend"
-        onClick={sendOtp}
-        disabled={cooldown > 0 || loading}
-      >
-        {cooldown > 0 ? `Resend OTP in ${cooldown}s` : 'Resend OTP'}
-      </button>
+      {stepper}
+      <PhoneChip phone={phone} verified onChange={changeNumber} />
 
       <label className="hp-modal-field">
         <span>Full Name</span>
-        <input type="text" value={name} placeholder="Your name" onChange={(e) => setName(e.target.value)} />
+        <input type="text" value={name} placeholder="Your name" autoFocus onChange={(e) => setName(e.target.value)} />
       </label>
 
       <PasswordField label="Create Password" value={password} onChange={setPassword} placeholder="At least 6 characters" />
@@ -271,19 +392,19 @@ const RegisterTab = ({ onSuccess, onSwitchToLogin }) => {
 
       {error && <p className="hp-modal-error">{error}</p>}
       <button type="submit" className="hp-modal-submit" disabled={loading}>
-        {loading ? 'Creating account…' : 'Create Account'}
+        {loading ? 'Creating account…' : 'Create Account & Log In'}
       </button>
     </form>
   );
 };
 
-const LoginModal = ({ open, onClose, onSuccess }) => {
-  const [tab, setTab] = useState('login');
+const LoginModal = ({ open, onClose, onSuccess, initialTab = 'login' }) => {
+  const [tab, setTab] = useState(initialTab);
   const dialogRef = useRef(null);
 
   useEffect(() => {
     if (!open) return undefined;
-    setTab('login');
+    setTab(initialTab);
     const onKey = (e) => {
       if (e.key === 'Escape') onClose();
     };
@@ -298,7 +419,7 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
       document.body.style.overflow = '';
       window.__lenis?.start();
     };
-  }, [open, onClose]);
+  }, [open, onClose, initialTab]);
 
   if (!open) return null;
 
@@ -308,7 +429,9 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
 
   return (
     <div className="hp-modal-overlay" onMouseDown={handleOverlayClick} role="presentation">
-      <div className="hp-modal-card" role="dialog" aria-modal="true" aria-label="Log in or create an account" ref={dialogRef}>
+      {/* data-lenis-prevent: Lenis is stopped while the modal is open and would
+          otherwise swallow wheel/touch scrolling inside the card too. */}
+      <div className="hp-modal-card" role="dialog" aria-modal="true" aria-label="Log in or create an account" ref={dialogRef} data-lenis-prevent>
         <button type="button" className="hp-modal-close" onClick={onClose} aria-label="Close">
           <i className="fa-solid fa-xmark"></i>
         </button>
@@ -340,13 +463,13 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
         </div>
 
         {tab === 'login' ? (
-          <LoginTab onSuccess={onSuccess} />
+          <LoginTab onSuccess={onSuccess} onSwitchToRegister={() => setTab('register')} />
         ) : (
           <RegisterTab onSuccess={onSuccess} onSwitchToLogin={() => setTab('login')} />
         )}
 
         <p className="hp-modal-footnote">
-          Property Owner, Admin or Caretaker? <Link to="/signin" onClick={onClose}>Log in here</Link>
+          Property Owner or Admin? <a href={`${OWNER_PORTAL_URL}/login`}>Owner Portal</a> · <a href={ADMIN_PORTAL_URL}>Admin Portal</a>
         </p>
       </div>
     </div>

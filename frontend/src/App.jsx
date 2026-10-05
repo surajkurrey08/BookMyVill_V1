@@ -1,8 +1,6 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Lenis from 'lenis';
-import SignIn from './components/SignIn/SignIn';
-import Register from './components/Register/Register';
 import OwnerSetup from './components/OwnerSetup/OwnerSetup';
 import UserDashboard from './components/UserDashboard/UserDashboard';
 import UserProfile from './components/UserProfile/UserProfile';
@@ -15,6 +13,9 @@ import PartnerContactPage from './components/JoinUs/PartnerContactPage';
 import ExploreStaysPage from './components/ExploreStays/ExploreStaysPage';
 import AiAssistant from './components/AiAssistant/AiAssistant';
 import HomePage from './components/Home/HomePage';
+import LoginRoute from './components/Home/LoginRoute';
+import WelcomeLoginPrompt from './components/Home/WelcomeLoginPrompt';
+import CookieConsent from './components/CookieConsent/CookieConsent';
 import { ADMIN_PORTAL_URL, OWNER_PORTAL_URL } from './config';
 import './App.css';
 import 'lenis/dist/lenis.css';
@@ -258,9 +259,9 @@ function App() {
       <div className="app">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/login" element={<SignIn />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/signin" element={<LoginRoute />} />
+          <Route path="/login" element={<LoginRoute />} />
+          <Route path="/register" element={<LoginRoute initialTab="register" />} />
           <Route path="/owner-setup" element={<OwnerSetup />} />
           <Route path="/register-property" element={<PartnerContactPage key="owner" />} />
           <Route path="/partner-inquiry" element={<PartnerContactPage key="inquiry" inquiry />} />
@@ -285,6 +286,8 @@ function App() {
           <Route path="/trips/:id" element={<Suspense fallback={null}><TripPage /></Suspense>} />
         </Routes>
         <AiAssistant />
+        <CookieConsent />
+        <WelcomeLoginPrompt />
       </div>
     </Router>
   );

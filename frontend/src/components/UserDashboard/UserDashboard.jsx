@@ -5,6 +5,7 @@ import Footer from '../Footer/Footer';
 import './UserDashboard.css';
 import bgImage from '../../assets/hillstationhome (1).jpg';
 import { API_BASE_URL, OWNER_PORTAL_URL } from '../../config';
+import { clearSession, updateSessionUser } from '../../lib/session';
 
 const UserDashboard = () => {
   const [bookings, setBookings] = useState([]);
@@ -71,10 +72,7 @@ const UserDashboard = () => {
 
   const handleAuthError = (resData, status) => {
     if (status === 401 || resData?.msg?.includes('token') || resData?.msg?.includes('authorization')) {
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      clearSession();
       navigate('/signin');
       return true;
     }
@@ -156,10 +154,7 @@ const UserDashboard = () => {
         console.warn('User JSON parse error:', err);
       }
     }
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearSession();
     if (isOwner) {
       window.location.href = `${OWNER_PORTAL_URL}/login`;
     } else {
@@ -345,7 +340,7 @@ const UserDashboard = () => {
       if (response.ok) {
         const updatedUser = { ...user, name: data.name, phone: data.phone, bio: data.bio };
         setUser(updatedUser);
-        sessionStorage.setItem('user', JSON.stringify(updatedUser));
+        updateSessionUser(updatedUser);
         setProfileFormSuccess('Profile details updated successfully!');
         setTimeout(() => {
           setProfileFormSuccess('');

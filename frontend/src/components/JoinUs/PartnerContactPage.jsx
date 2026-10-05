@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import HomeHeader from '../Home/HomeHeader';
 import HomeFooter from '../Home/HomeFooter';
 import RegistrationForm from '../RegistrationForm/RegistrationForm';
 import { API_BASE_URL } from '../../config';
@@ -71,7 +70,6 @@ function PartnerContactForm({ inquiry }) {
 export default function PartnerContactPage({ inquiry = false }) {
   const [applicationMode, setApplicationMode] = useState('owner');
   return <div className="hp-root partner-contact-page">
-    <HomeHeader />
     <main>
       <section className="partner-contact-intro">
         <Link to="/join-us">← Back to Join Us</Link>

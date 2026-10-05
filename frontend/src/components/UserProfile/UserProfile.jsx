@@ -5,6 +5,7 @@ import Footer from '../Footer/Footer';
 import './UserProfile.css';
 import bgImage from '../../assets/hillstationhome (1).jpg';
 import { API_BASE_URL } from '../../config';
+import { updateSessionUser } from '../../lib/session';
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
@@ -139,7 +140,7 @@ const UserProfile = () => {
       if (response.ok) {
         const updatedUser = { ...user, name: data.name, phone: data.phone, bio: data.bio };
         setUser(updatedUser);
-        sessionStorage.setItem('user', JSON.stringify(updatedUser));
+        updateSessionUser(updatedUser);
         setSaveSuccessMsg('Profile details updated and saved successfully!');
         setTimeout(() => setSaveSuccessMsg(''), 4000);
       } else {

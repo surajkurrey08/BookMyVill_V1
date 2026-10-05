@@ -418,3 +418,35 @@
     padding: 12px 14px;
   }
 }
+
+/* Opened from the header "AI Assistant" button: drops down just below the header. */
+.ai-assistant-window.is-docked {
+  top: 84px;
+  bottom: auto;
+  right: 24px;
+  max-height: calc(100vh - 104px);
+  transform-origin: top right;
+  animation-name: aiWindowDropIn;
+}
+
+@keyframes aiWindowDropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-assistant-window.is-docked {
+    top: 72px;
+    bottom: auto;
+    left: 10px;
+    right: 10px;
+    height: calc(100vh - 88px);
+    max-height: 560px;
+  }
+}

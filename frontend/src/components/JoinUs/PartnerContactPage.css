@@ -1,5 +1,5 @@
 .partner-contact-page { background: #fcfaf6; color: #101720; }
-.partner-contact-intro { padding: 125px 24px 36px; background: #0f2118; color: #fff; text-align: center; }
+.partner-contact-intro { padding: 56px 24px 36px; background: #0f2118; color: #fff; text-align: center; }
 .partner-contact-intro > a { display: inline-block; color: #f0c24b; font-size: 14px; margin-bottom: 14px; }
 .partner-contact-intro h1 { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(28px, 3vw, 42px); line-height: 1.2; margin-bottom: 14px; }
 .partner-contact-intro > p { max-width: 650px; margin-inline: auto; color: #d2dcd6; }
@@ -28,7 +28,7 @@
 .partner-contact-success > p { margin-bottom: 16px; }
 .partner-contact-success .partner-receipt { font-size: 12px; overflow-wrap: anywhere; }
 @media (max-width: 600px) {
-  .partner-contact-intro { padding: 110px 18px 28px; }
+  .partner-contact-intro { padding: 40px 18px 28px; }
   .partner-contact-panel { padding: 24px 18px; }
   .partner-contact-fields { grid-template-columns: 1fr; gap: 16px; }
   .partner-submit { width: 100%; }

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './AiAssistant.css';
+import { AI_DOCK_EVENT, AI_STATE_EVENT, AI_TOGGLE_EVENT, hasHeaderButton } from '../../lib/aiAssistant';
 
 const HOTEL_AND_LOCATION_DATABASE = [
   {
@@ -128,6 +129,27 @@ const AiAssistant = () => {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const chatBodyRef = useRef(null);
+  // A header "AI Assistant" button is on screen: hide the floating trigger and open under the header.
+  const [docked, setDocked] = useState(hasHeaderButton);
+
+  useEffect(() => {
+    const onToggle = () => setIsOpen((open) => !open);
+    const onDock = () => setDocked(hasHeaderButton());
+    window.addEventListener(AI_TOGGLE_EVENT, onToggle);
+    window.addEventListener(AI_DOCK_EVENT, onDock);
+    // Header buttons render before this component, so they may have
+    // registered before the listener above existed — sync once now.
+    onDock();
+    return () => {
+      window.removeEventListener(AI_TOGGLE_EVENT, onToggle);
+      window.removeEventListener(AI_DOCK_EVENT, onDock);
+    };
+  }, []);
+
+  // Keeps header buttons' arrow in sync (also re-sent when a new header mounts).
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(AI_STATE_EVENT, { detail: { open: isOpen } }));
+  }, [isOpen, docked]);
 
   useEffect(() => {
     if (chatBodyRef.current) {
@@ -278,18 +300,20 @@ const DYNAMIC_NLP_TOPICS = [
 
   return (
     <>
-      {/* Floating Circular Trigger Button with Only Logo */}
-      <button 
-        className="ai-assistant-trigger-btn"
-        onClick={() => setIsOpen(!isOpen)}
-        title="BookMyVilla AI Luxury Assistant"
-      >
-        <i className="fa-solid fa-wand-magic-sparkles ai-trigger-icon"></i>
-      </button>
+      {/* Floating Circular Trigger Button with Only Logo (pages without a header button) */}
+      {!docked && (
+        <button
+          className="ai-assistant-trigger-btn"
+          onClick={() => setIsOpen(!isOpen)}
+          title="BookMyVilla AI Luxury Assistant"
+        >
+          <i className="fa-solid fa-wand-magic-sparkles ai-trigger-icon"></i>
+        </button>
+      )}
 
       {/* Floating AI Chat Window */}
       {isOpen && (
-        <div className="ai-assistant-window" data-lenis-prevent>
+        <div className={`ai-assistant-window ${docked ? 'is-docked' : ''}`} data-lenis-prevent>
           {/* Header */}
           <div className="ai-window-header">
             <div className="ai-header-info">

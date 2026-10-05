@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import BrandLogo from '../Brand/BrandLogo';
+import AiAssistantButton from '../AiAssistant/AiAssistantButton';
 import { OWNER_PORTAL_URL, CARETAKER_PORTAL_URL } from '../../config';
+import { AUTH_EVENT, clearSession, getSessionUser } from '../../lib/session';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -28,6 +30,13 @@ const Navbar = () => {
     setIsMobileMenuOpen(false);
     setShowProfileDropdown(false);
   }, [location.pathname]);
+
+  // Picks up logins/logouts done elsewhere (e.g. the first-visit login prompt).
+  useEffect(() => {
+    const sync = () => setUser(getSessionUser());
+    window.addEventListener(AUTH_EVENT, sync);
+    return () => window.removeEventListener(AUTH_EVENT, sync);
+  }, []);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -83,10 +92,7 @@ const Navbar = () => {
         console.warn('User JSON parse error:', err);
       }
     }
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearSession();
     setUser(null);
     if (isOwner) {
       window.location.href = `${OWNER_PORTAL_URL}/login`;
@@ -335,10 +341,11 @@ const Navbar = () => {
                 )}
               </div>
             ) : (
-              <Link to="/signin" className="btn-primary signin-btn">
+              <Link to="/signin" state={{ from: location.pathname }} className="btn-primary signin-btn">
                 {location.pathname === '/join-us' ? 'Log In' : 'Sign In'}
               </Link>
             )}
+            <AiAssistantButton />
           </div>
         </div>
       </header>
