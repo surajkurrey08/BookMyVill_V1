@@ -1,33 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const auth = require('../middleware/auth');
+const auth = require('../middleware/ownerAuth');
 const TouristRegister = require('../models/TouristRegister');
-
-const defaultTourists = [
-  {
-    _id: 'tr-1',
-    ownerId: 'owner123',
-    propertyName: 'Royal Mist Villa Estate',
-    guestName: 'Rohan Sharma & Family',
-    phone: '+91 98230 11223',
-    expectedArrivalTime: '02:30 PM',
-    actualCheckInTime: new Date(),
-    adultsCount: 4,
-    childrenCount: 2,
-    roomAssigned: 'Master Villa Suite 101',
-    idVerified: true,
-    govtIdType: 'Aadhaar Card',
-    status: 'Arrived',
-    specialRequests: 'Welcome Strawberry Drink & Highchair'
-  }
-];
+const ownerOperation = require('../middleware/legacyOwnerOperation')(TouristRegister);
 
 // @route   GET api/tourist-register/owner
 // @desc    Get registered & arrived tourists for owner's properties
 router.get('/owner', auth, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
-    return res.json(defaultTourists);
+    return res.status(503).json({ msg: 'Database unavailable.' });
   }
   try {
     let records = await TouristRegister.find({ ownerId: req.user.id }).sort({ createdAt: -1 });
@@ -37,17 +19,18 @@ router.get('/owner', auth, async (req, res) => {
     res.json(records);
   } catch (err) {
     console.error('TouristRegister GET Error:', err.message);
-    res.json(defaultTourists);
+    res.status(503).json({ msg: 'Could not load records.' });
   }
 });
 
 // @route   POST api/tourist-register
 // @desc    Register a new tourist guest group
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, ownerOperation, async (req, res) => {
   try {
     const { propertyName, guestName, phone, expectedArrivalTime, adultsCount, childrenCount, roomAssigned, specialRequests } = req.body;
     const newRecord = new TouristRegister({
       ownerId: req.user.id,
+      propertyId: req.body.propertyId || undefined,
       propertyName: propertyName || 'Mahabaleshwar Villa',
       guestName,
       phone,
@@ -67,7 +50,7 @@ router.post('/', auth, async (req, res) => {
 
 // @route   PUT api/tourist-register/:id/status
 // @desc    Update tourist arrival status (Mark as Arrived / Checked Out)
-router.put('/:id/status', auth, async (req, res) => {
+router.put('/:id/status', auth, ownerOperation, async (req, res) => {
   try {
     const record = await TouristRegister.findById(req.params.id);
     if (!record) return res.status(404).json({ msg: 'Tourist record not found' });

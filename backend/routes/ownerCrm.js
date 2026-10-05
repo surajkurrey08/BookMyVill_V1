@@ -7,6 +7,7 @@ const CrmActivity = require('../models/CrmActivity');
 const Property = require('../models/Property');
 const StaffMember = require('../models/StaffMember');
 const Quotation = require('../models/Quotation');
+const { requirePropertyAccess } = require('../services/propertyAccess');
 const { createWithCode } = require('../services/refCode');
 const { logActivity, recomputeNextFollowUp, resolveStaff, guestHistory, ownerPropertyIds } = require('../services/crm');
 const { sweepExpiredQuotes } = require('../services/quotes');
@@ -26,17 +27,17 @@ const fail = (res, err) => sendError(res, err, 'Owner CRM');
 async function inquiryForOwner(req, id, select) {
   if (!validId(id)) throw new HttpError(400, 'Invalid inquiry ID.');
   const query = Inquiry.findOne({ _id: id, owner: req.user.id });
-  if (select) query.select(select);
+  if (select) query.select(`${select} property`);
   const inquiry = await query;
   if (!inquiry) throw new HttpError(404, 'Inquiry not found in your account.');
+  if (!['GET', 'HEAD'].includes(req.method) && inquiry.property) await requirePropertyAccess(req.user, inquiry.property);
   return inquiry;
 }
 
 async function ownedPropertyId(owner, value) {
   if (value === null || value === '' || value === undefined) return null;
   if (!validId(String(value))) throw new HttpError(400, 'Invalid property.');
-  const property = await Property.exists({ _id: value, owner });
-  if (!property) throw new HttpError(404, 'Property not found in your account.');
+  const property = await requirePropertyAccess({ id: owner, role: 'owner' }, value);
   return property._id;
 }
 
@@ -466,6 +467,7 @@ router.patch('/follow-ups/:id', async (req, res) => {
     if (!validId(req.params.id)) throw new HttpError(400, 'Invalid follow-up ID.');
     const followUp = await FollowUp.findOne({ _id: req.params.id, owner: req.user.id });
     if (!followUp) throw new HttpError(404, 'Follow-up not found in your account.');
+    await inquiryForOwner(req, String(followUp.inquiry), '_id');
     if (followUp.status !== 'pending') throw new HttpError(409, 'This follow-up is already closed.');
     const body = req.body || {};
     const outcome = cleanText(body.outcome, 300);

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
+const { requirePropertyAccess, requireOwnerPropertySelection } = require('../services/propertyAccess');
+const { sendError } = require('../utils/validate');
 const CaretakerApplication = require('../models/CaretakerApplication');
 
 const Attendance = require('../models/Attendance');
@@ -10,6 +12,10 @@ const Attendance = require('../models/Attendance');
 router.post('/apply', auth, async (req, res) => {
   try {
     const { propertyId, propertyName, propertyAddress, positionRole, phone, experience, skillsRequired, services, govtId, bio } = req.body;
+    if (req.user.role === 'owner') {
+      if (propertyId) await requirePropertyAccess(req.user, propertyId);
+      else await requireOwnerPropertySelection(req.user.id);
+    }
 
     const application = new CaretakerApplication({
       provider: req.user.id,
@@ -32,7 +38,7 @@ router.post('/apply', auth, async (req, res) => {
     res.status(201).json(application);
   } catch (err) {
     console.error('Caretaker apply error:', err.message);
-    res.status(500).json({ msg: 'Failed to submit caretaker application' });
+    sendError(res, err, 'Caretaker application');
   }
 });
 

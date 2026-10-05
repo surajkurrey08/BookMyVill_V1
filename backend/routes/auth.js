@@ -82,26 +82,8 @@ router.post('/owner-setup', async (req, res) => {
   }
 });
 
-// Remove User from Database by ID or Email (New User / Reset Call)
-router.delete('/user/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    let deletedUser;
-    if (id.includes('@')) {
-      deletedUser = await User.findOneAndDelete({ email: id.toLowerCase().trim() });
-    } else {
-      deletedUser = await User.findByIdAndDelete(id);
-    }
-    if (!deletedUser) {
-      return res.status(404).json({ msg: 'User not found in database' });
-    }
-    console.log(`User (${deletedUser.email}) successfully removed from database`);
-    res.json({ success: true, msg: 'User removed from database successfully', user: deletedUser });
-  } catch (err) {
-    console.error('Error removing user from database:', err);
-    res.status(500).json({ msg: 'Failed to remove user from database', error: err.message });
-  }
-});
+// Use audited Admin account actions for account removal.
+router.delete('/user/:id', (req,res) => res.status(403).json({ msg: 'Use authorized Admin account actions.' }));
 
 // Login
 router.post('/login', async (req, res) => {
@@ -132,17 +114,11 @@ router.post('/login', async (req, res) => {
       isMatch = false;
     }
 
-    // Fallback for plain text passwords (migrating legacy plain text records automatically)
-    if (!isMatch && user.password === password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
-      await user.save();
-      isMatch = true;
-    }
-
     if (!isMatch) {
       return res.status(400).json({ msg: 'Invalid email address or password.' });
     }
+
+    if (['pending','rejected','suspended'].includes(user.status)) return res.status(403).json({ msg: 'This account is not active. Contact Admin.' });
 
     // Block property owner login if property has not been accepted/approved by Admin
     if (user.role === 'owner') {
@@ -183,6 +159,7 @@ router.get('/login', (req, res) => {
 
 // Step 1: Request 6-Digit OTP for Secure Password Reset
 router.post('/request-otp', async (req, res) => {
+  if (process.env.NODE_ENV !== 'test' && !(process.env.NODE_ENV !== 'production' && process.env.ALLOW_DEMO_OTP === 'true')) return res.status(503).json({ msg: 'OTP delivery is not configured. Use password sign in or contact Admin.' });
   try {
     const { email } = req.body;
     if (!email) {
@@ -197,7 +174,7 @@ router.post('/request-otp', async (req, res) => {
     if (!user) {
       return res.status(404).json({ msg: 'No account found with this email address. Please check your email or register.' });
     }
-    if (user.role === 'owner' || user.role === 'admin') {
+    if (user.role !== 'user') {
       return res.status(403).json({ msg: 'Ask the admin for a password setup link for this account.' });
     }
 
@@ -246,7 +223,7 @@ router.post('/forgot-password', async (req, res) => {
     if (!user) {
       return res.status(404).json({ msg: 'No account found with this email address.' });
     }
-    if (user.role === 'owner' || user.role === 'admin') {
+    if (user.role !== 'user') {
       return res.status(403).json({ msg: 'Ask the admin for a password setup link for this account.' });
     }
 
@@ -287,6 +264,7 @@ const isValidIndianMobile = (phone) => /^[6-9]\d{9}$/.test(phone);
 
 // Step 1: Request a 6-digit OTP for mobile-number registration
 router.post('/phone/send-otp', async (req, res) => {
+  if (process.env.NODE_ENV !== 'test' && !(process.env.NODE_ENV !== 'production' && process.env.ALLOW_DEMO_OTP === 'true')) return res.status(503).json({ msg: 'OTP delivery is not configured. Use password sign in or contact Admin.' });
   try {
     const cleanPhone = cleanPhoneNumber(req.body.phone);
     if (!isValidIndianMobile(cleanPhone)) {

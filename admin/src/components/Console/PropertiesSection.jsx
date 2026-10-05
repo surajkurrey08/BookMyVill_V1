@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { adminApi, query } from './api';
-import { rupees, shortDate, PROPERTY_STATUS, ACCOUNT_STATUS } from './config';
+import { rupees, shortDate, PROPERTY_STATUS, MANAGEMENT_STATUS, staffName } from './config';
+import PropertyManagement from './PropertyManagement';
 import { Alert, Drawer, EmptyState, Facts, Icon, Pager, StatusBadge, AuditTimeline, ConfirmDialog } from './ui';
 
 const TABS = [
@@ -33,27 +34,42 @@ export default function PropertiesSection({ can, focus }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [openId, setOpenId] = useState(null);
+  const [managementMode, setManagementMode] = useState('');
+  const [assignment, setAssignment] = useState('');
+  const [loading, setLoading] = useState(true);
+  const request = useRef(null);
 
   useEffect(() => { const t = setTimeout(() => { setQ(search.trim()); setPage(1); }, 300); return () => clearTimeout(t); }, [search]);
   useEffect(() => { if (focus?.id) setOpenId(focus.id); }, [focus]);
   const load = useCallback(async () => {
-    try { setData(await adminApi(`/properties${query({ ...TABS.find(t => t.id === tab).filter, q, page, limit: 20 })}`)); setError(''); }
-    catch (err) { setError(err.message); }
-  }, [tab, q, page]);
-  useEffect(() => { load(); }, [load]);
+    request.current?.abort();
+    const controller = new AbortController(); request.current = controller; setLoading(true);
+    try { setData(await adminApi(`/properties${query({ ...TABS.find(t => t.id === tab).filter, q, page, limit: 20, managementMode, ...(assignment === 'manager' && { assignedVillaManager: 'unassigned' }), ...(assignment === 'data-entry' && { assignedDataEntryUser: 'unassigned' }) })}`, { signal: controller.signal })); setError(''); }
+    catch (err) { if (err.name !== 'AbortError') setError(err.message); }
+    finally { if (!controller.signal.aborted) setLoading(false); }
+  }, [tab, q, page, managementMode, assignment]);
+  useEffect(() => { load(); return () => request.current?.abort(); }, [load]);
   const counts = data?.statusCounts || {};
 
   return <div className="ac-stack">
     <div className="ac-tabs">{TABS.map(t => <button key={t.id} type="button" className={tab === t.id ? 'active' : ''} onClick={() => { setTab(t.id); setPage(1); }}>{t.label}{t.id === 'review' && (counts.pending || counts.under_review) ? <span className="ac-pill">{(counts.pending || 0) + (counts.under_review || 0)}</span> : null}</button>)}</div>
-    <div className="ac-toolbar"><label className="ac-search"><Icon name="fa-magnifying-glass" /><input placeholder="Property name or location" value={search} onChange={e => setSearch(e.target.value)} /></label></div>
+    <div className="ac-toolbar"><label className="ac-search"><Icon name="fa-magnifying-glass" /><input placeholder="Property name or location" value={search} onChange={e => setSearch(e.target.value)} /></label>
+      <select aria-label="Management filter" value={managementMode} onChange={e => { setManagementMode(e.target.value); setPage(1); if (assignment === 'manager' && e.target.value !== 'BOOKMYVILLA_MANAGED') setAssignment(''); }}>
+        <option value="">All management modes</option><option value="SELF_MANAGED">Self Managed</option><option value="BOOKMYVILLA_MANAGED">Managed by BookMyVilla</option>
+      </select>
+      <select aria-label="Assignment filter" value={assignment} onChange={e => { setAssignment(e.target.value); setPage(1); if (e.target.value === 'manager') setManagementMode('BOOKMYVILLA_MANAGED'); }}>
+        <option value="">All assignments</option><option value="manager">Unassigned Villa Manager</option><option value="data-entry">Unassigned Data Entry</option>
+      </select>
+    </div>
     {error && <Alert onClose={() => setError('')}>{error}</Alert>}
     <section className="ac-card nopad">
-      {data && data.items.length === 0 ? <EmptyState icon="fa-building" title={tab === 'review' ? 'No properties awaiting review' : 'No properties found'}>{tab === 'review' && 'New and edited listings appear here for approval before they go live.'}</EmptyState>
+      {loading ? <p className="ac-muted">Loading properties…</p> : data && data.items.length === 0 ? <EmptyState icon="fa-building" title={tab === 'review' ? 'No properties awaiting review' : 'No properties found'}>{tab === 'review' && 'New and edited listings appear here for approval before they go live.'}</EmptyState>
         : <div className="ac-table-wrap"><table className="ac-table">
-          <thead><tr><th>Property</th><th>Owner</th><th>Type</th><th>Status</th><th className="num">Rate</th><th>Updated</th></tr></thead>
+          <thead><tr><th>Property</th><th>Owner</th><th>Management</th><th>Type</th><th>Status</th><th className="num">Rate</th><th>Updated</th></tr></thead>
           <tbody>{data?.items.map(p => <tr key={p._id} onClick={() => setOpenId(p._id)}>
             <td><div className="ac-prop-cell">{p.cover ? <img src={p.cover} alt="" onError={e => { e.currentTarget.style.visibility = 'hidden'; }} /> : <span className="ac-prop-noimg"><Icon name="fa-image" /></span>}<div><strong className="ac-link">{p.name}</strong><small>{p.location} · {p.photoCount} photos</small></div></div></td>
             <td>{p.owner?.name || <span className="ac-muted">Unlinked</span>}</td>
+            <td><StatusBadge meta={MANAGEMENT_STATUS[p.managementMode || 'SELF_MANAGED']} /><small className={p.managementMode === 'BOOKMYVILLA_MANAGED' && !p.assignedVillaManager ? 'ac-delta down' : ''}>Villa Manager: {staffName(p.assignedVillaManager)}</small><small>Data Entry: {staffName(p.assignedDataEntryUser)}</small></td>
             <td>{p.type}</td>
             <td><StatusBadge meta={PROPERTY_STATUS[p.status]} fallback={p.status} /></td>
             <td className="num">{rupees(p.price)}</td>
@@ -62,7 +78,7 @@ export default function PropertiesSection({ can, focus }) {
         </table></div>}
       {data && <Pager page={data.page} pages={data.pages} total={data.total} onPage={setPage} label="properties" />}
     </section>
-    {openId && <PropertyDrawer id={openId} can={can} onClose={() => setOpenId(null)} onChanged={load} />}
+    {openId && <PropertyDrawer key={openId} id={openId} can={can} onClose={() => setOpenId(null)} onChanged={load} />}
   </div>;
 }
 
@@ -72,7 +88,7 @@ function PropertyDrawer({ id, can, onClose, onChanged }) {
   const [confirm, setConfirm] = useState(null);
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
-  const load = useCallback(async () => { try { setData(await adminApi(`/properties/${id}`)); setError(''); } catch (err) { setError(err.message); } }, [id]);
+  const load = useCallback(async () => { try { const fresh = await adminApi(`/properties/${id}`); setData(fresh); setError(''); return fresh; } catch (err) { setError(err.message); } }, [id]);
   useEffect(() => { load(); }, [load]);
 
   async function run(action) {
@@ -100,6 +116,8 @@ function PropertyDrawer({ id, can, onClose, onChanged }) {
         ['Map', p.mapLink ? 'Provided' : 'Missing'],
         ['Created', shortDate(p.createdAt)]
       ]} />
+      {data.operations && <section className="ac-sub"><h4>Unassigned operations</h4><p className="ac-muted">Assign a Villa Manager to handle these existing records.</p>{Object.entries(data.operations).map(([kind,items]) => <div key={kind}><strong>{kind}: {items.length}</strong>{items.map(item => <p key={item._id} className="ac-muted">#{item._id.slice(-8)} ? {item.title || item.description || item.guest?.name || 'Booking'} ? {item.stage || item.status || item.stayStatus}</p>)}</div>)}</section>}
+      <PropertyManagement property={p} can={can} onChanged={async () => { if (!await load()) throw new Error('Property refresh failed.'); await onChanged(); }} />
       <section className="ac-sub"><h4>Verification checklist</h4><ul className="ac-checks">
         {checkRow(checks.hasOwner, 'Linked to an owner account')}
         {checkRow(checks.hasLocation, 'Location provided')}

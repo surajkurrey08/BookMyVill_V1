@@ -146,69 +146,8 @@ const PropertyDetails = () => {
   }, [property, loading, searchParams]);
 
   const triggerPaymentForAutoBook = async (cIn, cOut) => {
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
-    if (!token) {
-      const currentUrl = `/property/${property?._id || id}${window.location.search}`;
-      navigate('/signin', { state: { from: currentUrl, property } });
-      return;
-    }
-
-    const priceValue = parseInt(property.price?.toString().replace(/[^0-9]/g, '') || '15000');
-    let total = priceValue;
-    if (cIn && cOut && stayType !== 'day') {
-      const start = new Date(cIn);
-      const end = new Date(cOut);
-      const diffTime = Math.abs(end - start);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-      total = priceValue * diffDays;
-    } else if (stayType === 'day') {
-      total = Math.round(priceValue * 0.55);
-    }
-
-    try {
-      setIsProcessing(true);
-      const response = await fetch(`${API_BASE_URL}/api/bookings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token
-        },
-        body: JSON.stringify({
-          propertyId: property?._id || id,
-          propertyName: property?.name,
-          propertyLocation: property?.location,
-          propertyType: property?.type,
-          propertyImage: property?.image || (property?.photos && property?.photos[0] ? property.photos[0] : ''),
-          checkIn: cIn,
-          checkOut: cOut || cIn,
-          stayType: stayType === 'day' || cIn === cOut ? 'day' : 'night',
-          guests: guests,
-          totalPrice: total
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.status === 401 || (data && data.msg === 'Token is not valid')) {
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('user');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        const currentUrl = `/property/${property?._id || id}${window.location.search}`;
-        navigate('/signin', { state: { from: currentUrl, property } });
-        return;
-      }
-
-      if (response.ok && data) {
-        await handlePaymentOrder(data, token);
-      } else {
-        setBookingNotice({ type: 'error', msg: data.msg || 'Booking request failed.' });
-      }
-    } catch (err) {
-      console.error('Auto payment initiation error:', err);
-    } finally {
-      setIsProcessing(false);
-    }
+    if (!cIn || !cOut || cOut <= cIn) { setBookingNotice({ type: 'error', msg: 'Choose an overnight stay to select an available room.' }); return; }
+    navigate(`/property/${property?._id || id}/rooms?checkIn=${cIn}&checkOut=${cOut}&guests=${guests}`);
   };
 
   const locationState = useLocation();
@@ -501,63 +440,9 @@ const PropertyDetails = () => {
     return priceValue * diffDays;
   };
 
-  const handleBookingStart = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
-    const currentUrl = `/property/${property?._id || id}${window.location.search}`;
-
-    if (!token) {
-      navigate('/signin', { state: { from: currentUrl, property } });
-      return;
-    }
-
-    const total = calculateTotalPrice();
-    if (total <= 0) {
-      setBookingNotice({ type: 'error', msg: 'Please select valid check-in and check-out dates.' });
-      return;
-    }
-
-    try {
-      setIsProcessing(true);
-      const response = await fetch(`${API_BASE_URL}/api/bookings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token
-        },
-        body: JSON.stringify({
-          propertyId: property?._id || id,
-          propertyName: property?.name,
-          propertyLocation: property?.location,
-          propertyType: property?.type,
-          propertyImage: property?.image || (property?.photos && property?.photos[0] ? property.photos[0] : ''),
-          checkIn: bookingDates.checkIn,
-          checkOut: bookingDates.checkOut || bookingDates.checkIn,
-          stayType: stayType === 'day' || bookingDates.checkIn === bookingDates.checkOut ? 'day' : 'night',
-          guests: guests,
-          totalPrice: total
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.status === 401 || (data && (data.msg === 'Token is not valid' || data.msg === 'No token, authorization denied'))) {
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('user');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/signin', { state: { from: currentUrl, property } });
-        return;
-      }
-
-      if (!response.ok) throw new Error(data.msg || 'Booking failed');
-
-      await handlePaymentOrder(data, token);
-    } catch (err) {
-      setBookingNotice({ type: 'error', msg: err.message });
-    } finally {
-      setIsProcessing(false);
-    }
+  const handleBookingStart = async (event) => {
+    event?.preventDefault();
+    await triggerPaymentForAutoBook(bookingDates.checkIn, bookingDates.checkOut);
   };
 
   const handlePaymentOrder = async (order, token) => {

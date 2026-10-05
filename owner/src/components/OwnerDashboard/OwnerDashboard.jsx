@@ -5,7 +5,10 @@ import GuestOperations from './GuestOperations';
 import OwnerFinance from './OwnerFinance';
 import SalesSnapshot from '../Sales/SalesSnapshot';
 // Owner Dashboard Component - Mahabaleshwar Luxury Stays
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { api } from '../../lib/api';
+import { canOperateProperty, canOperateLegacyRecord, isManagedProperty, managementLabel } from '../../lib/propertyAccess';
+import ManagementNotice from './ManagementNotice';
 import { API_BASE_URL, GUEST_SITE_URL } from '../../config';
 import './OwnerDashboard.css';
 
@@ -33,7 +36,12 @@ const PROPERTY_STATUS_LABELS = {
 const propertyStatusLabel = status => PROPERTY_STATUS_LABELS[status] || 'Pending Admin Approval';
 
 const OwnerDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const route = useParams();
+  const initialPropertyId = route.propertyId || new URLSearchParams(window.location.search).get('propertyId') || '';
+  const section = route.section || new URLSearchParams(window.location.search).get('section');
+  const initialTab = ({ pricing: 'properties', details: 'properties', availability: 'rooms', staff: 'operations', housekeeping: 'operations', maintenance: 'operations', complaints: 'operations' })[section] || (['properties', 'bookings', 'rooms', 'operations', 'analytics', 'inventory', 'caretakers'].includes(section) ? section : 'overview');
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [selectedPropertyId, setSelectedPropertyId] = useState(initialPropertyId);
   const [user, setUser] = useState(null);
   const [properties, setProperties] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -97,6 +105,14 @@ const OwnerDashboard = () => {
   const [propertyFilterType, setPropertyFilterType] = useState('All');
   const [bookingFilterStatus, setBookingFilterStatus] = useState('All');
 
+  const selectedProperty = properties.find(property => property._id === selectedPropertyId);
+  const selfManaged = properties.filter(canOperateProperty);
+  const legacyCanWrite = properties.length > 0 && properties.every(canOperateProperty);
+  const propertyForBooking = booking => properties.find(property => property._id === String(booking.property?._id || booking.property));
+  const readOnlyProperty = Boolean(editingProperty && !canOperateProperty(properties.find(property => property._id === editingProperty._id)));
+  const denyOperation = () => { setError('Operational management is handled by BookMyVilla for this property.'); return false; };
+  const legacyWritable = record => canOperateProperty(selectedProperty) && canOperateLegacyRecord(properties, record);
+  const selectProperty = id => { setSelectedPropertyId(id); setError(''); setActionSuccess(''); setShowCaretakerModal(false); setShowAddTaskModalOwner(false); setShowAddReqModalOwner(false); };
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -164,6 +180,7 @@ const OwnerDashboard = () => {
   // Handlers for Task & Guest Requirement Management
   const handleOwnerAddTaskSubmit = async (e) => {
     e.preventDefault();
+    if (!legacyCanWrite) return denyOperation();
     if (!newOwnerTask.title.trim()) return;
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
@@ -191,6 +208,7 @@ const OwnerDashboard = () => {
   };
 
   const handleOwnerDeleteTask = async (id) => {
+    if (!legacyCanWrite) return denyOperation();
     if (!window.confirm('Remove this daily task from the caretaker checklist?')) return;
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
@@ -212,6 +230,7 @@ const OwnerDashboard = () => {
 
   const handleOwnerAddGuestReqSubmit = async (e) => {
     e.preventDefault();
+    if (!legacyCanWrite) return denyOperation();
     if (!newOwnerGuestReq.label.trim()) return;
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
@@ -234,6 +253,7 @@ const OwnerDashboard = () => {
   };
 
   const handleOwnerDeleteGuestReq = async (guestId, reqIdx) => {
+    if (!legacyCanWrite) return denyOperation();
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE_URL}/guest-requirements/${guestId}/requests/${reqIdx}`, {
@@ -255,6 +275,7 @@ const OwnerDashboard = () => {
   };
 
   const handleOwnerRestockStock = async (id, amount = 5) => {
+    if (!legacyWritable(ownerInventory.find(item => (item._id || item.id) === id))) return denyOperation();
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     try {
       const res = await fetch(`${API_BASE_URL}/inventory/${id}/restock`, {
@@ -273,6 +294,7 @@ const OwnerDashboard = () => {
   };
 
   const handleUpdateTouristStatus = async (id, status) => {
+    if (!legacyWritable(touristRegisterList.find(item => (item._id || item.id) === id))) return denyOperation();
     const rawToken = sessionStorage.getItem('token') || localStorage.getItem('token');
     const token = rawToken ? rawToken.replace(/^["']|["']$/g, '').trim() : '';
     try {
@@ -318,6 +340,7 @@ const OwnerDashboard = () => {
       const propData = await propRes.json();
       if (Array.isArray(propData)) {
         setProperties(propData);
+        setSelectedPropertyId(current => current ? current : (propData.find(canOperateProperty)?._id || propData[0]?._id || ''));
       }
 
       // 2. Fetch Owner Bookings
@@ -397,6 +420,7 @@ const OwnerDashboard = () => {
 
   const handleCaretakerSubmit = async (e) => {
     e.preventDefault();
+    if (!canOperateProperty(properties.find(property => property._id === caretakerForm.propertyId))) return denyOperation();
     const rawToken = sessionStorage.getItem('token') || localStorage.getItem('token');
     const token = rawToken ? rawToken.replace(/^["']|["']$/g, '').trim() : '';
     setError('');
@@ -557,6 +581,7 @@ const OwnerDashboard = () => {
   };
 
   const handleToggleSelectFeedback = async (fbId) => {
+    if (!legacyWritable(touristFeedbackList.find(item => (item._id || item.id) === fbId))) return denyOperation();
     try {
       const token = sessionStorage.getItem('token') || localStorage.getItem('token');
       const res = await fetch(`${API_BASE_URL}/feedback/${fbId}/toggle-select`, {
@@ -608,6 +633,7 @@ const OwnerDashboard = () => {
   // Add / Edit Property Submission
   const handleSaveProperty = async (e) => {
     e.preventDefault();
+    if (editingProperty && readOnlyProperty) return denyOperation();
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     setError('');
     setActionSuccess('');
@@ -688,6 +714,7 @@ const OwnerDashboard = () => {
   };
 
   const handleEditClick = (prop) => {
+    setSelectedPropertyId(prop._id);
     setEditingProperty(prop);
     setPropertyForm({
       name: prop.name || '',
@@ -709,6 +736,7 @@ const OwnerDashboard = () => {
   };
 
   const handleDeleteProperty = async (id) => {
+    if (!canOperateProperty(properties.find(property => property._id === id))) return denyOperation();
     if (!window.confirm('Are you sure you want to remove this property listing?')) return;
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     try {
@@ -729,6 +757,7 @@ const OwnerDashboard = () => {
   };
 
   const handleUpdateBookingStatus = async (bookingId, newStatus) => {
+    if (!canOperateProperty(propertyForBooking(bookings.find(booking => booking._id === bookingId) || {}))) return denyOperation();
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     let cancelReason = '';
 
@@ -842,7 +871,16 @@ const OwnerDashboard = () => {
     }
   };
 
+  const refreshProperties = async () => {
+    try { setProperties(await api('/properties/my-properties')); } catch (err) { setError(err.message); }
+  };
+  useEffect(() => { const refresh = () => { refreshProperties(); }; window.addEventListener('focus', refresh); return () => window.removeEventListener('focus', refresh); }, []);
+  useEffect(() => {
+    if (initialPropertyId && ['pricing', 'details'].includes(section)) { const property = properties.find(item => item._id === initialPropertyId); if (property) handleEditClick(property); }
+  }, [initialPropertyId, section, Boolean(properties.length)]);
+
   const handleTabChange = (tabName) => {
+    refreshProperties();
     if (tabName === 'bookings' || tabName === 'overview') refreshBookings();
     setActiveTab(tabName);
     setPropertySearchQuery('');
@@ -1026,11 +1064,12 @@ const OwnerDashboard = () => {
               <button
                 type="button"
                 className="btn-caretaker-emerald"
+                disabled={!canOperateProperty(selectedProperty)}
                 onClick={() => {
                   setCaretakerForm({
-                    propertyId: properties.length > 0 ? properties[0]._id : '',
-                    propertyName: properties.length > 0 ? properties[0].name : '',
-                    propertyAddress: properties.length > 0 ? (properties[0].location || 'Mahabaleshwar, Satara') : '',
+                    propertyId: canOperateProperty(selectedProperty) ? selectedProperty._id : (selfManaged[0]?._id || ''),
+                    propertyName: canOperateProperty(selectedProperty) ? selectedProperty.name : (selfManaged[0]?.name || ''),
+                    propertyAddress: canOperateProperty(selectedProperty) ? selectedProperty.location : (selfManaged[0]?.location || ''),
                     positionRole: 'Chief Villa Caretaker Host',
                     phone: user?.phone || '',
                     experience: '3 - 5 Years',
@@ -1061,6 +1100,10 @@ const OwnerDashboard = () => {
             </div>
           </header>
 
+          {['caretakers', 'inventory'].includes(activeTab) && <div className="portfolio-filter-bar"><label>Property <select aria-label="Operational property" value={selectedPropertyId} onChange={event => selectProperty(event.target.value)}><option value="">Choose property</option>{properties.map(property => <option value={property._id} key={property._id}>{property.name} · {managementLabel(property)}</option>)}</select></label></div>}
+          {['caretakers', 'inventory'].includes(activeTab) && <ManagementNotice property={selectedProperty} />}
+          {activeTab === 'caretakers' && !legacyCanWrite && <div className="alert-box" role="status">Owner-wide duties and requirements are read-only. Manage each self-managed property's staff and daily tasks in Guest Operations.</div>}
+          {initialPropertyId && !loading && !selectedProperty && <div className="alert-box error" role="alert">Property not found in your account.</div>}
           {/* Global Notifications */}
           {actionSuccess && (
             <div className="alert-box success">
@@ -1089,6 +1132,7 @@ const OwnerDashboard = () => {
               {activeTab === 'overview' && (
                 <div className="tab-overview">
                   <SalesSnapshot onOpen={() => handleTabChange('sales')} />
+                  <p className="location">{properties.length} Total Properties · {properties.filter(property => !isManagedProperty(property)).length} Self Managed · {properties.filter(isManagedProperty).length} Managed by BookMyVilla</p>
                   {/* High Impact Property Overview Highlight Banner */}
                   {properties.length > 0 && <div className="property-overview-banner glass-morphism">
                     <div className="banner-image-container">
@@ -1294,6 +1338,7 @@ const OwnerDashboard = () => {
                               </div>
                               <div className="prop-details">
                                 <h4>{prop.name}</h4>
+                                <p>{managementLabel(prop)}</p>
                                 <p><i className="fa-solid fa-location-dot"></i> {prop.location} • <span className="type-tag">{prop.type}</span></p>
                                 <span className="price-tag">₹{prop.price?.toLocaleString('en-IN')} / night</span>
                               </div>
@@ -1408,6 +1453,7 @@ const OwnerDashboard = () => {
 
                             <div className="card-body">
                               <h3>{prop.name}</h3>
+                              <p className="location">Management: {managementLabel(prop)}</p>
                               <p className="location">
                                 <i className="fa-solid fa-location-dot"></i> {prop.location}
                               </p>
@@ -1438,6 +1484,7 @@ const OwnerDashboard = () => {
                                 </div>
                               </div>
 
+                              {isManagedProperty(prop) && <p className="location">Pricing managed by BookMyVilla</p>}
                               <div className="card-actions">
                                 <a
                                   href={`${GUEST_SITE_URL}/property/${prop._id}`}
@@ -1459,13 +1506,14 @@ const OwnerDashboard = () => {
                                     setShowCaretakerModal(true);
                                   }}
                                   title="Apply for Caretaker for this property"
+                                  disabled={!canOperateProperty(prop)}
                                 >
                                   <i className="fa-solid fa-user-shield"></i> Caretaker
                                 </button>
                                 <button className="btn-edit" onClick={() => handleEditClick(prop)}>
-                                  <i className="fa-solid fa-pen-to-square"></i> Edit
+                                  <i className="fa-solid fa-pen-to-square"></i> {canOperateProperty(prop) ? 'Manage' : 'View Details'}
                                 </button>
-                                <button className="btn-delete" onClick={() => handleDeleteProperty(prop._id)}>
+                                <button className="btn-delete" disabled={!canOperateProperty(prop)} aria-label={`Delete ${prop.name}`} onClick={() => handleDeleteProperty(prop._id)}>
                                   <i className="fa-solid fa-trash-can"></i>
                                 </button>
                               </div>
@@ -1478,10 +1526,10 @@ const OwnerDashboard = () => {
               )}
 
               {/* TAB 3: BOOKINGS */}
-              {activeTab === 'rooms' && <RoomsAvailability />}
-              {activeTab === 'sales' && <Suspense fallback={moduleFallback}><SalesDesk /></Suspense>}
-              {activeTab === 'offers' && <Suspense fallback={moduleFallback}><OffersAddOns /></Suspense>}
-              {activeTab === 'operations' && <GuestOperations />}
+              {activeTab === 'rooms' && <RoomsAvailability properties={properties} propertyId={selectedPropertyId} onPropertyChange={selectProperty} onPropertiesChanged={fetchOwnerData} />}
+              {activeTab === 'sales' && <Suspense fallback={moduleFallback}><SalesDesk ownerProperties={properties} /></Suspense>}
+              {activeTab === 'offers' && <Suspense fallback={moduleFallback}><OffersAddOns ownerProperties={properties} /></Suspense>}
+              {activeTab === 'operations' && <GuestOperations properties={properties} propertyId={selectedPropertyId} onPropertyChange={selectProperty} />}
               {activeTab === 'bookings' && (
                 <div className="tab-bookings">
                   {/* Booking Filter Bar */}
@@ -1544,6 +1592,7 @@ const OwnerDashboard = () => {
                                   <td>
                                     <div className="property-stay-cell">
                                       <strong>{b.property?.name || 'Mahabaleshwar Stay'}</strong>
+                                      <span className="sub-location">{managementLabel(propertyForBooking(b))}</span>
                                       <span className="sub-location"><i className="fa-solid fa-location-dot"></i> {b.property?.location || 'Mahabaleshwar'}</span>
                                       <span className="sub-location">{b.room ? `Room ${b.room.number} · ${b.room.name}` : 'Room not assigned'}</span>
                                     </div>
@@ -1574,7 +1623,7 @@ const OwnerDashboard = () => {
                                   </td>
                                   <td>
                                     <div className="action-buttons-group">
-                                      {['in_house', 'checked_out'].includes(b.stayStatus) ? (
+                                      {!canOperateProperty(propertyForBooking(b)) ? <span className="sub-location">Managed by BookMyVilla · View only</span> : ['in_house', 'checked_out'].includes(b.stayStatus) ? (
                                         <span style={{ fontSize: '0.75rem', color: 'var(--od-muted)', whiteSpace: 'nowrap' }}>
                                           <i className="fa-solid fa-person-walking-luggage"></i> {b.stayStatus === 'in_house' ? 'Checked in' : 'Checked out'}
                                         </span>
@@ -1605,7 +1654,7 @@ const OwnerDashboard = () => {
               )}
 
               {/* TAB 4: PAYMENTS & REPORTS */}
-              {activeTab === 'analytics' && <OwnerFinance />}
+              {activeTab === 'analytics' && <OwnerFinance properties={properties} />}
 
               {/* TAB: CARETAKER HUB (TASKS & REQUESTS IN ONE PAGE) */}
               {activeTab === 'caretakers' && (
@@ -1622,12 +1671,12 @@ const OwnerDashboard = () => {
 
                     <div className="od-header-btn-group">
                       <button
-                        className="btn-pill-gold"
+                        className="btn-pill-gold" disabled={!canOperateProperty(selectedProperty)}
                         onClick={() => {
                           setCaretakerForm({
-                            propertyId: properties.length > 0 ? properties[0]._id : '',
-                            propertyName: properties.length > 0 ? properties[0].name : '',
-                            propertyAddress: properties.length > 0 ? (properties[0].location || 'Mahabaleshwar, Satara') : '',
+                            propertyId: canOperateProperty(selectedProperty) ? selectedProperty._id : (selfManaged[0]?._id || ''),
+                            propertyName: canOperateProperty(selectedProperty) ? selectedProperty.name : (selfManaged[0]?.name || ''),
+                            propertyAddress: canOperateProperty(selectedProperty) ? selectedProperty.location : (selfManaged[0]?.location || ''),
                             positionRole: 'Chief Villa Caretaker Host',
                             phone: user?.phone || '',
                             experience: '3 - 5 Years',
@@ -1641,7 +1690,7 @@ const OwnerDashboard = () => {
                       >
                         <i className="fa-solid fa-paper-plane"></i> Send Request to Admin
                       </button>
-                      <button className="btn-pill-emerald" onClick={() => setShowAddTaskModalOwner(true)}>
+                      <button className="btn-pill-emerald" disabled={!legacyCanWrite} onClick={() => setShowAddTaskModalOwner(true)}>
                         <i className="fa-solid fa-plus-circle"></i> Assign Daily Task
                       </button>
                     </div>
@@ -1677,9 +1726,9 @@ const OwnerDashboard = () => {
                         className="btn-mini-gold"
                         onClick={() => {
                           setCaretakerForm({
-                            propertyId: properties.length > 0 ? properties[0]._id : '',
-                            propertyName: properties.length > 0 ? properties[0].name : '',
-                            propertyAddress: properties.length > 0 ? (properties[0].location || 'Mahabaleshwar, Satara') : '',
+                            propertyId: canOperateProperty(selectedProperty) ? selectedProperty._id : (selfManaged[0]?._id || ''),
+                            propertyName: canOperateProperty(selectedProperty) ? selectedProperty.name : (selfManaged[0]?.name || ''),
+                            propertyAddress: canOperateProperty(selectedProperty) ? selectedProperty.location : (selfManaged[0]?.location || ''),
                             positionRole: 'Chief Villa Caretaker Host',
                             phone: user?.phone || '',
                             experience: '3 - 5 Years',
@@ -1753,7 +1802,7 @@ const OwnerDashboard = () => {
                         <h3><i className="fa-solid fa-list-check"></i> Daily Shift Tasks Assigned to Caretaker</h3>
                         <p>Caretaker checks off tasks in real-time. Completed items lock automatically.</p>
                       </div>
-                      <button className="btn-mini-gold" onClick={() => setShowAddTaskModalOwner(true)}>+ Assign Task</button>
+                      <button className="btn-mini-gold" disabled={!legacyCanWrite} onClick={() => setShowAddTaskModalOwner(true)}>+ Assign Task</button>
                     </div>
 
                     <div>
@@ -1775,7 +1824,7 @@ const OwnerDashboard = () => {
                             <span className={`task-status-chip ${d.completed ? 'done' : 'pending'}`}>
                               <i className={`fa-solid ${d.completed ? 'fa-lock' : 'fa-hourglass-half'}`}></i> {d.completed ? 'COMPLETED' : 'PENDING'}
                             </span>
-                            <button className="btn-icon-danger" onClick={() => handleOwnerDeleteTask(d.id)} title="Delete Task">
+                            <button className="btn-icon-danger" disabled={!legacyCanWrite} onClick={() => handleOwnerDeleteTask(d.id)} title="Delete Task">
                               <i className="fa-solid fa-trash-can"></i>
                             </button>
                           </div>
@@ -1791,7 +1840,7 @@ const OwnerDashboard = () => {
                         <h3><i className="fa-solid fa-users-gear"></i> Guest Stay Requirements & Special Requests</h3>
                         <p>Assign guest-specific preparation requirements to the Caretaker.</p>
                       </div>
-                      <button className="btn-mini-emerald" onClick={() => setShowAddReqModalOwner(true)}>+ Add Requirement</button>
+                      <button className="btn-mini-emerald" disabled={!legacyCanWrite} onClick={() => setShowAddReqModalOwner(true)}>+ Add Requirement</button>
                     </div>
 
                     <div className="guest-req-grid">
@@ -1814,7 +1863,7 @@ const OwnerDashboard = () => {
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <span className={req.done ? 'req-tag-done' : 'req-tag-pending'}>{req.done ? 'DONE' : 'PENDING'}</span>
-                                <button className="req-delete-btn" onClick={() => handleOwnerDeleteGuestReq(g.id, idx)} title="Delete Requirement">×</button>
+                                <button className="req-delete-btn" disabled={!legacyCanWrite} onClick={() => handleOwnerDeleteGuestReq(g.id, idx)} title="Delete Requirement">×</button>
                               </div>
                             </div>
                           ))}
@@ -1840,7 +1889,7 @@ const OwnerDashboard = () => {
                             <span className={`status ${item.status === 'In Stock' ? 'instock' : 'low'}`}>{item.status}</span>
                           </div>
                           <div className="inventory-qty">{item.quantity ?? item.qty} <span>{item.unit}</span></div>
-                          <button className="btn-restock" onClick={() => handleOwnerRestockStock(item._id || item.id, 5)}>
+                          <button className="btn-restock" disabled={!legacyWritable(item)} onClick={() => handleOwnerRestockStock(item._id || item.id, 5)}>
                             <i className="fa-solid fa-cart-plus"></i> Approve +5 Restock
                           </button>
                         </div>
@@ -1922,7 +1971,7 @@ const OwnerDashboard = () => {
                           <span className={`status ${item.status === 'In Stock' ? 'instock' : 'low'}`}>{item.status}</span>
                         </div>
                         <div className="inventory-qty">{item.quantity || item.qty} <span>{item.unit}</span></div>
-                        <button className="btn-restock" onClick={() => handleOwnerRestockStock(item._id || item.id, 5)}>
+                        <button className="btn-restock" disabled={!legacyWritable(item)} onClick={() => handleOwnerRestockStock(item._id || item.id, 5)}>
                           <i className="fa-solid fa-cart-plus"></i> Restock +5 Units
                         </button>
                       </div>
@@ -1971,6 +2020,7 @@ const OwnerDashboard = () => {
                         <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(243,238,226,0.1)', display: 'flex', justifyContent: 'flex-end' }}>
                           <button
                             onClick={() => handleToggleSelectFeedback(fb._id || fb.id)}
+                            disabled={!legacyWritable(fb)}
                             style={{
                               background: fb.selectedForHotelPage ? 'linear-gradient(135deg, #d4af37 0%, #b38f28 100%)' : 'rgba(255, 255, 255, 0.08)',
                               color: fb.selectedForHotelPage ? '#1a1a1a' : '#ffffff',
@@ -2055,11 +2105,15 @@ const OwnerDashboard = () => {
           <div className="modal-overlay">
             <div className="modal-content">
               <div className="modal-header">
-                <h3>{editingProperty ? 'Edit Property Details' : 'Register New Property Listing'}</h3>
+                <h3>{editingProperty ? readOnlyProperty ? 'Property Details' : 'Edit Property Details' : 'Register New Property Listing'}</h3>
                 <button className="close-btn" onClick={() => setShowAddModal(false)}><i className="fa-solid fa-xmark"></i></button>
               </div>
 
               <form onSubmit={handleSaveProperty} className="modal-form">
+                {editingProperty && <p>Management: {managementLabel(properties.find(property => property._id === editingProperty._id))}</p>}
+                <ManagementNotice property={properties.find(property => property._id === editingProperty?._id)} />
+                {readOnlyProperty && <p>Pricing managed by BookMyVilla. Property details are read-only.</p>}
+                <fieldset disabled={readOnlyProperty} style={{ display: 'contents' }}>
                 <div className="form-group">
                   <label>Property Name *</label>
                   <input
@@ -2278,11 +2332,12 @@ const OwnerDashboard = () => {
                   <textarea rows="2" value={stayInfoForm.foodInfo} onChange={(e) => setStayInfoForm({ ...stayInfoForm, foodInfo: e.target.value })} maxLength={1000} placeholder="Breakfast included 8–10 AM. Lunch and dinner on request via the caretaker." />
                 </div>
 
+                </fieldset>
                 <div className="modal-footer">
-                  <button type="button" className="btn-cancel" onClick={() => setShowAddModal(false)}>Cancel</button>
-                  <button type="submit" className="btn-primary-gold">
+                  <button type="button" className="btn-cancel" onClick={() => setShowAddModal(false)}>{readOnlyProperty ? 'Close' : 'Cancel'}</button>
+                  {!readOnlyProperty && <button type="submit" className="btn-primary-gold">
                     {editingProperty ? 'Update Listing' : 'Submit Property Listing'}
-                  </button>
+                  </button>}
                 </div>
               </form>
             </div>
@@ -2321,7 +2376,7 @@ const OwnerDashboard = () => {
                     >
                       <option value="">Select a Property...</option>
                       <option value="All Managed Stays">All My Managed Properties</option>
-                      {properties.map(p => (
+                      {selfManaged.map(p => (
                         <option key={p._id} value={p.name}>{p.name} ({p.location})</option>
                       ))}
                     </select>

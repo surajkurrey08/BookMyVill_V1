@@ -1,37 +1,37 @@
 # BookMyVilla production deployment
 
-The [deployment workflow](../.github/workflows/deploy-bookmyvilla.yml) builds the guest, admin and owner apps on every push to `main`, uploads them to `31.97.61.172`, restarts the PM2 backend, and fails if any live health check fails. The separate caretaker app is not deployed; the guest app already serves its caretaker pages.
+The [GitHub Actions workflow](../.github/workflows/deploy-bookmyvilla.yml) builds the guest, admin, owner, caretaker, data entry and villa manager apps, starts the Docker stack on the VPS, uploads production builds for the five public sites, configures host Nginx and TLS, and checks the public HTTPS responses. Data Entry and Villa Manager use static Nginx builds at their public domains and need no separate Vite server in production. The caretaker pages are served by the guest site; the separate caretaker container is checked on its local port.
 
-## One-time setup
+## VPS and DNS setup
 
-1. Create these **A records** pointing to `31.97.61.172`: `bookmyvilla.online`, `api.bookmyvilla.online`, `admin.bookmyvilla.online`, and `owner.bookmyvilla.online`. Remove any stale AAAA records for those names. Open inbound TCP ports 80, 443, and the SSH port stored in `VPS_PORT`. The certificate step needs all four records to resolve before the first deployment.
-2. Use a Debian/Ubuntu VPS with root SSH access. Add an SSH public key to `/root/.ssh/authorized_keys`. Keep its private key for the GitHub secret below. The workflow installs Nginx, Certbot, Node 22 and PM2.
-3. Create `/var/www/bookmyvilla/backend/.env` on the VPS with permissions `600`. At minimum set `MONGODB_URI`, `JWT_SECRET`, and `PORT=5001`. Add `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` if live payments are enabled. Use the existing production database or migrate its data before the first deploy, and allow the new VPS IP in its network access rules if required. The deployment does not move data from the old VPS. Preserve or migrate any `backend/uploads` files separately. Production does not create accounts with the old fixed demo passwords; change or remove any such accounts already present in the production database.
-4. In GitHub repository **Settings → Secrets and variables → Actions → Repository secrets**, set:
+1. Use a Debian/Ubuntu VPS at `31.97.61.172` with root SSH access, Docker Compose, and host Nginx using `/etc/nginx/sites-enabled`. Nginx must own ports 80 and 443. If a Docker container owns those ports, first migrate or configure that existing proxy; the workflow stops with a diagnostic instead of replacing an unknown container.
+2. Point A records for `bookmyvilla.online`, `api.bookmyvilla.online`, and `admin.bookmyvilla.online` to `31.97.61.172`. Also add `owner.bookmyvilla.online` for the owner portal. Remove stale AAAA records and allow inbound TCP 80, 443, and the SSH port. The workflow issues a certificate for the first three names and adds `owner.bookmyvilla.online` when its A record points to the VPS. Rerun deployment after adding that record.
+3. Set these repository secrets under **Settings → Secrets and variables → Actions**:
 
    | Name | Value |
    | --- | --- |
    | `VPS_HOST` | `31.97.61.172` |
-   | `VPS_PORT` | Your SSH port, usually `22` |
+   | `VPS_PORT` | VPS SSH port |
    | `VPS_USER` | `root` |
-   | `VPS_SSH_KEY` | Complete private SSH key, including BEGIN and END lines |
-   | `VPS_KNOWN_HOSTS` | Verified SSH host-key line for `31.97.61.172` |
-   | `CERTBOT_EMAIL` | An email address you control for certificate expiry notices |
+   | `VPS_SSH_KEY` | Complete private SSH key |
+   | `VPS_KNOWN_HOSTS` | Verified SSH host-key line |
+   | `BACKEND_ENV` | Complete production `backend/.env` contents |
+   | `CERTBOT_EMAIL` | Recommended email address for certificate notices |
 
-   Obtain the host-key line with `ssh-keyscan -p YOUR_SSH_PORT -H 31.97.61.172`. Verify its fingerprint through your VPS provider or an independent SSH connection before saving it. For a non-default SSH port, keep the `[31.97.61.172]:PORT` host field produced by `ssh-keyscan`.
-5. Push the repository changes to `main`. The workflow then deploys automatically on each later `main` push. You can also run it from **Actions → Deploy BookMyVilla → Run workflow**.
+   Obtain the host-key line with `ssh-keyscan -p YOUR_SSH_PORT -H 31.97.61.172` and verify its fingerprint independently before saving it.
 
-The workflow checks that `VPS_HOST` is `31.97.61.172` before connecting.
+4. Set `MONGODB_URI`, `JWT_SECRET`, and `PORT=5000` in `BACKEND_ENV` (`docker-compose.yaml` maps VPS port 5001 to container port 5000). Add payment secrets when live payments are enabled. Preserve or migrate production database data and `backend/uploads` separately. The workflow excludes uploads from `rsync --delete` and writes the backend environment with mode `600`.
+5. Push to `main` or run **Actions → Deploy BookMyVilla → Run workflow**. A green run now includes the public HTTPS site and API checks. A green Docker-only run from an older workflow did not verify the domains.
 
-The backend `.env` stays on the VPS. The workflow deliberately excludes it and uploaded files from `rsync --delete` and does not transfer application credentials through GitHub Actions.
+## Public checks
 
-## Checks
+- `https://bookmyvilla.online/` serves the guest production build.
+- `https://admin.bookmyvilla.online/` serves the admin production build.
+- `https://owner.bookmyvilla.online/` serves the owner production build once its DNS record exists.
+- `https://dataentry.bookmyvilla.online/` serves the Data Entry build.
+- `https://villamanage.bookmyvilla.online/` serves the Villa Manager build.
+- `https://api.bookmyvilla.online/api/health` returns `{"status":"ok"}`.
 
-The workflow requires valid HTTPS responses from:
+Point the `dataentry` and `villamanage` A records to `31.97.61.172`. Deployment adds these names to the TLS certificate when their records point to this VPS. Admin creates their accounts under **Team & Access** and assigns properties under **Properties**.
 
-- `https://bookmyvilla.online/`
-- `https://admin.bookmyvilla.online/`
-- `https://owner.bookmyvilla.online/`
-- `https://api.bookmyvilla.online/api/health` (returns 503 if MongoDB is disconnected)
-
-The root website contains the caretaker application at `/caretaker-dashboard` and `/caretaker-apply`.
+If public checks fail, inspect the **Configure public Nginx and TLS** step. A 403 from Nginx while local Docker checks pass means the web server is still serving an unrelated or empty directory. Confirm which process owns ports 80 and 443 with `ss -ltnp '( sport = :80 or sport = :443 )'` and inspect the active Nginx configuration with `nginx -T` on the VPS.

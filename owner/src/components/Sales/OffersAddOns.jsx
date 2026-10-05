@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../../lib/api';
+import { canOperateProperty, isManagedProperty } from '../../lib/propertyAccess';
 import { rupees, shortDate } from '../../lib/format';
 import { ADDON_CATEGORIES, PRICING_UNITS, PROMO_TYPES } from './salesConfig';
 import { Alert, EmptyState, Icon, Labelled, Modal, StatusChip } from './ui';
@@ -31,7 +32,7 @@ function promoRules(promo) {
   return rules;
 }
 
-export default function OffersAddOns() {
+export default function OffersAddOns({ ownerProperties }) {
   const [tab, setTab] = useState('addons');
   const [properties, setProperties] = useState([]);
   const [addOns, setAddOns] = useState(null);
@@ -42,18 +43,23 @@ export default function OffersAddOns() {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
+  const hasManaged = ownerProperties.some(isManagedProperty);
+  const canModify = (kind, item) => { const ids = kind === 'addon' ? (item.property ? [item.property?._id || item.property] : []) : (item.properties || []).map(property => property?._id || property); return ids.length ? ids.every(id => canOperateProperty(ownerProperties.find(property => property._id === String(id)))) : ownerProperties.length > 0 && ownerProperties.every(canOperateProperty); };
+  const newAddOn = () => ({ ...blankAddOn, propertyId: hasManaged ? properties[0]?._id || '' : '' });
+  const newPromo = () => ({ ...blankPromo, properties: hasManaged ? properties.map(property => property._id) : [] });
   const load = useCallback(async () => {
     try {
       const [meta, addOnList, promoList] = await Promise.all([api('/owner-crm/meta'), api('/owner-catalog/add-ons?includeInactive=1'), api('/owner-catalog/promotions')]);
-      setProperties(meta.properties); setAddOns(addOnList); setPromotions(promoList); setError('');
+      setProperties(meta.properties.filter(property => canOperateProperty(ownerProperties.find(item => item._id === property._id)))); setAddOns(addOnList); setPromotions(promoList); setError('');
     } catch (err) { setError(err.message); }
-  }, []);
+  }, [ownerProperties]);
   useEffect(() => { load(); }, [load]);
 
   async function save(event) {
     event.preventDefault();
     setBusy(true); setFormError('');
     const { kind, id, form } = editing;
+    if (!canModify(kind, kind === 'addon' ? { property: form.propertyId || null } : { properties: form.properties })) { setFormError('Choose only self-managed properties for pricing changes.'); setBusy(false); return; }
     try {
       if (kind === 'addon') {
         const body = { ...form, price: Number(form.price), taxRate: Number(form.taxRate), maxQuantity: form.maxQuantity === '' ? null : Number(form.maxQuantity), propertyId: form.propertyId || null };
@@ -69,6 +75,7 @@ export default function OffersAddOns() {
   }
 
   async function toggle(kind, item) {
+    if (!canModify(kind, item)) { setError('Pricing managed by BookMyVilla. This offer is read-only.'); return; }
     setBusy(true);
     try {
       await api(`/owner-catalog/${kind === 'addon' ? 'add-ons' : 'promotions'}/${item._id}`, { method: 'PATCH', body: { active: !item.active } });
@@ -79,6 +86,7 @@ export default function OffersAddOns() {
   }
 
   async function removeAddOn(item) {
+    if (!canModify('addon', item)) { setError('Pricing managed by BookMyVilla. This add-on is read-only.'); return; }
     if (!window.confirm(`Delete ${item.name}? This only works if it was never used on a quotation.`)) return;
     try { await api(`/owner-catalog/add-ons/${item._id}`, { method: 'DELETE' }); setNotice('Add-on deleted.'); await load(); }
     catch (err) { setError(err.message); }
@@ -91,22 +99,23 @@ export default function OffersAddOns() {
     <div className="sd-head">
       <div><h2>Offers & Add-ons</h2><p>Extras guests can add to a stay, and the discount codes you apply to quotations.</p></div>
       <div className="sd-head-actions">
-        {tab === 'addons' ? <button type="button" className="sd-btn" onClick={() => { setFormError(''); setEditing({ kind: 'addon', form: blankAddOn }); }}><Icon name="fa-plus" /> New add-on</button>
-          : <button type="button" className="sd-btn" onClick={() => { setFormError(''); setEditing({ kind: 'promo', form: blankPromo }); }}><Icon name="fa-plus" /> New promotion</button>}
+        {tab === 'addons' ? <button type="button" className="sd-btn" disabled={!properties.length} onClick={() => { setFormError(''); setEditing({ kind: 'addon', form: newAddOn() }); }}><Icon name="fa-plus" /> New add-on</button>
+          : <button type="button" className="sd-btn" onClick={() => { setFormError(''); setEditing({ kind: 'promo', form: newPromo() }); }}><Icon name="fa-plus" /> New promotion</button>}
       </div>
     </div>
     <nav className="sd-subnav" aria-label="Offers sections">
       <button type="button" className={tab === 'addons' ? 'active' : ''} aria-current={tab === 'addons' ? 'page' : undefined} onClick={() => setTab('addons')}><Icon name="fa-mug-hot" /> Add-ons</button>
       <button type="button" className={tab === 'promos' ? 'active' : ''} aria-current={tab === 'promos' ? 'page' : undefined} onClick={() => setTab('promos')}><Icon name="fa-tags" /> Promotions</button>
     </nav>
+    {hasManaged && <p className="sd-muted">Pricing managed by BookMyVilla for company-managed properties. Offers covering those properties are read-only; new offers apply to self-managed properties.</p>}
     <Alert onClose={() => setError('')}>{error}</Alert>
     {notice && <Alert kind="success" onClose={() => setNotice('')}>{notice}</Alert>}
 
     {tab === 'addons' && <section className="sd-card">
-      {!addOns ? <p className="sd-muted">Loading add-ons…</p> : addOns.length === 0 ? <EmptyState icon="fa-mug-hot" title="No add-ons yet" action={<button type="button" className="sd-btn small" onClick={() => setEditing({ kind: 'addon', form: blankAddOn })}>Create your first add-on</button>}>Breakfast, BBQ, bonfire, decoration, extra bed, airport pickup… priced once and reused in every quotation.</EmptyState>
+      {!addOns ? <p className="sd-muted">Loading add-ons…</p> : addOns.length === 0 ? <EmptyState icon="fa-mug-hot" title="No add-ons yet" action={<button type="button" className="sd-btn small" disabled={!properties.length} onClick={() => setEditing({ kind: 'addon', form: newAddOn() })}>Create your first add-on</button>}>Breakfast, BBQ, bonfire, decoration, extra bed, airport pickup… priced once and reused in every quotation.</EmptyState>
         : <div className="sd-table-wrap"><table className="sd-table sd-rows">
           <thead><tr><th scope="col">Add-on</th><th scope="col">Category</th><th scope="col">Price</th><th scope="col">Tax</th><th scope="col">Offered at</th><th scope="col">Status</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
-          <tbody>{addOns.map(item => <tr key={item._id} onClick={() => setEditing({ kind: 'addon', id: item._id, form: { ...Object.fromEntries(Object.keys(blankAddOn).map(key => [key, item[key] ?? ''])), propertyId: item.property?._id || '', maxQuantity: item.maxQuantity ?? '' } })}>
+          <tbody>{addOns.map(item => <tr key={item._id} onClick={() => canModify('addon', item) && setEditing({ kind: 'addon', id: item._id, form: { ...Object.fromEntries(Object.keys(blankAddOn).map(key => [key, item[key] ?? ''])), propertyId: item.property?._id || '', maxQuantity: item.maxQuantity ?? '' } })}>
             <td data-label="Add-on"><strong>{item.name}</strong>{item.description && <small>{item.description}</small>}</td>
             <td data-label="Category">{ADDON_CATEGORIES[item.category]}</td>
             <td data-label="Price">{rupees(item.price)} <small>{PRICING_UNITS[item.pricingUnit]}</small></td>
@@ -114,8 +123,8 @@ export default function OffersAddOns() {
             <td data-label="Offered at">{item.property?.name || 'All properties'}</td>
             <td data-label="Status"><StatusChip meta={item.active ? { label: 'Available', icon: 'fa-circle-check', tone: 'emerald' } : { label: 'Paused', icon: 'fa-pause', tone: 'muted' }} /></td>
             <td data-label="Actions" onClick={event => event.stopPropagation()}><div className="sd-inline-actions">
-              <button type="button" className="sd-btn ghost small" disabled={busy} onClick={() => toggle('addon', item)}>{item.active ? 'Pause' : 'Activate'}</button>
-              <button type="button" className="sd-icon-btn" aria-label={`Delete ${item.name}`} onClick={() => removeAddOn(item)}><Icon name="fa-trash-can" /></button>
+              <button type="button" className="sd-btn ghost small" disabled={busy || !canModify('addon', item)} onClick={() => toggle('addon', item)}>{item.active ? 'Pause' : 'Activate'}</button>
+              <button type="button" className="sd-icon-btn" aria-label={`Delete ${item.name}`} disabled={!canModify('addon', item)} onClick={() => removeAddOn(item)}><Icon name="fa-trash-can" /></button>
             </div></td>
           </tr>)}</tbody>
         </table></div>}
@@ -123,15 +132,15 @@ export default function OffersAddOns() {
 
     {tab === 'promos' && <section className="sd-card">
       <p className="sd-hint"><Icon name="fa-circle-info" /> Promotions apply to accommodation charges on quotations. A use is counted only when a quotation becomes a booking.</p>
-      {!promotions ? <p className="sd-muted">Loading promotions…</p> : promotions.length === 0 ? <EmptyState icon="fa-tags" title="No promotions yet" action={<button type="button" className="sd-btn small" onClick={() => setEditing({ kind: 'promo', form: blankPromo })}>Create a promotion</button>}>Early-bird, last-minute, long-stay and returning-guest offers with clear rules and usage limits.</EmptyState>
+      {!promotions ? <p className="sd-muted">Loading promotions…</p> : promotions.length === 0 ? <EmptyState icon="fa-tags" title="No promotions yet" action={<button type="button" className="sd-btn small" onClick={() => setEditing({ kind: 'promo', form: newPromo() })}>Create a promotion</button>}>Early-bird, last-minute, long-stay and returning-guest offers with clear rules and usage limits.</EmptyState>
         : <div className="sd-offer-grid">{promotions.map(promo => <article key={promo._id} className={`sd-offer ${promo.active ? '' : 'paused'}`}>
           <div className="sd-offer-top"><div><span className="sd-offer-code">{promo.code}</span><h4>{promo.name}</h4></div><StatusChip meta={PROMO_STATE[promo.state]} /></div>
           <p><strong>{promo.discountType === 'percent' ? `${promo.discountValue}% off` : `${rupees(promo.discountValue)} off`}</strong>{promo.maxDiscount ? ` (max ${rupees(promo.maxDiscount)})` : ''} · {PROMO_TYPES[promo.type]}</p>
           <p>{promoRules(promo).join(' · ')}</p>
           <div className="sd-offer-stats"><span>Used <strong>{promo.usedCount}{promo.maxUses ? ` / ${promo.maxUses}` : ''}</strong></span><span>Discount given <strong>{rupees(promo.discountGiven)}</strong></span><span>On open quotes <strong>{promo.openQuotes}</strong></span></div>
           <div className="sd-inline-actions">
-            <button type="button" className="sd-btn ghost small" onClick={() => setEditing({ kind: 'promo', id: promo._id, form: { ...Object.fromEntries(Object.keys(blankPromo).map(key => [key, promo[key] ?? ''])), properties: promo.properties.map(item => item._id) } })}>Edit</button>
-            <button type="button" className="sd-btn ghost small" disabled={busy} onClick={() => toggle('promo', promo)}>{promo.active ? 'Pause' : 'Activate'}</button>
+            <button type="button" className="sd-btn ghost small" disabled={!canModify('promo', promo)} onClick={() => setEditing({ kind: 'promo', id: promo._id, form: { ...Object.fromEntries(Object.keys(blankPromo).map(key => [key, promo[key] ?? ''])), properties: promo.properties.map(item => item._id) } })}>Edit</button>
+            <button type="button" className="sd-btn ghost small" disabled={busy || !canModify('promo', promo)} onClick={() => toggle('promo', promo)}>{promo.active ? 'Pause' : 'Activate'}</button>
           </div>
         </article>)}</div>}
     </section>}
@@ -150,7 +159,7 @@ export default function OffersAddOns() {
           <Labelled label="Tax rate"><select value={form.taxRate} onChange={event => setField('taxRate', event.target.value)}>{[0, 5, 12, 18, 28].map(rate => <option key={rate} value={rate}>{rate}%</option>)}</select></Labelled>
         </div>
         <div className="sd-grid two">
-          <Labelled label="Offered at"><select value={form.propertyId} onChange={event => setField('propertyId', event.target.value)}><option value="">All my properties</option>{properties.map(item => <option key={item._id} value={item._id}>{item.name}</option>)}</select></Labelled>
+          <Labelled label="Offered at"><select value={form.propertyId} onChange={event => setField('propertyId', event.target.value)}>{!hasManaged && <option value="">All my properties</option>}{properties.map(item => <option key={item._id} value={item._id}>{item.name}</option>)}</select></Labelled>
           <Labelled label="Maximum quantity" hint="Leave empty for no limit"><input type="number" min="1" max="100" value={form.maxQuantity} onChange={event => setField('maxQuantity', event.target.value)} /></Labelled>
         </div>
         <div className="sd-form-actions"><button type="button" className="sd-btn ghost" onClick={() => setEditing(null)}>Cancel</button><button className="sd-btn" disabled={busy}>{editing.id ? 'Save add-on' : 'Create add-on'}</button></div>

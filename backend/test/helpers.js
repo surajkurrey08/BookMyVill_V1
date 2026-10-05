@@ -15,17 +15,28 @@ const jwt = require('jsonwebtoken');
 // it does in production, so tests catch code that relies on it.
 mongoose.set('bufferCommands', false);
 const routers = {
+  villaManager: require('../routes/villaManager'),
   ownerPms: require('../routes/ownerPms'),
   ownerOps: require('../routes/ownerOps'),
   ownerCrm: require('../routes/ownerCrm'),
   ownerQuotes: require('../routes/ownerQuotes'),
   ownerCatalog: require('../routes/ownerCatalog'),
+  ownerFinance: require('../routes/ownerFinance'),
+  auth: require('../routes/auth'),
   publicQuotes: require('../routes/publicQuotes'),
   booking: require('../routes/booking'),
   customerStay: require('../routes/customerStay'),
   customerBooking: require('../routes/customerBooking'),
   adminConsole: require('../routes/adminConsole'),
-  property: require('../routes/property')
+  property: require('../routes/property'),
+  partner: require('../routes/partner'),
+  admin: require('../routes/admin'),
+  caretaker: require('../routes/caretaker'),
+  caretakerTasks: require('../routes/caretakerTasks'),
+  guestRequirements: require('../routes/guestRequirements'),
+  inventory: require('../routes/inventory'),
+  touristRegister: require('../routes/touristRegister'),
+  feedback: require('../routes/feedback')
 };
 
 let memoryServer = null;
@@ -49,16 +60,27 @@ async function start() {
   app.set('trust proxy', 'loopback');
   app.use(express.json({ limit: '1mb' }));
   app.use('/api/owner-pms', routers.ownerPms);
+  app.use('/api/villa-manager', routers.villaManager);
   app.use('/api/owner-ops', routers.ownerOps);
   app.use('/api/owner-crm', routers.ownerCrm);
   app.use('/api/owner-quotes', routers.ownerQuotes);
   app.use('/api/owner-catalog', routers.ownerCatalog);
+  app.use('/api/owner-finance', routers.ownerFinance);
+  app.use('/api/auth', routers.auth);
   app.use('/api/public/quotes', routers.publicQuotes);
   app.use('/api/bookings', routers.booking);
   app.use('/api/stay', routers.customerStay);
   app.use('/api/customer-booking', routers.customerBooking);
   app.use('/api/admin-console', routers.adminConsole);
   app.use('/api/properties', routers.property);
+  app.use('/api/partner', routers.partner);
+  app.use('/api/admin', routers.admin);
+  app.use('/api/caretaker', routers.caretaker);
+  app.use('/api/caretaker-tasks', routers.caretakerTasks);
+  app.use('/api/guest-requirements', routers.guestRequirements);
+  app.use('/api/inventory', routers.inventory);
+  app.use('/api/tourist-register', routers.touristRegister);
+  app.use('/api/feedback', routers.feedback);
   await new Promise(resolve => { server = app.listen(0, '127.0.0.1', resolve); });
   baseUrl = `http://127.0.0.1:${server.address().port}`;
 }

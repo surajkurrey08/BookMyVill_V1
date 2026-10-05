@@ -43,6 +43,8 @@ function App() {
             } 
           />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/property/:propertyId/:section" element={<ProtectedRoute><OwnerDashboard /></ProtectedRoute>} />
+          <Route path="/owner/property/:propertyId/:section" element={<ProtectedRoute><OwnerDashboard /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </div>

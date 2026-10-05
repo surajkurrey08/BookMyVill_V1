@@ -1,6 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const ownerAuth = require('../middleware/ownerAuth');
+const ownerAuth = require('../middleware/propertyOperatorAuth');
+const { requirePropertyAccess, propertyScope, managementFilters, MANAGEMENT_SELECT, ownerPropertyView } = require('../services/propertyAccess');
+const { sendError } = require('../utils/validate');
 const Property = require('../models/Property');
 const Room = require('../models/Room');
 const RoomNight = require('../models/RoomNight');
@@ -31,9 +33,7 @@ async function ownedProperty(req, res, id) {
     res.status(400).json({ msg: 'Invalid property ID.' });
     return null;
   }
-  const property = await Property.findOne({ _id: id, owner: req.user.id });
-  if (!property) res.status(404).json({ msg: 'Property not found in your account.' });
-  return property;
+  return requirePropertyAccess(req.user, id, req.method === 'GET' ? 'report' : 'operate');
 }
 
 async function ownedRoom(req, res, id) {
@@ -42,27 +42,28 @@ async function ownedRoom(req, res, id) {
     return null;
   }
   const room = await Room.findById(id);
-  if (!room || !(await Property.exists({ _id: room.property, owner: req.user.id }))) {
+  if (!room) {
     res.status(404).json({ msg: 'Room not found in your account.' });
     return null;
   }
+  await requirePropertyAccess(req.user, room.property);
   return room;
 }
 
 function fail(res, err) {
-  console.error('Owner PMS error:', err);
-  if (!res.headersSent) res.status(500).json({ msg: 'Could not complete this action. Please try again.' });
+  sendError(res, err, 'Property PMS');
 }
 
 router.get('/properties', async (req, res) => {
   try {
-    const properties = await Property.find({ owner: req.user.id }).select('_id name location status').sort({ createdAt: -1 });
-    res.json(properties);
+    const properties = await Property.find({ $and: [propertyScope(req.user, 'report'), managementFilters(req.query)] }).select(`_id owner name location status managementMode ${MANAGEMENT_SELECT}`).sort({ createdAt: -1 });
+    res.json(properties.map(property => ownerPropertyView(req.user, property)));
   } catch (err) { fail(res, err); }
 });
 
 router.get('/approved-listings', async (req, res) => {
   try {
+    if (req.user.role !== 'owner') return res.status(403).json({ msg: 'Owner access required to import listings.' });
     const user = await User.findById(req.user.id).select('email');
     const email = (user?.email || '').toLowerCase().trim();
     if (!email) return res.json([]);
@@ -74,6 +75,7 @@ router.get('/approved-listings', async (req, res) => {
 
 router.post('/approved-listings/:applicationId/import', async (req, res) => {
   try {
+    if (req.user.role !== 'owner') return res.status(403).json({ msg: 'Owner access required to import listings.' });
     if (!validId(req.params.applicationId)) return res.status(400).json({ msg: 'Invalid application ID.' });
     const user = await User.findById(req.user.id).select('email');
     const email = (user?.email || '').toLowerCase().trim();
@@ -81,6 +83,7 @@ router.post('/approved-listings/:applicationId/import', async (req, res) => {
     if (!application || !application.propertyName || application.propertyName === 'N/A') return res.status(404).json({ msg: 'Approved listing not found in your account.' });
     const existing = await Property.findOne({ owner: req.user.id, $or: [{ sourceApplication: application._id }, { name: application.propertyName }] });
     if (existing) {
+      await requirePropertyAccess(req.user, existing._id);
       if (!existing.sourceApplication) { existing.sourceApplication = application._id; await existing.save(); }
       return res.json(existing);
     }
@@ -107,7 +110,8 @@ router.get('/properties/:propertyId/availability', async (req, res) => {
       Booking.find({ property: property._id, room: null, status: 'confirmed', checkIn: { $lt: new Date(`${end}T00:00:00.000Z`) }, checkOut: { $gt: new Date(`${start}T00:00:00.000Z`) } })
         .populate('user', 'name email').select('user guest checkIn checkOut status')
     ]);
-    res.json({ property, rooms, nights: roomNights, unassignedBookings, start, end });
+    const availability = await require('../services/availability').calendar(property._id, dates);
+    res.json({ availability, property: ownerPropertyView(req.user, property), rooms, nights: roomNights, unassignedBookings, start, end });
   } catch (err) { fail(res, err); }
 });
 
@@ -185,7 +189,8 @@ router.delete('/blocks/:reference', async (req, res) => {
   try {
     if (!validId(req.params.reference)) return res.status(400).json({ msg: 'Invalid block ID.' });
     const night = await RoomNight.findOne({ kind: 'block', reference: req.params.reference });
-    if (!night || !(await Property.exists({ _id: night.property, owner: req.user.id }))) return res.status(404).json({ msg: 'Block not found in your account.' });
+    if (!night) return res.status(404).json({ msg: 'Block not found in your account.' });
+    await requirePropertyAccess(req.user, night.property);
     await RoomNight.deleteMany({ kind: 'block', reference: night.reference });
     res.json({ msg: 'Dates unblocked.' });
   } catch (err) { fail(res, err); }
@@ -195,18 +200,26 @@ router.post('/bookings/:bookingId/assign-room', async (req, res) => {
   try {
     if (!validId(req.params.bookingId) || !validId(req.body.roomId)) return res.status(400).json({ msg: 'Invalid booking or room ID.' });
     const booking = await Booking.findById(req.params.bookingId);
-    if (!booking || !(await Property.exists({ _id: booking.property, owner: req.user.id }))) return res.status(404).json({ msg: 'Booking not found in your account.' });
+    if (!booking) return res.status(404).json({ msg: 'Booking not found in your account.' });
+    await requirePropertyAccess(req.user, booking.property);
     if (booking.status !== 'confirmed' || booking.room) return res.status(409).json({ msg: 'Only an unassigned confirmed booking can be assigned.' });
     const room = await Room.findOne({ _id: req.body.roomId, property: booking.property, active: true });
     if (!room) return res.status(404).json({ msg: 'Active room not found at this property.' });
+    if ((booking.operations?.actualGuests || booking.guests) > room.capacity) return res.status(409).json({ msg: 'Guest count exceeds this room capacity.' });
     const dates = nightsBetween(booking.checkIn.toISOString().slice(0, 10), booking.checkOut.toISOString().slice(0, 10));
     if (!dates) return res.status(409).json({ msg: 'Booking dates are invalid or exceed one year.' });
     const operationId = await reserveNights(room, dates, 'booking', booking._id);
     try {
-      const updated = await Booking.findOneAndUpdate({ _id: booking._id, room: null, status: 'confirmed' }, { $set: { room: room._id }, $push: { actionHistory: { action: 'Room Assigned', performedBy: `Property Owner (${req.user.id})`, targetUser: `Booking ${booking._id}`, reason: `Room ${room.number} assigned` } } }, { new: true });
+      const updated = await Booking.findOneAndUpdate({ _id: booking._id, room: null, status: 'confirmed' }, { $set: { room: room._id }, $push: { actionHistory: { action: 'Room Assigned', performedBy: `${req.user.role === 'villa_manager' ? 'Villa Manager' : 'Property Owner'} (${req.user.id})`, targetUser: `Booking ${booking._id}`, reason: `Room ${room.number} assigned` } } }, { new: true });
       if (!updated) {
         await RoomNight.deleteMany({ operationId });
         return res.status(409).json({ msg: 'Booking changed while assigning the room. Refresh and try again.' });
+      }
+      if (req.user.role === 'villa_manager') {
+        const safe = updated.toObject();
+        if (safe.guestDetails) { delete safe.guestDetails.idProof; delete safe.guestDetails.idLastFour; }
+        for (const key of ['razorpayOrderId', 'razorpayPaymentId', 'manualPaymentReference']) delete safe[key];
+        return res.json(safe);
       }
       res.json(updated);
     } catch (err) {

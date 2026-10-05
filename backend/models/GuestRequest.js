@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 // the owner's Guest Operations so the caretaker/owner can action them, and the
 // status flows back to the guest's trip page.
 const KINDS = ['request', 'issue'];
-const REQUEST_CATEGORIES = ['housekeeping', 'towels', 'water', 'food', 'extra_bed', 'taxi', 'amenities', 'checkout_help', 'maintenance', 'other'];
+const REQUEST_CATEGORIES = ['housekeeping', 'towels', 'water', 'food', 'extra_bed', 'taxi', 'amenities', 'checkout_help', 'maintenance', 'extra_guests', 'early_checkin', 'late_checkout', 'extend_stay', 'room_change', 'other'];
 const ISSUE_CATEGORIES = ['cleaning', 'ac', 'water', 'wifi', 'food', 'noise', 'pool', 'staff', 'billing', 'safety', 'maintenance', 'other'];
 const STATUSES = ['open', 'acknowledged', 'in_progress', 'completed', 'declined', 'cancelled'];
 const OPEN_STATUSES = ['open', 'acknowledged', 'in_progress'];
@@ -23,14 +23,16 @@ const GuestRequestSchema = new mongoose.Schema({
   description: { type: String, required: true, trim: true, maxlength: 1000 },
   photos: { type: [String], default: [] },
   priority: { type: String, enum: ['normal', 'high'], default: 'normal' },
+  escalated: { type: Boolean, default: false },
   status: { type: String, enum: STATUSES, default: 'open' },
   eta: { type: String, default: '', maxlength: 80 },
+  assignedStaff: { type: mongoose.Schema.Types.ObjectId, ref: 'StaffMember', default: null },
   // Visible status updates, newest handled on the trip page. `note` is shown to
   // the guest; keep internal remarks out of it.
   updates: [{
     status: { type: String, enum: STATUSES },
     note: { type: String, default: '', maxlength: 500 },
-    byRole: { type: String, enum: ['guest', 'owner', 'system'], default: 'owner' },
+    byRole: { type: String, enum: ['guest', 'owner', 'villa_manager', 'system'], default: 'owner' },
     at: { type: Date, default: Date.now }
   }],
   resolvedAt: { type: Date, default: null },

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { adminApi, query } from './api';
-import { dateTime } from './config';
+import { dateTime, auditActionLabel, auditChangeLabel } from './config';
 import { Alert, EmptyState, Icon, Pager } from './ui';
 
 const ENTITY_ICON = { property: 'fa-building', owner: 'fa-user-tie', customer: 'fa-users', booking: 'fa-calendar-check', admin: 'fa-user-shield' };
@@ -31,9 +31,9 @@ export default function AuditSection() {
           <tbody>{data?.items.map(e => <tr key={e._id}>
             <td className="nowrap">{dateTime(e.createdAt)}</td>
             <td>{e.actor?.name || e.actorName || 'Admin'}</td>
-            <td><span className="ac-action-chip"><Icon name={ENTITY_ICON[e.entityType] || 'fa-circle'} /> {(e.action || '').replace(/[._]/g, ' ')}</span></td>
+            <td><span className="ac-action-chip"><Icon name={ENTITY_ICON[e.entityType] || 'fa-circle'} /> {auditActionLabel(e)}</span></td>
             <td>{e.entityLabel || '—'}</td>
-            <td className="nowrap">{e.before?.status && e.after?.status ? `${e.before.status} → ${e.after.status}` : e.after?.adminRole ? `role → ${e.after.adminRole}` : '—'}</td>
+            <td>{auditChangeLabel(e) || '—'}</td>
             <td className="ac-reason-cell">{e.reason || '—'}</td>
           </tr>)}</tbody>
         </table></div>}

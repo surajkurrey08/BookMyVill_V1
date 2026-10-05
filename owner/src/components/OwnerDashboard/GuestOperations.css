@@ -1,4 +1,4 @@
-.ops-panel { display: grid; gap: 22px; color: var(--od-ivory); }
+.ops-panel { display: grid; grid-template-columns: minmax(0,1fr); min-width: 0; gap: 22px; color: var(--od-ivory); }
 .ops-heading,.ops-section-head,.ops-list-row,.ops-task { display: flex; justify-content: space-between; align-items: center; gap: 18px; }
 .ops-heading h2,.ops-card h3 { margin: 0 0 7px; color: var(--od-ivory); }
 .ops-heading p,.ops-card p,.ops-muted { margin: 0 0 14px; color: var(--od-muted); }

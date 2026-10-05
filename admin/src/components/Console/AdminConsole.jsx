@@ -2,8 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminApi, query } from './api';
 import { compactRupees, rupees, SEVERITY, relativeTime } from './config';
-import { Icon, MetricCard, Alert, StatusBadge, EmptyState } from './ui';
+import { Icon, MetricCard, Alert, StatusBadge, EmptyState, Drawer } from './ui';
 import OwnersSection from './OwnersSection';
+import PartnerRequests from './PartnerRequests';
 import PropertiesSection from './PropertiesSection';
 import BookingsSection from './BookingsSection';
 import CustomersSection from './CustomersSection';
@@ -14,21 +15,22 @@ import './Console.css';
 const NAV = [
   { id: 'dashboard', label: 'Control Center', icon: 'fa-gauge-high', perm: 'dashboard.view' },
   { id: 'owners', label: 'Owners', icon: 'fa-user-tie', perm: 'owners.view' },
+  { id: 'owner-requests', label: 'Owner Requests', icon: 'fa-envelope', perm: 'owners.view' },
   { id: 'properties', label: 'Properties', icon: 'fa-building', perm: 'properties.view' },
   { id: 'bookings', label: 'Bookings', icon: 'fa-calendar-check', perm: 'bookings.view' },
   { id: 'customers', label: 'Customers', icon: 'fa-users', perm: 'customers.view' },
   { id: 'audit', label: 'Audit Log', icon: 'fa-clock-rotate-left', perm: 'audit.view' },
-  { id: 'team', label: 'Admin Team', icon: 'fa-user-shield', perm: 'team.manage' }
+  { id: 'team', label: 'Team & Access', icon: 'fa-user-shield', perm: 'team.manage' }
 ];
 
 export default function AdminConsole() {
   const navigate = useNavigate();
   const [me, setMe] = useState(null);
   const [error, setError] = useState('');
-  const [section, setSection] = useState('dashboard');
+  const [section, setSection] = useState(() => { const params = new URLSearchParams(window.location.search); return params.get('propertyId') ? 'properties' : ['properties', 'owner-requests'].includes(params.get('section')) ? params.get('section') : 'dashboard'; });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [palette, setPalette] = useState(null);
-  const [focus, setFocus] = useState(null); // { type, id } to open a detail from search
+  const [focus, setFocus] = useState(() => { const id = new URLSearchParams(window.location.search).get('propertyId'); return id ? { type: 'property', id } : null; }); // { type, id } to open a detail from search
 
   useEffect(() => {
     adminApi('/me').then(setMe).catch(err => { setError(err.message); if (err.status === 401) navigate('/login'); });
@@ -74,6 +76,7 @@ export default function AdminConsole() {
 
       {section === 'dashboard' && <Dashboard can={can} onGo={go} onSection={setSection} />}
       {section === 'owners' && can('owners.view') && <OwnersSection can={can} focus={focus?.type === 'owner' ? focus : null} />}
+      {section === 'owner-requests' && can('owners.view') && <PartnerRequests can={can} />}
       {section === 'properties' && can('properties.view') && <PropertiesSection can={can} focus={focus?.type === 'property' ? focus : null} />}
       {section === 'bookings' && can('bookings.view') && <BookingsSection can={can} focus={focus?.type === 'booking' ? focus : null} />}
       {section === 'customers' && can('customers.view') && <CustomersSection can={can} focus={focus?.type === 'customer' ? focus : null} />}
@@ -89,15 +92,17 @@ function Dashboard({ onGo, onSection }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [days, setDays] = useState(30);
+  const [interventions, setInterventions] = useState(null);
   useEffect(() => {
     let cancelled = false;
     adminApi(`/overview?days=${days}`).then(d => { if (!cancelled) { setData(d); setError(''); } }).catch(err => !cancelled && setError(err.message));
     return () => { cancelled = true; };
   }, [days]);
   const attentionTarget = type => {
-    if (type === 'property_review') onSection('properties');
+    if (type === 'property_review' || type === 'unassigned_operations') onSection('properties');
+    else if (type === 'issues') adminApi('/operations-issues').then(setInterventions).catch(err => setError(err.message));
     else if (['refund_review', 'unpaid'].includes(type)) onSection('bookings');
-    else if (type === 'applications') window.location.href = '/dashboard';
+    else if (type === 'applications' || type === 'partner_inquiries') onSection('owner-requests');
   };
   if (error) return <Alert>{error}</Alert>;
   if (!data) return <p className="ac-muted">Loading platform metrics…</p>;
@@ -119,6 +124,9 @@ function Dashboard({ onGo, onSection }) {
       <MetricCard label="Active owners" value={k.activeOwners.value} onClick={() => onSection('owners')} />
       <MetricCard label="Customers" value={k.totalCustomers.value.toLocaleString('en-IN')} onClick={() => onSection('customers')} />
       <MetricCard label="Property reviews" value={k.pendingPropertyReviews.value} attention={k.pendingPropertyReviews.value > 0} sub="awaiting" onClick={() => onSection('properties')} />
+      <MetricCard label="Self Managed Properties" value={k.selfManagedProperties?.value ?? '—'} sub="property management" />
+      <MetricCard label="BookMyVilla Managed" value={k.companyManagedProperties?.value ?? '—'} sub="property management" />
+      <MetricCard label="Unassigned Managed Properties" value={k.unassignedManagedProperties?.value ?? '—'} sub="Villa Manager needed" attention={(k.unassignedManagedProperties?.value || 0) > 0} />
       <MetricCard label="Unpaid bookings" value={k.pendingPayments.value} sub={rupees(k.pendingPayments.amount)} onClick={() => onSection('bookings')} />
       <MetricCard label="Refund reviews" value={k.refundReviews.value} attention={k.refundReviews.value > 0} sub={rupees(k.refundReviews.amount)} onClick={() => onSection('bookings')} />
     </section>
@@ -132,6 +140,7 @@ function Dashboard({ onGo, onSection }) {
           <button type="button" className="ac-btn ghost sm" onClick={() => attentionTarget(a.link.type)}>Open</button>
         </li>)}</ul>}
     </section>
+    {interventions && <Drawer title="Guest issues requiring intervention" onClose={() => setInterventions(null)}>{interventions.length ? interventions.map(issue => <section className="ac-sub" key={issue._id}><h4>{issue.code} ? {issue.category}</h4><p>{issue.property?.name} ? {issue.description}</p><button type="button" className="ac-btn ghost sm" onClick={() => { setInterventions(null); onGo('booking', issue.booking); }}>Open booking</button></section>) : <EmptyState title="No escalated issues" />}</Drawer>}
   </div>;
 }
 

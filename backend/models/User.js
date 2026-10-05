@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema({
   // that actually have the field set).
   email: { type: String, unique: true, sparse: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['user', 'owner', 'admin'], default: 'user' },
+  role: { type: String, enum: ['user', 'owner', 'admin', 'data_entry', 'villa_manager'], default: 'user' },
   // 'suspended' locks the account (accountAuth denies it); 'restricted' is a
   // soft flag the admin can set without locking sign-in.
   status: { type: String, enum: ['approved', 'rejected', 'pending', 'active', 'suspended', 'restricted'], default: 'active' },

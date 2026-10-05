@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ownerAuth = require('../middleware/ownerAuth');
 const AddOn = require('../models/AddOn');
 const Promotion = require('../models/Promotion');
-const Property = require('../models/Property');
+const { requireOwnerPropertySelection } = require('../services/propertyAccess');
 const Quotation = require('../models/Quotation');
 const { validId, validDate, cleanText, intInRange, indiaDate, HttpError, sendError } = require('../utils/validate');
 
@@ -12,13 +12,7 @@ router.use(ownerAuth);
 const fail = (res, err) => sendError(res, err, 'Owner catalog');
 
 async function ownedPropertyIds(owner, ids) {
-  const list = Array.isArray(ids) ? ids : [];
-  if (list.some(id => !validId(String(id)))) throw new HttpError(400, 'Invalid property selection.');
-  const unique = [...new Set(list.map(String))];
-  if (!unique.length) return [];
-  const found = await Property.find({ _id: { $in: unique }, owner }).distinct('_id');
-  if (found.length !== unique.length) throw new HttpError(404, 'One of the selected properties is not in your account.');
-  return found;
+  return requireOwnerPropertySelection(owner, Array.isArray(ids) ? ids : []);
 }
 
 // ---------------------------------------------------------------- add-ons
@@ -55,7 +49,7 @@ router.post('/add-ons', async (req, res) => {
   try {
     const body = req.body || {};
     const values = parseAddOn(body);
-    const [property = null] = body.propertyId ? await ownedPropertyIds(req.user.id, [body.propertyId]) : [];
+    const [property = null] = await ownedPropertyIds(req.user.id, body.propertyId ? [body.propertyId] : []);
     const addOn = await AddOn.create({ ...values, property, owner: req.user.id, createdBy: req.user.id });
     res.status(201).json(await AddOn.findById(addOn._id).populate('property', 'name').lean());
   } catch (err) { fail(res, err); }
@@ -66,6 +60,7 @@ router.patch('/add-ons/:id', async (req, res) => {
     if (!validId(req.params.id)) throw new HttpError(400, 'Invalid add-on ID.');
     const addOn = await AddOn.findOne({ _id: req.params.id, owner: req.user.id });
     if (!addOn) throw new HttpError(404, 'Add-on not found in your account.');
+    await ownedPropertyIds(req.user.id, addOn.property ? [addOn.property] : []);
     const body = req.body || {};
     // Toggling availability alone is the common case; keep it cheap.
     if (Object.keys(body).length === 1 && typeof body.active === 'boolean') {
@@ -75,7 +70,7 @@ router.patch('/add-ons/:id', async (req, res) => {
       const values = parseAddOn({ ...current, ...body });
       Object.assign(addOn, values);
       if (body.propertyId !== undefined) {
-        const [property = null] = body.propertyId ? await ownedPropertyIds(req.user.id, [body.propertyId]) : [];
+        const [property = null] = await ownedPropertyIds(req.user.id, body.propertyId ? [body.propertyId] : []);
         addOn.property = property;
       }
     }
@@ -87,8 +82,9 @@ router.patch('/add-ons/:id', async (req, res) => {
 router.delete('/add-ons/:id', async (req, res) => {
   try {
     if (!validId(req.params.id)) throw new HttpError(400, 'Invalid add-on ID.');
-    const addOn = await AddOn.findOne({ _id: req.params.id, owner: req.user.id }).select('_id');
+    const addOn = await AddOn.findOne({ _id: req.params.id, owner: req.user.id }).select('_id property');
     if (!addOn) throw new HttpError(404, 'Add-on not found in your account.');
+    await ownedPropertyIds(req.user.id, addOn.property ? [addOn.property] : []);
     if (await Quotation.exists({ owner: req.user.id, 'addOns.addOn': addOn._id })) {
       throw new HttpError(409, 'This add-on appears on quotations. Pause it instead so past quotes keep their history.');
     }
@@ -193,6 +189,7 @@ router.patch('/promotions/:id', async (req, res) => {
     if (!validId(req.params.id)) throw new HttpError(400, 'Invalid promotion ID.');
     const promo = await Promotion.findOne({ _id: req.params.id, owner: req.user.id });
     if (!promo) throw new HttpError(404, 'Promotion not found in your account.');
+    await ownedPropertyIds(req.user.id, promo.properties);
     const body = req.body || {};
     if (Object.keys(body).length === 1 && typeof body.active === 'boolean') {
       promo.active = body.active;

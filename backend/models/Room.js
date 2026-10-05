@@ -14,6 +14,8 @@ const RoomSchema = new mongoose.Schema({
   amenities: { type: [String], default: [] },
   cancellationPolicy: { type: String, default: '', maxlength: 1200 },
   active: { type: Boolean, default: true },
+  operationalStatus: { type: String, enum: ['ready', 'maintenance', 'out_of_order'], default: 'ready' },
+  extraGuestRate: { type: Number, min: 0, default: null },
   createdAt: { type: Date, default: Date.now }
 });
 

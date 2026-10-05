@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { auditActionLabel, auditChangeLabel } from './config';
 
 export function Icon({ name, label }) {
   return <i className={name.startsWith('fa-brands') ? name : `fa-solid ${name}`} aria-hidden={label ? undefined : 'true'} aria-label={label}></i>;
@@ -60,11 +61,27 @@ export function ConfirmDialog({ title, children, confirmLabel = 'Confirm', tone 
   const box = useRef(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
-  useEffect(() => { box.current?.querySelector('textarea,button')?.focus(); const onKey = e => { if (e.key === 'Escape') closeRef.current(); }; document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey); }, []);
+  useEffect(() => {
+    const previous = document.activeElement;
+    box.current?.querySelector('select,textarea,input,button')?.focus();
+    const onKey = e => {
+      const dialogs = document.querySelectorAll('[role="dialog"]');
+      if (dialogs[dialogs.length - 1] !== box.current) return;
+      if (e.key === 'Escape') closeRef.current();
+      if (e.key === 'Tab') {
+        const fields = box.current.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled])');
+        const first = fields[0], last = fields[fields.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); previous?.focus?.(); };
+  }, []);
   const blocked = reasonRequired && !(reason || '').trim();
   return <div className="ac-overlay ac-center" onMouseDown={e => { if (e.target === e.currentTarget) closeRef.current(); }}>
     <div className="ac-modal" role="dialog" aria-modal="true" aria-label={title} ref={box}>
-      <header className="ac-drawer-head"><h2>{title}</h2><button type="button" className="ac-icon-btn" onClick={onClose} aria-label="Close"><Icon name="fa-xmark" /></button></header>
+      <header className="ac-drawer-head"><h2>{title}</h2><button type="button" className="ac-icon-btn" onClick={onClose} disabled={busy} aria-label="Close"><Icon name="fa-xmark" /></button></header>
       <div className="ac-modal-body">
         {children}
         {setReason && <label className="ac-field"><span>{reasonLabel}{reasonRequired ? ' *' : ''}</span><textarea rows="3" maxLength="500" value={reason} onChange={e => setReason(e.target.value)} /></label>}
@@ -115,8 +132,8 @@ export function AuditTimeline({ entries }) {
   return <ol className="ac-timeline">{entries.map(e => <li key={e._id}>
     <span className="ac-timeline-dot"><Icon name="fa-shield-halved" /></span>
     <div>
-      <strong>{(e.action || '').replace(/[._]/g, ' ')}</strong>
-      {(e.before || e.after) && <small className="ac-change">{e.before?.status && e.after?.status ? `${e.before.status} → ${e.after.status}` : ''}</small>}
+      <strong>{auditActionLabel(e)}</strong>
+      {(e.before || e.after) && <small className="ac-change">{auditChangeLabel(e)}</small>}
       {e.reason && <p>“{e.reason}”</p>}
       <small>{e.actor?.name || e.actorName || 'Admin'} · {new Date(e.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</small>
     </div>

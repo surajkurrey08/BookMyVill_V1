@@ -1,4 +1,4 @@
-.navbar-header {
+﻿.navbar-header {
   position: fixed;
   top: 0;
   left: 0;
@@ -68,7 +68,8 @@
   transition: width 0.3s ease;
 }
 
-.nav-links-center a:hover::after {
+.nav-links-center a:hover::after,
+.nav-links-center a.nav-link-active::after {
   width: 100%;
 }
 
@@ -107,42 +108,6 @@
 .signin-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(212, 175, 55, 0.55);
-}
-
-/* Matches the redesigned Home header's white "Join Us" pill. */
-.navbar-join-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 20px;
-  border-radius: 999px;
-  background: #fff;
-  color: #1a1a1a;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  text-decoration: none;
-  border: 1px solid rgba(45, 67, 61, 0.18);
-  box-shadow: 0 2px 10px rgba(29, 29, 27, 0.06);
-  transition: all 0.25s ease;
-  white-space: nowrap;
-}
-
-.navbar-join-btn i {
-  color: #2D433D;
-  font-size: 0.78rem;
-}
-
-.navbar-join-btn:hover {
-  background: #2D433D;
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(45, 67, 61, 0.25);
-}
-
-.navbar-join-btn:hover i {
-  color: #fff;
 }
 
 .user-profile {
@@ -266,15 +231,6 @@
   .signin-btn {
     padding: 7px 14px !important;
     font-size: 0.75rem !important;
-  }
-  .navbar-join-btn span {
-    display: none;
-  }
-  .navbar-join-btn {
-    padding: 0;
-    width: 38px;
-    height: 38px;
-    justify-content: center;
   }
   .dashboard-link {
     padding: 5px 10px;

@@ -35,3 +35,6 @@ backend/uploads/
 **/.env.local
 **/.env.*
 !**/.env.example
+
+# Local review screenshots, logs and temporary artifacts
+.impeccable/

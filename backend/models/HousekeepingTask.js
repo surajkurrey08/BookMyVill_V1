@@ -12,6 +12,10 @@ const HousekeepingTaskSchema = new mongoose.Schema({
   notes: { type: String, default: '', maxlength: 500 },
   dedupeKey: { type: String, unique: true, sparse: true },
   completedAt: { type: Date, default: null },
+  stage: { type: String, enum: ['dirty', 'cleaning', 'inspection', 'ready'], default: 'dirty' },
+  priority: { type: String, enum: ['normal', 'high'], default: 'normal' },
+  checklist: { type: [String], default: [] },
+  photos: { type: [String], default: [] },
   history: [{ from: String, to: String, by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, at: { type: Date, default: Date.now } }],
   createdAt: { type: Date, default: Date.now }
 });

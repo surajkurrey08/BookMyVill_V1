@@ -39,6 +39,7 @@ jobs:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
           BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+          CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
         run: |
           set -euo pipefail
 
@@ -59,6 +60,21 @@ jobs:
             exit 1
           fi
 
+          if [[ "$VPS_HOST" != 31.97.61.172 ]]; then
+            echo "::error::VPS_HOST does not match the configured production VPS"
+            exit 1
+          fi
+
+          if [[ "$VPS_USER" != root ]]; then
+            echo "::error::VPS_USER must be root for Nginx and certificate setup"
+            exit 1
+          fi
+
+          if [[ -n "$CERTBOT_EMAIL" && ! "$CERTBOT_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]]; then
+            echo "::error::CERTBOT_EMAIL must be a valid email address"
+            exit 1
+          fi
+
           echo "Deployment configuration OK"
 
       # ============================================================
@@ -75,6 +91,8 @@ jobs:
             admin/package-lock.json
             owner/package-lock.json
             caretaker/package-lock.json
+            data-entry/package-lock.json
+            villa-manager/package-lock.json
 
       # ============================================================
       # 4. Verify frontend builds
@@ -83,6 +101,7 @@ jobs:
       - name: Verify frontend builds
         env:
           VITE_API_URL: https://api.bookmyvilla.online
+          VITE_API_BASE_URL: https://api.bookmyvilla.online/api
           VITE_GUEST_SITE_URL: https://bookmyvilla.online
           VITE_OWNER_PORTAL_URL: https://owner.bookmyvilla.online
           VITE_ADMIN_PORTAL_URL: https://admin.bookmyvilla.online
@@ -90,7 +109,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          for app in frontend admin owner caretaker; do
+          for app in frontend admin owner caretaker data-entry villa-manager; do
             echo ""
             echo "======================================"
             echo "Building $app"
@@ -161,12 +180,8 @@ jobs:
           printf '%s\n' "$ssh_output"
 
       # ============================================================
-      # 6. Verify Docker on VPS
-      #
-      # IMPORTANT:
-      # Existing nginx is NOT touched.
-      # Ports 80/443 are NOT touched.
-      # Certbot is NOT touched.
+      # 6. Verify Docker on VPS. Public Nginx is configured after the
+      # containers and production builds pass their local checks.
       # ============================================================
 
       - name: Check VPS Docker
@@ -247,6 +262,18 @@ jobs:
             bookmyvilla-vps:/var/www/bookmyvilla/
 
           echo "BookMyVilla source uploaded"
+
+      - name: Upload production frontend builds
+        run: |
+          set -euo pipefail
+
+          for app in frontend admin owner data-entry villa-manager; do
+            rsync -az --delete \
+              "$GITHUB_WORKSPACE/$app/dist/" \
+              "bookmyvilla-vps:/var/www/bookmyvilla/$app/dist/"
+          done
+
+          echo "Guest, admin, owner, data entry and villa manager production builds uploaded"
 
       # ============================================================
       # 9. Create backend/.env automatically from GitHub Secret
@@ -549,6 +576,58 @@ jobs:
             check_service "Caretaker" 5176
 
           REMOTE
+
+      - name: Configure public Nginx and TLS
+        env:
+          CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
+        run: |
+          set -euo pipefail
+
+          ssh bookmyvilla-vps \
+            "VPS_HOST='$VPS_HOST' CERTBOT_EMAIL='$CERTBOT_EMAIL' bash /var/www/bookmyvilla/scripts/configure-public-site.sh"
+
+      - name: Check public website
+        run: |
+          set -euo pipefail
+
+          check_page() {
+            local url="$1" title="$2" response
+            response=$(curl --fail --silent --show-error --max-time 15 "$url")
+            if [[ "$response" != *"<title>$title</title>"* || "$response" != *'/assets/'* ]]; then
+              echo "::error::$url did not return the production build"
+              exit 1
+            fi
+            echo "$url serves the production build"
+          }
+
+          check_page https://bookmyvilla.online/ 'BookMyVilla | Premium Hill Station Stays'
+          check_page https://admin.bookmyvilla.online/ 'Mahabaleshwar Luxury | Admin Portal'
+
+          if getent ahostsv4 owner.bookmyvilla.online >/dev/null; then
+            check_page https://owner.bookmyvilla.online/ 'Property Owner Portal | Mahabaleshwar Luxury Stays'
+          else
+            echo '::warning::Owner portal public check skipped until its DNS A record exists.'
+          fi
+
+          for portal in dataentry villamanage; do
+            if getent ahostsv4 "$portal.bookmyvilla.online" | awk -v expected="$VPS_HOST" '$1 == expected { found = 1 } END { exit !found }'; then
+              if [[ "$portal" == dataentry ]]; then
+                check_page https://dataentry.bookmyvilla.online/ 'BookMyVilla | Data Entry'
+              else
+                check_page https://villamanage.bookmyvilla.online/ 'Villa Manager | BookMyVilla'
+              fi
+            else
+              echo "::warning::$portal public check skipped until its DNS A record points to this VPS."
+            fi
+          done
+
+          health=$(curl --fail --silent --show-error --max-time 15 \
+            https://api.bookmyvilla.online/api/health)
+          if [[ "$health" != *'"status":"ok"'* ]]; then
+            echo '::error::Public API health response was not healthy'
+            exit 1
+          fi
+          echo 'Public API is healthy'
 
       # ============================================================
       # 17. Final deployment status

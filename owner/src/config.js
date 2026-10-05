@@ -1,7 +1,8 @@
 const trimSlash = url => url.replace(/\/+$/, '');
 
-// Production builds set VITE_API_URL (see .github/workflows/deploy.yml).
-export const API_BASE_URL = `${trimSlash(import.meta.env.VITE_API_URL || 'http://localhost:5001')}/api`;
+// VITE_API_URL is the server origin; the local VITE_API_BASE_URL includes /api.
+const apiUrl = trimSlash(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
+export const API_BASE_URL = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
 
 // Guest-facing website, used for quotation links and listing previews.
 function guestSiteUrl() {

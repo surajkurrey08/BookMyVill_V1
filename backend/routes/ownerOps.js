@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const ownerAuth = require('../middleware/ownerAuth');
-const Property = require('../models/Property');
+const ownerAuth = require('../middleware/propertyOperatorAuth');
+const { requirePropertyAccess, ownerPropertyView } = require('../services/propertyAccess');
+const { sendError } = require('../utils/validate');
 const Room = require('../models/Room');
 const Booking = require('../models/Booking');
 const StaffMember = require('../models/StaffMember');
@@ -11,6 +12,12 @@ const { ensureModelIndexes } = require('../utils/modelIndexes');
 
 const router = express.Router();
 router.use(ownerAuth);
+router.get('/notifications', async (req,res) => { try {
+ const { propertyScope } = require('../services/propertyAccess');
+ const ids = req.query.propertyId ? [(await requirePropertyAccess(req.user, req.query.propertyId))._id] : await require('../models/Property').find(propertyScope(req.user)).distinct('_id');
+ res.json(await require('../services/operationQueue').operationQueue(ids));
+} catch(err) { failure(res,err); } });
+router.use(require('./sharedOperations'));
 
 const validId = value => mongoose.Types.ObjectId.isValid(value);
 const STAFF_ROLES = StaffMember.schema.path('role').enumValues;
@@ -23,24 +30,30 @@ const indiaDate = date => {
 
 async function propertyForOwner(req, res, id) {
   if (!validId(id)) { res.status(400).json({ msg: 'Invalid property ID.' }); return null; }
-  const property = await Property.findOne({ _id: id, owner: req.user.id });
-  if (!property) res.status(404).json({ msg: 'Property not found in your account.' });
-  return property;
+  return requirePropertyAccess(req.user, id, req.method === 'GET' ? 'report' : 'operate');
 }
 
 async function bookingForOwner(req, res, id) {
   if (!validId(id)) { res.status(400).json({ msg: 'Invalid booking ID.' }); return null; }
   const booking = await Booking.findById(id);
-  if (!booking || !(await Property.exists({ _id: booking.property, owner: req.user.id }))) {
+  if (!booking) {
     res.status(404).json({ msg: 'Booking not found in your account.' });
     return null;
   }
+  await requirePropertyAccess(req.user, booking.property);
   return booking;
 }
 
 function failure(res, err) {
-  console.error('Owner operations error:', err);
-  if (!res.headersSent) res.status(500).json({ msg: 'Could not complete this action. Please try again.' });
+  if (err.code === 11000) return res.status(409).json({ msg:'The room already has an in-house stay. Refresh before retrying.' });
+  sendError(res, err, 'Property operations');
+}
+function bookingView(req, booking) {
+  if (req.user.role !== 'villa_manager') return booking;
+  const result = booking.toObject ? booking.toObject() : { ...booking };
+  if (result.guestDetails) { delete result.guestDetails.idProof; delete result.guestDetails.idLastFour; }
+  for (const key of ['razorpayOrderId', 'razorpayPaymentId', 'manualPaymentReference']) delete result[key];
+  return result;
 }
 
 router.get('/board/:propertyId', async (req, res) => {
@@ -75,7 +88,8 @@ router.get('/board/:propertyId', async (req, res) => {
       HousekeepingTask.countDocuments({ property: property._id, status: { $ne: 'done' } }),
       GuestRequest.countDocuments({ property: property._id, status: { $in: GuestRequest.OPEN_STATUSES } })
     ]);
-    res.json({ property: { _id: property._id, name: property.name }, start, end, today, bookings, summary: {
+    const visibleProperty = ownerPropertyView(req.user, property);
+    res.json({ property: { _id: property._id, name: property.name, managementMode: visibleProperty.managementMode, canOperate: visibleProperty.canOperate }, start, end, today, bookings: bookings.map(b => bookingView(req, b)), summary: {
       arrivalsToday, departuresToday, inHouse, openTasks, openRequests
     } });
   } catch (err) { failure(res, err); }
@@ -94,15 +108,29 @@ router.post('/bookings/:bookingId/check-in', async (req, res) => {
     const booking = await bookingForOwner(req, res, req.params.bookingId);
     if (!booking) return;
     if (booking.status !== 'confirmed' || !booking.room) return res.status(409).json({ msg: 'Confirm the booking and assign a room before check-in.' });
+    const selectedRoom = await require('../services/roomReadiness').requireRoomReady(booking.room);
+    if ((booking.operations?.actualGuests || booking.guests) > selectedRoom.capacity) return res.status(409).json({ msg: 'Guest count exceeds the room capacity.' });
+    if (await Booking.exists({ _id:{ $ne:booking._id }, room:booking.room, stayStatus:'in_house' })) return res.status(409).json({ msg:'This room still has an in-house guest.' });
+    await ensureModelIndexes(Booking);
+    if (req.user.role === 'villa_manager') {
+      const today = indiaDate(new Date());
+      if (booking.checkIn.toISOString().slice(0, 10) > today || booking.checkOut.toISOString().slice(0, 10) <= today) return res.status(409).json({ msg: 'Check-in is available only during the booked stay dates.' });
+      if (!booking.operations?.idVerified || booking.paymentStatus !== 'paid' || (booking.securityDepositAmount > 0 && !booking.operations?.depositVerified)) return res.status(409).json({ msg: 'Verify guest ID, booking payment and applicable deposit before check-in.' });
+      if (['pending', 'quote_required'].includes(booking.operations?.extraGuestPaymentStatus)) return res.status(409).json({ msg: 'Extra guest payment requires finance confirmation before check-in.' });
+      const room = await Room.findById(booking.room);
+      if ((booking.operations?.actualGuests || booking.guests) > room.capacity) return res.status(409).json({ msg: 'Guest count exceeds the room capacity.' });
+      if ((await require('../services/inventory').conflictingNights(booking.room, [today], booking._id)).length) return res.status(409).json({ msg: 'This room is blocked or reserved for another stay today.' });
+      if (await Booking.exists({ _id: { $ne: booking._id }, room: booking.room, status: 'confirmed', stayStatus: 'in_house' })) return res.status(409).json({ msg: 'This room still has an in-house guest.' });
+    }
     const roomNeedsCleaning = await HousekeepingTask.exists({ property: booking.property, room: booking.room, category: { $in: ['turnover', 'cleaning'] }, status: { $ne: 'done' }, dueDate: { $lte: indiaDate(new Date()) } });
     if (roomNeedsCleaning) return res.status(409).json({ msg: 'Complete the room cleaning task before check-in.' });
     const now = new Date();
     const updated = await Booking.findOneAndUpdate({ _id: booking._id, status: 'confirmed', room: { $ne: null }, stayStatus: { $in: ['expected', null] } }, {
       $set: { stayStatus: 'in_house', actualCheckIn: now },
-      $push: { actionHistory: { action: 'Guest Checked In', performedBy: `Property Owner (${req.user.id})`, targetUser: `Booking ${booking._id}`, reason: 'Guest arrival recorded in owner operations.', timestamp: now } }
+      $push: { actionHistory: { action: 'Guest Checked In', performedBy: `${req.user.role === 'villa_manager' ? 'Villa Manager' : 'Property Owner'} (${req.user.id})`, targetUser: `Booking ${booking._id}`, reason: 'Guest arrival recorded in property operations.', timestamp: now } }
     }, { new: true }).populate('user', 'name email phone').populate('room', 'name number');
     if (!updated) return res.status(409).json({ msg: 'Booking state changed. Refresh the board.' });
-    res.json(updated);
+    res.json(bookingView(req, updated));
   } catch (err) { failure(res, err); }
 });
 
@@ -112,23 +140,14 @@ router.post('/bookings/:bookingId/check-out', async (req, res) => {
     if (!booking) return;
     if (booking.stayStatus !== 'in_house') return res.status(409).json({ msg: 'Only an in-house guest can be checked out.' });
     const now = new Date();
+    await ensureModelIndexes(HousekeepingTask);
+    const task = await HousekeepingTask.findOneAndUpdate({ dedupeKey: `checkout:${booking._id}` }, { $setOnInsert: { property: booking.property, room: booking.room, booking: booking._id, title: 'Clean room after checkout', category: 'turnover', dueDate: indiaDate(now), status: 'open', stage: 'dirty' } }, { new: true, upsert: true, setDefaultsOnInsert: true });
     const updated = await Booking.findOneAndUpdate({ _id: booking._id, status: 'confirmed', stayStatus: 'in_house' }, {
       $set: { stayStatus: 'checked_out', actualCheckOut: now },
-      $push: { actionHistory: { action: 'Guest Checked Out', performedBy: `Property Owner (${req.user.id})`, targetUser: `Booking ${booking._id}`, reason: 'Guest departure recorded in owner operations.', timestamp: now } }
+      $push: { actionHistory: { action: 'Guest Checked Out', performedBy: `${req.user.role === 'villa_manager' ? 'Villa Manager' : 'Property Owner'} (${req.user.id})`, targetUser: `Booking ${booking._id}`, reason: 'Guest departure recorded in property operations.', timestamp: now } }
     }, { new: true }).populate('user', 'name email phone').populate('room', 'name number');
     if (!updated) return res.status(409).json({ msg: 'Booking state changed. Refresh the board.' });
-    let task = null;
-    let warning = null;
-    try {
-      await ensureModelIndexes(HousekeepingTask);
-      task = await HousekeepingTask.findOneAndUpdate({ dedupeKey: `checkout:${booking._id}` }, {
-        $setOnInsert: { property: booking.property, room: booking.room, booking: booking._id, title: 'Clean room after checkout', category: 'turnover', dueDate: indiaDate(now), status: 'open' }
-      }, { new: true, upsert: true, setDefaultsOnInsert: true });
-    } catch (err) {
-      console.error('Checkout housekeeping task error:', err);
-      warning = 'Checkout saved, but the cleaning task could not be created. Add it manually.';
-    }
-    res.json({ booking: updated, task, warning });
+    res.json({ booking: bookingView(req, updated), task, warning: null });
   } catch (err) { failure(res, err); }
 });
 
@@ -158,7 +177,8 @@ router.patch('/staff-member/:staffId', async (req, res) => {
   try {
     if (!validId(req.params.staffId)) return res.status(400).json({ msg: 'Invalid staff ID.' });
     const staff = await StaffMember.findById(req.params.staffId);
-    if (!staff || !(await Property.exists({ _id: staff.property, owner: req.user.id }))) return res.status(404).json({ msg: 'Staff member not found in your account.' });
+    if (!staff) return res.status(404).json({ msg: 'Staff member not found in your account.' });
+    await requirePropertyAccess(req.user, staff.property);
     if (req.body.name !== undefined) staff.name = String(req.body.name).trim();
     if (req.body.role !== undefined) staff.role = req.body.role;
     if (req.body.phone !== undefined) staff.phone = String(req.body.phone).trim();
@@ -206,45 +226,6 @@ router.post('/housekeeping/:propertyId', async (req, res) => {
   } catch (err) { failure(res, err); }
 });
 
-router.patch('/housekeeping-task/:taskId', async (req, res) => {
-  try {
-    if (!validId(req.params.taskId)) return res.status(400).json({ msg: 'Invalid task ID.' });
-    const task = await HousekeepingTask.findById(req.params.taskId);
-    if (!task || !(await Property.exists({ _id: task.property, owner: req.user.id }))) return res.status(404).json({ msg: 'Task not found in your account.' });
-    const changes = {};
-    if (req.body.status !== undefined) {
-      const allowed = { open: ['open', 'in_progress', 'done'], in_progress: ['in_progress', 'open', 'done'], done: ['done', 'open'] };
-      if (!allowed[task.status]?.includes(req.body.status)) return res.status(409).json({ msg: 'Invalid task status change.' });
-      changes.status = req.body.status;
-      changes.completedAt = req.body.status === 'done' ? new Date() : null;
-    }
-    if (req.body.dueDate !== undefined) {
-      if (!validDate(req.body.dueDate)) return res.status(400).json({ msg: 'Invalid due date.' });
-      changes.dueDate = req.body.dueDate;
-    }
-    if (req.body.notes !== undefined) {
-      const notes = String(req.body.notes).trim();
-      if (notes.length > 500) return res.status(400).json({ msg: 'Notes must be under 500 characters.' });
-      changes.notes = notes;
-    }
-    if (req.body.assignedStaffId !== undefined) {
-      if (req.body.assignedStaffId === null || req.body.assignedStaffId === '') changes.assignedStaff = null;
-      else {
-        if (!validId(req.body.assignedStaffId)) return res.status(400).json({ msg: 'Invalid staff ID.' });
-        const staff = await StaffMember.findOne({ _id: req.body.assignedStaffId, property: task.property, active: true });
-        if (!staff) return res.status(404).json({ msg: 'Active staff member not found at this property.' });
-        changes.assignedStaff = staff._id;
-      }
-    }
-    if (Object.keys(changes).length === 0) return res.status(400).json({ msg: 'No task changes supplied.' });
-    const update = { $set: changes };
-    if (changes.status && changes.status !== task.status) update.$push = { history: { from: task.status, to: changes.status, by: req.user.id, at: new Date() } };
-    const updated = await HousekeepingTask.findOneAndUpdate({ _id: task._id, status: task.status }, update, { new: true }).populate('room', 'name number').populate('assignedStaff', 'name role active');
-    if (!updated) return res.status(409).json({ msg: 'Task changed while editing. Refresh and try again.' });
-    res.json(updated);
-  } catch (err) { failure(res, err); }
-});
-
 // --- Guest requests & issues raised by customers during their stay ---------
 const GUEST_OPEN = GuestRequest.OPEN_STATUSES;
 const OWNER_NEXT = ['acknowledged', 'in_progress', 'completed', 'declined'];
@@ -253,12 +234,12 @@ router.get('/guest-requests/:propertyId', async (req, res) => {
   try {
     const property = await propertyForOwner(req, res, req.params.propertyId);
     if (!property) return;
-    const filter = { property: property._id, owner: req.user.id };
+    const filter = { property: property._id };
     if (req.query.status === 'open') filter.status = { $in: GUEST_OPEN };
     else if (req.query.status && GuestRequest.STATUSES.includes(req.query.status)) filter.status = req.query.status;
     const requests = await GuestRequest.find(filter).sort({ status: 1, priority: -1, createdAt: -1 }).limit(200)
       .populate('booking', 'checkIn checkOut stayStatus guest user').lean();
-    const open = await GuestRequest.countDocuments({ property: property._id, owner: req.user.id, status: { $in: GUEST_OPEN } });
+    const open = await GuestRequest.countDocuments({ property: property._id, status: { $in: GUEST_OPEN } });
     res.json({ requests, openCount: open });
   } catch (err) { failure(res, err); }
 });
@@ -266,19 +247,26 @@ router.get('/guest-requests/:propertyId', async (req, res) => {
 router.patch('/guest-request/:id', async (req, res) => {
   try {
     if (!validId(req.params.id)) return res.status(400).json({ msg: 'Invalid request ID.' });
-    const request = await GuestRequest.findOne({ _id: req.params.id, owner: req.user.id });
+    const request = await GuestRequest.findById(req.params.id);
     if (!request) return res.status(404).json({ msg: 'Guest request not found in your account.' });
+    await requirePropertyAccess(req.user, request.property);
     if (['completed', 'declined', 'cancelled'].includes(request.status)) return res.status(409).json({ msg: 'This request is already closed.' });
     const status = req.body.status;
     if (!OWNER_NEXT.includes(status)) return res.status(400).json({ msg: 'Choose a valid status update.' });
     const note = String(req.body.note || '').trim().slice(0, 500);
     const eta = String(req.body.eta || '').trim().slice(0, 80);
     const changes = { status };
+    if (req.body.escalated !== undefined) { if (typeof req.body.escalated !== 'boolean') return res.status(400).json({ msg: 'Invalid escalation flag.' }); changes.escalated = req.body.escalated; }
+    if (req.body.assignedStaffId !== undefined) {
+      const staff = validId(req.body.assignedStaffId) && await StaffMember.findOne({ _id: req.body.assignedStaffId, property: request.property, active: true });
+      if (!staff) return res.status(400).json({ msg: 'Choose active staff at this property.' });
+      changes.assignedStaff = staff._id;
+    }
     if (eta !== '') changes.eta = eta;
     if (['completed', 'declined'].includes(status)) changes.resolvedAt = new Date();
-    const updated = await GuestRequest.findOneAndUpdate({ _id: request._id, owner: req.user.id, status: request.status }, {
+    const updated = await GuestRequest.findOneAndUpdate({ _id: request._id, property: request.property, status: request.status }, {
       $set: changes,
-      $push: { updates: { status, note, byRole: 'owner', at: new Date() } }
+      $push: { updates: { status, note, byRole: req.user.role, at: new Date() } }
     }, { new: true }).populate('booking', 'checkIn checkOut stayStatus guest user');
     if (!updated) return res.status(409).json({ msg: 'This request changed while you were editing. Refresh and try again.' });
     res.json(updated);

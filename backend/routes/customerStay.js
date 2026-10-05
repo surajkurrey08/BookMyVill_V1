@@ -160,6 +160,22 @@ router.get('/requests', async (req, res) => {
   } catch (err) { fail(res, err); }
 });
 
+// A guest departure uses the same turnover record as the operations panel.
+router.post('/trips/:id/check-out', async (req, res) => {
+  try {
+    const booking = await bookingForGuest(req, req.params.id);
+    if (booking.stayStatus !== 'in_house' || !booking.room) throw new HttpError(409, 'Only an in-house booking can be checked out.');
+    const Housekeeping = require('../models/HousekeepingTask');
+    const { ensureModelIndexes } = require('../utils/modelIndexes');
+    const { indiaDate } = require('../utils/validate');
+    await ensureModelIndexes(Housekeeping);
+    await Housekeeping.findOneAndUpdate({ dedupeKey: `checkout:${booking._id}` }, { $setOnInsert: { property: booking.property._id, room: booking.room._id, booking: booking._id, category: 'turnover', title: 'Clean room after guest checkout', dueDate: indiaDate(), status: 'open', stage: 'dirty' } }, { upsert: true, setDefaultsOnInsert: true });
+    const updated = await Booking.findOneAndUpdate({ _id: booking._id, user: req.user.id, status: 'confirmed', stayStatus: 'in_house' }, { $set: { stayStatus: 'checked_out', actualCheckOut: new Date() }, $push: { actionHistory: { action: 'Guest Checked Out', performedBy: `Traveler (${req.user.id})`, targetUser: `Booking ${booking._id}`, reason: 'Turnover cleaning and inspection required.' } } }, { new: true });
+    if (!updated) throw new HttpError(409, 'Booking changed. Refresh your stay.');
+    res.json({ stayStatus: updated.stayStatus, housekeeping: 'dirty' });
+  } catch (err) { fail(res, err); }
+});
+
 router.post('/requests/:id/cancel', async (req, res) => {
   try {
     if (!validId(req.params.id)) throw new HttpError(400, 'Invalid request.');

@@ -33,6 +33,27 @@ export const PROPERTY_STATUS = {
   suspended: { label: 'Suspended', tone: 'bad', icon: 'fa-ban' }
 };
 
+export const MANAGEMENT_STATUS = {
+  SELF_MANAGED: { label: 'Self Managed', tone: 'neutral' },
+  BOOKMYVILLA_MANAGED: { label: 'Managed by BookMyVilla', tone: 'info' },
+};
+export const managementLabel = mode => MANAGEMENT_STATUS[mode || 'SELF_MANAGED']?.label || 'Unknown management mode';
+export const staffId = user => user?._id || user || '';
+export const staffName = user => user?.name || (user ? 'Assigned staff' : 'Unassigned');
+export const auditActionLabel = entry => entry.action === 'property.management_change' ? 'Property management updated' : (entry.action || '').replace(/[._]/g, ' ');
+export function auditChangeLabel(entry) {
+  if (entry.action === 'property.management_change') {
+    const before = entry.before || {}, after = entry.after || {};
+    const changes = [];
+    if (before.managementMode !== after.managementMode) changes.push(`${managementLabel(before.managementMode)} → ${managementLabel(after.managementMode)}`);
+    for (const [field, label] of [['assignedVillaManager', 'Villa Manager'], ['assignedDataEntryUser', 'Data Entry']]) {
+      if (before[field] !== after[field]) changes.push(`${label} ${!after[field] ? 'removed' : !before[field] ? 'assigned' : 'changed'}`);
+    }
+    return changes.join(' · ');
+  }
+  return entry.before?.status && entry.after?.status ? `${entry.before.status} → ${entry.after.status}` : entry.after?.adminRole ? `role → ${entry.after.adminRole}` : '';
+}
+
 export const BOOKING_STATUS = {
   pending: { label: 'Pending', tone: 'info', icon: 'fa-hourglass-half' },
   confirmed: { label: 'Confirmed', tone: 'good', icon: 'fa-circle-check' },
@@ -57,7 +78,7 @@ export const SEVERITY = {
 
 export const PERMISSION_LABELS = {
   'dashboard.view': 'View dashboard', 'owners.view': 'View owners', 'owners.manage': 'Manage owner accounts',
-  'properties.view': 'View properties', 'properties.approve': 'Approve / reject properties', 'properties.suspend': 'Suspend properties',
+  'properties.view': 'View properties', 'properties.approve': 'Approve / reject properties', 'properties.suspend': 'Suspend properties', 'properties.manage': 'Manage property operations and assignments',
   'bookings.view': 'View bookings', 'bookings.note': 'Add booking notes',
   'customers.view': 'View customers', 'customers.manage': 'Manage customer accounts',
   'audit.view': 'View audit log', 'team.manage': 'Manage admin team'

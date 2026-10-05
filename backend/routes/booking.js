@@ -3,7 +3,11 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const Property = require('../models/Property');
-const auth = require('../middleware/auth');
+const auth = require('../middleware/accountAuth');
+const { requirePropertyAccess } = require('../services/propertyAccess');
+const { customerBooking } = require('../services/publicViews');
+const { hasPermission } = require('../services/adminRbac');
+const { sendError } = require('../utils/validate');
 
 // Get logged in user's bookings
 router.get('/my-bookings', auth, async (req, res) => {
@@ -15,22 +19,7 @@ router.get('/my-bookings', auth, async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
-    // Auto sync paid bookings to confirmed status
-    for (let b of bookings) {
-      if (b.paymentStatus === 'paid' && b.status === 'pending') {
-        b.status = 'confirmed';
-        b.actionHistory.push({
-          action: 'Auto-Confirmed Status',
-          performedBy: 'System Processor',
-          targetUser: `Traveler (${req.user.id})`,
-          reason: 'Auto-confirmed upon detecting completed payment',
-          timestamp: new Date()
-        });
-        await b.save();
-      }
-    }
-
-    res.json(bookings);
+    res.json(bookings.map(customerBooking));
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -47,21 +36,6 @@ router.get('/owner', require('../middleware/ownerAuth'), async (req, res) => {
       .populate('room', 'name number')
       .sort({ createdAt: -1 });
 
-    // Auto-confirm status if payment is completed
-    for (let b of ownerBookings) {
-      if (b.paymentStatus === 'paid' && b.status === 'pending') {
-        b.status = 'confirmed';
-        b.actionHistory.push({
-          action: 'Auto-Confirmed Status',
-          performedBy: 'System Processor',
-          targetUser: `Traveler (${b.user?.email || 'Guest'})`,
-          reason: 'Auto-confirmed upon detecting completed payment',
-          timestamp: new Date()
-        });
-        await b.save();
-      }
-    }
-
     res.json(ownerBookings);
   } catch (err) {
     console.error('Error fetching owner bookings:', err.message);
@@ -72,6 +46,7 @@ router.get('/owner', require('../middleware/ownerAuth'), async (req, res) => {
 // Update booking status (Owner or Admin)
 router.put('/status/:id', require('../middleware/accountAuth'), async (req, res) => {
   try {
+    if (!['owner','admin'].includes(req.user.role)) return res.status(403).json({ msg: 'Owner or authorized Admin booking action required.' });
     const { status, reason } = req.body;
     if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
       return res.status(400).json({ msg: 'Invalid status' });
@@ -85,21 +60,16 @@ router.put('/status/:id', require('../middleware/accountAuth'), async (req, res)
     const User = require('../models/User');
     const user = await User.findById(req.user.id);
 
-    let ownerIdStr = '';
-    if (booking.property && booking.property.owner) {
-      ownerIdStr = booking.property.owner._id ? booking.property.owner._id.toString() : booking.property.owner.toString();
-    }
-
-    const isOwnerOrAdmin = req.user.role === 'admin' || (req.user.role === 'owner' && ownerIdStr === req.user.id);
-
-    if (!isOwnerOrAdmin) {
-      return res.status(403).json({ msg: 'Not authorized to update this booking' });
-    }
+    await requirePropertyAccess(req.user, booking.property?._id);
     if (['in_house', 'checked_out'].includes(booking.stayStatus) && status !== booking.status) {
       return res.status(409).json({ msg: 'Check-in/out has started. Resolve the stay in Guest Operations before changing booking status.' });
     }
 
-    const actorRole = req.user.role === 'admin' ? 'Admin' : 'Property Owner';
+    if (status !== booking.status && status !== 'cancelled') return res.status(409).json({ msg: 'Confirmation requires verified payment and reserved inventory; use the booking payment flow.' });
+    if (status === booking.status) return res.json(booking);
+    const previousStatus = booking.status;
+    const historyLength = booking.actionHistory.length;
+    const actorRole = req.user.role === 'admin' ? 'Admin' : req.user.role === 'villa_manager' ? 'Villa Manager' : 'Property Owner';
     const actorName = user ? `${user.name} (${user.email || user.phone || 'N/A'})` : 'Property Owner';
     const targetName = booking.user ? `${booking.user.name} (${booking.user.email || booking.user.phone || 'N/A'})` : 'Traveler';
 
@@ -137,24 +107,20 @@ router.put('/status/:id', require('../middleware/accountAuth'), async (req, res)
 
     res.json(booking);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error updating booking status');
+    sendError(res, err, 'Booking status');
   }
 });
 
 // Get bookings for a specific property (Protected - Owners/Admin only)
 router.get('/property/:propertyId', auth, async (req, res) => {
   try {
+    if (req.user.role === 'villa_manager') return res.status(403).json({ msg: 'Use the Villa Manager operational booking endpoint.' });
     const propertyId = req.params.propertyId;
-    const property = await Property.findById(propertyId);
+    const property = await requirePropertyAccess(req.user, propertyId, 'report');
     if (!property) {
       return res.status(404).json({ msg: 'Property not found' });
     }
     
-    // Check if the current user is the owner of the property or an admin
-    if (property.owner.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ msg: 'Access denied: You are not the owner of this property' });
-    }
 
     const bookings = await Booking.find({ property: propertyId })
       .populate('user', 'name email')
@@ -163,15 +129,14 @@ router.get('/property/:propertyId', auth, async (req, res) => {
       
     res.json(bookings);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    sendError(res, err, 'Property bookings');
   }
 });
 
 // Admin: Get all bookings
 router.get('/all', auth, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
+        if (!hasPermission(req.user, 'bookings.view')) {
             return res.status(403).json({ msg: 'Access denied' });
         }
         const bookings = await Booking.find()

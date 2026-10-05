@@ -6,6 +6,7 @@ const Property = require('../models/Property');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 const { escapeRegex, HttpError, validId } = require('../utils/validate');
+const { propertyScope } = require('./propertyAccess');
 
 const { STAGE_RANK } = Inquiry;
 const RESPONSE_TYPES = new Set(['call', 'whatsapp', 'email', 'sms', 'meeting']);
@@ -50,7 +51,7 @@ async function recomputeNextFollowUp(owner, inquiryId) {
 }
 
 async function ownerPropertyIds(owner) {
-  return Property.find({ owner }).distinct('_id');
+  return Property.find(propertyScope({ id: owner, role: 'owner' })).distinct('_id');
 }
 
 // Staff from any of the owner's properties can own a lead or follow-up.

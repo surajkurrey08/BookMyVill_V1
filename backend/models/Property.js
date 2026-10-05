@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 const PropertySchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  managementMode: { type: String, enum: ['SELF_MANAGED', 'BOOKMYVILLA_MANAGED'], default: 'SELF_MANAGED' },
+  // Internal assignments are opt-in in authorized queries, never public data.
+  assignedVillaManager: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, select: false },
+  assignedDataEntryUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, select: false },
   sourceApplication: { type: mongoose.Schema.Types.ObjectId, ref: 'PartnerApplication', unique: true, sparse: true },
   name: { type: String, required: true },
   type: { type: String, default: 'Villa' },
@@ -12,6 +16,15 @@ const PropertySchema = new mongoose.Schema({
   facilities: [{ type: String }],
   photos: [{ type: String }],
   videos: [{ type: String }],
+  // Listing content shares the existing property record. Staff drafts are
+  // private until submitted into the existing admin approval workflow.
+  listingData: { type: mongoose.Schema.Types.Mixed, default: {} },
+  listingDraft: { type: mongoose.Schema.Types.Mixed, default: null, select: false },
+  dataEntryStatus: { type: String, enum: ['ASSIGNED', 'DRAFT', 'IN_PROGRESS', 'INCOMPLETE', 'CHANGES_REQUIRED', 'READY_FOR_REVIEW', 'COMPLETED'], default: 'ASSIGNED', select: false },
+  dataEntryReviewReason: { type: String, default: '', select: false },
+  dataEntryRevision: { type: Number, default: 0, select: false },
+  dataEntryCompletion: { type: Number, default: null, select: false },
+  dataEntryUpdatedAt: { type: Date, default: null, select: false },
   assignedCaretaker: {
     name: String,
     phone: String,
@@ -39,5 +52,9 @@ const PropertySchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'under_review', 'approved', 'rejected', 'suspended'], default: 'approved' },
   createdAt: { type: Date, default: Date.now }
 });
+
+PropertySchema.index({ managementMode: 1, assignedVillaManager: 1 });
+PropertySchema.index({ assignedDataEntryUser: 1 });
+PropertySchema.index({ assignedDataEntryUser: 1, dataEntryStatus: 1, dataEntryUpdatedAt: -1 });
 
 module.exports = mongoose.model('Property', PropertySchema);

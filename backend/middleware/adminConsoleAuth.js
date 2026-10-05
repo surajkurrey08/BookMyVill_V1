@@ -17,7 +17,7 @@ async function adminConsoleAuth(req, res, next) {
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(401).json({ msg: 'Invalid admin session.' });
     const admin = await User.findById(id).select('_id name email role adminRole adminPermissions status');
     if (!admin || admin.role !== 'admin') return res.status(403).json({ msg: 'Admin access only.' });
-    if (admin.status === 'suspended') return res.status(403).json({ msg: 'This admin account is suspended.' });
+    if (['suspended','pending','rejected'].includes(admin.status)) return res.status(403).json({ msg: 'This admin account is suspended.' });
     req.admin = admin;
     req.adminPermissions = effectivePermissions(admin);
     next();

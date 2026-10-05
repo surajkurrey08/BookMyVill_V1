@@ -115,7 +115,7 @@ const Navbar = () => {
             <BrandLogo />
           </Link>
 
-          <nav className={`nav-links-center ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+          <nav className={`nav-links-center ${isMobileMenuOpen ? 'mobile-open' : ''}`} aria-label="Primary navigation" id="site-navigation">
             <Link to="/" onClick={() => { scrollToSection('home'); setIsMobileMenuOpen(false); }}>
               Home
             </Link>
@@ -128,21 +128,19 @@ const Navbar = () => {
             <Link to="/about-us" onClick={() => setIsMobileMenuOpen(false)}>
               About Us
             </Link>
+            <Link to="/join-us" className={location.pathname === '/join-us' ? 'nav-link-active' : ''} aria-current={location.pathname === '/join-us' ? 'page' : undefined} onClick={() => setIsMobileMenuOpen(false)}>
+              Join Us
+            </Link>
           </nav>
 
           <div className="nav-right-container">
-            {(!user || (user.role !== 'user' && user.role !== 'traveller')) && (
-              <Link to="/join-us" className="navbar-join-btn" onClick={() => setIsMobileMenuOpen(false)}>
-                <i className="fa-solid fa-handshake"></i>
-                <span>Join Us</span>
-              </Link>
-            )}
-
             <button
               type="button"
               className="mobile-hamburger-btn"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle Navigation Menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="site-navigation"
             >
               <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
             </button>
@@ -338,7 +336,7 @@ const Navbar = () => {
               </div>
             ) : (
               <Link to="/signin" className="btn-primary signin-btn">
-                Sign In
+                {location.pathname === '/join-us' ? 'Log In' : 'Sign In'}
               </Link>
             )}
           </div>

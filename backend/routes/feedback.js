@@ -1,191 +1,27 @@
-const express = require('express');
-const router = express.Router();
-const mongoose = require('mongoose');
-const auth = require('../middleware/auth');
-const Feedback = require('../models/Feedback');
-const Property = require('../models/Property');
-
-let defaultFeedbackList = [
-  {
-    _id: 'fb-1',
-    propertyName: 'Royal Mist Villa Estate',
-    ownerId: 'owner123',
-    guestName: 'Ananya Deshmukh',
-    guestPhone: '+91 99887 76655',
-    rating: 5,
-    reviewText: 'Breathtaking mountain view and exceptional caretaker service! The private bonfire and hot breakfast made our Mahabaleshwar trip unforgettable.',
-    facilitiesUsed: ['Complimentary Breakfast', 'Night Bonfire', 'Personal Chef', 'Private Swimming Pool'],
-    selectedForHotelPage: true
-  },
-  {
-    _id: 'fb-2',
-    propertyName: 'Royal Mist Villa Estate',
-    ownerId: 'owner123',
-    guestName: 'Vikram & Swati Mehta',
-    guestPhone: '+91 98765 43210',
-    rating: 5,
-    reviewText: 'Super clean rooms, misty valley breeze, and peaceful ambience. Key handover was smooth and Wi-Fi speed was top notch.',
-    facilitiesUsed: ['Free High-Speed Wi-Fi', '24/7 Power Backup', 'Lawn & Garden'],
-    selectedForHotelPage: true
-  }
-];
-
-// @route   GET api/feedback/owner
-// @desc    Get all tourist feedback for owner's properties
-router.get('/owner', auth, async (req, res) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(defaultFeedbackList);
-  }
-  try {
-    const ownerProperties = await Property.find({ owner: req.user.id });
-    const propIds = ownerProperties.map(p => p._id);
-
-    let feedbackList = await Feedback.find({
-      $or: [{ ownerId: req.user.id }, { propertyId: { $in: propIds } }]
-    }).sort({ createdAt: -1 });
-
-    if (feedbackList.length === 0) {
-      feedbackList = defaultFeedbackList;
-    }
-    res.json(feedbackList);
-  } catch (err) {
-    console.error('Feedback GET Error:', err.message);
-    res.json(defaultFeedbackList);
-  }
-});
-
-// @route   GET api/feedback/admin
-// @desc    Get all tourist feedback for admin dashboard across all properties
-router.get('/admin', auth, async (req, res) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(defaultFeedbackList);
-  }
-  try {
-    let feedbackList = await Feedback.find().sort({ createdAt: -1 });
-    if (feedbackList.length === 0) {
-      feedbackList = defaultFeedbackList;
-    }
-    res.json(feedbackList);
-  } catch (err) {
-    console.error('Admin Feedback GET Error:', err.message);
-    res.json(defaultFeedbackList);
-  }
-});
-
-// @route   GET api/feedback/property/:propertyId
-// @desc    Get owner-selected feedback for a specific property details page
-router.get('/property/:propertyId', async (req, res) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.json(defaultFeedbackList);
-  }
-  try {
-    const { propertyId } = req.params;
-    let selectedFeedback = await Feedback.find({
-      propertyId,
-      selectedForHotelPage: true
-    }).sort({ createdAt: -1 });
-
-    if (selectedFeedback.length === 0) {
-      selectedFeedback = await Feedback.find({ propertyId }).sort({ rating: -1 }).limit(5);
-    }
-
-    if (selectedFeedback.length === 0) {
-      selectedFeedback = defaultFeedbackList;
-    }
-    res.json(selectedFeedback);
-  } catch (err) {
-    res.json(defaultFeedbackList);
-  }
-});
-
-// @route   PUT api/feedback/:id/toggle-select
-// @desc    Toggle owner selection status for displaying feedback on property details page
-router.put('/:id/toggle-select', auth, async (req, res) => {
-  const { id } = req.params;
-
-  // Handle in-memory fallback toggle if DB is disconnected
-  if (mongoose.connection.readyState !== 1) {
-    const item = defaultFeedbackList.find(f => f._id === id || f.id === id);
-    if (item) {
-      item.selectedForHotelPage = !item.selectedForHotelPage;
-      return res.json(item);
-    }
-    return res.json({ _id: id, selectedForHotelPage: true, msg: 'Selection toggled' });
-  }
-
-  try {
-    const fb = await Feedback.findById(id);
-    if (!fb) return res.status(404).json({ msg: 'Feedback record not found' });
-
-    fb.selectedForHotelPage = !fb.selectedForHotelPage;
-    await fb.save();
-    res.json(fb);
-  } catch (err) {
-    console.error('Error toggling feedback selection:', err);
-    res.status(500).json({ msg: 'Failed to update feedback selection' });
-  }
-});
-
-// @route   DELETE api/feedback/:id
-// @desc    Delete a tourist feedback entry
-router.delete('/:id', auth, async (req, res) => {
-  const { id } = req.params;
-  if (mongoose.connection.readyState !== 1) {
-    defaultFeedbackList = defaultFeedbackList.filter(f => f._id !== id && f.id !== id);
-    return res.json({ msg: 'Feedback removed' });
-  }
-  try {
-    await Feedback.findByIdAndDelete(id);
-    res.json({ msg: 'Feedback removed successfully' });
-  } catch (err) {
-    console.error('Error deleting feedback:', err);
-    res.status(500).json({ msg: 'Failed to delete feedback' });
-  }
-});
-
-// @route   POST api/feedback
-// @desc    Public route for tourists to submit stay feedback
-router.post('/', async (req, res) => {
-  try {
-    const { propertyId, propertyName, guestName, guestPhone, rating, reviewText, facilitiesUsed } = req.body;
-    
-    let ownerId = null;
-    let finalPropName = propertyName || 'Mahabaleshwar Villa';
-
-    if (propertyId && mongoose.connection.readyState === 1) {
-      const prop = await Property.findById(propertyId);
-      if (prop) {
-        ownerId = prop.owner;
-        if (!propertyName && prop.title) finalPropName = prop.title;
-      }
-    }
-
-    const newFeedback = {
-      _id: 'fb-' + Date.now(),
-      propertyId: propertyId || req.body.ownerId || 'prop-101',
-      propertyName: finalPropName,
-      ownerId,
-      guestName: guestName || 'Guest Tourist',
-      guestPhone: guestPhone || '',
-      rating: Number(rating) || 5,
-      reviewText: reviewText || 'Wonderful stay experience!',
-      facilitiesUsed: Array.isArray(facilitiesUsed) ? facilitiesUsed : [],
-      selectedForHotelPage: true,
-      createdAt: new Date()
-    };
-
-    if (mongoose.connection.readyState === 1) {
-      const saved = new Feedback(newFeedback);
-      await saved.save();
-      return res.json(saved);
-    }
-
-    defaultFeedbackList.unshift(newFeedback);
-    res.json(newFeedback);
-  } catch (err) {
-    console.error('Feedback POST Error:', err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
-module.exports = router;
+const router=require('express').Router();
+const Feedback=require('../models/Feedback');
+const Property=require('../models/Property');
+const Booking=require('../models/Booking');
+const {adminConsoleAuth,requirePermission}=require('../middleware/adminConsoleAuth');
+const {validId,cleanText,HttpError,sendError}=require('../utils/validate');
+const run=fn=>async(req,res)=>{try{await fn(req,res)}catch(err){sendError(res,err,'Guest feedback')}};
+router.get('/owner',require('../middleware/ownerAuth'),run(async(req,res)=>{const ids=await Property.find({owner:req.user.id}).distinct('_id');res.json(await Feedback.find({propertyId:{$in:ids}}).sort({createdAt:-1}));}));
+router.get('/admin',adminConsoleAuth,requirePermission('customers.view'),run(async(req,res)=>res.json(await Feedback.find().sort({createdAt:-1}))));
+router.get('/property/:propertyId',run(async(req,res)=>{
+ if(!validId(req.params.propertyId)||!await Property.exists({_id:req.params.propertyId,status:'approved'}))throw new HttpError(404,'Published property not found.');
+ res.json(await Feedback.find({propertyId:req.params.propertyId,selectedForHotelPage:true}).select('_id guestName rating reviewText facilitiesUsed createdAt').sort({createdAt:-1}));
+}));
+const operation=require('../middleware/legacyOwnerOperation')(Feedback);
+router.put('/:id/toggle-select',require('../middleware/ownerAuth'),operation,run(async(req,res)=>{const fb=await Feedback.findById(req.params.id);if(!fb)throw new HttpError(404,'Feedback not found.');fb.selectedForHotelPage=!fb.selectedForHotelPage;await fb.save();res.json(fb);}));
+router.delete('/:id',require('../middleware/ownerAuth'),operation,run(async(req,res)=>{await Feedback.findByIdAndDelete(req.params.id);res.json({msg:'Feedback removed.'});}));
+router.post('/',require('../middleware/accountAuth'),run(async(req,res)=>{
+ if(req.user.role!=='user')throw new HttpError(403,'Customer account required.');
+ const id=req.body.propertyId;if(!validId(id))throw new HttpError(400,'Choose a property.');
+ const booking=await Booking.findOne({user:req.user.id,property:id,status:'confirmed',paymentStatus:'paid',stayStatus:'checked_out'}).populate('property','name owner');
+ if(!booking)throw new HttpError(403,'Only your completed paid stay can be reviewed.');
+ const rating=Number(req.body.rating),reviewText=cleanText(req.body.reviewText,1000);
+ if(!Number.isInteger(rating)||rating<1||rating>5||!reviewText)throw new HttpError(400,'Enter a rating and review.');
+ const user=await require('../models/User').findById(req.user.id).select('name phone');
+ const fb=await Feedback.create({propertyId:id,propertyName:booking.property.name,ownerId:booking.property.owner,guestName:booking.guest?.name||user.name,guestPhone:booking.guest?.phone||user.phone,rating,reviewText,facilitiesUsed:Array.isArray(req.body.facilitiesUsed)?req.body.facilitiesUsed.filter(s=>typeof s==='string').map(s=>s.slice(0,100)).slice(0,20):[],selectedForHotelPage:false});res.status(201).json({ _id:fb._id,rating:fb.rating,reviewText:fb.reviewText });
+}));
+module.exports=router;

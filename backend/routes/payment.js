@@ -19,52 +19,10 @@ function dateOnly(value) {
   return !Number.isNaN(+date) && date.toISOString().slice(0, 10) === value ? date : null;
 }
 
-router.post('/', accountAuth, async (req, res) => {
-  try {
-    const { propertyId, checkIn, checkOut } = req.body || {};
-    if (!mongoose.Types.ObjectId.isValid(propertyId)) return res.status(400).json({ msg: 'Choose a published property before booking.' });
-    const property = await Property.findOne({ _id: propertyId, status: 'approved' });
-    if (!property) return res.status(404).json({ msg: 'This listing is not yet available for booking.' });
-    const first = dateOnly(checkIn);
-    const last = dateOnly(checkOut);
-    if (!first || !last) return res.status(400).json({ msg: 'Choose valid check-in and check-out dates.' });
-    const stayType = req.body.stayType === 'day' ? 'day' : 'night';
-    const nights = Math.round((last - first) / 86400000);
-    if ((stayType === 'night' && (nights < 1 || nights > 365)) || (stayType === 'day' && nights !== 0)) {
-      return res.status(400).json({ msg: 'Choose a valid stay period. Day pass dates must match.' });
-    }
-    const guests = Number(req.body.guests || 1);
-    if (!Number.isInteger(guests) || guests < 1 || guests > 50) return res.status(400).json({ msg: 'Choose 1–50 guests.' });
-    const rate = Number(property.price);
-    if (!Number.isFinite(rate) || rate <= 0) return res.status(409).json({ msg: 'This property needs a valid published rate.' });
-    const amount = Math.round(stayType === 'day' ? rate * 0.55 : rate * nights);
-    if (!Number.isSafeInteger(amount) || amount < 1) return res.status(400).json({ msg: 'Unable to calculate booking amount.' });
-
-    let order = null;
-    if (paymentAvailable) {
-      try {
-        order = await razorpay.orders.create({ amount: amount * 100, currency: 'INR', receipt: `bm_${Date.now()}_${crypto.randomBytes(4).toString('hex')}` });
-      } catch (err) {
-        console.error('Razorpay order creation error:', err);
-        return res.status(502).json({ msg: 'Payment provider is unavailable. No booking or payment was created.' });
-      }
-    }
-
-    const user = await User.findById(req.user.id).select('name email phone');
-    const booking = await Booking.create({
-      user: req.user.id, property: property._id, checkIn: first, checkOut: last,
-      stayType, guests, totalPrice: amount, razorpayOrderId: order?.id,
-      status: 'pending', paymentStatus: 'pending',
-      actionHistory: [{ action: 'Booking Requested', performedBy: `Traveler (${user?.name || req.user.id})`, targetUser: 'Property Owner', reason: `${stayType === 'day' ? 'Day pass' : `${nights} night stay`} requested. Payment pending.`, timestamp: new Date() }]
-    });
-    res.status(201).json({ booking, paymentAvailable: Boolean(order), order_id: order?.id || null, amount: order?.amount || amount * 100, currency: 'INR', key_id: order ? keyId : null, msg: order ? 'Continue in Razorpay Checkout.' : 'Booking request saved with payment pending. Online payment is currently unavailable.' });
-  } catch (err) {
-    console.error('Booking request error:', err);
-    res.status(500).json({ msg: 'Could not create booking request.' });
-  }
-});
+router.post('/', accountAuth, (req,res) => res.status(409).json({ msg: 'Choose an exact available room and use room hold checkout.', code: 'ROOM_HOLD_REQUIRED' }));
 
 router.post('/verify', accountAuth, async (req, res) => {
+  if (req.user.role !== 'user') return res.status(403).json({ msg: 'Customer account required.' });
   try {
     if (!paymentAvailable) return res.status(503).json({ msg: 'Online payment is not configured.' });
     const { razorpay_order_id: orderId, razorpay_payment_id: paymentId, razorpay_signature: signature } = req.body || {};
@@ -87,6 +45,9 @@ router.post('/verify', accountAuth, async (req, res) => {
       if (booking.razorpayPaymentId === paymentId) return res.json({ msg: 'Payment already verified.', booking });
       return res.status(409).json({ msg: 'This booking already has a different recorded payment.' });
     }
+    if (!booking.room || booking.status === 'cancelled') return res.status(409).json({ msg: 'This legacy booking cannot be confirmed. Contact support for captured payment review.' });
+    const dates = require('../utils/validate').stayNights(booking.checkIn.toISOString().slice(0,10), booking.checkOut.toISOString().slice(0,10), 365);
+    if (!dates || await require('../models/RoomNight').countDocuments({ room: booking.room, reference: booking._id, kind: 'booking', date: { $in: dates } }) !== dates.length) return res.status(409).json({ msg: 'Room inventory is not reserved. Use exact-room checkout; captured payment requires support review.' });
     const mode = keyId.startsWith('rzp_live_') ? 'live' : 'test';
     const cancelled = booking.status === 'cancelled';
     const updated = await Booking.findOneAndUpdate({ _id: booking._id, user: req.user.id, razorpayOrderId: orderId, paymentStatus: 'pending' }, {

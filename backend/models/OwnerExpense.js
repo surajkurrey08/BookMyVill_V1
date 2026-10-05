@@ -11,7 +11,9 @@ const OwnerExpenseSchema = new mongoose.Schema({
   voidedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   voidedAt: { type: Date, default: null },
   voidReason: { type: String, default: '', maxlength: 200 },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  receipt: { type: String, default: '', maxlength: 2000000 },
+  approvalStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' }
 });
 
 OwnerExpenseSchema.index({ property: 1, incurredOn: 1 });

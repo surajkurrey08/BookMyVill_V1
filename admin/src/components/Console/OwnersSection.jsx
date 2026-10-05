@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { adminApi, query } from './api';
-import { rupees, compactRupees, shortDate, dateTime, ACCOUNT_STATUS, KYC_STATUS, BOOKING_STATUS } from './config';
+import { rupees, compactRupees, shortDate, dateTime, ACCOUNT_STATUS, KYC_STATUS, BOOKING_STATUS, managementLabel } from './config';
 import { Alert, Drawer, EmptyState, Facts, Icon, Pager, StatusBadge, AuditTimeline, ConfirmDialog, Labelled } from './ui';
 
 export default function OwnersSection({ can, focus }) {
@@ -11,6 +11,8 @@ export default function OwnersSection({ can, focus }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [openId, setOpenId] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [notice, setNotice] = useState('');
 
   useEffect(() => { const t = setTimeout(() => { setQ(search.trim()); setPage(1); }, 300); return () => clearTimeout(t); }, [search]);
   useEffect(() => { if (focus?.id) setOpenId(focus.id); }, [focus]);
@@ -24,8 +26,10 @@ export default function OwnersSection({ can, focus }) {
     <div className="ac-toolbar">
       <label className="ac-search"><Icon name="fa-magnifying-glass" /><input placeholder="Name, email or phone" value={search} onChange={e => setSearch(e.target.value)} /></label>
       <select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }} aria-label="Status"><option value="">All statuses</option><option value="active">Active</option><option value="restricted">Restricted</option><option value="suspended">Suspended</option></select>
+      {can('owners.manage') && <button type="button" className="ac-btn primary" onClick={() => setAdding(true)}><Icon name="fa-plus" /> Add owner</button>}
     </div>
     {error && <Alert onClose={() => setError('')}>{error}</Alert>}
+    {notice && <Alert kind="success" onClose={() => setNotice('')}>{notice}</Alert>}
     <section className="ac-card nopad">
       {data && data.items.length === 0 ? <EmptyState icon="fa-user-tie" title="No owners found" />
         : <div className="ac-table-wrap"><table className="ac-table">
@@ -43,7 +47,35 @@ export default function OwnersSection({ can, focus }) {
       {data && <Pager page={data.page} pages={data.pages} total={data.total} onPage={setPage} label="owners" />}
     </section>
     {openId && <OwnerDrawer id={openId} can={can} onClose={() => setOpenId(null)} onChanged={load} />}
+    {adding && can('owners.manage') && <AddOwnerDrawer onClose={() => setAdding(false)} onCreated={owner => {
+      setAdding(false); setNotice(`Owner account created for ${owner.email}. They can sign in to the Owner panel with the password you set.`);
+      load(); setOpenId(owner._id);
+    }} />}
   </div>;
+}
+
+function AddOwnerDrawer({ onClose, onCreated }) {
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const update = event => setForm(current => ({ ...current, [event.target.name]: event.target.value }));
+  async function submit(event) {
+    event.preventDefault(); setBusy(true); setError('');
+    try { onCreated(await adminApi('/owners', { method: 'POST', body: form })); }
+    catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  }
+  return <Drawer title="Add owner" subtitle="Create an owner account with access to the Owner panel." onClose={() => { if (!busy) onClose(); }}>
+    {error && <Alert onClose={() => setError('')}>{error}</Alert>}
+    <form className="ac-stack" onSubmit={submit}>
+      <label className="ac-field"><span>Owner name</span><input name="name" autoComplete="name" required minLength={2} maxLength={100} value={form.name} onChange={update} /></label>
+      <label className="ac-field"><span>Email address</span><input name="email" type="email" autoComplete="email" required maxLength={120} value={form.email} onChange={update} /></label>
+      <label className="ac-field"><span>Phone number (optional)</span><input name="phone" type="tel" autoComplete="tel" maxLength={20} value={form.phone} onChange={update} /></label>
+      <label className="ac-field"><span>Password (at least 10 characters)</span><input name="password" type="password" autoComplete="new-password" required minLength={10} maxLength={72} value={form.password} onChange={update} /></label>
+      <p className="ac-muted">Share the email and password with the owner so they can sign in. Property listings and KYC are managed separately.</p>
+      <div className="ac-drawer-actions"><button type="button" className="ac-btn ghost" disabled={busy} onClick={onClose}>Cancel</button><button type="submit" className="ac-btn primary" disabled={busy}>{busy ? 'Creating…' : 'Create owner'}</button></div>
+    </form>
+  </Drawer>;
 }
 
 function OwnerDrawer({ id, can, onClose, onChanged }) {
@@ -79,7 +111,7 @@ function OwnerDrawer({ id, can, onClose, onChanged }) {
         ['Cancellations', data.stats.cancelled],
         data.application && ['Application', `${data.application.partnerType} · ${data.application.status}`]
       ]} />
-      <section className="ac-sub"><h4>Properties</h4>{data.properties.length === 0 ? <p className="ac-muted">None yet.</p> : <ul className="ac-mini-list">{data.properties.map(p => <li key={p._id}><div><strong>{p.name}</strong><small>{p.location} · {rupees(p.price)}</small></div><StatusBadge meta={{ approved: { label: 'Live', tone: 'good' }, pending: { label: 'Pending', tone: 'info' }, under_review: { label: 'Changes', tone: 'warn' }, suspended: { label: 'Suspended', tone: 'bad' }, rejected: { label: 'Rejected', tone: 'bad' } }[p.status]} fallback={p.status} /></li>)}</ul>}</section>
+      <section className="ac-sub"><h4>Properties</h4>{data.properties.length === 0 ? <p className="ac-muted">None yet.</p> : <ul className="ac-mini-list">{data.properties.map(p => <li key={p._id}><div><strong>{p.name}</strong><small>{p.location} · {rupees(p.price)}</small><small>{managementLabel(p.managementMode)}</small></div><StatusBadge meta={{ approved: { label: 'Live', tone: 'good' }, pending: { label: 'Pending', tone: 'info' }, under_review: { label: 'Changes', tone: 'warn' }, suspended: { label: 'Suspended', tone: 'bad' }, rejected: { label: 'Rejected', tone: 'bad' } }[p.status]} fallback={p.status} /></li>)}</ul>}</section>
       <section className="ac-sub"><h4>Recent bookings</h4>{data.recentBookings.length === 0 ? <p className="ac-muted">None.</p> : <ul className="ac-mini-list">{data.recentBookings.map(b => <li key={b._id}><div><strong>{b.user?.name || b.guest?.name || 'Guest'}</strong><small>{b.property?.name} · {shortDate(b.checkIn)}</small></div><span>{rupees(b.totalPrice)} · <StatusBadge meta={BOOKING_STATUS[b.status]} fallback={b.status} /></span></li>)}</ul>}</section>
       <section className="ac-sub"><h4>Admin history</h4><AuditTimeline entries={data.audit} /></section>
     </>}

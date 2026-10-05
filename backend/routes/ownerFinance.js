@@ -4,6 +4,8 @@ const ownerAuth = require('../middleware/ownerAuth');
 const Property = require('../models/Property');
 const Booking = require('../models/Booking');
 const OwnerExpense = require('../models/OwnerExpense');
+const { requirePropertyAccess, ownerPropertyView } = require('../services/propertyAccess');
+const { sendError } = require('../utils/validate');
 
 const router = express.Router();
 router.use(ownerAuth);
@@ -14,8 +16,7 @@ const nextDate = value => new Date(Date.parse(`${value}T00:00:00Z`) + 86400000).
 const periodContains = (value, from, until) => value && value >= from && value < until;
 
 function fail(res, err) {
-  console.error('Owner finance error:', err);
-  if (!res.headersSent) res.status(500).json({ msg: 'Could not complete this financial action.' });
+  sendError(res, err, 'Owner finance');
 }
 
 async function reportData(req, res) {
@@ -25,7 +26,7 @@ async function reportData(req, res) {
     res.status(400).json({ msg: 'Choose a valid reporting period up to 366 days.' });
     return null;
   }
-  const allProperties = await Property.find({ owner: req.user.id }).select('_id name').lean();
+  const allProperties = (await Property.find({ owner: req.user.id }).select('_id owner name managementMode').lean()).map(property => ownerPropertyView(req.user, property));
   let properties = allProperties;
   if (req.query.propertyId && req.query.propertyId !== 'all') {
     if (!validId(req.query.propertyId)) { res.status(400).json({ msg: 'Invalid property filter.' }); return null; }
@@ -112,8 +113,11 @@ router.post('/bookings/:bookingId/manual-payment', async (req, res) => {
   try {
     if (!validId(req.params.bookingId)) return res.status(400).json({ msg: 'Invalid booking ID.' });
     const booking = await Booking.findById(req.params.bookingId);
-    if (!booking || !(await Property.exists({ _id: booking.property, owner: req.user.id }))) return res.status(404).json({ msg: 'Booking not found in your account.' });
+    if (!booking) return res.status(404).json({ msg: 'Booking not found in your account.' });
+    await requirePropertyAccess(req.user, booking.property);
     if (booking.paymentStatus !== 'pending' || booking.status === 'cancelled' || booking.razorpayOrderId) return res.status(409).json({ msg: 'Only an unpaid booking without an online order can be recorded as paid manually.' });
+    const dates = require('../utils/validate').stayNights(booking.checkIn.toISOString().slice(0,10), booking.checkOut.toISOString().slice(0,10),365);
+    if (!booking.room || !dates || await require('../models/RoomNight').countDocuments({ property:booking.property, room:booking.room, reference:booking._id, kind:'booking', date:{$in:dates} }) !== dates.length) return res.status(409).json({ msg:'Assign and reserve an exact room before confirming a manual payment booking.' });
     const method = req.body.method;
     const reference = String(req.body.reference || '').trim();
     const amount = Number(req.body.amount);
@@ -138,8 +142,7 @@ router.post('/expenses', async (req, res) => {
     if (!validId(propertyId) || !['housekeeping', 'maintenance', 'supplies', 'utilities', 'staff', 'other'].includes(category) || !validDate(incurredOn) || !Number.isSafeInteger(amount) || amount < 1 || amount > 100000000 || !description || description.length > 200) {
       return res.status(400).json({ msg: 'Enter a property, category, date, positive whole-rupee amount, and description.' });
     }
-    const property = await Property.findOne({ _id: propertyId, owner: req.user.id });
-    if (!property) return res.status(404).json({ msg: 'Property not found in your account.' });
+    const property = await requirePropertyAccess(req.user, propertyId);
     res.status(201).json(await OwnerExpense.create({ property: property._id, category, incurredOn, amount, description, createdBy: req.user.id }));
   } catch (err) { fail(res, err); }
 });
@@ -150,7 +153,8 @@ router.post('/expenses/:expenseId/void', async (req, res) => {
     const reason = String(req.body.reason || '').trim();
     if (reason.length < 3 || reason.length > 200) return res.status(400).json({ msg: 'Enter a short correction reason.' });
     const expense = await OwnerExpense.findById(req.params.expenseId);
-    if (!expense || !(await Property.exists({ _id: expense.property, owner: req.user.id }))) return res.status(404).json({ msg: 'Expense not found in your account.' });
+    if (!expense) return res.status(404).json({ msg: 'Expense not found in your account.' });
+    await requirePropertyAccess(req.user, expense.property);
     const updated = await OwnerExpense.findOneAndUpdate({ _id: expense._id, status: 'active' }, { $set: { status: 'void', voidedBy: req.user.id, voidedAt: new Date(), voidReason: reason } }, { new: true });
     if (!updated) return res.status(409).json({ msg: 'Expense has already been voided.' });
     res.json(updated);

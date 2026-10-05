@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const Quotation = require('../models/Quotation');
-const Property = require('../models/Property');
 const Room = require('../models/Room');
 const AddOn = require('../models/AddOn');
 const Booking = require('../models/Booking');
@@ -12,6 +11,7 @@ const inventory = require('./inventory');
 const { priceQuote, CANCELLATION_TEXT } = require('./quotePricing');
 const { promotionRuleFailure, guestRuleFailure, findPromotionByCode, redeemPromotion } = require('./promotions');
 const { logActivity, advanceInquiry } = require('./crm');
+const { requirePropertyAccess } = require('./propertyAccess');
 const {
   validId, validDate, stayNights, indiaDate, daysBetween, cleanText, cleanMultiline, validPhone, phoneKey, validEmail, intInRange, HttpError
 } = require('../utils/validate');
@@ -39,8 +39,7 @@ function intField(value, min, max, message, fallback = null) {
 async function buildQuote(owner, body = {}, { quoteId = null, dropInvalidPromotion = false } = {}) {
   const warnings = [];
   if (!validId(String(body.propertyId || ''))) throw new HttpError(400, 'Choose a property.');
-  const property = await Property.findOne({ _id: body.propertyId, owner }).select('_id name type location');
-  if (!property) throw new HttpError(404, 'Property not found in your account.');
+  const property = await requirePropertyAccess({ id: owner, role: 'owner' }, body.propertyId);
   if (!validId(String(body.roomId || ''))) throw new HttpError(400, 'Choose the room or unit to quote.');
   const room = await Room.findOne({ _id: body.roomId, property: property._id });
   if (!room) throw new HttpError(404, 'Room not found at this property.');

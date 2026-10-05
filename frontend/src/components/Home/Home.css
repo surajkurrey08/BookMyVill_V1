@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Home page — "Hills · Nature · Luxury"
+   Home page â€” "Hills Â· Nature Â· Luxury"
    All selectors are prefixed with .hp- so nothing leaks into other pages.
    ========================================================================== */
 
@@ -321,37 +321,6 @@
   display: flex;
   align-items: center;
   gap: 14px;
-}
-
-.hp-join-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 20px;
-  border-radius: 999px;
-  background: #fff;
-  color: var(--hp-ink);
-  font-size: 0.84rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  box-shadow: var(--hp-shadow-sm);
-}
-
-.hp-join-btn i {
-  color: var(--hp-green-700);
-  font-size: 0.78rem;
-}
-
-.hp-join-btn:hover {
-  background: var(--hp-green-700);
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: var(--hp-shadow-md);
-}
-
-.hp-join-btn:hover i {
-  color: #fff;
 }
 
 .hp-signin-btn {
@@ -1832,7 +1801,7 @@
   .hp-section-head { flex-wrap: wrap; align-items: flex-end; }
 }
 
-/* The full-width nav (logo + 5 uppercase links + Join Us/Log In) needs
+/* The full-width nav (logo + 5 uppercase links + Log In) needs
    roughly 1150-1300px of room; below that it was overflowing the viewport
    (clipping the logo and the right-hand buttons) before the burger menu
    took over at the old 980px breakpoint. Switching to the burger menu
@@ -1951,9 +1920,4 @@
   .hp-footer-grid { grid-template-columns: 1fr; gap: 30px; }
   .hp-footer-bottom { flex-direction: column; text-align: center; }
   .hp-footer-bottom div { flex-wrap: wrap; justify-content: center; gap: 14px; }
-}
-
-@media (max-width: 420px) {
-  /* Already reachable from the mobile menu, so drop it from the header bar. */
-  .hp-join-btn { display: none; }
 }

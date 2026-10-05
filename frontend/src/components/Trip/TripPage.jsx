@@ -18,6 +18,11 @@ const REQUEST_CATEGORIES = [
   { value: 'taxi', label: 'Taxi / cab', icon: 'fa-taxi' },
   { value: 'amenities', label: 'Amenities', icon: 'fa-pump-soap' },
   { value: 'checkout_help', label: 'Checkout help', icon: 'fa-right-from-bracket' },
+  { value: 'extra_guests', label: 'Extra guests', icon: 'fa-user-plus' },
+  { value: 'early_checkin', label: 'Early check-in', icon: 'fa-clock' },
+  { value: 'late_checkout', label: 'Late checkout', icon: 'fa-clock' },
+  { value: 'extend_stay', label: 'Extend stay', icon: 'fa-calendar' },
+  { value: 'room_change', label: 'Room change', icon: 'fa-bed' },
   { value: 'other', label: 'Something else', icon: 'fa-ellipsis' }
 ];
 const ISSUE_CATEGORIES = [

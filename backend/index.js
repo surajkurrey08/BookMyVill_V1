@@ -2,172 +2,650 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
-const os = require('os');
-require('dotenv').config({ path: path.join(__dirname, '../.env') }); // Look in root
-require('dotenv').config(); // Fallback to local .env
 
-// Disable Mongoose command buffering so queries fail fast or fallback smoothly instead of hanging indefinitely
+// Load root .env first
+require('dotenv').config({
+  path: path.join(__dirname, '../.env'),
+});
+
+// Then backend/.env can override/fill missing values
+require('dotenv').config();
+
+// Disable Mongoose command buffering
 mongoose.set('bufferCommands', false);
 
 const app = express();
 
-// nginx on the same host terminates TLS and forwards the client address;
-// trusting only the loopback hop gives rate limiting the real guest IP.
+// nginx on the same host terminates TLS and forwards client IP
 app.set('trust proxy', 'loopback');
 
+// ======================================================
 // Middleware
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// ======================================================
+
+app.use(require('./services/cors'));
+
+app.use(
+  express.json({
+    limit: '50mb',
+  })
+);
+
+app.use(
+  express.urlencoded({
+    limit: '50mb',
+    extended: true,
+  })
+);
+
+// ======================================================
+// Health Check
+// ======================================================
 
 app.get('/api/health', (req, res) => {
-  const databaseReady = mongoose.connection.readyState === 1;
-  res.status(databaseReady ? 200 : 503).json({ status: databaseReady ? 'ok' : 'database_unavailable' });
+  const databaseReady =
+    mongoose.connection.readyState === 1;
+
+  res
+    .status(databaseReady ? 200 : 503)
+    .json({
+      status: databaseReady
+        ? 'ok'
+        : 'database_unavailable',
+      database: databaseReady
+        ? 'connected'
+        : 'disconnected',
+    });
 });
 
+// ======================================================
+// Request Logger
+// ======================================================
+
 app.use((req, res, next) => {
-  console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
+  console.log(
+    `[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`
+  );
+
   next();
 });
 
+// ======================================================
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/properties', require('./routes/property'));
-app.use('/api/admin', require('./routes/admin'));
-app.use('/api/site-heroes', require('./routes/siteHeroes'));
-app.use('/api/bookings', require('./routes/payment'));
-app.use('/api/bookings', require('./routes/booking'));
-app.use('/api/owner-pms', require('./routes/ownerPms'));
-app.use('/api/owner-ops', require('./routes/ownerOps'));
-app.use('/api/owner-finance', require('./routes/ownerFinance'));
-app.use('/api/owner-crm', require('./routes/ownerCrm'));
-app.use('/api/owner-quotes', require('./routes/ownerQuotes'));
-app.use('/api/owner-catalog', require('./routes/ownerCatalog'));
-app.use('/api/public/quotes', require('./routes/publicQuotes'));
-app.use('/api/stay', require('./routes/customerStay'));
-app.use('/api/customer-booking', require('./routes/customerBooking'));
-app.use('/api/admin-console', require('./routes/adminConsole'));
-app.use('/api/caretaker', require('./routes/caretaker'));
-app.use('/api/partner', require('./routes/partner'));
-app.use('/api/inventory', require('./routes/inventory'));
-app.use('/api/tourist-register', require('./routes/touristRegister'));
-app.use('/api/feedback', require('./routes/feedback'));
-app.use('/api/caretaker-tasks', require('./routes/caretakerTasks'));
-app.use('/api/guest-requirements', require('./routes/guestRequirements'));
+// ======================================================
 
-// DB Connection
-console.log('Using MongoDB URI:', process.env.MONGODB_URI ? 'FOUND' : 'MISSING');
-console.log('Using JWT Secret:', process.env.JWT_SECRET ? 'FOUND' : 'MISSING');
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/villa-manager', require('./routes/villaManager'));
+
+app.use(
+  '/api/properties',
+  require('./routes/property')
+);
+
+app.use(
+  '/api/admin',
+  require('./routes/admin')
+);
+
+app.use(
+  '/api/site-heroes',
+  require('./routes/siteHeroes')
+);
+
+app.use(
+  '/api/bookings',
+  require('./routes/payment')
+);
+
+app.use(
+  '/api/bookings',
+  require('./routes/booking')
+);
+
+app.use(
+  '/api/owner-pms',
+  require('./routes/ownerPms')
+);
+
+app.use(
+  '/api/owner-ops',
+  require('./routes/ownerOps')
+);
+
+app.use(
+  '/api/owner-finance',
+  require('./routes/ownerFinance')
+);
+
+app.use(
+  '/api/owner-crm',
+  require('./routes/ownerCrm')
+);
+
+app.use(
+  '/api/owner-quotes',
+  require('./routes/ownerQuotes')
+);
+
+app.use(
+  '/api/owner-catalog',
+  require('./routes/ownerCatalog')
+);
+
+app.use(
+  '/api/public/quotes',
+  require('./routes/publicQuotes')
+);
+
+app.use(
+  '/api/stay',
+  require('./routes/customerStay')
+);
+
+app.use(
+  '/api/customer-booking',
+  require('./routes/customerBooking')
+);
+
+app.use(
+  '/api/admin-console',
+  require('./routes/adminConsole')
+);
+
+app.use(
+  '/api/caretaker',
+  require('./routes/caretaker')
+);
+
+app.use(
+  '/api/partner',
+  require('./routes/partner')
+);
+
+app.use(
+  '/api/inventory',
+  require('./routes/inventory')
+);
+
+app.use(
+  '/api/tourist-register',
+  require('./routes/touristRegister')
+);
+
+app.use(
+  '/api/feedback',
+  require('./routes/feedback')
+);
+
+app.use(
+  '/api/caretaker-tasks',
+  require('./routes/caretakerTasks')
+);
+
+app.use(
+  '/api/guest-requirements',
+  require('./routes/guestRequirements')
+);
+
+// ======================================================
+// Environment Status
+// ======================================================
+
+console.log(
+  'Using MongoDB URI:',
+  process.env.MONGODB_URI
+    ? 'FOUND'
+    : 'MISSING'
+);
+
+console.log(
+  'Using JWT Secret:',
+  process.env.JWT_SECRET
+    ? 'FOUND'
+    : 'MISSING'
+);
+
+// ======================================================
+// Models
+// ======================================================
 
 const User = require('./models/User');
 
+// ======================================================
+// Seed Default Admin / Owner
+// ======================================================
+
 async function seedAdminUser() {
-  if (process.env.NODE_ENV === 'production') return;
+  if (process.env.NODE_ENV === 'production') {
+    return;
+  }
+
   try {
+    // -------------------------------
+    // Admin
+    // -------------------------------
+
     const adminEmail = 'admin@gmail.com';
-    let admin = await User.findOne({ email: adminEmail });
+
+    let admin = await User.findOne({
+      email: adminEmail,
+    });
+
     if (!admin) {
-      console.log('No admin user found. Creating default admin...');
+      console.log(
+        'No admin user found. Creating default admin...'
+      );
+
       admin = new User({
         name: 'Administrator',
         email: adminEmail,
         password: 'admin123',
-        role: 'admin'
+        role: 'admin',
       });
+
       await admin.save();
-      console.log('✅ Default admin user created successfully!');
-      console.log('   Email: admin@gmail.com');
-      console.log('   Password: admin123');
+
+      console.log(
+        '✅ Default admin user created successfully!'
+      );
+
+      console.log(
+        '   Email: admin@gmail.com'
+      );
+
+      console.log(
+        '   Password: admin123'
+      );
     } else {
-      console.log('Admin user already exists:', adminEmail);
+      console.log(
+        'Admin user already exists:',
+        adminEmail
+      );
     }
 
-    // Also seed default owner account
-    const ownerEmail = 'owner@mahabaleshwarstays.com';
-    let owner = await User.findOne({ email: ownerEmail });
+    // -------------------------------
+    // Owner
+    // -------------------------------
+
+    const ownerEmail =
+      'owner@mahabaleshwarstays.com';
+
+    let owner = await User.findOne({
+      email: ownerEmail,
+    });
+
     if (!owner) {
       owner = new User({
         name: 'Property Owner Host',
         email: ownerEmail,
         password: 'password123',
         role: 'owner',
-        phone: '9876543210'
+        phone: '9876543210',
       });
+
       await owner.save();
-      console.log('✅ Default owner user created successfully!');
+
+      console.log(
+        '✅ Default owner user created successfully!'
+      );
+    } else {
+      console.log(
+        'Owner user already exists:',
+        ownerEmail
+      );
     }
   } catch (err) {
-    console.error('Error seeding admin/owner users:', err.message);
+    console.error(
+      'Error seeding admin/owner users:',
+      err.message
+    );
   }
 }
 
-let mongoMemoryServerInstance = null;
+// ======================================================
+// MongoDB URI Resolver
+// ======================================================
 
-// Resolve the MongoDB connection string. A configured MONGODB_URI is honoured
-// only when it is a real connection string; a missing or placeholder value
-// (e.g. the sample "YOUR_MONGODB_CONNECTION_STRING") is ignored in favour of the
-// MongoDB service bundled with docker-compose, so the stack is self-contained.
 function resolveMongoUri() {
-  const configured = (process.env.MONGODB_URI || '').trim();
-  if (/^mongodb(\+srv)?:\/\//i.test(configured)) return configured;
-  if (configured) {
-    console.log('Configured MONGODB_URI is not a valid connection string; using the bundled MongoDB service instead.');
+  const configured = (
+    process.env.MONGODB_URI || ''
+  ).trim();
+
+  // Atlas connection
+  if (
+    configured.startsWith(
+      'mongodb+srv://'
+    )
+  ) {
+    return configured;
   }
-  return process.env.MONGODB_FALLBACK_URI || 'mongodb://mongo:27017/bookmyvilla';
+
+  // Normal MongoDB connection
+  if (
+    configured.startsWith(
+      'mongodb://'
+    )
+  ) {
+    return configured;
+  }
+
+  // If MONGODB_URI exists but is invalid
+  if (configured) {
+    throw new Error(
+      'MONGODB_URI is invalid. It must start with mongodb:// or mongodb+srv://'
+    );
+  }
+
+  // Optional fallback ONLY if explicitly configured
+  const fallback = (
+    process.env.MONGODB_FALLBACK_URI ||
+    ''
+  ).trim();
+
+  if (
+    fallback.startsWith(
+      'mongodb+srv://'
+    ) ||
+    fallback.startsWith(
+      'mongodb://'
+    )
+  ) {
+    console.warn(
+      '⚠️ MONGODB_URI missing. Using MONGODB_FALLBACK_URI.'
+    );
+
+    return fallback;
+  }
+
+  throw new Error(
+    'MONGODB_URI is missing. Add MongoDB connection string to .env'
+  );
 }
 
-// Hide any credentials before logging a connection string.
-const redactUri = uri => uri.replace(/\/\/[^@/]+@/, '//***@');
+// ======================================================
+// Redact MongoDB Credentials
+// ======================================================
+
+function redactUri(uri) {
+  try {
+    return uri.replace(
+      /\/\/([^:@/]+):([^@/]+)@/,
+      '//$1:***@'
+    );
+  } catch {
+    return '[MongoDB URI hidden]';
+  }
+}
+
+// ======================================================
+// Initialize Database
+// ======================================================
 
 async function initializeDatabase() {
-  // Rebuild indexes so the User.email unique+sparse change (needed for
-  // phone-only guest accounts) replaces any old non-sparse index already
-  // on disk from before this field became optional.
+  // Rebuild User indexes
   try {
     await User.syncIndexes();
+
+    console.log(
+      '✅ User indexes synchronized.'
+    );
   } catch (idxErr) {
-    console.error('User index sync notice:', idxErr.message);
+    console.error(
+      'User index sync notice:',
+      idxErr.message
+    );
   }
-  // Build every model's indexes now that the database is reachable; the
-  // unique ones (room nights, quotation tokens, promo codes) guard data
-  // integrity. See utils/modelIndexes.js for why this is needed.
-  const { ensureModelIndexes } = require('./utils/modelIndexes');
-  await Promise.all(Object.values(mongoose.models).map(model => ensureModelIndexes(model).catch(idxErr => {
-    console.error(`Index build notice for ${model.modelName}:`, idxErr.message);
-  })));
+
+  // Build indexes for all loaded models
+  try {
+    const {
+      ensureModelIndexes,
+    } = require('./utils/modelIndexes');
+
+    await Promise.all(
+      Object.values(
+        mongoose.models
+      ).map(async (model) => {
+        try {
+          await ensureModelIndexes(
+            model
+          );
+        } catch (idxErr) {
+          console.error(
+            `Index build notice for ${model.modelName}:`,
+            idxErr.message
+          );
+        }
+      })
+    );
+  } catch (err) {
+    console.error(
+      'Model index initialization notice:',
+      err.message
+    );
+  }
+
   await seedAdminUser();
 }
 
+// ======================================================
+// MongoDB Connection
+// ======================================================
+
 async function connectDB() {
-  const uri = resolveMongoUri();
-  const maxAttempts = Number(process.env.MONGODB_CONNECT_ATTEMPTS) || 30;
-  const retryDelayMs = Number(process.env.MONGODB_CONNECT_RETRY_MS) || 3000;
-  console.log('Connecting to MongoDB at', redactUri(uri));
-  // Retry so a database that is still starting up (e.g. the mongo container
-  // during a fresh deploy) is waited for instead of dropping into a DB-less
-  // state that makes /api/health fail the deployment health check.
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  let uri;
+
+  try {
+    uri = resolveMongoUri();
+  } catch (error) {
+    console.error(
+      '❌ MongoDB configuration error:',
+      error.message
+    );
+
+    return;
+  }
+
+  // Optional per-process DNS resolver for networks that refuse Atlas SRV lookups.
+  if (process.env.MONGODB_DNS_SERVERS) require('node:dns').setServers(process.env.MONGODB_DNS_SERVERS.split(',').map(s => s.trim()).filter(Boolean));
+
+  const maxAttempts =
+    Number(
+      process.env
+        .MONGODB_CONNECT_ATTEMPTS
+    ) || 30;
+
+  const retryDelayMs =
+    Number(
+      process.env
+        .MONGODB_CONNECT_RETRY_MS
+    ) || 3000;
+
+  console.log(
+    'Connecting to MongoDB at',
+    redactUri(uri)
+  );
+
+  for (
+    let attempt = 1;
+    attempt <= maxAttempts;
+    attempt++
+  ) {
     try {
-      await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000, bufferCommands: false });
-      console.log(`✅ MongoDB connected successfully (attempt ${attempt}/${maxAttempts}).`);
+      await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 10000,
+        connectTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        bufferCommands: false,
+      });
+
+      console.log(
+        `✅ MongoDB connected successfully (attempt ${attempt}/${maxAttempts}).`
+      );
+
+      console.log(
+        `📦 Database: ${
+          mongoose.connection.name
+        }`
+      );
+
       await initializeDatabase();
+
       return;
     } catch (err) {
-      console.log(`MongoDB connection attempt ${attempt}/${maxAttempts} failed:`, err.message);
-      if (attempt < maxAttempts) await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+      console.error(
+        `❌ MongoDB connection attempt ${attempt}/${maxAttempts} failed:`,
+        err.message
+      );
+
+      if (
+        attempt < maxAttempts
+      ) {
+        console.log(
+          `Retrying in ${
+            retryDelayMs / 1000
+          } seconds...`
+        );
+
+        await new Promise(
+          (resolve) =>
+            setTimeout(
+              resolve,
+              retryDelayMs
+            )
+        );
+      }
     }
   }
-  console.log('⚠️ Could not reach MongoDB after multiple attempts. /api/health will report 503 until the database is reachable.');
+
+  console.error(
+    '⚠️ Could not reach MongoDB after multiple attempts.'
+  );
+
+  console.error(
+    '/api/health will return 503 until MongoDB becomes available.'
+  );
 }
 
-const PORT = process.env.PORT || 5001;
+// ======================================================
+// MongoDB Events
+// ======================================================
 
-// Keep event loop active permanently so server never terminates
-setInterval(() => {}, 60000);
+mongoose.connection.on(
+  'connected',
+  () => {
+    console.log(
+      '🟢 Mongoose connected to MongoDB.'
+    );
+  }
+);
 
-// Start Express server immediately so HTTP endpoints are accessible right away
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  connectDB().catch(err => console.error('Database connection process error:', err));
-});
+mongoose.connection.on(
+  'error',
+  (err) => {
+    console.error(
+      '🔴 MongoDB connection error:',
+      err.message
+    );
+  }
+);
+
+mongoose.connection.on(
+  'disconnected',
+  () => {
+    console.warn(
+      '🟡 MongoDB disconnected.'
+    );
+  }
+);
+
+// ======================================================
+// Global Error Handler
+// ======================================================
+
+app.use(
+  (err, req, res, next) => {
+    console.error(
+      'Unhandled API error:',
+      err
+    );
+
+    if (
+      res.headersSent
+    ) {
+      return next(err);
+    }
+
+    res.status(
+      err.status || 500
+    ).json({
+      success: false,
+      message:
+        err.message ||
+        'Internal server error',
+    });
+  }
+);
+
+// ======================================================
+// Server
+// ======================================================
+
+const PORT =
+  process.env.PORT || 5000;
+
+app.listen(
+  PORT,
+  '0.0.0.0',
+  () => {
+    console.log(
+      `🚀 Server running on port ${PORT}`
+    );
+
+    connectDB().catch(
+      (err) => {
+        console.error(
+          'Database connection process error:',
+          err
+        );
+      }
+    );
+  }
+);
+
+// ======================================================
+// Graceful Shutdown
+// ======================================================
+
+async function shutdown(
+  signal
+) {
+  console.log(
+    `\n${signal} received. Shutting down...`
+  );
+
+  try {
+    await mongoose.connection.close();
+
+    console.log(
+      '✅ MongoDB connection closed.'
+    );
+  } catch (error) {
+    console.error(
+      'Error closing MongoDB:',
+      error.message
+    );
+  }
+
+  process.exit(0);
+}
+
+process.on(
+  'SIGINT',
+  () => shutdown('SIGINT')
+);
+
+process.on(
+  'SIGTERM',
+  () => shutdown('SIGTERM')
+);

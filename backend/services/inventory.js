@@ -20,6 +20,7 @@ async function purgeExpiredHolds(roomId, dates) {
 }
 
 async function reserveNights(room, dates, kind, reference, { reason = '', expiresAt = null, conflictMessage } = {}) {
+  if (kind !== 'block') await require('./roomReadiness').requireRoomReady(room._id);
   const operationId = new mongoose.Types.ObjectId();
   const docs = dates.map(date => ({ property: room.property, room: room._id, date, kind, reference, operationId, reason, expiresAt: kind === 'hold' ? expiresAt : null }));
   // The unique {room, date} index must exist before any night is written.
@@ -59,6 +60,7 @@ async function activeHoldCount(reference) {
 // Moves a quotation's live hold onto a booking, reserving any night whose hold
 // has lapsed. On failure the ledger is restored to its previous state.
 async function convertHoldToBooking(room, dates, holdReference, bookingId) {
+  await require('./roomReadiness').requireRoomReady(room._id);
   const now = new Date();
   const conversionOp = new mongoose.Types.ObjectId();
   const held = await RoomNight.find({ kind: 'hold', reference: holdReference, room: room._id, date: { $in: dates }, expiresAt: { $gt: now } }).select('date expiresAt').lean();
@@ -70,7 +72,8 @@ async function convertHoldToBooking(room, dates, holdReference, bookingId) {
     );
   }
   const converted = await RoomNight.find({ kind: 'booking', reference: bookingId, operationId: conversionOp }).select('date').lean();
-  const convertedDates = new Set(converted.map(night => night.date));
+  const owned = await RoomNight.find({ room:room._id, kind:'booking', reference:bookingId, date:{$in:dates} }).select('date').lean();
+  const convertedDates = new Set(owned.map(night => night.date));
   const missing = dates.filter(date => !convertedDates.has(date));
   if (!missing.length) return { converted: converted.length, reserved: 0 };
   try {

@@ -11,6 +11,7 @@ const LineItemSchema = new mongoose.Schema({
 }, { _id: false });
 
 const BookingSchema = new mongoose.Schema({
+  paymentVerification: { type: Date, select: false },
   // Guest account, when the guest booked while signed in. Bookings converted
   // from an owner quotation may have no account; `guest` then identifies them.
   user: {
@@ -56,6 +57,14 @@ const BookingSchema = new mongoose.Schema({
   stayStatus: { type: String, enum: ['expected', 'in_house', 'checked_out'], default: 'expected' },
   actualCheckIn: { type: Date, default: null },
   actualCheckOut: { type: Date, default: null },
+  operations: {
+    actualGuests: { type: Number, min: 1, max: 50 },
+    idVerified: { type: Boolean, default: false },
+    depositVerified: { type: Boolean, default: false },
+    internalNote: { type: String, default: '', maxlength: 500 },
+    extraGuestAmount: { type: Number, min: 0, default: 0 },
+    extraGuestPaymentStatus: { type: String, enum: ['not_required', 'quote_required', 'pending', 'paid'], default: 'not_required' }
+  },
   checkIn: {
     type: Date,
     required: true
@@ -110,4 +119,6 @@ const BookingSchema = new mongoose.Schema({
   }
 });
 
+// A room cannot have two simultaneous in-house stays, even under racing check-ins.
+BookingSchema.index({ room:1 }, { unique:true, partialFilterExpression:{ stayStatus:'in_house', room:{ $type:'objectId' } } });
 module.exports = mongoose.model('Booking', BookingSchema);

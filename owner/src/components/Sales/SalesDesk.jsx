@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../../lib/api';
+import { canOperateProperty } from '../../lib/propertyAccess';
 import SalesPipeline from './SalesPipeline';
 import LeadsList from './LeadsList';
 import QuotesList from './QuotesList';
@@ -20,7 +21,7 @@ const VIEWS = [
 
 // Inquiry → quotation → booking workspace. Lists stay mounted per view; detail
 // opens in drawers so the owner never loses their place in a list.
-export default function SalesDesk() {
+export default function SalesDesk({ ownerProperties }) {
   const [view, setView] = useState('pipeline');
   const [leadView, setLeadView] = useState('open');
   const [meta, setMeta] = useState(null);
@@ -33,9 +34,9 @@ export default function SalesDesk() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const loadMeta = useCallback(async () => {
-    try { setMeta(await api('/owner-crm/meta')); setMetaError(''); }
+    try { const data = await api('/owner-crm/meta'); setMeta({ ...data, properties: data.properties.filter(property => canOperateProperty(ownerProperties.find(item => item._id === property._id))) }); setMetaError(''); }
     catch (err) { setMetaError(err.message); }
-  }, []);
+  }, [ownerProperties]);
   useEffect(() => { loadMeta(); }, [loadMeta]);
 
   const refresh = useCallback(() => setRefreshKey(key => key + 1), []);

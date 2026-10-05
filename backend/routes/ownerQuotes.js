@@ -9,6 +9,7 @@ const { createWithCode } = require('../services/refCode');
 const { logActivity, advanceInquiry } = require('../services/crm');
 const { buildQuote, quoteInputs, sweepExpiredQuotes, convertQuote, newPublicToken, CONVERTIBLE, MAX_QUOTE_NIGHTS } = require('../services/quotes');
 const paymentGateway = require('../services/paymentGateway');
+const { requirePropertyAccess } = require('../services/propertyAccess');
 const { validId, escapeRegex, cleanText, pagination, stayNights, HttpError, sendError } = require('../utils/validate');
 
 const router = express.Router();
@@ -22,6 +23,7 @@ async function quoteForOwner(req, id, { withToken = false } = {}) {
   if (withToken) query.select('+publicToken');
   const quote = await query;
   if (!quote) throw new HttpError(404, 'Quotation not found in your account.');
+  if (!['GET', 'HEAD'].includes(req.method)) await requirePropertyAccess(req.user, quote.property);
   return quote;
 }
 

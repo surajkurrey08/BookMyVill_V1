@@ -1,286 +1,155 @@
-import { useState, useEffect } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../Navbar/Navbar';
-import Footer from '../Footer/Footer';
-import './JoinUs.css';
-import bgImage from '../../assets/hillstationhome (1).jpg';
-import { API_BASE_URL, OWNER_PORTAL_URL } from '../../config';
+import HomeHeader from '../Home/HomeHeader';
+import HomeFooter from '../Home/HomeFooter';
+import { API_BASE_URL } from '../../config';
 import useSiteHero from '../../hooks/useSiteHero';
+import heroVilla from '../../assets/home/hero-villa.jpg';
+import lakesideVilla from '../../assets/home/lakeside-resort.jpg';
+import hillVilla from '../../assets/home/hill-chalet.jpg';
+import '../../assets/fonts/google-fonts.css';
+import '../../assets/fonts/font-awesome.css';
+import '../Home/Home.css';
+import './JoinUs.css';
+
+const benefits = [
+  { icon: 'fa-chart-simple', title: 'High Occupancy Support', text: 'Get featured across our platform and marketing channels to reach verified travelers and increase your bookings.' },
+  { icon: 'fa-users', title: 'Verified Luxury Travelers', text: 'Host genuine families, couples and corporate travelers with verified profiles and secure booking process.' },
+  { icon: 'fa-arrow-trend-up', title: 'Revenue Growth & ROI', text: "Competitive commission model and strategic promotions to maximize your property's earnings and long-term value." },
+  { icon: 'fa-headset', title: 'Dedicated Partner Assistance', text: 'Our team works closely with you for listing support, marketing guidance and ongoing partnership assistance.' },
+];
+
+const steps = [
+  { icon: 'fa-file-lines', title: 'Submit Your Property', text: 'Fill in your property details, photos, amenities and pricing information through our simple listing form.' },
+  { icon: 'fa-shield-halved', title: 'Verification & Review', text: 'Our team reviews your property details and verifies the information to ensure quality standards.' },
+  { icon: 'fa-rocket', title: 'Go Live & Receive Bookings', text: 'Once approved, your property goes live on BookMyVilla and starts reaching verified luxury travelers.' },
+];
+
+// Reference partners provide the community fallback when the API is offline.
+const referencePartners = [
+  { id: 'owner-1', name: 'Vikramaditya Patil', property: 'Royal Mist Luxury Villa', location: 'Mahabaleshwar', rating: '4.9', experience: '12+ Stays Managed', image: heroVilla },
+  { id: 'owner-2', name: 'Ananya Deshmukh', property: 'Panchgani Crest Retreat', location: 'Panchgani', rating: '4.8', experience: '8+ Stays Managed', image: lakesideVilla },
+  { id: 'owner-3', name: 'Rajesh Sharma', property: 'Strawberry Hillside Estate', location: 'Mahabaleshwar', rating: '4.9', experience: '15+ Stays Managed', image: heroVilla },
+  { id: 'owner-4', name: 'Santosh Kadam', property: 'Panchgani Valley View Villa', location: 'Panchgani', rating: '4.7', experience: '10+ Stays Managed', image: lakesideVilla },
+];
+
+const Icon = ({ name, className = '' }) => <i className={`fa-solid ${name} ${className}`} aria-hidden="true" />;
 
 const JoinUs = () => {
-  const currentHeroImage = useSiteHero('join', bgImage);
-  const [filter, setFilter] = useState('all');
+  const currentHeroImage = useSiteHero('join', heroVilla);
   const [livePartners, setLivePartners] = useState([]);
 
   useEffect(() => {
-    fetchLivePartners();
+    const controller = new AbortController();
+    const loadPartners = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/partner/all`, { signal: controller.signal });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setLivePartners(data.filter(partner => partner.status === 'approved' && partner.partnerType !== 'Caretaker' && partner.fullName).map(partner => ({
+            id: partner._id,
+            name: partner.fullName,
+            property: partner.propertyName && partner.propertyName !== 'N/A' ? partner.propertyName : 'Mahabaleshwar Stay',
+            location: partner.city || 'Mahabaleshwar',
+            experience: partner.experience || 'Verified Partner',
+            image: hillVilla,
+          })));
+        }
+      } catch {
+        // Keep the bundled community available when the API is offline.
+      }
+    };
+    loadPartners();
+    return () => controller.abort();
   }, []);
 
-  const fetchLivePartners = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/partner/all`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setLivePartners(data);
-        }
-      }
-    } catch {
-      console.log('Using static verified partners list');
-    }
-  };
-
-  const defaultPartners = [
-    {
-      id: 'owner-1',
-      type: 'owner',
-      name: 'Vikramaditya Patil',
-      role: 'Verified Property Owner & Superhost',
-      property: 'Royal Mist Luxury Villa',
-      location: 'Mahabaleshwar',
-      rating: '4.95 ★',
-      experience: '12+ Stays Managed',
-      badge: 'Gold Verified Host',
-      avatarColor: '#d4af37',
-      bio: 'Owner of premier hilltop villas with heated private pools, organic strawberry gardens & 24/7 butler services.'
-    },
-    {
-      id: 'owner-2',
-      type: 'owner',
-      name: 'Ananya Deshmukh',
-      role: 'Verified Property Owner',
-      property: 'Panchgani Crest Retreat',
-      location: 'Panchgani',
-      rating: '4.90 ★',
-      experience: '8+ Suites & Cottages',
-      badge: 'Verified Partner',
-      avatarColor: '#2b9348',
-      bio: 'Specializing in eco-friendly heritage valley resorts and panoramic sunset view stays across Panchgani.'
-    },
-    {
-      id: 'owner-3',
-      type: 'owner',
-      name: 'Rajesh Sharma',
-      role: 'Verified Property Owner',
-      property: 'Strawberry Hillside Estate',
-      location: 'Mahabaleshwar',
-      rating: '4.88 ★',
-      experience: '15+ Yrs Hospitality',
-      badge: 'Verified Partner',
-      avatarColor: '#3a86ff',
-      bio: 'Managing luxury family heritage estates with private bonfire pits, mountain trails & infinity views.'
-    },
-    {
-      id: 'caretaker-1',
-      type: 'caretaker',
-      name: 'Suresh Pawar',
-      role: 'Certified Chief Caretaker',
-      property: 'Assigned to: Royal Mist Villa',
-      location: 'Mahabaleshwar',
-      rating: '5.0 ★',
-      experience: '10+ Yrs Estate Management',
-      badge: 'Certified Caretaker',
-      avatarColor: '#52b788',
-      bio: 'Expert in 24/7 guest reception, Maharashtrian authentic culinary preparation, and estate security.'
-    },
-    {
-      id: 'caretaker-2',
-      type: 'caretaker',
-      name: 'Santosh Kadam',
-      role: 'Certified Hospitality Specialist',
-      property: 'Assigned to: Panchgani Crest',
-      location: 'Panchgani',
-      rating: '4.92 ★',
-      experience: '7+ Yrs Hospitality',
-      badge: 'Certified Caretaker',
-      avatarColor: '#e0a96d',
-      bio: 'Professional butler and property supervisor specializing in luxury guest experience and maintenance.'
-    },
-    {
-      id: 'caretaker-3',
-      type: 'caretaker',
-      name: 'Mahesh Bhosale',
-      role: 'Certified Property Caretaker',
-      property: 'Assigned to: Pawna Lake Chalet',
-      location: 'Lonavala / Pune',
-      rating: '4.85 ★',
-      experience: '6+ Yrs Experience',
-      badge: 'Certified Caretaker',
-      avatarColor: '#9d4edd',
-      bio: 'Trained in villa security inspection, lawn care, pool sanitation, and guest housekeeping.'
-    }
-  ];
-
-  // Combine live partners from DB if available (Approved by Admin only)
-  const mappedLivePartners = livePartners
-    .filter(lp => !lp.status || lp.status === 'approved')
-    .map((lp, idx) => ({
-      id: lp._id || `live-${idx}`,
-      type: lp.partnerType === 'Caretaker' ? 'caretaker' : 'owner',
-      name: lp.fullName,
-      role: lp.partnerType === 'Caretaker' ? 'Certified Caretaker' : 'Verified Property Owner',
-      property: lp.propertyName && lp.propertyName !== 'N/A' ? lp.propertyName : (lp.partnerType === 'Caretaker' ? 'Assigned Villa' : 'Mahabaleshwar Stay'),
-      location: lp.city || 'Mahabaleshwar',
-      rating: '5.0 ★',
-      experience: lp.experience || 'Verified Partner',
-      badge: 'Approved Host',
-      avatarColor: lp.partnerType === 'Caretaker' ? '#52b788' : '#d4af37',
-      bio: lp.message || (lp.partnerType === 'Caretaker' ? 'Certified caretaker for luxury stays in Mahabaleshwar.' : 'Verified property host in Mahabaleshwar.')
-    }));
-
-  const allPartners = [...defaultPartners, ...mappedLivePartners];
-
-  const filteredPartners = allPartners.filter(p => {
-    if (filter === 'owners') return p.type === 'owner';
-    if (filter === 'caretakers') return p.type === 'caretaker';
-    return true;
-  });
+  const partners = [...referencePartners, ...livePartners];
 
   return (
-    <div className="joinus-page">
-      <Navbar />
-
-      <div className="joinus-bg">
-        <img src={currentHeroImage} alt="" />
-        <div className="joinus-overlay"></div>
-      </div>
-
-      <div className="joinus-container">
-        {/* Header */}
-        <div className="joinus-header">
-          <h1>Partner With BookMyVilla</h1>
-          <p>Join Maharashtra’s premier luxury hospitality network as a Property Owner or Certified Caretaker.</p>
-        </div>
-
-        {/* Action Registration Cards */}
-        <div className="joinus-cards-grid">
-          {/* Card 1: Property Owners */}
-          <div className="joinus-card">
-            <div className="joinus-card-icon">
-              <i className="fa-solid fa-hotel"></i>
-            </div>
-            <h3>For Property Owners</h3>
-            <p>Monetize your luxury villa, resort, or hotel in Mahabaleshwar, Pune & Lonavala with guaranteed high occupancy.</p>
-            <ul className="joinus-benefits">
-              <li><i className="fa-solid fa-check"></i> High Return on Investment (ROI)</li>
-              <li><i className="fa-solid fa-check"></i> 24/7 Dedicated Caretaker Staff Support</li>
-              <li><i className="fa-solid fa-check"></i> Admin Security Verification & Approval</li>
-              <li><i className="fa-solid fa-check"></i> Verified Luxury Travelers Only</li>
-            </ul>
-            <div className="card-btn-group">
-              <Link to="/register-property" className="btn-join-action">
-                Fill Property Owner Form <i className="fa-solid fa-arrow-right"></i>
-              </Link>
-              <a href={OWNER_PORTAL_URL} className="btn-portal-action" target="_blank" rel="noreferrer">
-                <i className="fa-solid fa-vihara"></i> Owner Portal Sign In ↗
-              </a>
+    <div className="hp-root joinus-page">
+      <HomeHeader />
+      <main>
+        <section className="join-hero" aria-labelledby="join-title">
+          <img className="join-hero-image" src={currentHeroImage} alt="Luxury pool villa overlooking the hills and lake at sunset" fetchPriority="high" />
+          <div className="join-hero-shade" />
+          <div className="join-wrap join-hero-content">
+            <p className="join-eyebrow">Partner With Us</p>
+            <h1 id="join-title">Partner With<br /><span>BookMyVilla</span></h1>
+            <p className="join-hero-description">List your villa, resort or boutique stay in Mahabaleshwar<br className="join-desktop-break" /> and nearby hill destinations, and reach verified luxury<br className="join-desktop-break" /> travelers across India.</p>
+            <div className="join-hero-actions">
+              <Link to="/register-property" className="join-action join-action-primary"><Icon name="fa-hotel" />List Your Property<Icon name="fa-arrow-right" /></Link>
+              <Link to="/partner-inquiry" className="join-action join-action-secondary"><Icon name="fa-envelope" />Send an Inquiry</Link>
             </div>
           </div>
+        </section>
 
-          {/* Card 2: Caretakers & Hospitality Staff */}
-          <div className="joinus-card">
-            <div className="joinus-card-icon">
-              <i className="fa-solid fa-user-gear"></i>
+        <section className="join-benefits join-wrap" aria-labelledby="join-benefits-title">
+          <div className="join-section-heading">
+            <div>
+              <p className="join-eyebrow">Why Partner With BookMyVilla</p>
+              <h2 id="join-benefits-title">Grow Your Property Business<br />With a <span>Trusted Brand</span></h2>
             </div>
-            <h3>For Caretakers</h3>
-            <p>Become a certified villa caretaker or estate manager for top-rated luxury properties in Mahabaleshwar & Pune.</p>
-            <ul className="joinus-benefits">
-              <li><i className="fa-solid fa-check"></i> Competitive Salary & Bonus Allowances</li>
-              <li><i className="fa-solid fa-check"></i> Admin Security & Background Verification</li>
-              <li><i className="fa-solid fa-check"></i> Guaranteed Verified Property Placements</li>
-              <li><i className="fa-solid fa-check"></i> Medical & Health Insurance Options</li>
-            </ul>
-            <Link to="/caretaker-apply" className="btn-join-action">
-              Fill Caretaker Form <i className="fa-solid fa-arrow-right"></i>
-            </Link>
+            <p className="join-section-description">We bring together premium property owners and verified luxury travelers, helping you maximize occupancy, revenue and brand visibility across Mahabaleshwar's most sought-after destinations.</p>
           </div>
-        </div>
-
-        {/* VERIFIED PROPERTY OWNER & CARETAKER USER CARDS SECTION */}
-        <section className="verified-community-section">
-          <div className="community-header">
-            <div className="badge-pill">
-              <i className="fa-solid fa-shield-check"></i> Verified Community Network
-            </div>
-            <h2>Meet Our Verified Property Owners & Caretakers</h2>
-            <p>Certified hosts and professional estate managers bringing luxury hospitality to BookMyVilla.</p>
-            
-            {/* Filter Tabs */}
-            <div className="community-tabs">
-              <button 
-                className={`tab-btn ${filter === 'all' ? 'active' : ''}`}
-                onClick={() => setFilter('all')}
-              >
-                <i className="fa-solid fa-users"></i> All Verified Partners ({allPartners.length})
-              </button>
-              <button 
-                className={`tab-btn ${filter === 'owners' ? 'active' : ''}`}
-                onClick={() => setFilter('owners')}
-              >
-                <i className="fa-solid fa-house-chimney-user"></i> Property Owners ({allPartners.filter(p => p.type === 'owner').length})
-              </button>
-              <button 
-                className={`tab-btn ${filter === 'caretakers' ? 'active' : ''}`}
-                onClick={() => setFilter('caretakers')}
-              >
-                <i className="fa-solid fa-user-shield"></i> Certified Caretakers ({allPartners.filter(p => p.type === 'caretaker').length})
-              </button>
-            </div>
-          </div>
-
-          {/* User Cards Grid */}
-          <div className="user-cards-grid">
-            {filteredPartners.map(partner => (
-              <div key={partner.id} className={`partner-user-card ${partner.type}`}>
-                <div className="card-top-banner">
-                  <span className={`partner-type-badge ${partner.type}`}>
-                    <i className={`fa-solid ${partner.type === 'owner' ? 'fa-vihara' : 'fa-user-nurse'}`}></i>
-                    {partner.type === 'owner' ? 'Property Owner' : 'Certified Caretaker'}
-                  </span>
-                  <span className="rating-tag">
-                    <i className="fa-solid fa-star"></i> {partner.rating}
-                  </span>
-                </div>
-
-                <div className="card-avatar-wrapper">
-                  <div className="partner-avatar" style={{ backgroundColor: partner.avatarColor }}>
-                    {partner.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="verified-check" title="Security & Background Verified">
-                    <i className="fa-solid fa-check"></i>
-                  </div>
-                </div>
-
-                <div className="partner-details">
-                  <h3>{partner.name}</h3>
-                  <span className="role-title">{partner.role}</span>
-                  
-                  <div className="info-item property-name">
-                    <i className="fa-solid fa-hotel"></i>
-                    <span>{partner.property}</span>
-                  </div>
-
-                  <div className="info-item location-name">
-                    <i className="fa-solid fa-location-dot"></i>
-                    <span>{partner.location}</span>
-                  </div>
-
-                  <p className="partner-bio">{partner.bio}</p>
-
-                  <div className="card-footer-info">
-                    <span className="exp-badge"><i className="fa-solid fa-award"></i> {partner.experience}</span>
-                    <span className="status-verify" style={{ background: 'rgba(82, 183, 136, 0.18)', color: '#52b788', border: '1px solid #52b788', padding: '4px 10px', borderRadius: '20px', fontWeight: '700', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                      <i className="fa-solid fa-circle-check" style={{ color: '#d4af37' }}></i> Approved & Verified
-                    </span>
-                  </div>
-                </div>
-              </div>
+          <div className="join-benefit-grid">
+            {benefits.map(benefit => (
+              <article className="join-benefit-card" key={benefit.title}>
+                <div className="join-benefit-heading"><span className="join-icon-circle"><Icon name={benefit.icon} /></span><h3>{benefit.title}</h3></div>
+                <p>{benefit.text}</p>
+              </article>
             ))}
           </div>
         </section>
-      </div>
 
-      <Footer />
+        <section className="join-process" aria-labelledby="join-process-title">
+          <div className="join-wrap">
+            <div className="join-section-heading">
+              <div><p className="join-eyebrow">How It Works</p><h2 id="join-process-title">Join Our <span>Property Network</span></h2></div>
+              <p className="join-section-description">Get your property listed in just a few simple steps and start receiving bookings from verified travelers.</p>
+            </div>
+            <ol className="join-step-grid">
+              {steps.map((step, index) => (
+                <li className="join-step" key={step.title}>
+                  <span className="join-icon-circle"><Icon name={step.icon} /></span>
+                  <div><span className="join-step-number">0{index + 1}</span><h3>{step.title}</h3><p>{step.text}</p></div>
+                  {index < steps.length - 1 && <Icon name="fa-arrow-right" className="join-step-arrow" />}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section className="join-community join-wrap" aria-labelledby="join-community-title">
+          <div className="join-section-heading">
+            <div><p className="join-eyebrow">Our Valued Property Partners</p><h2 id="join-community-title">Meet Our <span>Property Owners</span></h2></div>
+            <Link to="/explore" className="join-view-properties">View All Partner Properties<Icon name="fa-arrow-right" /></Link>
+          </div>
+          <div className="join-owner-grid">
+            {partners.map(partner => (
+              <article className="join-owner-card" key={partner.id}>
+                <div className="join-owner-photo">
+                  <img src={partner.image} alt={partner.property} loading="lazy" width="600" height="340" />
+                  <span className="join-owner-label"><Icon name="fa-house-user" />Property Owner</span>
+                  {partner.rating && <span className="join-owner-rating" aria-label={`Rating ${partner.rating} out of 5`}><Icon name="fa-star" />{partner.rating}</span>}
+                </div>
+                <div className="join-owner-info">
+                  <h3>{partner.name}</h3><p className="join-owner-property">{partner.property}</p>
+                  <p className="join-owner-location"><Icon name="fa-location-dot" />{partner.location}</p>
+                  <div className="join-owner-meta"><span><Icon name="fa-house-chimney" />{partner.experience}</span><span className="join-verified"><Icon name="fa-circle-check" />Approved & Verified</span></div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="join-trust-strip" aria-label="Partner network highlights">
+            <div><Icon name="fa-hotel" /><p><strong>12+</strong><span>Villas Managed</span></p></div>
+            <div><Icon name="fa-headset" /><p><strong>24/7</strong><span>Partner Support</span></p></div>
+            <div><Icon name="fa-shield-halved" /><p><strong>100%</strong><span>Verified Listings</span></p></div>
+            <div><Icon name="fa-star" /><p><strong>4.8+</strong><span>Average Guest Rating</span></p></div>
+          </div>
+        </section>
+      </main>
+      <HomeFooter />
     </div>
   );
 };

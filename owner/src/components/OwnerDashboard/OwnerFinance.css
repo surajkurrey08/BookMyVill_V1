@@ -1,4 +1,4 @@
-.fin-panel { display: grid; gap: 22px; color: var(--od-ivory); }
+.fin-panel { display: grid; grid-template-columns: minmax(0,1fr); min-width: 0; gap: 22px; color: var(--od-ivory); }
 .fin-heading,.fin-filters { display: flex; justify-content: space-between; align-items: end; gap: 14px; flex-wrap: wrap; }
 .fin-heading h2,.fin-card h3 { margin: 0 0 7px; }
 .fin-heading p,.fin-card p,.fin-muted { color: var(--od-muted); margin: 0 0 14px; }

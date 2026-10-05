@@ -5,7 +5,7 @@
 const PERMISSIONS = [
   'dashboard.view',
   'owners.view', 'owners.manage',
-  'properties.view', 'properties.approve', 'properties.suspend',
+  'properties.view', 'properties.approve', 'properties.suspend', 'properties.manage',
   'bookings.view', 'bookings.note',
   'customers.view', 'customers.manage',
   'audit.view',
@@ -14,7 +14,7 @@ const PERMISSIONS = [
 
 const ROLE_PERMISSIONS = {
   super_admin: ['*'],
-  operations: ['dashboard.view', 'owners.view', 'owners.manage', 'properties.view', 'properties.approve', 'properties.suspend', 'bookings.view', 'bookings.note', 'customers.view', 'audit.view'],
+  operations: ['dashboard.view', 'owners.view', 'owners.manage', 'properties.view', 'properties.approve', 'properties.suspend', 'properties.manage', 'bookings.view', 'bookings.note', 'customers.view', 'audit.view'],
   finance: ['dashboard.view', 'owners.view', 'bookings.view', 'audit.view'],
   support: ['dashboard.view', 'owners.view', 'bookings.view', 'bookings.note', 'customers.view', 'customers.manage'],
   risk: ['dashboard.view', 'owners.view', 'properties.view', 'properties.suspend', 'customers.view', 'audit.view'],

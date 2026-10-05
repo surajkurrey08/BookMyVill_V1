@@ -4,6 +4,7 @@ const PartnerApplicationSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true },
   phone: { type: String, required: true },
+  applicationType: { type: String, enum: ['owner-registration', 'property-listing'], default: 'property-listing' },
   partnerType: { 
     type: String, 
     enum: ['Property Owner', 'Caretaker', 'Travel Agent', 'Villa Host'], 

@@ -92,16 +92,13 @@ router.get('/properties/:propertyId/rooms', async (req, res) => {
     const dates = datesFor(req.query.checkIn, req.query.checkOut);
     const guests = Number(req.query.guests || 2);
     if (!Number.isInteger(guests) || guests < 1 || guests > 50) throw new HttpError(400, 'Choose 1–50 guests.');
-    const [rooms, nights] = await Promise.all([
-      Room.find({ property: property._id }).sort({ baseRate: 1, number: 1 }).lean(),
-      RoomNight.find({ property: property._id, date: { $in: dates }, ...inventory.activeNightFilter() }).select('room kind').lean()
-    ]);
-    const blocked = new Map(nights.map(night => [String(night.room), night.kind]));
+    const availability = await require('../services/availability').calendar(property._id, dates);
+    const rooms = availability.rooms;
     res.set('Cache-Control', 'no-store');
     res.json({ property: { _id: property._id, name: property.name, location: property.location, photos: property.photos, amenities: property.amenities, price: property.price }, checkIn: req.query.checkIn, checkOut: req.query.checkOut, guests, nights: dates.length,
       rooms: rooms.map(room => ({ _id: room._id, name: room.name, type: room.type, capacity: room.capacity, baseRate: room.baseRate, number: room.number,
         bedType: room.bedType, view: room.view, sizeSqFt: room.sizeSqFt, photos: room.photos, amenities: room.amenities, cancellationPolicy: room.cancellationPolicy,
-        status: !room.active ? 'out_of_order' : blocked.has(String(room._id)) ? ({ hold: 'temporary_hold', booking: 'booked', block: 'blocked' }[blocked.get(String(room._id))]) : guests > room.capacity ? 'capacity_exceeded' : 'available' })) });
+          status: guests > room.capacity ? 'capacity_exceeded' : room.days.find(day => day.status !== 'available')?.status || 'available' })) });
   } catch (error) { fail(res, error); }
 });
 
@@ -110,7 +107,7 @@ router.get('/properties/:propertyId/add-ons', async (req, res) => {
   catch (error) { fail(res, error); }
 });
 
-router.use(accountAuth);
+router.use(accountAuth, (req,res,next) => req.user.role === 'user' ? next() : res.status(403).json({ msg: 'Customer account required.' }));
 
 router.post('/holds', async (req, res) => {
   let hold;
@@ -217,6 +214,8 @@ router.post('/holds/:id/pay', async (req, res) => {
 });
 
 router.post('/holds/:id/verify', async (req, res) => {
+  let claimed = false;
+  let verificationLease;
   try {
     if (!validId(req.params.id)) throw new HttpError(404, 'Room hold not found.');
     const hold = await CustomerHold.findOne({ _id: req.params.id, user: req.user.id });
@@ -228,6 +227,16 @@ router.post('/holds/:id/verify', async (req, res) => {
     if (booking.status === 'confirmed' && booking.paymentStatus === 'paid' && booking.razorpayPaymentId === paymentId) return res.json({ bookingId: booking._id, status: booking.status });
     const payment = await paymentGateway.fetchPayment(paymentId);
     if (payment.order_id !== orderId || payment.status !== 'captured' || payment.currency !== 'INR' || payment.amount !== booking.totalPrice * 100) throw new HttpError(409, 'Payment is not captured for this booking.');
+    if (booking.paymentStatus === 'paid') throw new HttpError(409, 'Payment is already recorded. Contact support for room conflict or refund review.');
+    if (booking.status !== 'pending') {
+      await Booking.updateOne({ _id: booking._id, paymentStatus: 'pending' }, { $set: { paymentStatus: 'paid', razorpayPaymentId: paymentId, paymentSource: 'razorpay', paymentMode: paymentGateway.mode(), paidAt: new Date() }, $push: { actionHistory: { action: 'Payment Captured After Cancellation', performedBy: 'Payment Verification', reason: 'Refund review required; no room was reserved.' } } });
+      await inventory.releaseHolds(hold._id);
+      throw new HttpError(409, 'Captured payment requires refund review. Cancelled booking remains cancelled.');
+    }
+    verificationLease = new Date(Date.now() + 120000);
+    const claim = await Booking.updateOne({ _id: booking._id, status: 'pending', paymentStatus: 'pending', $or: [{ paymentVerification: null }, { paymentVerification: { $lte: new Date() } }] }, { $set: { paymentVerification: verificationLease } });
+    if (!claim.modifiedCount) throw new HttpError(409, 'Payment verification is in progress. Refresh My Trips.');
+    claimed = true;
     const room = await Room.findById(booking.room);
     const dates = stayNights(hold.checkIn, hold.checkOut, 365);
     if (!room || !dates) throw new HttpError(409, 'The selected room could not be verified. Contact support with your payment ID.');
@@ -237,7 +246,14 @@ router.post('/holds/:id/verify', async (req, res) => {
       throw new HttpError(409, 'Payment was captured but the room could not be secured. Contact support with your payment ID; your booking is not confirmed.');
     }
     const updated = await Booking.findOneAndUpdate({ _id: booking._id, status: 'pending', paymentStatus: 'pending' }, { $set: { status: 'confirmed', paymentStatus: 'paid', razorpayPaymentId: paymentId, paymentSource: 'razorpay', paymentMode: paymentGateway.mode(), paidAt: new Date() }, $push: { actionHistory: { action: 'Payment Captured & Stay Confirmed', performedBy: 'Razorpay Payment Verification', targetUser: `Booking ${booking._id}`, reason: 'Payment and room inventory verified.' } } }, { new: true });
-    if (!updated) throw new HttpError(409, 'Booking state changed. Open My Trips to see the latest status.');
+    if (!updated) {
+      const latest = await Booking.findById(booking._id);
+      if (latest?.status === 'cancelled') {
+        await inventory.releaseBookingNights(booking._id);
+        await Booking.updateOne({ _id: booking._id }, { $set: { paymentStatus: 'paid', razorpayPaymentId: paymentId, paidAt: new Date() }, $push: { actionHistory: { action: 'Refund Review Required', performedBy: 'Payment Verification', reason: 'Cancellation occurred during capture.' } } });
+      }
+      throw new HttpError(409, 'Booking changed. Contact support for payment review.');
+    }
     await CustomerHold.updateOne({ _id: hold._id }, { $set: { status: 'confirmed' } });
     if (booking.promotion && booking.discountAmount > 0) {
       try {
@@ -246,7 +262,9 @@ router.post('/holds/:id/verify', async (req, res) => {
       } catch (error) { console.error('Confirmed booking promotion accounting notice:', error); }
     }
     res.json({ bookingId: updated._id, status: updated.status });
-  } catch (error) { fail(res, error); }
+   } catch (error) { fail(res, error); } finally {
+    if (claimed) { const hold = await CustomerHold.findOne({ _id: req.params.id, user: req.user.id }); if (hold?.booking) await Booking.updateOne({ _id: hold.booking, paymentVerification: verificationLease }, { $unset: { paymentVerification: 1 } }); }
+  }
 });
 
 router.get('/bookings/:id/confirmation', async (req, res) => {
@@ -254,9 +272,7 @@ router.get('/bookings/:id/confirmation', async (req, res) => {
     if (!validId(req.params.id)) throw new HttpError(404, 'Booking not found.');
     const booking = await Booking.findOne({ _id: req.params.id, user: req.user.id }).populate('property', 'name location photos amenities mapLink stayInfo assignedCaretaker owner').populate('room', 'name type number capacity baseRate');
     if (!booking || booking.status !== 'confirmed' || booking.paymentStatus !== 'paid') throw new HttpError(404, 'Confirmed booking not found in your account.');
-    const view = booking.toObject();
-    view.guestDetails = { ...view.guestDetails, idUploaded: Boolean(view.guestDetails?.idProof) };
-    delete view.guestDetails.idProof;
+    const view = require('../services/publicViews').customerBooking(booking);
     res.set('Cache-Control', 'no-store');
     res.json({ booking: view, amountPaid: booking.totalPrice, remainingBalance: 0 });
   } catch (error) { fail(res, error); }
@@ -267,6 +283,7 @@ router.post('/bookings/:id/precheckin', async (req, res) => {
     if (!validId(req.params.id)) throw new HttpError(404, 'Booking not found.');
     const booking = await Booking.findOne({ _id: req.params.id, user: req.user.id, status: 'confirmed', paymentStatus: 'paid' });
     if (!booking) throw new HttpError(404, 'Confirmed booking not found in your account.');
+    if (booking.stayStatus === 'checked_out') throw new HttpError(409, 'This stay has completed.');
     const update = {};
     if (req.body?.arrivalTime !== undefined) {
       const value = cleanText(req.body.arrivalTime, 40);

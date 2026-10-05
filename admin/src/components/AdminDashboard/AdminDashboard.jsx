@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
 import { API_BASE_URL } from '../../config';
 import HeroImageManager from '../HeroImageManager/HeroImageManager';
+import { managementLabel, staffName } from '../Console/config';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('owner-requests');
@@ -284,7 +285,7 @@ const AdminDashboard = () => {
         const formattedPartners = (Array.isArray(partnersData) ? partnersData : []).map(p => ({
           ...p,
           reqType: 'property-listing',
-          reqTitle: `🏰 Property Listing: ${p.propertyName || 'New Property'}`
+          reqTitle: p.applicationType === 'owner-registration' ? 'Owner Registration' : `Property Listing: ${p.propertyName || 'New Property'}`
         }));
 
         const formattedCaretakers = (Array.isArray(caretakersData) ? caretakersData : []).map(c => ({
@@ -1253,6 +1254,7 @@ const AdminDashboard = () => {
               )}
 
               {/* DEDICATED PAGE: OWNER REQUESTS CENTER */}
+              {activeTab === 'owner-requests' && <p style={{ marginBottom: 18 }}><a href="/console?section=owner-requests" style={{ color: '#d4af37', fontWeight: 600 }}>View owner registrations and partnership inquiries →</a></p>}
               {activeTab === 'owner-requests' && (
                 <div className="table-responsive">
                   <table>
@@ -1314,7 +1316,7 @@ const AdminDashboard = () => {
                                 </td>
                                 <td>
                                   <div>
-                                    <strong style={{ color: '#ffd700', fontSize: '0.92rem' }}>{req.propertyName || 'Villa Estate'}</strong>
+                                    <strong style={{ color: '#ffd700', fontSize: '0.92rem' }}>{req.applicationType === 'owner-registration' ? 'Owner Registration' : req.propertyName || 'Villa Estate'}</strong>
                                     <div style={{ color: '#cbd5e1', fontSize: '0.8rem', marginTop: '2px' }}>
                                       📍 {req.propertyAddress || req.city || req.location || 'Mahabaleshwar'}
                                     </div>
@@ -1508,6 +1510,7 @@ const AdminDashboard = () => {
                         <th style={{ textAlign: 'left', padding: '14px 16px', verticalAlign: 'middle' }}><i className="fa-solid fa-user-circle" style={{ marginRight: '8px' }}></i> Owner Account</th>
                         <th style={{ textAlign: 'left', padding: '14px 16px', verticalAlign: 'middle' }}><i className="fa-solid fa-location-dot" style={{ marginRight: '8px' }}></i> Location</th>
                         <th style={{ textAlign: 'left', padding: '14px 16px', verticalAlign: 'middle' }}><i className="fa-solid fa-indian-rupee-sign" style={{ marginRight: '8px' }}></i> Price / Night</th>
+                        <th style={{ textAlign: 'left', padding: '14px 16px', verticalAlign: 'middle' }}>Management</th>
                         <th className="actions-header" style={{ textAlign: 'center', padding: '14px 16px', verticalAlign: 'middle' }}><i className="fa-solid fa-sliders" style={{ marginRight: '8px' }}></i> Action</th>
                       </tr>
                     </thead>
@@ -1527,7 +1530,7 @@ const AdminDashboard = () => {
                         })
                         .length === 0 ? (
                         <tr>
-                          <td colSpan="6" className="empty-row" style={{ padding: '40px', textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
+                          <td colSpan="7" className="empty-row" style={{ padding: '40px', textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
                             No properties match search/filter criteria.
                           </td>
                         </tr>
@@ -1567,6 +1570,12 @@ const AdminDashboard = () => {
                               </td>
                               <td className="price-cell" style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
                                 <span style={{ color: '#52b788', fontWeight: '800' }}>₹{prop.price ? prop.price.toLocaleString('en-IN') : '12,000'}</span>
+                              </td>
+                              <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
+                                <strong>{managementLabel(prop.managementMode)}</strong>
+                                <div className="applied-date-sub">Villa Manager: {staffName(prop.assignedVillaManager)}</div>
+                                <div className="applied-date-sub">Data Entry: {staffName(prop.assignedDataEntryUser)}</div>
+                                <button className="btn-table btn-view" type="button" onClick={() => navigate(`/console?propertyId=${prop._id}`)}>Management details</button>
                               </td>
                               <td className="action-cell" style={{ padding: '14px 16px', verticalAlign: 'middle', textAlign: 'center' }}>
                                 <div className="action-buttons" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -1964,6 +1973,12 @@ const AdminDashboard = () => {
                       <i className="fa-solid fa-building" style={{ marginRight: '6px' }}></i> Property & Stay Specs
                     </h4>
                     <div className="detail-row"><span className="detail-label">Property Name:</span><span className="detail-val" style={{ color: '#d4af37', fontWeight: '700' }}>{selectedDetailItem.propertyName || selectedDetailItem.name || 'N/A'}</span></div>
+                    {detailModalType === 'property' && <>
+                      <div className="detail-row"><span className="detail-label">Management:</span><span className="detail-val">{managementLabel(selectedDetailItem.managementMode)}</span></div>
+                      <div className="detail-row"><span className="detail-label">Villa Manager:</span><span className="detail-val">{staffName(selectedDetailItem.assignedVillaManager)}</span></div>
+                      <div className="detail-row"><span className="detail-label">Data Entry:</span><span className="detail-val">{staffName(selectedDetailItem.assignedDataEntryUser)}</span></div>
+                      <button type="button" className="btn-table btn-view" onClick={() => navigate(`/console?propertyId=${selectedDetailItem._id}`)}>Management details</button>
+                    </>}
                     <div className="detail-row"><span className="detail-label">Location / Address:</span><span className="detail-val">{selectedDetailItem.propertyAddress || selectedDetailItem.city || selectedDetailItem.location || 'Mahabaleshwar'}</span></div>
                     {selectedDetailItem.positionRole && (
                       <div className="detail-row"><span className="detail-label">Position Required:</span><span className="detail-val" style={{ color: '#ffd700', fontWeight: '700' }}>{selectedDetailItem.positionRole}</span></div>

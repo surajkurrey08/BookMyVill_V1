@@ -1,8 +1,6 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Lenis from 'lenis';
-import Navbar from './components/Navbar/Navbar';
-import Footer from './components/Footer/Footer';
 import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
 import OwnerSetup from './components/OwnerSetup/OwnerSetup';
@@ -13,7 +11,7 @@ import Packages from './components/Packages/Packages';
 import JoinUs from './components/JoinUs/JoinUs';
 import AboutUs from './components/AboutUs/AboutUs';
 import CaretakerDashboard from './components/Caretaker/CaretakerDashboard';
-import RegistrationForm from './components/RegistrationForm/RegistrationForm';
+import PartnerContactPage from './components/JoinUs/PartnerContactPage';
 import ExploreStaysPage from './components/ExploreStays/ExploreStaysPage';
 import AiAssistant from './components/AiAssistant/AiAssistant';
 import HomePage from './components/Home/HomePage';
@@ -264,15 +262,8 @@ function App() {
           <Route path="/login" element={<SignIn />} />
           <Route path="/register" element={<Register />} />
           <Route path="/owner-setup" element={<OwnerSetup />} />
-          <Route path="/register-property" element={
-            <>
-              <Navbar />
-              <div style={{ paddingTop: '80px' }}>
-                <RegistrationForm />
-              </div>
-              <Footer />
-            </>
-          } />
+          <Route path="/register-property" element={<PartnerContactPage key="owner" />} />
+          <Route path="/partner-inquiry" element={<PartnerContactPage key="inquiry" inquiry />} />
           <Route path="/admin" element={<AdminRedirect />} />
           <Route path="/owner" element={<OwnerRedirect />} />
           <Route path="/owner-dashboard" element={<OwnerRedirect />} />

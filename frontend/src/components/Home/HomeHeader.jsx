@@ -19,6 +19,7 @@ const navItems = [
   { label: 'Explore Stays', to: '/explore' },
   { label: 'Packages', to: '/packages' },
   { label: 'About Us', to: '/about-us' },
+  { label: 'Join Us', to: '/join-us' },
 ];
 
 const HomeHeader = () => {
@@ -101,11 +102,6 @@ const HomeHeader = () => {
         </nav>
 
         <div className="hp-header-actions">
-          <Link to="/join-us" className="hp-join-btn">
-            <i className="fa-solid fa-handshake"></i>
-            <span>Join Us</span>
-          </Link>
-
           {user ? (
             <div className="hp-profile" ref={profileRef}>
               <button type="button" className="hp-profile-btn" onClick={() => setProfileOpen((o) => !o)} aria-expanded={profileOpen}>
@@ -159,7 +155,6 @@ const HomeHeader = () => {
             <button key={item.label} type="button" onClick={() => handleNav(item)}>{item.label}</button>
           )
         )}
-        <Link to="/join-us"><i className="fa-solid fa-handshake"></i> Join Us</Link>
       </nav>
     </header>
 
