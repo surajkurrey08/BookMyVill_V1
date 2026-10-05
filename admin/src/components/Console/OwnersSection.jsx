@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { adminApi, query } from './api';
-import { rupees, compactRupees, shortDate, dateTime, ACCOUNT_STATUS, KYC_STATUS, BOOKING_STATUS, managementLabel } from './config';
+import { rupees, compactRupees, shortDate, dateTime, ACCOUNT_STATUS, KYC_STATUS, BOOKING_STATUS, MANAGEMENT_STATUS, managementLabel } from './config';
 import { Alert, Drawer, EmptyState, Facts, Icon, Pager, StatusBadge, AuditTimeline, ConfirmDialog, Labelled } from './ui';
 
 export default function OwnersSection({ can, focus }) {
@@ -33,10 +33,11 @@ export default function OwnersSection({ can, focus }) {
     <section className="ac-card nopad">
       {data && data.items.length === 0 ? <EmptyState icon="fa-user-tie" title="No owners found" />
         : <div className="ac-table-wrap"><table className="ac-table">
-          <thead><tr><th>Owner</th><th>Status</th><th>KYC</th><th className="num">Properties</th><th className="num">Bookings</th><th className="num">GMV</th><th>Joined</th></tr></thead>
+          <thead><tr><th>Owner</th><th>Status</th><th>Management</th><th>KYC</th><th className="num">Properties</th><th className="num">Bookings</th><th className="num">GMV</th><th>Joined</th></tr></thead>
           <tbody>{data?.items.map(o => <tr key={o._id} onClick={() => setOpenId(o._id)}>
             <td><strong className="ac-link">{o.name}</strong><small>{o.email || o.phone}</small></td>
             <td><StatusBadge meta={ACCOUNT_STATUS[o.status]} fallback={o.status} /></td>
+            <td><StatusBadge meta={MANAGEMENT_STATUS[o.ownerManagementMode || 'SELF_MANAGED']} /></td>
             <td><StatusBadge meta={KYC_STATUS[o.kyc]} /></td>
             <td className="num">{o.approvedProperties}/{o.properties}</td>
             <td className="num">{o.bookings}</td>
@@ -48,31 +49,68 @@ export default function OwnersSection({ can, focus }) {
     </section>
     {openId && <OwnerDrawer id={openId} can={can} onClose={() => setOpenId(null)} onChanged={load} />}
     {adding && can('owners.manage') && <AddOwnerDrawer onClose={() => setAdding(false)} onCreated={owner => {
-      setAdding(false); setNotice(`Owner account created for ${owner.email}. They can sign in to the Owner panel with the password you set.`);
+      setAdding(false); setNotice(owner.managementMode === 'BOOKMYVILLA_MANAGED'
+        ? `Owner account created for ${owner.email}. Their properties will be run from the Villa Manager panel; they can sign in to the Owner panel for reports.`
+        : `Owner account created for ${owner.email}. They can sign in to the Owner panel with the password you set.`);
       load(); setOpenId(owner._id);
     }} />}
   </div>;
 }
 
+const OWNER_MODES = [
+  { value: 'SELF_MANAGED', icon: 'fa-user-gear', title: 'Self-managed owner', text: 'The owner runs bookings, rooms, staff and guests from the Owner panel.' },
+  { value: 'BOOKMYVILLA_MANAGED', icon: 'fa-handshake', title: 'Managed by BookMyVilla', text: 'Our team runs the property from the Villa Manager panel. The owner keeps reports.' },
+];
+
 function AddOwnerDrawer({ onClose, onCreated }) {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', managementMode: 'SELF_MANAGED', villaManager: '' });
+  const [managers, setManagers] = useState(null);
+  const [managersError, setManagersError] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const managed = form.managementMode === 'BOOKMYVILLA_MANAGED';
   const update = event => setForm(current => ({ ...current, [event.target.name]: event.target.value }));
+  const chooseMode = value => setForm(current => ({ ...current, managementMode: value, villaManager: value === 'BOOKMYVILLA_MANAGED' ? current.villaManager : '' }));
+
+  useEffect(() => {
+    if (!managed || managers) return;
+    adminApi('/owners/villa-managers').then(setManagers).catch(err => setManagersError(err.message));
+  }, [managed, managers]);
+
   async function submit(event) {
     event.preventDefault(); setBusy(true); setError('');
-    try { onCreated(await adminApi('/owners', { method: 'POST', body: form })); }
+    const { villaManager, ...rest } = form;
+    try { onCreated(await adminApi('/owners', { method: 'POST', body: { ...rest, ...(managed && villaManager ? { villaManager } : {}) } })); }
     catch (err) { setError(err.message); }
     finally { setBusy(false); }
   }
-  return <Drawer title="Add owner" subtitle="Create an owner account with access to the Owner panel." onClose={() => { if (!busy) onClose(); }}>
+  return <Drawer title="Add owner" subtitle="Create an owner account and choose who runs their properties." onClose={() => { if (!busy) onClose(); }}>
     {error && <Alert onClose={() => setError('')}>{error}</Alert>}
     <form className="ac-stack" onSubmit={submit}>
+      <fieldset className="ac-mode-choice">
+        <legend>Who manages this owner's properties?</legend>
+        <div className="ac-mode-options">
+          {OWNER_MODES.map(mode => <label key={mode.value} className="ac-mode-option">
+            <input type="radio" name="managementMode" value={mode.value} checked={form.managementMode === mode.value} onChange={() => chooseMode(mode.value)} />
+            <strong><Icon name={mode.icon} /> {mode.title}</strong>
+            <small>{mode.text}</small>
+          </label>)}
+        </div>
+      </fieldset>
+      {managed && <label className="ac-field"><span>Villa Manager (optional)</span>
+        <select name="villaManager" value={form.villaManager} onChange={update} disabled={!managers}>
+          <option value="">{managers ? 'Assign later' : managersError ? 'Could not load Villa Managers' : 'Loading Villa Managers…'}</option>
+          {managers?.map(m => <option key={m._id} value={m._id}>{m.name}{m.email || m.phone ? ` — ${m.email || m.phone}` : ''}</option>)}
+        </select>
+        <small>{managersError || (managers?.length === 0 ? 'No active Villa Managers yet — create one under Team, or assign later per property.' : 'Every new property of this owner is assigned to this Villa Manager.')}</small>
+      </label>}
       <label className="ac-field"><span>Owner name</span><input name="name" autoComplete="name" required minLength={2} maxLength={100} value={form.name} onChange={update} /></label>
       <label className="ac-field"><span>Email address</span><input name="email" type="email" autoComplete="email" required maxLength={120} value={form.email} onChange={update} /></label>
       <label className="ac-field"><span>Phone number (optional)</span><input name="phone" type="tel" autoComplete="tel" maxLength={20} value={form.phone} onChange={update} /></label>
       <label className="ac-field"><span>Password (at least 10 characters)</span><input name="password" type="password" autoComplete="new-password" required minLength={10} maxLength={72} value={form.password} onChange={update} /></label>
-      <p className="ac-muted">Share the email and password with the owner so they can sign in. Property listings and KYC are managed separately.</p>
+      <p className="ac-muted">{managed
+        ? 'The owner can sign in to the Owner panel to see reports; day-to-day operations happen in the Villa Manager panel. Property listings and KYC are managed separately.'
+        : 'Share the email and password with the owner so they can sign in. Property listings and KYC are managed separately.'}</p>
       <div className="ac-drawer-actions"><button type="button" className="ac-btn ghost" disabled={busy} onClick={onClose}>Cancel</button><button type="submit" className="ac-btn primary" disabled={busy}>{busy ? 'Creating…' : 'Create owner'}</button></div>
     </form>
   </Drawer>;
@@ -104,6 +142,7 @@ function OwnerDrawer({ id, can, onClose, onChanged }) {
     {!data ? <p className="ac-muted">Loading…</p> : <>
       <div className="ac-drawer-bar"><StatusBadge meta={ACCOUNT_STATUS[o.status]} fallback={o.status} />{data.application && <StatusBadge meta={KYC_STATUS[data.application.status]} />}{o.statusReason && <span className="ac-tag">Reason: {o.statusReason}</span>}</div>
       <Facts items={[
+        ['Management', managementLabel(o.ownerManagementMode)],
         ['Properties', `${data.properties.length} (${data.properties.filter(p => p.status === 'approved').length} live)`],
         ['Bookings', data.stats.total],
         ['GMV', rupees(data.stats.gmv)],

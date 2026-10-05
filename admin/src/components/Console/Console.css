@@ -233,3 +233,18 @@
   .ac-perm-grid { grid-template-columns: 1fr; }
   .ac-search-trigger kbd { display: none; }
 }
+
+/* Add owner: who runs the owner's properties (self vs BookMyVilla-managed) */
+.ac-mode-choice { border: 0; margin: 4px 0 0; padding: 0; min-width: 0; }
+.ac-mode-choice legend { padding: 0; margin-bottom: 8px; font-size: .82rem; font-weight: 600; color: var(--ac-dim); }
+.ac-mode-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ac-mode-option { position: relative; display: grid; align-content: start; gap: 5px; padding: 13px 14px 13px 40px; border: 1px solid var(--ac-border); border-radius: var(--r); background: var(--ac-surface-2); cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+.ac-mode-option:hover { border-color: var(--ac-faint); }
+.ac-overlay .ac-mode-option input { position: absolute; top: 15px; left: 14px; width: 16px; height: 16px; min-height: 0; margin: 0; padding: 0; accent-color: var(--ac-accent); cursor: pointer; }
+.ac-mode-option strong { display: flex; align-items: center; gap: 7px; font-size: .88rem; color: var(--ac-text); }
+.ac-mode-option strong i { color: var(--ac-muted); }
+.ac-mode-option small { font-size: .77rem; line-height: 1.45; color: var(--ac-muted); }
+.ac-mode-option:has(input:checked) { border-color: var(--ac-accent); background: var(--ac-accent-wash); }
+.ac-mode-option:has(input:checked) strong i { color: var(--ac-accent); }
+.ac-mode-option:has(input:focus-visible) { outline: 2px solid var(--ac-accent); outline-offset: 2px; }
+@media (max-width: 520px) { .ac-mode-options { grid-template-columns: 1fr; } }

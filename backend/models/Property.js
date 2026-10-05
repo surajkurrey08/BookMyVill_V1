@@ -57,4 +57,19 @@ PropertySchema.index({ managementMode: 1, assignedVillaManager: 1 });
 PropertySchema.index({ assignedDataEntryUser: 1 });
 PropertySchema.index({ assignedDataEntryUser: 1, dataEntryStatus: 1, dataEntryUpdatedAt: -1 });
 
+// A new property inherits its owner's management choice (set by the admin when
+// the owner was created), however the property is created. An explicitly set
+// managementMode is left alone.
+PropertySchema.pre('validate', async function inheritOwnerManagement() {
+  if (!this.isNew || !this.owner || !this.$isDefault('managementMode')) return;
+  const User = mongoose.model('User');
+  const owner = await User.findById(this.owner).select('role ownerManagementMode ownerVillaManager').lean();
+  if (owner?.role !== 'owner' || owner.ownerManagementMode !== 'BOOKMYVILLA_MANAGED') return;
+  this.managementMode = 'BOOKMYVILLA_MANAGED';
+  if (!this.assignedVillaManager && owner.ownerVillaManager &&
+      await User.exists({ _id: owner.ownerVillaManager, role: 'villa_manager', status: { $in: ['active', 'approved'] } })) {
+    this.assignedVillaManager = owner.ownerVillaManager;
+  }
+});
+
 module.exports = mongoose.model('Property', PropertySchema);

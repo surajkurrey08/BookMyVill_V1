@@ -220,18 +220,38 @@ router.post('/owners', requirePermission('owners.manage'), async (req, res) => {
         body.password.length < 10 || Buffer.byteLength(body.password) > 72) {
       throw new HttpError(400, 'Enter a name, valid email, optional phone number and a password of at least 10 characters (maximum 72 bytes).');
     }
+    // Self-managed owners run their own properties in the Owner panel;
+    // BookMyVilla-managed owners' properties are run from the Villa Manager panel.
+    const ownerManagementMode = body.managementMode === undefined ? 'SELF_MANAGED' : body.managementMode;
+    if (!['SELF_MANAGED', 'BOOKMYVILLA_MANAGED'].includes(ownerManagementMode)) throw new HttpError(400, 'Choose how this owner\'s properties are managed.');
+    let ownerVillaManager;
+    if (body.villaManager) {
+      if (ownerManagementMode !== 'BOOKMYVILLA_MANAGED') throw new HttpError(400, 'A Villa Manager can only be assigned to a BookMyVilla-managed owner.');
+      if (!validId(body.villaManager) || !await User.exists({ _id: body.villaManager, role: 'villa_manager', status: { $in: ['active', 'approved'] } })) {
+        throw new HttpError(400, 'Choose an active Villa Manager account.');
+      }
+      ownerVillaManager = body.villaManager;
+    }
     const existingEmail = new RegExp(`^${escapeRegex(email)}$`, 'i');
     if (await User.exists({ email: existingEmail }) || await PartnerApplication.exists({ email: existingEmail })) {
       throw new HttpError(409, 'This email is already in use. Use the existing owner or review their Owner Request.');
     }
-    const owner = await User.create({ name, email, phone, password: body.password, role: 'owner', status: 'active', ownerPasswordSetAt: new Date() });
+    const owner = await User.create({ name, email, phone, password: body.password, role: 'owner', status: 'active', ownerPasswordSetAt: new Date(), ownerManagementMode, ownerVillaManager });
     await recordAudit(req.admin, { action: 'owner.created', entityType: 'owner', entityId: owner._id, entityLabel: name,
-      after: { name, email, phone, role: 'owner', status: 'active' }, ip: req.ip });
-    res.status(201).json({ _id: owner._id, name, email, phone, role: owner.role, status: owner.status, createdAt: owner.createdAt });
+      after: { name, email, phone, role: 'owner', status: 'active', managementMode: ownerManagementMode, villaManager: ownerVillaManager || null }, ip: req.ip });
+    res.status(201).json({ _id: owner._id, name, email, phone, role: owner.role, status: owner.status, managementMode: ownerManagementMode, createdAt: owner.createdAt });
   } catch (err) {
     if (err.code === 11000) return res.status(409).json({ msg: 'This email is already in use.' });
     fail(res, err);
   }
+});
+
+// Villa Managers an admin can pick when creating a BookMyVilla-managed owner.
+// Declared before /owners/:id so 'villa-managers' isn't read as an owner ID.
+router.get('/owners/villa-managers', requirePermission('owners.manage'), async (req, res) => {
+  try {
+    res.json(await User.find({ role: 'villa_manager', status: { $in: ['active', 'approved'] } }).select('_id name email phone').sort({ name: 1 }).lean());
+  } catch (err) { fail(res, err); }
 });
 
 router.get('/owners', requirePermission('owners.view'), async (req, res) => {
@@ -242,7 +262,7 @@ router.get('/owners', requirePermission('owners.view'), async (req, res) => {
     if (q) { const p = new RegExp(escapeRegex(q), 'i'); filter.$or = [{ name: p }, { email: p }, { phone: p }]; }
     const { page, limit, skip } = pagination(req.query);
     const [owners, total] = await Promise.all([
-      User.find(filter).select('name email phone status adminRole createdAt').sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      User.find(filter).select('name email phone status adminRole ownerManagementMode createdAt').sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
       User.countDocuments(filter)
     ]);
     const aggregates = await ownerAggregates(owners.map(o => o._id));
