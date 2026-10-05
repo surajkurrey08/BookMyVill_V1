@@ -17,6 +17,9 @@ services:
 
     environment:
       PORT: "2001"
+      # TEMPORARY for live testing: the sign-up/login OTP is shown on screen
+      # instead of sent by SMS. Delete this line before real users sign up.
+      ALLOW_DEMO_OTP: "true"
 
     volumes:
       - ./backend/uploads:/app/uploads

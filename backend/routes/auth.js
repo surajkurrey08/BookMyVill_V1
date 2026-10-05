@@ -292,7 +292,9 @@ const guestPayload = (user) => ({ id: user._id, name: user.name, email: user.ema
 // Step 1: Request a 6-digit OTP — `purpose: 'register'` (default) for a new
 // number, `purpose: 'login'` for an existing account signing in without a password.
 router.post('/phone/send-otp', async (req, res) => {
-  if (process.env.NODE_ENV !== 'test' && !(process.env.NODE_ENV !== 'production' && process.env.ALLOW_DEMO_OTP === 'true')) return res.status(503).json({ msg: 'OTP delivery is not configured. Use password sign in or contact Admin.' });
+  // TEMPORARY (owner-requested for live testing): demo OTP is controlled only by
+  // ALLOW_DEMO_OTP, including in production. Remove before real users sign up.
+  if (process.env.NODE_ENV !== 'test' && process.env.ALLOW_DEMO_OTP !== 'true') return res.status(503).json({ msg: 'OTP delivery is not configured. Use password sign in or contact Admin.' });
   try {
     const cleanPhone = cleanPhoneNumber(req.body.phone);
     const purpose = req.body.purpose === 'login' ? 'login' : 'register';
