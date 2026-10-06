@@ -2,13 +2,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { adminApi, query } from './api';
 import { rupees, shortDate, PROPERTY_STATUS, MANAGEMENT_STATUS, staffName } from './config';
 import PropertyManagement from './PropertyManagement';
+import OwnerSetupLink from './OwnerSetupLink';
 import { Alert, Drawer, EmptyState, Facts, Icon, Pager, StatusBadge, AuditTimeline, ConfirmDialog } from './ui';
 
 const TABS = [
   { id: 'review', label: 'Review queue', filter: { view: 'review' } },
   { id: 'approved', label: 'Live', filter: { status: 'approved' } },
   { id: 'suspended', label: 'Suspended', filter: { status: 'suspended' } },
-  { id: 'all', label: 'All', filter: {} }
+  { id: 'all', label: 'All', filter: {} },
+  { id: 'verification', label: 'Blue tick requests', filter: null }
 ];
 
 const ACTION_META = {
@@ -25,6 +27,46 @@ const ACTIONS_FOR = status => ({
   suspended: ['unsuspend', 'reject'],
   rejected: ['approve']
 }[status] || []);
+
+// Self-managed owners asking for the "Verified" blue tick on a property.
+function VerificationRequests({ can }) {
+  const [items, setItems] = useState(null);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [busy, setBusy] = useState('');
+  const [rejecting, setRejecting] = useState(null);
+  const [reason, setReason] = useState('');
+  const allowed = can('properties.approve');
+  const load = useCallback(async () => { try { setItems(await adminApi('/verification-requests')); setError(''); } catch (err) { setError(err.message); } }, []);
+  useEffect(() => { load(); }, [load]);
+  async function review(property, action, note = '') {
+    setBusy(property._id); setError('');
+    try { await adminApi(`/properties/${property._id}/verification`, { method: 'POST', body: { action, note } }); setNotice(action === 'approve' ? `${property.name} now shows the Verified blue tick.` : `Verification for ${property.name} was not approved.`); setRejecting(null); setReason(''); await load(); }
+    catch (err) { setError(err.message); }
+    finally { setBusy(''); }
+  }
+  return <>
+    <p className="ac-muted">BookMyVilla-managed villas get the blue tick automatically. Self-managed owners apply here; approve only after checking the property and the owner's documents.</p>
+    {error && <Alert onClose={() => setError('')}>{error}</Alert>}
+    {notice && <Alert kind="success" onClose={() => setNotice('')}>{notice}</Alert>}
+    <section className="ac-card nopad">
+      {!items ? <p className="ac-muted">Loading requests…</p> : items.length === 0 ? <EmptyState icon="fa-circle-check" title="No blue tick requests">Requests from self-managed owners appear here.</EmptyState>
+        : <div className="ac-table-wrap"><table className="ac-table">
+          <thead><tr><th>Property</th><th>Owner</th><th>Owner's note</th><th>Requested</th><th>Decision</th></tr></thead>
+          <tbody>{items.map(p => <tr key={p._id}>
+            <td><div className="ac-prop-cell">{p.cover ? <img src={p.cover} alt="" /> : <span className="ac-prop-noimg"><Icon name="fa-image" /></span>}<div><strong>{p.name}</strong><small>{p.location} · {PROPERTY_STATUS[p.status]?.label || p.status}</small></div></div></td>
+            <td>{p.owner?.name || '—'}<small>{p.owner?.phone || p.owner?.email}</small></td>
+            <td>{p.verification?.note || <span className="ac-muted">—</span>}</td>
+            <td>{shortDate(p.verification?.requestedAt)}</td>
+            <td>{allowed ? <div className="ac-row-actions"><button type="button" className="ac-btn good" disabled={busy === p._id} onClick={() => review(p, 'approve')}><Icon name="fa-circle-check" /> Approve</button><button type="button" className="ac-btn ghost" disabled={busy === p._id} onClick={() => { setReason(''); setRejecting(p); }}>Reject</button></div> : <span className="ac-muted">View only</span>}</td>
+          </tr>)}</tbody>
+        </table></div>}
+    </section>
+    {rejecting && <ConfirmDialog title={`Reject blue tick for ${rejecting.name}?`} tone="warn" confirmLabel="Reject request" busy={busy === rejecting._id} onClose={() => setRejecting(null)} onConfirm={() => review(rejecting, 'reject', reason)} reason={reason} setReason={setReason} reasonRequired>
+      <p>The owner sees this reason and can apply again after fixing it.</p>
+    </ConfirmDialog>}
+  </>;
+}
 
 export default function PropertiesSection({ can, focus }) {
   const [tab, setTab] = useState('review');
@@ -43,6 +85,7 @@ export default function PropertiesSection({ can, focus }) {
   useEffect(() => { if (focus?.id) setOpenId(focus.id); }, [focus]);
   const load = useCallback(async () => {
     request.current?.abort();
+    if (tab === 'verification') { setLoading(false); return; }
     const controller = new AbortController(); request.current = controller; setLoading(true);
     try { setData(await adminApi(`/properties${query({ ...TABS.find(t => t.id === tab).filter, q, page, limit: 20, managementMode, ...(assignment === 'manager' && { assignedVillaManager: 'unassigned' }), ...(assignment === 'data-entry' && { assignedDataEntryUser: 'unassigned' }) })}`, { signal: controller.signal })); setError(''); }
     catch (err) { if (err.name !== 'AbortError') setError(err.message); }
@@ -53,6 +96,7 @@ export default function PropertiesSection({ can, focus }) {
 
   return <div className="ac-stack">
     <div className="ac-tabs">{TABS.map(t => <button key={t.id} type="button" className={tab === t.id ? 'active' : ''} onClick={() => { setTab(t.id); setPage(1); }}>{t.label}{t.id === 'review' && (counts.pending || counts.under_review) ? <span className="ac-pill">{(counts.pending || 0) + (counts.under_review || 0)}</span> : null}</button>)}</div>
+    {tab === 'verification' ? <VerificationRequests can={can} /> : <>
     <div className="ac-toolbar"><label className="ac-search"><Icon name="fa-magnifying-glass" /><input placeholder="Property name or location" value={search} onChange={e => setSearch(e.target.value)} /></label>
       <select aria-label="Management filter" value={managementMode} onChange={e => { setManagementMode(e.target.value); setPage(1); if (assignment === 'manager' && e.target.value !== 'BOOKMYVILLA_MANAGED') setAssignment(''); }}>
         <option value="">All management modes</option><option value="SELF_MANAGED">Self Managed</option><option value="BOOKMYVILLA_MANAGED">Managed by BookMyVilla</option>
@@ -78,6 +122,7 @@ export default function PropertiesSection({ can, focus }) {
         </table></div>}
       {data && <Pager page={data.page} pages={data.pages} total={data.total} onPage={setPage} label="properties" />}
     </section>
+    </>}
     {openId && <PropertyDrawer key={openId} id={openId} can={can} onClose={() => setOpenId(null)} onChanged={load} />}
   </div>;
 }
@@ -117,6 +162,7 @@ function PropertyDrawer({ id, can, onClose, onChanged }) {
         ['Created', shortDate(p.createdAt)]
       ]} />
       {data.operations && <section className="ac-sub"><h4>Unassigned operations</h4><p className="ac-muted">Assign a Villa Manager to handle these existing records.</p>{Object.entries(data.operations).map(([kind,items]) => <div key={kind}><strong>{kind}: {items.length}</strong>{items.map(item => <p key={item._id} className="ac-muted">#{item._id.slice(-8)} ? {item.title || item.description || item.guest?.name || 'Booking'} ? {item.stage || item.status || item.stayStatus}</p>)}</div>)}</section>}
+      {p.status === 'approved' && p.managementMode === 'SELF_MANAGED' && p.owner?.email && !p.owner.ownerPasswordSetAt && can('owners.manage') && <OwnerSetupLink key={p.owner._id} owner={p.owner} />}
       <PropertyManagement property={p} can={can} onChanged={async () => { if (!await load()) throw new Error('Property refresh failed.'); await onChanged(); }} />
       <section className="ac-sub"><h4>Verification checklist</h4><ul className="ac-checks">
         {checkRow(checks.hasOwner, 'Linked to an owner account')}

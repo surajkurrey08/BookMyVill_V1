@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '../../config';
+import { readAdminSession } from '../../session';
 
-const authToken = () => (sessionStorage.getItem('token') || localStorage.getItem('token') || '').replace(/^["']|["']$/g, '').trim();
+const authToken = () => readAdminSession()?.token || '';
 
 export class AdminApiError extends Error {
   constructor(message, status, data) {

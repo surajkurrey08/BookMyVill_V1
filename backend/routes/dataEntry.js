@@ -12,6 +12,8 @@ router.use(accountAuth, (req, res, next) => {
   if (!['active', 'approved'].includes(req.user.status)) return res.status(403).json({ msg: 'This Data Entry account is not active. Contact Admin.' });
   next();
 });
+// Add owners + villas and manage local guides. Mounted before '/:id' so its paths win.
+router.use('/onboarding', require('./dataEntryOnboarding'));
 const fail = (res, err) => sendError(res, err, 'Data Entry');
 
 router.get('/session', async (req, res) => {
@@ -94,6 +96,9 @@ router.post('/:id/submit', async (req, res) => {
     // Hide the listing before content is promoted. Staff can never publish it.
     // A revision/assignment guard prevents stale sessions submitting someone
     // else's reassigned property. Existing Admin approval remains authoritative.
+    if (draft.rooms.length > 1 && (await Property.findById(p._id).select('bookingMode').lean())?.bookingMode === 'ENTIRE') {
+      throw new HttpError(400, 'This property is booked as a whole. Keep a single "Entire villa" unit and describe bedrooms in the details.');
+    }
     const set = { status: 'pending', dataEntryStatus: 'IN_PROGRESS', dataEntryCompletion: 100, dataEntryUpdatedAt: new Date(), listingData: { details: draft.details, photoCategories: draft.photoCategories || [] } };
     for (const key of ['name', 'type', 'location', 'mapLink', 'amenities', 'facilities', 'photos', 'videos']) set[key] = draft[key];
     set['stayInfo.checkInTime'] = draft.details.checkInTime;

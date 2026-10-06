@@ -12,10 +12,7 @@ router.get('/owner', auth, async (req, res) => {
     return res.status(503).json({ msg: 'Database unavailable.' });
   }
   try {
-    let records = await TouristRegister.find({ ownerId: req.user.id }).sort({ createdAt: -1 });
-    if (records.length === 0) {
-      records = defaultTourists;
-    }
+    const records = await TouristRegister.find({ ownerId: req.user.id }).sort({ createdAt: -1 });
     res.json(records);
   } catch (err) {
     console.error('TouristRegister GET Error:', err.message);

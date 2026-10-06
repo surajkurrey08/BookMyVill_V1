@@ -164,6 +164,11 @@ export default function TripPage() {
               <div><strong>{stay.caretaker.name}</strong><small>Your caretaker</small></div>
               <div className="trip-contact">{stay.caretaker.phone && <><a className="trip-mini" href={`tel:${stay.caretaker.phone.replace(/[^\d+]/g, '')}`} aria-label="Call caretaker"><i className="fa-solid fa-phone" aria-hidden="true"></i></a><a className="trip-mini" href={whatsapp(stay.caretaker.phone, `Hello, regarding my stay at ${property.name}.`)} target="_blank" rel="noreferrer" aria-label="WhatsApp caretaker"><i className="fa-brands fa-whatsapp" aria-hidden="true"></i></a></>}</div>
             </li>}
+            {booking.guideDays > 0 && <li className="split">
+              <span className="ikon"><i className="fa-solid fa-map-location-dot" aria-hidden="true"></i></span>
+              <div><strong>{stay.guide?.name || 'Your guide is being arranged'}</strong><small>Local guide · {booking.guideDays} day{booking.guideDays === 1 ? '' : 's'}</small>{stay.guide && <small>{stay.guide.phone}</small>}</div>
+              {stay.guide && <div className="trip-contact"><a className="trip-mini" href={`tel:${stay.guide.phone}`} aria-label="Call local guide"><i className="fa-solid fa-phone" aria-hidden="true"></i></a><a className="trip-mini" href={whatsapp(stay.guide.phone, `Hello, regarding my stay at ${property.name}.`)} target="_blank" rel="noreferrer" aria-label="WhatsApp local guide"><i className="fa-brands fa-whatsapp" aria-hidden="true"></i></a></div>}
+            </li>}
             {stay.wifi && <li className="split">
               <span className="ikon"><i className="fa-solid fa-wifi" aria-hidden="true"></i></span>
               <div><strong>Wi-Fi · {stay.wifi.name}</strong><small>{stay.wifi.password ? (showWifi ? `Password: ${stay.wifi.password}` : 'Password hidden') : 'Ask your caretaker for the password'}</small></div>
@@ -180,7 +185,7 @@ export default function TripPage() {
           <dl className="trip-lines">
             <div><dt>Booking total</dt><dd>{rupees(booking.totalPrice)}</dd></div>
             <div><dt>Paid</dt><dd>{rupees(booking.amountPaid)}</dd></div>
-            {booking.amountPaid < booking.totalPrice && booking.status !== 'cancelled' && <div className="due"><dt>Due</dt><dd>{rupees(booking.totalPrice - booking.amountPaid)}</dd></div>}
+            {(booking.balanceDue ?? booking.totalPrice - booking.amountPaid) > 0 && booking.status !== 'cancelled' && <div className="due"><dt>{booking.paymentPlan === 'advance' ? 'Pay at villa' : 'Due'}</dt><dd>{rupees(booking.balanceDue ?? booking.totalPrice - booking.amountPaid)}</dd></div>}
           </dl>
           {deposit && <div className={`trip-track ${deposit.status}`}>
             <strong><i className="fa-solid fa-shield-halved" aria-hidden="true"></i> Refundable deposit {rupees(deposit.amount)}</strong>

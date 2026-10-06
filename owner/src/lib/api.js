@@ -13,9 +13,11 @@ const authToken = () => (sessionStorage.getItem('token') || localStorage.getItem
 function friendlyMessage(status, data) {
   if (status === 401) return 'Your session has expired. Sign out and sign in again to continue.';
   if (status === 403) return data.msg || 'Your account does not have permission for this action.';
+  if (status === 413) return data.msg || 'Selected media is too large. Use smaller files or fewer photos/videos.';
+  if (status === 503) return data.msg || 'The service is temporarily unavailable. Please try again shortly.';
   if (status === 429) return data.msg || 'Too many requests. Wait a moment and try again.';
   if (status >= 500) return data.msg || 'The server could not complete this action. Please try again.';
-  return data.msg || 'Request failed.';
+  return data.msg || data.message || 'Request failed.';
 }
 
 // JSON request to the backend with the owner's session. Errors carry a

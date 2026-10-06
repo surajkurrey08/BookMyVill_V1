@@ -2,35 +2,57 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Property = require('../models/Property');
-const { publicProperty } = require('../services/publicViews');
+const Room = require('../models/Room');
+const { PUBLIC_LISTING, isPublicListing, publicProperty } = require('../services/publicViews');
 const accountAuth = require('../middleware/accountAuth');
 const { MANAGEMENT_FIELDS, MANAGEMENT_SELECT, LISTING_FIELDS, propertyScope, managementFilters, listingView, requirePropertyAccess, assertPropertyAccess, canAccessProperty, ownerPropertyView } = require('../services/propertyAccess');
-const { sendError } = require('../utils/validate');
+const { sendError, HttpError } = require('../utils/validate');
+const { mediaDirectory, storePropertyMedia, mediaOrigin, stayInfo } = require('../services/propertyMedia');
+router.use('/media', (req, res, next) => {
+  if (!/^\/[a-f0-9-]{36}\.(png|jpg|webp|mp4|webm|mov)$/.test(req.path)) return res.sendStatus(404);
+  res.set('X-Content-Type-Options', 'nosniff');
+  next();
+}, express.static(mediaDirectory, { index: false, dotfiles: 'deny', maxAge: '1y', immutable: true, fallthrough: false }));
 router.use('/data-entry', require('./dataEntry'));
 
 // Add Property (Protected - Owners only)
 router.post('/add', require('../middleware/ownerAuth'), async (req, res) => {
   if (req.user.role !== 'owner') return res.status(403).json({ msg: 'Access denied' });
 
+  let media, createdProperty;
   try {
     if (MANAGEMENT_FIELDS.some(key => Object.hasOwn(req.body, key))) return res.status(403).json({ msg: 'Only authorized admins may change property management.' });
     const { name, type, location, price, mapLink, amenities, photos, videos } = req.body;
+    const maxGuests = Number(req.body.maxGuests ?? 2);
+    if (!Number.isInteger(maxGuests) || maxGuests < 1 || maxGuests > 50) return res.status(400).json({ msg: 'Choose a villa capacity of 1–50 guests.' });
     const newProperty = new Property({
       owner: req.user.id,
+      bookingMode: 'ENTIRE',
+      listingData: { details: { guestCapacity: maxGuests } },
       name,
       type,
       location,
       price: price ? Math.max(1, Math.abs(parseInt(price) || 10000)) : 10000,
       mapLink: mapLink || '',
       amenities: Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map(s => s.trim()).filter(Boolean) : []),
-      photos: photos || [],
-      videos: videos || [],
+      photos: [],
+      videos: [],
+      stayInfo: stayInfo(req.body.stayInfo),
       status: 'pending' // Enforce Admin Approval before publishing to public website
     });
+    await newProperty.validate();
+    media = await storePropertyMedia(photos || [], videos || [], mediaOrigin(req));
+    newProperty.photos = media.photos;
+    newProperty.videos = media.videos;
     await newProperty.save();
+    createdProperty = newProperty;
+    await Room.create({ property: newProperty._id, name: 'Entire villa', number: 'ENTIRE', type: 'Entire villa', capacity: maxGuests, baseRate: newProperty.price });
     res.json(newProperty);
   } catch (err) {
-    res.status(500).send('Server error');
+    if (createdProperty) await Property.deleteOne({ _id: createdProperty._id });
+    if (media) await media.cleanup();
+    if (err.name === 'ValidationError') return res.status(400).json({ msg: 'Property name and location are required; check your listing details.' });
+    sendError(res, err, 'Property creation');
   }
 });
 
@@ -52,7 +74,7 @@ router.get('/my-properties', accountAuth, async (req, res) => {
 // Get all properties (Public - Only Admin Approved Properties)
 router.get('/all', async (req, res) => {
   try {
-    const properties = await Property.find({ status: 'approved' });
+    const properties = await Property.find(PUBLIC_LISTING);
     res.json(properties.map(publicProperty));
   } catch (err) {
     res.status(500).send('Server error');
@@ -77,7 +99,7 @@ router.get('/:id', (req, res, next) => {
       return res.json(req.user.role === 'data_entry' ? listingView(property) : req.user.role === 'owner' ? ownerPropertyView(req.user, property) : property);
     }
     if (!property) return res.status(404).json({ msg: 'Property not found' });
-    if (property.status !== 'approved') return res.status(404).json({ msg: 'Property is not published.' });
+    if (!isPublicListing(property)) return res.status(404).json({ msg: 'Property is not published.' });
     res.json(publicProperty(property));
   } catch (err) {
     sendError(res, err, 'Property details');
@@ -86,6 +108,7 @@ router.get('/:id', (req, res, next) => {
 
 // Update property (Protected - Owner or Admin)
 router.put('/:id', require('../middleware/accountAuth'), async (req, res) => {
+  let media;
   try {
     const mongoose = require('mongoose');
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -105,32 +128,34 @@ router.put('/:id', require('../middleware/accountAuth'), async (req, res) => {
     if (type) property.type = type;
     if (location) property.location = location;
     if (price) property.price = Math.max(1, Math.abs(parseInt(price) || 10000));
+    const maxGuests = req.body.maxGuests === undefined ? null : Number(req.body.maxGuests);
+    if (maxGuests !== null && (!Number.isInteger(maxGuests) || maxGuests < 1 || maxGuests > 50)) throw new HttpError(400, 'Choose a villa capacity of 1–50 guests.');
+    if (property.bookingMode === 'ENTIRE' && maxGuests !== null) {
+      property.listingData = { ...property.listingData, details: { ...property.listingData?.details, guestCapacity: maxGuests } };
+    }
     if (mapLink !== undefined) property.mapLink = mapLink;
     if (amenities !== undefined) property.amenities = Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map(s => s.trim()).filter(Boolean) : []);
     if (req.body.facilities !== undefined) property.facilities = Array.isArray(req.body.facilities) ? req.body.facilities : [];
-    if (photos) property.photos = photos;
-    if (videos) property.videos = videos;
     if (status && req.user.role === 'admin') property.status = status;
     if (!property.owner) property.owner = req.user.id;
 
     // Optional guest stay-pass details (check-in times, Wi-Fi, house rules…).
     if (req.body.stayInfo && typeof req.body.stayInfo === 'object') {
-      const s = req.body.stayInfo;
-      const str = (value, max) => (typeof value === 'string' ? value.slice(0, max) : '');
-      property.stayInfo = {
-        checkInTime: str(s.checkInTime, 40),
-        checkOutTime: str(s.checkOutTime, 40),
-        wifiName: str(s.wifiName, 60),
-        wifiPassword: str(s.wifiPassword, 60),
-        houseRules: Array.isArray(s.houseRules) ? s.houseRules.map(r => String(r).slice(0, 160)).filter(Boolean).slice(0, 20) : (property.stayInfo?.houseRules || []),
-        arrivalNotes: str(s.arrivalNotes, 1000),
-        foodInfo: str(s.foodInfo, 1000)
-      };
+      property.stayInfo = stayInfo(req.body.stayInfo);
     }
 
+    await property.validate();
+    media = await storePropertyMedia(photos, videos, mediaOrigin(req));
+    if (media.photos !== undefined) property.photos = media.photos;
+    if (media.videos !== undefined) property.videos = media.videos;
     await property.save();
+    if (property.bookingMode === 'ENTIRE' && (price !== undefined || maxGuests !== null)) {
+      await Room.updateOne({ property: property._id, active: true }, { $set: { ...(price !== undefined && { baseRate: property.price }), ...(maxGuests !== null && { capacity: maxGuests }) } }, { runValidators: true });
+    }
     res.json(req.user.role === 'data_entry' ? listingView(property) : property);
   } catch (err) {
+    if (media) await media.cleanup();
+    if (err.name === 'ValidationError') return res.status(400).json({ msg: 'Check your property listing details.' });
     sendError(res, err, 'Property update');
   }
 });

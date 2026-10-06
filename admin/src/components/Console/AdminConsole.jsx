@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminApi, query } from './api';
+import { clearAdminSession } from '../../session';
 import { compactRupees, rupees, SEVERITY, relativeTime } from './config';
 import { Icon, MetricCard, Alert, StatusBadge, EmptyState, Drawer } from './ui';
 import OwnersSection from './OwnersSection';
@@ -33,7 +34,19 @@ export default function AdminConsole() {
   const [focus, setFocus] = useState(() => { const id = new URLSearchParams(window.location.search).get('propertyId'); return id ? { type: 'property', id } : null; }); // { type, id } to open a detail from search
 
   useEffect(() => {
-    adminApi('/me').then(setMe).catch(err => { setError(err.message); if (err.status === 401) navigate('/login'); });
+    const controller = new AbortController();
+    adminApi('/me', { signal: controller.signal }).then(data => {
+      if (!controller.signal.aborted) setMe(data);
+    }).catch(err => {
+      if (controller.signal.aborted) return;
+      if (err.status === 401 || err.status === 403) {
+        clearAdminSession();
+        navigate('/login', { replace: true, state: { authError: err.status === 403 ? 'This session no longer has admin access. Please sign in with an active administrator account.' : err.message } });
+        return;
+      }
+      setError(err.message);
+    });
+    return () => controller.abort();
   }, [navigate]);
 
   const can = useCallback(perm => me && (me.permissions.includes('*') || me.permissions.includes(perm)), [me]);
@@ -49,7 +62,7 @@ export default function AdminConsole() {
   const visibleNav = NAV.filter(item => can(item.perm));
   const go = (type, id) => { setFocus({ type, id, at: Date.now() }); setSection(type === 'owner' ? 'owners' : type === 'property' ? 'properties' : type === 'booking' ? 'bookings' : type === 'customer' ? 'customers' : section); setPalette(null); };
 
-  function signOut() { sessionStorage.clear(); localStorage.clear(); navigate('/login', { replace: true }); }
+  function signOut() { clearAdminSession(); navigate('/login', { replace: true }); }
 
   return <div className="ac-shell">
     <aside className={`ac-sidebar ${drawerOpen ? 'open' : ''}`}>

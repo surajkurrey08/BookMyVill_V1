@@ -4,6 +4,7 @@ import { entryApi, session } from './api';
 import { Alert, Icon, Loading } from './ui';
 import { Dashboard, PropertyList, Profile } from './Workspace';
 import Editor from './Editor';
+import { OwnersPage, GuidesPage } from './Onboarding';
 const Auth = createContext(null);
 export const useAuth = () => useContext(Auth);
 function AuthProvider({ children }) {
@@ -32,7 +33,7 @@ function Login() {
   }
   return <main className="login-page"><section className="login-card"><div className="brand">BookMyVilla</div><h1>Data Entry sign in</h1><p>Complete assigned listings and send them to Admin for review.</p><Alert>{error || auth.error}</Alert><form onSubmit={login}><label className="field"><span>Work email</span><input name="email" type="email" autoComplete="username" required /></label><label className="field"><span>Password</span><input name="password" type="password" autoComplete="current-password" required /></label><button className="button primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in to workspace'}<Icon name="arrow" /></button></form><p className="login-note"><Icon name="lock" /> Use the staff account issued by your Admin.</p></section></main>;
 }
-const NAV = [['/dashboard', 'dashboard', 'Dashboard'], ['/properties', 'properties', 'Assigned Properties'], ['/queue', 'queue', 'Data Entry Queue'], ['/media', 'media', 'Media'], ['/review-status', 'review', 'Review Status'], ['/profile', 'profile', 'Profile']];
+const NAV = [['/dashboard', 'dashboard', 'Dashboard'], ['/owners', 'profile', 'Owners & Villas'], ['/guides', 'review', 'Local Guides'], ['/properties', 'properties', 'Assigned Properties'], ['/queue', 'queue', 'Data Entry Queue'], ['/media', 'media', 'Media'], ['/review-status', 'review', 'Review Status'], ['/profile', 'profile', 'Profile']];
 function Shell() {
   const auth = useAuth(); const location = useLocation(); const [open, setOpen] = useState(false);
   useEffect(() => { setOpen(false); }, [location.pathname]);
@@ -50,7 +51,7 @@ const router = createBrowserRouter([
     { path: '/', element: <Navigate to="/dashboard" replace /> }, { path: '/dashboard', element: <Dashboard /> },
     { path: '/properties', element: <PropertyList /> }, { path: '/queue', element: <PropertyList mode="queue" /> },
     { path: '/media', element: <PropertyList mode="media" /> }, { path: '/review-status', element: <PropertyList mode="review" /> },
-    { path: '/profile', element: <Profile /> }, { path: '/properties/:id', element: <Editor /> },
+    { path: '/profile', element: <Profile /> }, { path: '/owners', element: <OwnersPage /> }, { path: '/guides', element: <GuidesPage /> }, { path: '/properties/:id', element: <Editor /> },
     { path: '/properties/:id/:section', element: <Editor /> }, { path: '*', element: <Navigate to="/dashboard" replace /> }
   ] }
 ]);

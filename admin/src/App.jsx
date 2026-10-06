@@ -3,27 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import AdminLogin from './components/AdminLogin/AdminLogin';
 import AdminDashboard from './components/AdminDashboard/AdminDashboard';
 import AdminConsole from './components/Console/AdminConsole';
+import { readAdminSession, clearAdminSession } from './session';
 import './App.css';
 
 // Route protection component
 const ProtectedRoute = ({ children }) => {
-  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
-  const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
-
-  if (!token || !userStr) {
-    return <Navigate to="/login" replace />;
-  }
-
-  try {
-    const user = JSON.parse(userStr);
-    if (user.role !== 'admin') {
-      sessionStorage.clear();
-      localStorage.clear();
-      return <Navigate to="/login" replace />;
-    }
-  } catch (e) {
-    sessionStorage.clear();
-    localStorage.clear();
+  if (!readAdminSession()) {
+    clearAdminSession();
     return <Navigate to="/login" replace />;
   }
 

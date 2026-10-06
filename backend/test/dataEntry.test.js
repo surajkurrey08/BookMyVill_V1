@@ -74,11 +74,13 @@ test('CASE 5–8: drafts, media and room content persist privately; invalid subm
 test('CASE 9–11: complete submission uses existing review queue, changes and resubmission, and Admin approval', async () => {
   const v = await saved(); const draft = complete(v);
   draft.rooms = [...draft.rooms, { name: 'Garden Cottage', number: 'C2', type: 'Cottage', capacity: 4, bedType: 'Queen', view: 'Garden', sizeSqFt: 300, photos: [photo], amenities: ['Free High-Speed Wi-Fi'] }];
+  assert.equal((await save(draft)).status, 403, 'Data Entry cannot add another bookable room');
+  draft.rooms = draft.rooms.slice(0, 1);
   const ready = await save(draft); assert.equal(ready.status, 200); assert.equal(ready.data.completion.percent, 100);
   const submitted = await call('POST', `/${a.property._id}/submit`, { revision: ready.data.revision });
   assert.equal(submitted.status, 200); assert.equal(submitted.data.dataStatus, 'READY_FOR_REVIEW'); assert.equal(submitted.data.status, 'pending');
   assert.equal((await Room.findById(a.room._id)).name, 'Mountain Suite');
-  const cottage = await Room.findOne({ property: a.property._id, number: 'C2' }); assert.equal(cottage.capacity, 4); assert.equal(cottage.baseRate, a.property.price);
+  assert.equal(await Room.countDocuments({ property: a.property._id }), 1, 'only the existing villa unit remains');
   assert.equal((await api('GET', `/api/properties/${a.property._id}`)).status, 404);
   assert.equal((await api('GET', `/api/customer-booking/properties/${a.property._id}/rooms?checkIn=${day(2)}&checkOut=${day(3)}&guests=2`)).status, 404);
   const queue = await api('GET', '/api/admin-console/properties?view=review', { token: admin.token }); assert.equal(queue.data.items.some(p => p._id === String(a.property._id)), true);

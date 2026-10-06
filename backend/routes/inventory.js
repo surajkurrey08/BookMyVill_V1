@@ -13,10 +13,7 @@ router.get('/owner', auth, async (req, res) => {
     return res.status(503).json({ msg: 'Database unavailable.' });
   }
   try {
-    let items = await Inventory.find({ ownerId: req.user.id }).sort({ lastRestocked: -1 });
-    if (items.length === 0) {
-      items = defaultInventoryList;
-    }
+    const items = await Inventory.find({ ownerId: req.user.id }).sort({ lastRestocked: -1 });
     res.json(items);
   } catch (err) {
     console.error('Inventory GET Error:', err.message);

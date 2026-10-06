@@ -92,6 +92,22 @@ const BookingSchema = new mongoose.Schema({
   },
   razorpayPaymentId: { type: String, unique: true, sparse: true },
   paidAt: { type: Date, default: null },
+  // Website checkout: 'full' pays everything online; 'advance' pays ADVANCE_PERCENT
+  // online and the rest (balanceDue) at the villa on arrival.
+  paymentPlan: { type: String, enum: ['full', 'advance'], default: 'full' },
+  onlineAmount: { type: Number, default: null, min: 0 },
+  balanceDue: { type: Number, default: 0, min: 0 },
+  balanceCollectedAt: { type: Date, default: null },
+  // Local guide the guest asked for at checkout (charged per day); the Villa
+  // Manager assigns an actual guide later.
+  guide: {
+    requested: { type: Boolean, default: false },
+    days: { type: Number, default: 0, min: 0, max: 60 },
+    dailyRate: { type: Number, default: 0, min: 0 },
+    amount: { type: Number, default: 0, min: 0 },
+    assigned: { type: mongoose.Schema.Types.ObjectId, ref: 'LocalGuide', default: null },
+    assignedAt: { type: Date, default: null }
+  },
   paymentSource: { type: String, enum: ['razorpay', 'manual'], default: null },
   paymentMode: { type: String, enum: ['test', 'live', 'manual'], default: null },
   manualPaymentMethod: { type: String, enum: ['cash', 'bank_transfer', 'upi'], default: null },

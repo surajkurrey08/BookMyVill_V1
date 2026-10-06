@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const RoomNight = require('../models/RoomNight');
+const Property = require('../models/Property');
 const { HttpError } = require('../utils/validate');
 const { ensureModelIndexes } = require('../utils/modelIndexes');
 
@@ -21,6 +22,12 @@ async function purgeExpiredHolds(roomId, dates) {
 
 async function reserveNights(room, dates, kind, reference, { reason = '', expiresAt = null, conflictMessage } = {}) {
   if (kind !== 'block') await require('./roomReadiness').requireRoomReady(room._id);
+  // Legacy room bookings remain authoritative after whole-villa migration.
+  // Several old rooms can own the same date; releasing one must not free the villa.
+  const legacyConflicts = await conflictingNights(room._id, dates, reference);
+  if (legacyConflicts.length) {
+    throw new HttpError(409, conflictMessage || 'The villa is already booked, blocked or held for these dates.');
+  }
   const operationId = new mongoose.Types.ObjectId();
   const docs = dates.map(date => ({ property: room.property, room: room._id, date, kind, reference, operationId, reason, expiresAt: kind === 'hold' ? expiresAt : null }));
   // The unique {room, date} index must exist before any night is written.
@@ -43,7 +50,9 @@ async function reserveNights(room, dates, kind, reference, { reason = '', expire
 // Nights in the range that are unavailable for `reference` (its own holds and
 // bookings do not count against it).
 async function conflictingNights(roomId, dates, ignoreReference = null) {
-  const filter = { room: roomId, date: { $in: dates }, ...activeNightFilter() };
+  const room = await require('../models/Room').findById(roomId).select('property').lean();
+  const wholeVilla = room && await Property.exists({ _id: room.property, bookingMode: 'ENTIRE' });
+  const filter = { ...(wholeVilla ? { property: room.property } : { room: roomId }), date: { $in: dates }, ...activeNightFilter() };
   if (ignoreReference) filter.reference = { $ne: ignoreReference };
   return RoomNight.find(filter).select('date kind').sort({ date: 1 }).lean();
 }

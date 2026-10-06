@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { adminApi, query } from './api';
+import GuideAssignment from './GuideAssignment';
 import { rupees, shortDate, dateTime, BOOKING_STATUS, PAYMENT_STATUS, STAY_STATUS } from './config';
 import { Alert, Drawer, EmptyState, Facts, Icon, Pager, StatusBadge, AuditTimeline, Labelled } from './ui';
 
 const VIEWS = [
   { id: '', label: 'All' },
   { id: 'refund_review', label: 'Refund review' },
-  { id: 'unpaid', label: 'Unpaid' }
+  { id: 'unpaid', label: 'Unpaid' },
+  { id: 'guide_requests', label: 'Guide requests' }
 ];
 
 export default function BookingsSection({ can, focus }) {
@@ -40,7 +42,7 @@ export default function BookingsSection({ can, focus }) {
           <thead><tr><th>Guest</th><th>Property</th><th>Stay</th><th className="num">Amount</th><th>Payment</th><th>Status</th></tr></thead>
           <tbody>{data?.items.map(b => <tr key={b._id} onClick={() => setOpenId(b._id)}>
             <td><strong className="ac-link">{b.user?.name || b.guest?.name || 'Guest'}</strong><small>{b.user?.email || b.guest?.phone || ''}</small></td>
-            <td>{b.property?.name || '—'}<small>{b.property?.location}</small></td>
+            <td>{b.property?.name || '—'}<small>{b.property?.location}</small>{b.guide?.requested && <small>{b.guide.assigned ? 'Guide assigned' : 'Guide needed'} · {b.guide.days} day{b.guide.days === 1 ? '' : 's'}</small>}</td>
             <td>{shortDate(b.checkIn)} → {shortDate(b.checkOut)}{b.stayStatus && b.stayStatus !== 'expected' && <small><StatusBadge meta={STAY_STATUS[b.stayStatus]} fallback={b.stayStatus} /></small>}</td>
             <td className="num">{rupees(b.totalPrice)}</td>
             <td><StatusBadge meta={PAYMENT_STATUS[b.paymentStatus]} fallback={b.paymentStatus} /></td>
@@ -85,6 +87,7 @@ function BookingDrawer({ id, can, onClose }) {
         b.securityDepositAmount ? ['Security deposit', rupees(b.securityDepositAmount)] : null,
         b.refundStatus && b.refundStatus !== 'none' ? ['Refund', `${b.refundStatus} ${b.refundAmount ? rupees(b.refundAmount) : ''}`] : null
       ]} />
+      {b.guide?.requested && b.status === 'confirmed' && b.paymentStatus === 'paid' && b.stayStatus !== 'checked_out' && can('properties.manage') && <GuideAssignment key={b.guide.assigned?._id || 'unassigned'} booking={b} onSaved={load} />}
       {data.requests.length > 0 && <section className="ac-sub"><h4>Guest requests</h4><ul className="ac-mini-list">{data.requests.map(r => <li key={r._id}><div><strong>{r.kind === 'issue' ? 'Issue' : 'Request'} · {r.category}</strong><small>{r.code}</small></div><span>{r.status}</span></li>)}</ul></section>}
       <section className="ac-sub"><h4>Booking timeline</h4>{(b.actionHistory || []).length === 0 ? <p className="ac-muted">No events recorded.</p> : <ol className="ac-timeline">{[...b.actionHistory].reverse().map((e, i) => <li key={i}><span className="ac-timeline-dot"><Icon name="fa-circle" /></span><div><strong>{e.action}</strong>{e.reason && <p>{e.reason}</p>}<small>{e.performedBy} · {dateTime(e.timestamp)}</small></div></li>)}</ol>}</section>
       <section className="ac-sub"><h4>Admin notes & actions</h4><AuditTimeline entries={data.audit} />

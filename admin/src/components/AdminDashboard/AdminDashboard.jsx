@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
 import { API_BASE_URL } from '../../config';
+import { readAdminSession, clearAdminSession } from '../../session';
 import HeroImageManager from '../HeroImageManager/HeroImageManager';
 import { managementLabel, staffName } from '../Console/config';
 
@@ -187,7 +188,7 @@ const AdminDashboard = () => {
       showNotice('error', 'No caretaker-seeking owner selected.');
       return;
     }
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = readAdminSession()?.token;
     setIsSendingCaretakerMsg(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/admin/send-user-request`, {
@@ -228,27 +229,13 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     // Session Guard
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
-    const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
-
-    if (!token || !userStr) {
+    const session = readAdminSession();
+    if (!session) {
+      clearAdminSession();
       navigate('/login');
       return;
     }
-
-    try {
-      const user = JSON.parse(userStr);
-      if (user.role !== 'admin') {
-        navigate('/login');
-        return;
-      }
-      setAdminName(user.name);
-    } catch (e) {
-      sessionStorage.clear();
-      localStorage.clear();
-      navigate('/login');
-      return;
-    }
+    setAdminName(session.user.name);
 
     setLoading(true);
     fetchAdminData();
@@ -259,7 +246,7 @@ const AdminDashboard = () => {
       setLoading(false);
       return;
     }
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = readAdminSession()?.token;
 
     if (activeTab === 'owner-requests' || activeTab === 'caretakers') {
       try {
@@ -269,8 +256,7 @@ const AdminDashboard = () => {
         ]);
 
         if (resPartners.status === 401 || resPartners.status === 403) {
-          sessionStorage.clear();
-          localStorage.clear();
+          clearAdminSession();
           navigate('/login');
           return;
         }
@@ -321,8 +307,7 @@ const AdminDashboard = () => {
       });
 
       if (response.status === 401 || response.status === 403) {
-        sessionStorage.clear();
-        localStorage.clear();
+        clearAdminSession();
         navigate('/login');
         return;
       }
@@ -341,7 +326,7 @@ const AdminDashboard = () => {
   };
 
   const handleUpdatePrice = async (id, newPrice) => {
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = readAdminSession()?.token;
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/property/${id}/price`, {
         method: 'PUT',
@@ -364,7 +349,7 @@ const AdminDashboard = () => {
   };
 
   const handleStatusUpdate = async (id, status) => {
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = readAdminSession()?.token;
     // Optimistic UI update
     setData(prev => ({
       ...prev,
@@ -394,7 +379,7 @@ const AdminDashboard = () => {
   };
 
   const handlePartnerStatusUpdate = async (id, status) => {
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = readAdminSession()?.token;
     // Optimistic UI update
     setData(prev => ({
       ...prev,
@@ -422,7 +407,7 @@ const AdminDashboard = () => {
   };
 
   const handleCreateOwnerSetupLink = async (id) => {
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = readAdminSession()?.token;
     setSetupLinkBusyId(id);
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/partner-application/${id}/setup-link`, {
@@ -444,7 +429,7 @@ const AdminDashboard = () => {
   };
 
   const handleUserStatusUpdate = async (id, status) => {
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = readAdminSession()?.token;
     // Optimistic UI update
     setData(prev => ({
       ...prev,
@@ -471,7 +456,7 @@ const AdminDashboard = () => {
     if (!window.confirm(`Are you sure you want to permanently remove user (${email || id}) from the database?`)) {
       return;
     }
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = readAdminSession()?.token;
     setData(prev => ({
       ...prev,
       users: (prev.users || []).filter(u => u._id !== id)
@@ -492,7 +477,7 @@ const AdminDashboard = () => {
   };
 
   const handleCaretakerStatusUpdate = async (id, status) => {
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = readAdminSession()?.token;
     let assignedName = '';
     let assignedPhone = '';
 
@@ -564,10 +549,7 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAdminSession();
     navigate('/login');
   };
 

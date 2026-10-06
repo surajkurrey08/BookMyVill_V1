@@ -13,7 +13,6 @@ export default function RoomsAvailability({ properties, propertyId, onPropertyCh
   const [start, setStart] = useState(initialStart);
   const [end, setEnd] = useState(addDays(initialStart, 14));
   const [data, setData] = useState(null);
-  const [roomForm, setRoomForm] = useState({ name: '', number: '', type: 'Villa Room', capacity: 2, baseRate: '' });
   const [blockForm, setBlockForm] = useState({ roomId: '', start: initialStart, end: addDays(initialStart, 1), reason: '' });
   const [assignedRooms, setAssignedRooms] = useState({});
   const [loading, setLoading] = useState(true);
@@ -71,14 +70,6 @@ export default function RoomsAvailability({ properties, propertyId, onPropertyCh
     finally { setSaving(false); }
   }
 
-  function addRoom(event) {
-    event.preventDefault();
-    perform(async () => {
-      await request(`/properties/${propertyId}/rooms`, { method: 'POST', body: JSON.stringify(roomForm) });
-      setRoomForm({ name: '', number: '', type: 'Villa Room', capacity: 2, baseRate: '' });
-    }, 'Room added.');
-  }
-
   function blockDates(event) {
     event.preventDefault();
     perform(async () => {
@@ -102,7 +93,7 @@ export default function RoomsAvailability({ properties, propertyId, onPropertyCh
 
   return <div className="pms-panel">
     <div className="pms-intro">
-      <div><h2>Rooms & Availability</h2><p>Manage physical rooms, blocked nights, and confirmed reservations for each property.</p></div>
+      <div><h2>Villa Availability</h2><p>Manage blocked nights and confirmed reservations for the whole villa.</p></div>
       <label>Property<select value={propertyId} onChange={event => { if (event.target.value === propertyId) return; onPropertyChange(event.target.value); setData(null); setMessage(''); }} disabled={saving || (loading && !properties.length)}>
         {properties.length === 0 && <option value="">No saved properties</option>}
         {properties.map(property => <option key={property._id} value={property._id}>{property.name} · {managementLabel(property)}</option>)}
@@ -114,22 +105,10 @@ export default function RoomsAvailability({ properties, propertyId, onPropertyCh
     {message && <div role="status" className="pms-alert pms-success">{message}</div>}
     {loading && <p className="pms-muted">Loading live availability…</p>}
     {approvedListings.length > 0 && <div className="pms-card"><h3>Approved listings ready to add</h3><p>These approved applications do not yet have a saved property record.</p><div className="pms-list">{approvedListings.map(listing => <div className="pms-list-row" key={listing._id}><div><strong>{listing.propertyName}</strong><small>{listing.city} · {listing.propertyType}</small></div><button type="button" className="pms-primary" disabled={saving} onClick={() => importListing(listing._id)}>Add to Properties</button></div>)}</div></div>}
-    {!loading && properties.length === 0 && !error && <div className="pms-card"><h3>No saved property yet</h3><p>Add a property in the Properties tab. Rooms can be added after it is saved.</p></div>}
+    {!loading && properties.length === 0 && !error && <div className="pms-card"><h3>No saved property yet</h3><p>Add a property in the Properties tab. The entire villa is booked as one unit.</p></div>}
 
     {propertyId && <>
       {canWrite && <div className="pms-forms">
-        <form className="pms-card" onSubmit={addRoom}>
-          <h3>Add a room</h3>
-          <div className="pms-fields">
-            <label>Room name<input required maxLength="80" value={roomForm.name} onChange={e => setRoomForm({ ...roomForm, name: e.target.value })} placeholder="Valley Suite" /></label>
-            <label>Room number<input required maxLength="30" value={roomForm.number} onChange={e => setRoomForm({ ...roomForm, number: e.target.value })} placeholder="101" /></label>
-            <label>Type<input required maxLength="60" value={roomForm.type} onChange={e => setRoomForm({ ...roomForm, type: e.target.value })} /></label>
-            <label>Guest capacity<input required type="number" min="1" max="50" value={roomForm.capacity} onChange={e => setRoomForm({ ...roomForm, capacity: e.target.value })} /></label>
-            <label>Base rate (₹ / night)<input required type="number" min="0" step="1" value={roomForm.baseRate} onChange={e => setRoomForm({ ...roomForm, baseRate: e.target.value })} /></label>
-          </div>
-          <button className="pms-primary" disabled={saving}>Add room</button>
-        </form>
-
         <form className="pms-card" onSubmit={blockDates}>
           <h3>Block dates</h3>
           <div className="pms-fields">
@@ -145,7 +124,7 @@ export default function RoomsAvailability({ properties, propertyId, onPropertyCh
       <section className="pms-card">
         <div className="pms-section-head"><div><h3>Availability calendar</h3><p>Dates are nights. The end date is checkout and is excluded.</p></div><div className="pms-range"><label>From<input type="date" value={start} onChange={e => setStart(e.target.value)} /></label><label>Until<input type="date" min={addDays(start, 1)} value={end} onChange={e => setEnd(e.target.value)} /></label></div></div>
         <div className="pms-legend"><span>✓ Available</span><span>× Blocked</span><span>B Reserved</span><span>H Quotation hold</span><span>— Inactive</span></div>
-        {dates.length > 0 && data?.rooms.length > 0 ? <div className="pms-calendar-scroll"><table className="pms-calendar"><thead><tr><th>Room</th>{dates.map(date => <th key={date}>{new Date(`${date}T12:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</th>)}</tr></thead><tbody>{data.rooms.map(room => <tr key={room._id}><th><strong>{room.number}</strong><small>{room.name} · ₹{room.baseRate.toLocaleString('en-IN')}</small></th>{dates.map(date => { const night = nightByRoomDate.get(`${room._id}:${date}`); const state = calendarByRoomDate.get(`${room._id}:${date}`)?.status || 'unknown'; return <td key={date}><span className={`pms-night ${state}`} title={night?.reason || (state === 'hold' ? 'Held for a quotation' : state)}>{state === 'available' ? '✓' : state === 'booking' ? 'B' : state === 'block' ? '×' : state === 'hold' ? 'H' : '—'}</span></td>; })}</tr>)}</tbody></table></div> : <p className="pms-muted">{data?.rooms.length ? 'Choose a valid date range.' : canOperateProperty(selectedProperty) ? 'Add your first room to start the calendar.' : 'No rooms available for this property.'}</p>}
+        {dates.length > 0 && data?.rooms.length > 0 ? <div className="pms-calendar-scroll"><table className="pms-calendar"><thead><tr><th>Room</th>{dates.map(date => <th key={date}>{new Date(`${date}T12:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</th>)}</tr></thead><tbody>{data.rooms.map(room => <tr key={room._id}><th><strong>{room.number}</strong><small>{room.name} · ₹{room.baseRate.toLocaleString('en-IN')}</small></th>{dates.map(date => { const night = nightByRoomDate.get(`${room._id}:${date}`); const state = calendarByRoomDate.get(`${room._id}:${date}`)?.status || 'unknown'; return <td key={date}><span className={`pms-night ${state}`} title={night?.reason || (state === 'hold' ? 'Held for a quotation' : state)}>{state === 'available' ? '✓' : state === 'booking' ? 'B' : state === 'block' ? '×' : state === 'hold' ? 'H' : '—'}</span></td>; })}</tr>)}</tbody></table></div> : <p className="pms-muted">{data?.rooms.length ? 'Choose a valid date range.' : canOperateProperty(selectedProperty) ? 'The villa booking unit is created during onboarding.' : 'No villa booking unit is configured yet.'}</p>}
         {dates.length === 31 && <p className="pms-muted">Calendar shows up to 31 nights. Narrow the date range to see every night.</p>}
       </section>
 

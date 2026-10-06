@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import OwnerLogin from './components/OwnerLogin/OwnerLogin';
+import OwnerSetup from './components/OwnerLogin/OwnerSetup';
 import OwnerDashboard from './components/OwnerDashboard/OwnerDashboard';
 import './App.css';
 
@@ -34,6 +35,7 @@ function App() {
       <div className="owner-app">
         <Routes>
           <Route path="/login" element={<OwnerLogin />} />
+          <Route path="/owner-setup" element={<OwnerSetup />} />
           <Route 
             path="/dashboard" 
             element={

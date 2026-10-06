@@ -61,8 +61,9 @@ router.post('/owner-setup', async (req, res) => {
       role: 'owner'
     }).select('+ownerSetupTokenHash +ownerSetupExpiresAt');
     if (!owner) return res.status(400).json({ msg: 'Setup link is invalid or expired. Ask the admin for a new link.' });
+    if (owner.ownerManagementMode === 'BOOKMYVILLA_MANAGED' || ['pending', 'rejected', 'suspended'].includes(owner.status)) return res.status(403).json({ msg: 'Owner panel access is not enabled for this account. Contact Admin.' });
 
-    const approved = await PartnerApplication.exists({ email: owner.email, status: 'approved' });
+    const approved = owner.ownerAccessApprovedAt || await PartnerApplication.exists({ email: owner.email, status: 'approved' });
     if (!approved) return res.status(403).json({ msg: 'Property owner application is not approved.' });
 
     const passwordHash = await bcrypt.hash(password, 12);
@@ -119,9 +120,10 @@ router.post('/login', async (req, res) => {
     }
 
     if (['pending','rejected','suspended'].includes(user.status)) return res.status(403).json({ msg: 'This account is not active. Contact Admin.' });
+    if (user.role === 'owner' && user.ownerManagementMode === 'BOOKMYVILLA_MANAGED') return res.status(403).json({ msg: 'BookMyVilla manages your villas through the Villa Manager panel. Owner login is not enabled.' });
 
     // Block property owner login if property has not been accepted/approved by Admin
-    if (user.role === 'owner') {
+    if (user.role === 'owner' && !user.ownerAccessApprovedAt) {
       try {
         const PartnerApplication = require('../models/PartnerApplication');
         const cleanUserEmail = (user.email || '').toLowerCase().trim();

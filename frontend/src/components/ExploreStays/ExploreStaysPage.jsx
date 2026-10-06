@@ -99,7 +99,7 @@ const PropertyCard = ({ property, favorite, onFavorite, searchParams }) => {
   const amenityIcon = (label) => /pool|lake/i.test(label) ? 'water-ladder' : /breakfast|meal|restaurant/i.test(label) ? 'mug-hot' : /wi-?fi/i.test(label) ? 'wifi' : /park/i.test(label) ? 'square-parking' : /view|balcony/i.test(label) ? 'mountain-sun' : 'check';
   return <article className="es-stay-card">
     <div className="es-card-photo"><Link to={href} state={detailsState} aria-label={`View ${property.name}`}><img src={property.image} alt={property.name} loading="lazy" /></Link><span className="es-card-badge">{property.badge}</span><button type="button" className={`es-favorite ${favorite ? 'is-saved' : ''}`} onClick={() => onFavorite(property.id)} aria-label={`${favorite ? 'Remove' : 'Add'} ${property.name} ${favorite ? 'from' : 'to'} favorites`} aria-pressed={favorite}><i className={`${favorite ? 'fa-solid' : 'fa-regular'} fa-heart`} aria-hidden="true" /></button></div>
-    <div className="es-card-body"><div className="es-card-heading"><Link to={href} state={detailsState}>{property.name}</Link><span className="es-card-rating"><Icon name="star" /> {property.rating.toFixed(1)} <small>({property.reviewsCount})</small></span></div><p className="es-card-location"><Icon name="location-dot" /> {property.location}</p><div className="es-card-facts"><Icon name="user-group" /> 2 guests / night</div><div className="es-card-amenities">{amenities.map((amenity) => <span key={amenity}><Icon name={amenityIcon(amenity)} /> {amenity.replace(' Included', '')}</span>)}</div><div className="es-card-bottom"><div><strong>{priceLabel(property.priceValue)}</strong><span> / night</span></div><Link to={href} state={detailsState} className="es-details-btn">View Details <Icon name="arrow-right" /></Link></div></div>
+    <div className="es-card-body"><div className="es-card-heading"><Link to={href} state={detailsState}>{property.name}{property.verified && <span className="es-verified" title="Verified by BookMyVilla" aria-label="Verified by BookMyVilla"><Icon name="circle-check" /></span>}</Link><span className="es-card-rating"><Icon name="star" /> {property.rating.toFixed(1)} <small>({property.reviewsCount})</small></span></div><p className="es-card-location"><Icon name="location-dot" /> {property.location}</p><div className="es-card-facts"><Icon name="user-group" /> 2 guests / night</div><div className="es-card-amenities">{amenities.map((amenity) => <span key={amenity}><Icon name={amenityIcon(amenity)} /> {amenity.replace(' Included', '')}</span>)}</div><div className="es-card-bottom"><div><strong>{priceLabel(property.priceValue)}</strong><span> / night</span></div><Link to={href} state={detailsState} className="es-details-btn">View Details <Icon name="arrow-right" /></Link></div></div>
   </article>;
 };
 const FilterGroup = ({ title, children }) => <fieldset className="es-filter-group"><legend>{title}</legend>{children}</fieldset>;
@@ -118,6 +118,8 @@ const ExploreStaysPage = () => {
   const [checkOut, setCheckOut] = useState(params.get('checkOut') || addDays(todayISO(), 3));
   const [guests, setGuests] = useState(Math.max(1, Number(params.get('guests')) || 2));
   const [databaseProperties, setDatabaseProperties] = useState([]);
+  // Stays already booked for the searched dates (whole villas booked by someone else).
+  const [unavailable, setUnavailable] = useState(() => new Set());
   const [draft, setDraft] = useState(emptyFilters);
   const [applied, setApplied] = useState(emptyFilters);
   const [sort, setSort] = useState('popular');
@@ -160,6 +162,18 @@ const ExploreStaysPage = () => {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    const searchedIn = params.get('checkIn'), searchedOut = params.get('checkOut');
+    if (!searchedIn || !searchedOut) { setUnavailable(new Set()); return undefined; }
+    const controller = new AbortController();
+    const query = new URLSearchParams({ checkIn: searchedIn, checkOut: searchedOut, guests: String(Math.max(1, Number(params.get('guests')) || 2)) });
+    fetch(`${API_BASE_URL}/api/customer-booking/availability?${query}`, { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : { unavailable: [] })
+      .then((data) => setUnavailable(new Set((data.unavailable || []).map(String))))
+      .catch((error) => { if (error.name !== 'AbortError') setUnavailable(new Set()); });
+    return () => controller.abort();
+  }, [params]);
+
   const allProperties = useMemo(() => {
     const names = new Set(databaseProperties.map((item) => item.name.trim().toLowerCase()));
     return [...databaseProperties, ...localProperties.filter((item) => !names.has(item.name.trim().toLowerCase()))];
@@ -167,6 +181,7 @@ const ExploreStaysPage = () => {
   const filtered = useMemo(() => {
     const term = searchTerm.toLowerCase();
     const result = allProperties.filter((property) => {
+      if (property.source === 'database' && unavailable.has(String(property.id))) return false;
       if (term && ![property.name, property.location, property.region, property.type].some((value) => contains(value, term))) return false;
       if (property.priceValue > applied.maxPrice || property.rating < applied.rating) return false;
       if (applied.types.length && !applied.types.some((type) => isType(property, type))) return false;
@@ -182,7 +197,7 @@ const ExploreStaysPage = () => {
       return rank[a.source] - rank[b.source] || a.order - b.order;
     });
     return result;
-  }, [allProperties, searchTerm, applied, sort]);
+  }, [allProperties, searchTerm, applied, sort, unavailable]);
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pages);
   const visibleProperties = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

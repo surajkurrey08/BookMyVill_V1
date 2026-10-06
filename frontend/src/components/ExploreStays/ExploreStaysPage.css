@@ -230,3 +230,6 @@
   .es-card-bottom { flex-direction: column; }
   .es-details-btn { width: 100%; }
 }
+
+/* Blue tick on verified stays */
+.es-verified { display:inline-flex; margin-left:6px; color:#1d72f2; font-size:.9em; vertical-align:baseline; }

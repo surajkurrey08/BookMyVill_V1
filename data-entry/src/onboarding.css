@@ -1,0 +1,55 @@
+/* Data Entry onboarding: owners + villas and local guides (Onboarding.jsx) */
+.ob-form { display: grid; gap: 18px; max-width: 980px; }
+.ob-section { margin: 0; padding: 16px 18px 18px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 0; display: grid; gap: 16px; }
+.ob-section legend { padding: 0 6px; font-weight: 650; font-size: 14px; color: var(--text); }
+.ob-section textarea { min-height: 80px; }
+.ob-actions { display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; padding: 14px 0; background: var(--bg); border-top: 1px solid var(--border); }
+.ob-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.ob-mode { position: relative; display: grid; gap: 4px; padding: 14px 14px 14px 42px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--raised); cursor: pointer; }
+.ob-mode input { position: absolute; left: 14px; top: 16px; accent-color: var(--accent); }
+.ob-mode small { font-size: 12px; }
+.ob-mode.active { border-color: var(--accent); background: rgba(91, 141, 239, .12); }
+.ob-mode:focus-within { outline: 2px solid var(--link); outline-offset: 2px; }
+.ob-search { max-width: 360px; margin-bottom: 18px; }
+.ob-owner-list { display: grid; gap: 14px; }
+.ob-owner { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--raised); display: grid; gap: 12px; }
+.ob-owner header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.ob-owner h2 { margin: 0; }
+.ob-owner ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ob-owner li { display: flex; align-items: center; gap: 12px; }
+.ob-owner li > div { flex: 1; min-width: 0; display: grid; }
+.ob-owner li img, .ob-noimg { width: 64px; height: 46px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+.ob-noimg { display: grid; place-items: center; background: var(--surface); color: var(--muted); }
+.ob-owner .button { justify-self: start; }
+.ob-note { margin: 0; color: var(--warn); font-size: 12px; }
+.ob-inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-bottom: 18px; }
+.ob-inline .field { flex: 1 1 170px; }
+.ob-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ob-table th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.ob-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.ob-table td small { display: block; }
+.ob-rate { display: flex; gap: 8px; align-items: center; }
+.ob-rate input { width: 110px; }
+/* Photos */
+.ob-photos { display: grid; gap: 12px; }
+.ob-photo-add { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 12px; align-items: end; }
+.ob-link-row { display: flex; gap: 8px; }
+.ob-upload { position: relative; display: grid; justify-items: center; gap: 2px; padding: 10px; min-height: 70px; text-align: center; border: 1px dashed #5a6b82; border-radius: var(--radius); background: var(--raised); cursor: pointer; }
+.ob-upload:hover { border-color: var(--link); }
+.ob-upload:focus-within { outline: 2px solid var(--link); outline-offset: 2px; }
+.ob-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.ob-upload strong { font-size: 13px; }
+.ob-upload small { font-size: 11px; }
+.ob-upload.busy { opacity: .7; cursor: progress; }
+.ob-photo-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.ob-photo-grid li { position: relative; aspect-ratio: 4 / 3; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); background: var(--raised); }
+.ob-photo-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ob-cover { position: absolute; left: 6px; bottom: 6px; padding: 2px 7px; border-radius: 4px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; }
+.ob-cover-btn, .ob-remove { position: absolute; border: 0; background: rgba(15, 20, 27, .82); color: #fff; }
+.ob-cover-btn { left: 6px; bottom: 6px; padding: 2px 7px; border-radius: 4px; font-size: 11px; }
+.ob-remove { top: 5px; right: 5px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; padding: 0; }
+.ob-remove svg { width: 14px; height: 14px; }
+@media (max-width: 700px) {
+  .ob-modes, .ob-photo-add { grid-template-columns: 1fr; }
+  .ob-owner header { flex-direction: column; }
+}

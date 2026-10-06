@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const ownerAuth = require('../middleware/propertyOperatorAuth');
 const { requirePropertyAccess, propertyScope, managementFilters, MANAGEMENT_SELECT, ownerPropertyView } = require('../services/propertyAccess');
-const { sendError } = require('../utils/validate');
+const { sendError, HttpError, cleanText } = require('../utils/validate');
 const Property = require('../models/Property');
 const Room = require('../models/Room');
 const RoomNight = require('../models/RoomNight');
@@ -88,7 +88,10 @@ router.post('/approved-listings/:applicationId/import', async (req, res) => {
       return res.json(existing);
     }
     const numericPrice = Number(String(application.price || '').replace(/[^\d.]/g, ''));
-    const property = await Property.create({ owner: req.user.id, sourceApplication: application._id, name: application.propertyName, type: application.propertyType || 'Villa', location: application.city || 'Mahabaleshwar', price: Number.isFinite(numericPrice) && numericPrice > 0 ? numericPrice : 10000, mapLink: application.mapLink || '', photos: application.photos || [], videos: application.videos || [], status: 'approved' });
+    const property = await Property.create({ owner: req.user.id, sourceApplication: application._id, name: application.propertyName, type: application.propertyType || 'Villa', location: application.city || 'Mahabaleshwar', price: Number.isFinite(numericPrice) && numericPrice > 0 ? numericPrice : 10000, mapLink: application.mapLink || '', photos: application.photos || [], videos: application.videos || [], status: 'approved', bookingMode: 'ENTIRE', listingData: { details: { guestCapacity: 2 } } });
+    try {
+      await Room.create({ property: property._id, name: 'Entire villa', number: 'ENTIRE', type: 'Entire villa', capacity: 2, baseRate: property.price });
+    } catch (err) { await Property.deleteOne({ _id: property._id }); throw err; }
     res.status(201).json(property);
   } catch (err) {
     if (err.code === 11000) return res.status(409).json({ msg: 'This approved listing has already been imported.' });
@@ -119,6 +122,11 @@ router.post('/properties/:propertyId/rooms', async (req, res) => {
   try {
     const property = await ownedProperty(req, res, req.params.propertyId);
     if (!property) return;
+    if (req.user.role === 'owner') return res.status(409).json({ msg: 'New rooms cannot be added. Villas are booked whole; edit the existing villa unit.' });
+    // Villas are booked whole: one "Entire villa" unit, never extra rooms.
+    if (property.bookingMode === 'ENTIRE' && await Room.exists({ property: property._id })) {
+      return res.status(409).json({ msg: 'This villa is booked as a whole. Edit its existing unit instead of adding rooms.' });
+    }
     const name = String(req.body.name || '').trim();
     const number = String(req.body.number || '').trim();
     const type = String(req.body.type || '').trim();
@@ -227,6 +235,21 @@ router.post('/bookings/:bookingId/assign-room', async (req, res) => {
       throw err;
     }
   } catch (err) { if (err.status) res.status(err.status).json({ msg: err.message }); else fail(res, err); }
+});
+
+// Self-managed owners ask Admin for the "Verified" badge (blue tick) on a property.
+router.post('/properties/:id/verification', async (req, res) => {
+  try {
+    if (req.user.role !== 'owner') throw new HttpError(403, 'Only the property owner can request verification.');
+    const property = await requirePropertyAccess(req.user, req.params.id);
+    const status = property.verification?.status || 'none';
+    if (status === 'verified') throw new HttpError(409, 'This property is already verified.');
+    if (status === 'requested') throw new HttpError(409, 'Verification is already requested. Admin will review it.');
+    const note = cleanText(req.body?.note || '', 500);
+    if (note === null) throw new HttpError(400, 'Keep the note under 500 characters.');
+    await Property.updateOne({ _id: property._id }, { $set: { verification: { status: 'requested', note, requestedAt: new Date(), reviewedAt: null, reviewNote: '' } } });
+    res.json({ status: 'requested' });
+  } catch (err) { sendError(res, err, 'Verification request'); }
 });
 
 module.exports = router;

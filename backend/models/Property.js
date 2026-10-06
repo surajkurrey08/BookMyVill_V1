@@ -3,6 +3,32 @@ const mongoose = require('mongoose');
 const PropertySchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   managementMode: { type: String, enum: ['SELF_MANAGED', 'BOOKMYVILLA_MANAGED'], default: 'SELF_MANAGED' },
+  // ENTIRE: the whole property is one bookable unit (villas, cottages) — guests
+  // book all of it, never room by room. ROOMS: each room/unit is booked separately.
+  bookingMode: { type: String, enum: ['ENTIRE', 'ROOMS'], default: 'ROOMS' },
+  // "Show on website" switch. Customers see a property only when it is
+  // admin-approved AND this is on (see services/publicViews PUBLIC_LISTING).
+  websiteVisible: { type: Boolean, default: true },
+  // "Verified" blue tick for guests. BookMyVilla-managed villas are verified by
+  // us automatically; self-managed owners request it and Admin reviews.
+  verification: {
+    status: { type: String, enum: ['none', 'requested', 'verified', 'rejected'], default: 'none' },
+    note: { type: String, default: '', maxlength: 500 },
+    requestedAt: { type: Date, default: null },
+    reviewedAt: { type: Date, default: null },
+    reviewNote: { type: String, default: '', maxlength: 500 }
+  },
+  // Internal handover notes for the Villa Manager team; never public.
+  handover: {
+    type: new mongoose.Schema({
+      keyLocation: { type: String, default: '', maxlength: 200 },
+      caretakerName: { type: String, default: '', maxlength: 100 },
+      caretakerPhone: { type: String, default: '', maxlength: 20 },
+      notes: { type: String, default: '', maxlength: 1000 }
+    }, { _id: false }),
+    default: undefined,
+    select: false
+  },
   // Internal assignments are opt-in in authorized queries, never public data.
   assignedVillaManager: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, select: false },
   assignedDataEntryUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, select: false },

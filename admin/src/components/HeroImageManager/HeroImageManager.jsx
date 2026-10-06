@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../../config';
+import { readAdminSession } from '../../session';
 import './HeroImageManager.css';
 
 const pages = [
@@ -58,7 +59,7 @@ export default function HeroImageManager() {
     setBusyKey(key);
     setNotice(null);
     try {
-      const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+      const token = readAdminSession()?.token;
       const response = await fetch(`${API_BASE_URL}/api/site-heroes/${key}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-auth-token': token || '' },
@@ -80,7 +81,7 @@ export default function HeroImageManager() {
     setBusyKey(key);
     setNotice(null);
     try {
-      const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+      const token = readAdminSession()?.token;
       const response = await fetch(`${API_BASE_URL}/api/site-heroes/${key}`, {
         method: 'DELETE', headers: { 'x-auth-token': token || '' },
       });

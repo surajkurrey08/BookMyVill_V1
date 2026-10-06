@@ -26,6 +26,13 @@ The [GitHub Actions workflow](../.github/workflows/deploy-bookmyvilla.yml) build
 
 ## Public checks
 
+Property device uploads are saved under `backend/uploads/properties` and served
+through `/api/properties/media/`. The existing Docker uploads mount and deployment
+exclusion preserve these files. Keep this directory in production backups alongside
+MongoDB. `PUBLIC_API_URL` may override the production media origin (default:
+`https://api.bookmyvilla.online`). Each file is limited to 30 MB and each JSON
+submission to 50 MB, including base64 overhead. Add further media through Edit Listing.
+
 - `https://bookmyvilla.online/` serves the guest production build.
 - `https://admin.bookmyvilla.online/` serves the admin production build.
 - `https://owner.bookmyvilla.online/` serves the owner production build once its DNS record exists.

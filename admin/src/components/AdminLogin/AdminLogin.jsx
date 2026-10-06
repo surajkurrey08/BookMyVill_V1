@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { readAdminSession, clearAdminSession, saveAdminSession } from '../../session';
+import { adminApi } from '../Console/api';
 import './AdminLogin.css';
 import { API_BASE_URL } from '../../config';
 
@@ -10,23 +12,24 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // If already logged in, redirect to dashboard
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
-    const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        if (user.role === 'admin') {
-          navigate('/console');
-        }
-      } catch (e) {
-        sessionStorage.clear();
-        localStorage.clear();
-      }
-    }
-  }, [navigate]);
+    if (location.state?.authError) setError(location.state.authError);
+    // Stored role metadata can be stale; verify with the backend before
+    // redirecting so rejected sessions cannot bounce back into the console.
+    if (!readAdminSession()) return;
+    const controller = new AbortController();
+    setLoading(true);
+    adminApi('/me', { signal: controller.signal }).then(() => {
+      if (!controller.signal.aborted) navigate('/console', { replace: true });
+    }).catch(err => {
+      if (controller.signal.aborted) return;
+      if (err.status === 401 || err.status === 403) clearAdminSession();
+      setError(err.message);
+    }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [navigate, location.state]);
 
   const validateField = (fieldName, value) => {
     let err = '';
@@ -88,11 +91,8 @@ const AdminLogin = () => {
 
       if (response.ok) {
         if (data.user && data.user.role === 'admin') {
-          sessionStorage.setItem('token', data.token);
-          sessionStorage.setItem('user', JSON.stringify(data.user));
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          navigate('/console');
+          saveAdminSession(data.token, data.user);
+          navigate('/console', { replace: true });
         } else {
           setError('Access Denied. This portal is restricted to Administrators only.');
         }

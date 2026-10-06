@@ -292,3 +292,90 @@
 @media(max-width:900px){.bf-container{width:min(100% - 30px,740px)}.bf-detail-grid,.bf-rooms-layout,.bf-checkout-layout,.bf-confirm-layout{grid-template-columns:1fr}.bf-gallery{height:330px}.bf-property-booking,.bf-checkout-summary{position:static}.bf-overview-layout{grid-template-columns:1fr}.bf-rooms-sidebar{display:grid;grid-template-columns:1fr 1fr;gap:12px}.bf-rooms-sidebar .bf-booking-summary{grid-column:1/-1}.bf-side-callout{margin:0}.bf-confirm-facts{grid-template-columns:repeat(3,1fr);row-gap:12px}.bf-confirm-facts span:nth-child(3){border:0}.bf-timeline-step strong{font-size:.68rem}.bf-timeline-step small{font-size:.59rem}.bf-stay-top{grid-template-columns:40% 1fr}.bf-checkout-summary{order:-1}}
 @media(max-width:620px){.bf-root .bf-page{padding-top:16px}.bf-container{width:calc(100% - 24px)}.bf-breadcrumb{font-size:.67rem;gap:6px}.bf-crumb{gap:6px}.bf-gallery{grid-template-columns:1fr;height:auto}.bf-gallery-primary{height:250px}.bf-gallery-stack{display:flex;height:72px}.bf-gallery-stack button{flex:1}.bf-amenity-strip{overflow:auto;justify-content:flex-start}.bf-detail-grid{gap:10px}.bf-property-booking{padding:16px}.bf-title-actions{flex-wrap:wrap}.bf-tabs a{padding:8px 12px;font-size:.72rem}.bf-room-teasers{grid-template-columns:1fr}.bf-teaser:last-child{display:block}.bf-teaser img{height:130px}.bf-info-grid{grid-template-columns:1fr 1fr}.bf-compact-property{grid-template-columns:1fr}.bf-compact-property>img{height:170px}.bf-compact-property>div{padding:12px}.bf-compact-property .bf-section-head{gap:5px}.bf-compact-property h1{font-size:1.13rem}.bf-update-search{flex-direction:column}.bf-date-fields.is-compact{width:100%;grid-template-columns:1fr 1fr}.bf-date-fields.is-compact label:nth-child(3){grid-column:1/-1}.bf-update-search>.bf-primary{width:100%}.bf-availability-note>span{display:none}.bf-room-card{grid-template-columns:1fr}.bf-room-photo{height:180px}.bf-room-price{grid-column:1;grid-template-columns:1fr 140px}.bf-rooms-sidebar{grid-template-columns:1fr}.bf-side-callout{margin-top:0}.bf-three,.bf-two,.bf-id-grid{grid-template-columns:1fr}.bf-addon-grid{grid-template-columns:1fr 1fr}.bf-card-heading{flex-wrap:wrap}.bf-card-heading small{margin-left:46px;margin-top:-10px}.bf-payment-tabs{grid-template-columns:1fr 1fr}.bf-summary-room{flex-wrap:wrap}.bf-confirm-copy{padding:22px 16px 15px 75px}.bf-confirm-icon{left:16px;top:22px;width:42px;height:42px}.bf-confirm-copy h1{font-size:1.7rem}.bf-confirm-facts{grid-template-columns:repeat(2,1fr);margin:0 8px 8px}.bf-confirm-facts span:nth-child(3){border-right:1px solid var(--bf-line)}.bf-confirm-facts span:nth-child(even){border:0}.bf-timeline{grid-template-columns:repeat(3,1fr);gap:14px 0}.bf-timeline-step:nth-child(3) .bf-timeline-line{display:none}.bf-stay-top{grid-template-columns:1fr}.bf-stay-top>img{height:170px}.bf-stay-facts{grid-template-columns:repeat(2,1fr)}.bf-payment-status{grid-template-columns:1fr;gap:10px}.bf-payment-status>span{border-right:0;border-bottom:1px solid var(--bf-line);padding-bottom:8px}.bf-payment-status>span:last-child{border:0}.bf-action-grid{grid-template-columns:repeat(2,1fr)}.bf-before-arrive>div:last-child{justify-content:flex-start}}
 @media print{.bf-root .hp-footer,.bf-breadcrumb,.bf-timeline,.bf-precheckin,.bf-before-arrive,.bf-manage,.bf-confirm-cta{display:none!important}.bf-root .bf-page{padding:0}.bf-container{width:100%}.bf-confirm-layout{display:block}.bf-panel,.bf-confirm-hero{box-shadow:none}}
+
+/* Whole-villa booking (bookingMode ENTIRE): availability line and the single villa unit */
+.bf-villa-status { display:flex; align-items:flex-start; gap:9px; margin:-4px 0 14px; padding:10px 13px; border-radius:9px; font-size:.86rem; font-weight:600; }
+.bf-villa-status span { display:grid; gap:2px; }
+.bf-villa-status small { font-weight:500; font-size:.76rem; opacity:.85; }
+.bf-villa-status i { margin-top:3px; }
+.bf-villa-ok { background:#ecf6f1; color:#164e40; border:1px solid #d9eee1; }
+.bf-villa-warn { background:#fff6e6; color:#7a4b06; border:1px solid #f4e1b8; }
+.bf-villa-unit { display:grid; grid-template-columns:minmax(160px, 38%) 1fr; }
+.bf-villa-unit img { height:100%; min-height:150px; }
+.bf-villa-unit > div { padding:16px 18px; display:grid; gap:8px; align-content:center; }
+.bf-villa-unit h3 { font-size:1.05rem; text-transform:capitalize; }
+@media (max-width:640px) { .bf-villa-unit { grid-template-columns:1fr; } .bf-villa-unit img { min-height:0; height:150px; } }
+
+/* Gallery (Gallery.jsx): a fixed frame that fits 1, 2, 3 or many photos without
+   spilling into the sections below; every tile opens the full-screen viewer. */
+.bf-gallery { overflow:hidden; }
+.bf-gallery-1 { grid-template-columns:1fr; }
+.bf-gallery-primary { width:100%; height:100%; min-height:0; border:0; padding:0; cursor:zoom-in; }
+.bf-gallery-stack { height:100%; min-height:0; }
+.bf-gallery-2 .bf-gallery-stack { grid-template-rows:minmax(0,1fr); }
+.bf-gallery-3 .bf-gallery-stack { grid-template-rows:repeat(2,minmax(0,1fr)); }
+.bf-gallery-stack button { height:100%; min-height:0; cursor:zoom-in; }
+.bf-gallery-primary:hover img { transform:scale(1.02); }
+.bf-gallery-primary img { transition:transform .3s ease; }
+.bf-gallery-count { display:inline-flex; align-items:center; gap:6px; }
+.bf-gallery-stack .bf-more-photos { inset:0; display:grid; place-items:center; padding:0; border-radius:0; background:rgba(8,18,22,.55); font-size:1rem; font-weight:700; }
+@media(max-width:620px){
+  .bf-gallery { height:auto; }
+  .bf-gallery-primary { height:250px; }
+  .bf-gallery-stack { height:72px; }
+  .bf-gallery-1 .bf-gallery-primary { height:260px; }
+}
+
+/* Full-screen photo viewer */
+.bf-viewer { position:fixed; inset:0; z-index:3000; display:grid; grid-template-rows:auto minmax(0,1fr) auto; gap:12px; padding:16px 20px 20px; background:rgba(6,12,14,.95); color:#fff; animation:bf-viewer-in .2s ease; }
+.bf-viewer-top { display:flex; justify-content:space-between; align-items:center; font-size:.9rem; }
+.bf-viewer-top button, .bf-viewer-nav { display:grid; place-items:center; width:42px; height:42px; border-radius:50%; border:0; background:rgba(255,255,255,.12); color:#fff; cursor:pointer; font-size:1.05rem; }
+.bf-viewer-top button:hover, .bf-viewer-nav:hover { background:rgba(255,255,255,.24); }
+.bf-viewer-stage { position:relative; display:flex; align-items:center; justify-content:center; min-height:0; }
+.bf-viewer-stage img { max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; }
+.bf-viewer-nav { position:absolute; top:50%; transform:translateY(-50%); }
+.bf-viewer-nav.is-prev { left:0; }
+.bf-viewer-nav.is-next { right:0; }
+.bf-viewer-thumbs { display:flex; gap:8px; overflow-x:auto; justify-content:center; padding-bottom:4px; }
+.bf-viewer-thumbs button { flex:0 0 auto; width:76px; height:54px; padding:0; border:2px solid transparent; border-radius:6px; overflow:hidden; background:none; opacity:.6; cursor:pointer; }
+.bf-viewer-thumbs button.is-active { border-color:var(--bf-gold); opacity:1; }
+.bf-viewer-thumbs img { width:100%; height:100%; object-fit:cover; display:block; }
+@media(max-width:620px){ .bf-viewer { padding:12px; } .bf-viewer-thumbs { justify-content:flex-start; } .bf-viewer-thumbs button { width:60px; height:44px; } }
+@media(prefers-reduced-motion:reduce){ .bf-viewer { animation:none; } }
+@keyframes bf-viewer-in { from { opacity:0; } to { opacity:1; } }
+
+/* Blue tick: verified by BookMyVilla */
+.bf-verified { display:inline-flex; align-items:center; gap:4px; margin-left:8px; padding:3px 9px 3px 6px; border-radius:999px; background:#e8f1ff; color:#1d63d8; font-family:'Outfit','Inter',sans-serif; font-size:.72rem; font-weight:700; letter-spacing:.2px; vertical-align:middle; white-space:nowrap; }
+.bf-verified i { font-size:.95rem; color:#1d72f2; }
+
+/* Checkout: full payment vs advance (rest paid at the villa) */
+.bf-plan { border:0; margin:12px 0 4px; padding:0; display:grid; gap:8px; min-width:0; }
+.bf-plan legend { padding:0; margin-bottom:8px; font-size:.82rem; font-weight:700; color:#142026; }
+.bf-plan label { display:flex; align-items:flex-start; gap:10px; padding:11px 12px; border:1.5px solid var(--bf-line); border-radius:10px; cursor:pointer; transition:border-color .15s ease, background .15s ease; }
+.bf-plan label:hover { border-color:#9fc3b5; }
+.bf-plan label.is-active { border-color:var(--bf-green); background:#f1f8f4; }
+.bf-plan input { margin-top:3px; accent-color:var(--bf-green); }
+.bf-plan span { display:grid; gap:2px; }
+.bf-plan strong { font-size:.86rem; color:#142026; }
+.bf-plan small { font-size:.74rem; color:var(--bf-muted); }
+.bf-plan:disabled label { cursor:not-allowed; opacity:.75; }
+.bf-plan-note { font-size:.72rem; color:var(--bf-muted); }
+.bf-due-later { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px; padding:10px 12px; border-radius:9px; background:#fff6e6; color:#7a4b06; font-size:.82rem; }
+.bf-due-later strong { font-size:.95rem; }
+
+/* Confirmation: caretaker contact (shown only for a confirmed booking) */
+.bf-caretaker { display:flex; align-items:center; gap:14px; margin-top:14px; padding:14px 16px; border-radius:12px; background:#f1f8f4; border:1px solid #d9eee1; }
+.bf-caretaker > div { flex:1; display:grid; gap:2px; min-width:0; }
+.bf-caretaker small { color:var(--bf-muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.6px; }
+.bf-caretaker strong { color:#142026; font-size:1rem; }
+.bf-caretaker > div > span { color:#4f5a67; font-size:.8rem; }
+.bf-caretaker-icon { display:grid; place-items:center; width:42px; height:42px; flex-shrink:0; border-radius:50%; background:var(--bf-green); color:#fff; }
+.bf-caretaker .bf-primary { flex-shrink:0; white-space:nowrap; text-decoration:none; }
+@media(max-width:620px){ .bf-caretaker { flex-wrap:wrap; } .bf-caretaker .bf-primary { width:100%; justify-content:center; } }
+.bf-guide-choice { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.bf-guide-choice input { width: 20px; height: 20px; accent-color: #2d433d; }
+.bf-guide-choice span { display: grid; gap: 4px; }
+.bf-guide-choice small { color: #5c5c5c; }
+.bf-guide-days { display: grid; gap: 8px; margin-top: 16px; max-width: 240px; }
+.bf-guide-days select { min-height: 44px; padding: 10px 12px; border: 1px solid #ccd5d0; border-radius: 6px; background: #fff; color: #1a1a1a; font: inherit; }
+.bf-guide input:focus-visible, .bf-guide select:focus-visible { outline: 2px solid #2d433d; outline-offset: 3px; }

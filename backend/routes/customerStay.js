@@ -19,7 +19,7 @@ const ISSUE_GRACE_MS = 3 * DAY_MS;
 
 async function bookingForGuest(req, id) {
   if (!validId(id)) throw new HttpError(400, 'Invalid booking.');
-  const booking = await Booking.findById(id).populate('property', 'name type location photos mapLink assignedCaretaker stayInfo owner').populate('room', 'name type');
+  const booking = await Booking.findById(id).populate('property', 'name type location photos mapLink assignedCaretaker stayInfo owner +handover').populate('room', 'name type');
   if (!booking || String(booking.user || '') !== req.user.id) throw new HttpError(404, 'Booking not found in your account.');
   return booking;
 }
@@ -77,6 +77,7 @@ router.get('/trips/:id', async (req, res) => {
     const property = booking.property || {};
     const stayInfo = property.stayInfo || {};
     const window = requestWindow(booking);
+    const guide = booking.guide?.assigned ? await require('../models/LocalGuide').findById(booking.guide.assigned).select('name phone languages').lean() : null;
     const checkedOut = booking.stayStatus === 'checked_out';
     const requests = await GuestRequest.find({ booking: booking._id }).sort({ createdAt: -1 }).limit(50).lean();
 
@@ -86,7 +87,9 @@ router.get('/trips/:id', async (req, res) => {
         _id: booking._id, status: booking.status, paymentStatus: booking.paymentStatus, stayStatus: booking.stayStatus || 'expected',
         checkIn: booking.checkIn, checkOut: booking.checkOut, nights: nights(booking), stayType: booking.stayType,
         guests: booking.guests, adults: booking.adults, children: booking.children,
-        totalPrice: booking.totalPrice, amountPaid: booking.paymentStatus === 'paid' ? booking.totalPrice : 0,
+        totalPrice: booking.totalPrice, amountPaid: booking.paymentStatus === 'paid' ? booking.onlineAmount ?? booking.totalPrice : 0,
+        balanceDue: booking.balanceCollectedAt ? 0 : booking.balanceDue || 0, paymentPlan: booking.paymentPlan || 'full',
+        guideDays: booking.guide?.requested ? booking.guide.days : 0,
         roomLabel: booking.room ? `${booking.room.name}${booking.room.type ? ` · ${booking.room.type}` : ''}` : null,
         source: booking.source || 'website', createdAt: booking.createdAt
       },
@@ -97,7 +100,11 @@ router.get('/trips/:id', async (req, res) => {
         wifi: window.confirmed && stayInfo.wifiName ? { name: stayInfo.wifiName, password: stayInfo.wifiPassword || '' } : null,
         houseRules: Array.isArray(stayInfo.houseRules) ? stayInfo.houseRules : [],
         arrivalNotes: stayInfo.arrivalNotes || '', foodInfo: stayInfo.foodInfo || '',
-        caretaker: property.assignedCaretaker?.name ? { name: property.assignedCaretaker.name, phone: property.assignedCaretaker.phone || '' } : null
+        // Local guide contact once the team has assigned one to this confirmed booking.
+        guide: window.confirmed && guide ? { name: guide.name, phone: guide.phone, languages: guide.languages || [] } : null,
+        // Caretaker contact only once the stay is confirmed (paid booking).
+        caretaker: !window.confirmed ? null : property.handover?.caretakerPhone ? { name: property.handover.caretakerName || 'Villa caretaker', phone: property.handover.caretakerPhone }
+          : property.assignedCaretaker?.name ? { name: property.assignedCaretaker.name, phone: property.assignedCaretaker.phone || '' } : null
       },
       deposit: (booking.securityDepositAmount || 0) > 0 ? { amount: booking.securityDepositAmount, status: checkedOut ? 'processing' : 'held' } : null,
       refund: booking.status === 'cancelled' && booking.paymentStatus === 'paid'

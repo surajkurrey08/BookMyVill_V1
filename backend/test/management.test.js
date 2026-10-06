@@ -41,7 +41,7 @@ test.after(stop);
 test('CASE 1 and 9: owner operates self-managed and legacy properties, but cannot inject management fields', async () => {
   for (const property of [self, legacy]) {
     const response = await api('POST', `/api/owner-pms/properties/${property._id}/rooms`, { token: owner.token, body: { name: 'Garden Room', number: 'G1', type: 'Suite', capacity: 2, baseRate: 10000 } });
-    assert.equal(response.status, 201);
+    assert.equal(response.status, 409, 'owners cannot add rooms to whole-villa inventory');
     assert.equal(canManageProperty(owner.user, await Property.findById(property._id)), true);
   }
   const legacyView = await api('GET', `/api/admin-console/properties/${legacy._id}`, { token: admin.token });

@@ -11,6 +11,8 @@ const AddOn = require('../models/AddOn');
 const inventory = require('../services/inventory');
 const paymentGateway = require('../services/paymentGateway');
 const { priceQuote } = require('../services/quotePricing');
+const { PUBLIC_LISTING } = require('../services/publicViews');
+const { guideOffer } = require('../services/guides');
 const { findPromotionByCode, promotionRuleFailure, guestRuleFailure, redeemPromotion } = require('../services/promotions');
 const { validId, stayNights, indiaDate, cleanText, cleanMultiline, validEmail, validPhone, phoneKey, HttpError, sendError } = require('../utils/validate');
 
@@ -18,6 +20,8 @@ const router = express.Router();
 const fail = (res, error) => sendError(res, error, 'Customer booking');
 const HOLD_MS = 10 * 60 * 1000;
 const PAYMENT_MS = 20 * 60 * 1000;
+// "Pay advance" checkout option: this share online, the rest at the villa.
+const ADVANCE_PERCENT = 30;
 
 function datesFor(checkIn, checkOut) {
   const dates = stayNights(checkIn, checkOut, 365);
@@ -27,9 +31,24 @@ function datesFor(checkIn, checkOut) {
 
 async function publicProperty(id) {
   if (!validId(id)) throw new HttpError(404, 'Property not found.');
-  const property = await Property.findOne({ _id: id, status: 'approved' });
+  const property = await Property.findOne({ _id: id, ...PUBLIC_LISTING });
   if (!property) throw new HttpError(404, 'This property is not available for booking.');
   return property;
+}
+
+// Assigned local guide for a confirmed booking: shown to the guest only once the team assigns one.
+async function guideContact(booking) {
+  if (!booking.guide?.requested) return null;
+  const assigned = booking.guide.assigned && await require('../models/LocalGuide').findById(booking.guide.assigned).select('name phone languages').lean();
+  return { days: booking.guide.days, assigned: assigned ? { name: assigned.name, phone: assigned.phone, languages: assigned.languages || [] } : null };
+}
+
+// Caretaker contact for a guest with a confirmed booking only (never on public pages).
+function caretakerContact(property) {
+  const handover = property?.handover;
+  if (handover?.caretakerPhone) return { name: handover.caretakerName || 'Villa caretaker', phone: handover.caretakerPhone };
+  const assigned = property?.assignedCaretaker;
+  return assigned?.phone ? { name: assigned.name || 'Villa caretaker', phone: assigned.phone } : null;
 }
 
 async function activeHold(userId, id) {
@@ -75,16 +94,52 @@ async function calculate({ hold, property, room, dates }, body, user) {
       if (identifiers.length && await Booking.countDocuments({ promotion: promotion._id, paymentStatus: 'paid', $or: identifiers }) >= promotion.maxUsesPerGuest) throw new HttpError(400, `${promotion.code} has reached its per-guest usage limit.`);
     }
   }
-  const priced = priceQuote({ nights: dates.length, nightlyRate: room.baseRate, addOns, promotion, taxMode: 'none', checkIn: hold.checkIn, today: indiaDate() });
+  const paymentPlan = body.paymentPlan === 'advance' ? 'advance' : 'full';
+  // Optional local guide, charged per day (1 day up to the number of nights).
+  const offer = await guideOffer(property);
+  const guideDays = body.guideDays === undefined || body.guideDays === null || body.guideDays === '' ? 0 : Number(body.guideDays);
+  if (!Number.isInteger(guideDays) || guideDays < 0 || guideDays > dates.length) throw new HttpError(400, `Choose a local guide for 1–${dates.length} day${dates.length === 1 ? '' : 's'}, or none.`);
+  if (guideDays && !offer) throw new HttpError(409, 'A local guide is not available for this villa right now.');
+  const guide = guideDays ? { days: guideDays, dailyRate: offer.dailyRate, amount: offer.dailyRate * guideDays } : null;
+  const fees = guide ? [{ label: `Local guide · ${guideDays} day${guideDays === 1 ? '' : 's'}`, amount: guide.amount, taxRate: 0 }] : [];
+  const priced = priceQuote({ nights: dates.length, nightlyRate: room.baseRate, addOns, fees, promotion, taxMode: 'none', checkIn: hold.checkIn, today: indiaDate(), advancePercent: paymentPlan === 'advance' ? ADVANCE_PERCENT : 100 });
   return {
     nights: dates.length, nightlyRate: room.baseRate, addOns: priced.addOnLines,
     accommodation: priced.totals.accommodation, discount: priced.totals.discount,
     tax: priced.totals.tax, securityDeposit: 0, total: priced.totals.total,
     amountDueNow: priced.schedule.advanceAmount, balance: priced.schedule.balanceAmount,
+    paymentPlan, advancePercent: ADVANCE_PERCENT,
+    guide, guideOption: offer ? { dailyRate: offer.dailyRate, maxDays: dates.length } : null,
     promoCode: promotion?.code || '', promotionId: promotion?._id || null,
     cancellationPolicy: room.cancellationPolicy || 'Contact the property for its cancellation terms before paying.'
   };
 }
+
+// Search support: public properties that have bookable units but none free for
+// these dates and guests (every unit is booked, held, blocked, not ready or too
+// small). Listings with no units configured are left out rather than hidden.
+router.get('/availability', async (req, res) => {
+  try {
+    const dates = datesFor(req.query.checkIn, req.query.checkOut);
+    const guests = Number(req.query.guests || 2);
+    if (!Number.isInteger(guests) || guests < 1 || guests > 50) throw new HttpError(400, 'Choose 1–50 guests.');
+    const properties = await Property.find(PUBLIC_LISTING).select('_id bookingMode').lean();
+    const ids = properties.map(p => p._id);
+    const entire = new Set(properties.filter(p => p.bookingMode === 'ENTIRE').map(p => String(p._id)));
+    const [units, nights] = await Promise.all([
+      Room.find({ property: { $in: ids }, active: true }).select('_id property capacity operationalStatus').lean(),
+      RoomNight.find({ property: { $in: ids }, date: { $in: dates }, ...inventory.activeNightFilter() }).select('room property').lean()
+    ]);
+    const taken = new Set(nights.map(n => String(n.room)));
+    const takenVillas = new Set(nights.filter(n => entire.has(String(n.property))).map(n => String(n.property)));
+    const withUnits = new Set(units.map(u => String(u.property)));
+    const unitCounts = new Map();
+    for (const unit of units) unitCounts.set(String(unit.property), (unitCounts.get(String(unit.property)) || 0) + 1);
+    const free = new Set(units.filter(u => unitCounts.get(String(u.property)) === 1 && u.capacity >= guests && (u.operationalStatus || 'ready') === 'ready' && !taken.has(String(u._id)) && !takenVillas.has(String(u.property))).map(u => String(u.property)));
+    res.set('Cache-Control', 'no-store');
+    res.json({ checkIn: req.query.checkIn, checkOut: req.query.checkOut, guests, unavailable: [...withUnits].filter(id => !free.has(id)) });
+  } catch (error) { fail(res, error); }
+});
 
 router.get('/properties/:propertyId/rooms', async (req, res) => {
   try {
@@ -93,7 +148,8 @@ router.get('/properties/:propertyId/rooms', async (req, res) => {
     const guests = Number(req.query.guests || 2);
     if (!Number.isInteger(guests) || guests < 1 || guests > 50) throw new HttpError(400, 'Choose 1–50 guests.');
     const availability = await require('../services/availability').calendar(property._id, dates);
-    const rooms = availability.rooms;
+    const active = availability.rooms.filter(room => room.active !== false);
+    const rooms = active.length === 1 ? active : [];
     res.set('Cache-Control', 'no-store');
     res.json({ property: { _id: property._id, name: property.name, location: property.location, photos: property.photos, amenities: property.amenities, price: property.price }, checkIn: req.query.checkIn, checkOut: req.query.checkOut, guests, nights: dates.length,
       rooms: rooms.map(room => ({ _id: room._id, name: room.name, type: room.type, capacity: room.capacity, baseRate: room.baseRate, number: room.number,
@@ -115,6 +171,7 @@ router.post('/holds', async (req, res) => {
     const property = await publicProperty(req.body?.propertyId);
     const room = validId(req.body?.roomId) && await Room.findOne({ _id: req.body.roomId, property: property._id, active: true });
     if (!room) throw new HttpError(404, 'This room is not available.');
+    if (await Room.countDocuments({ property: property._id, active: true }) !== 1) throw new HttpError(409, 'Online booking opens once this property is set up for whole-villa stays.');
     const dates = datesFor(req.body.checkIn, req.body.checkOut);
     const guests = Number(req.body.guests);
     if (!Number.isInteger(guests) || guests < 1 || guests > room.capacity) throw new HttpError(400, `This room allows up to ${room.capacity} guests.`);
@@ -131,7 +188,7 @@ router.get('/holds/:id', async (req, res) => {
   try {
     const { hold, property, room, dates } = await activeHold(req.user.id, req.params.id);
     res.set('Cache-Control', 'no-store');
-    res.json({ holdId: hold._id, status: hold.status, expiresAt: hold.expiresAt, property: { _id: property._id, name: property.name, location: property.location, photos: property.photos, amenities: property.amenities }, room, checkIn: hold.checkIn, checkOut: hold.checkOut, guests: hold.guests, nights: dates.length });
+    res.json({ holdId: hold._id, status: hold.status, expiresAt: hold.expiresAt, property: { _id: property._id, name: property.name, location: property.location, photos: property.photos, amenities: property.amenities, bookingMode: property.bookingMode }, room, checkIn: hold.checkIn, checkOut: hold.checkOut, guests: hold.guests, nights: dates.length });
   } catch (error) { fail(res, error); }
 });
 
@@ -155,7 +212,9 @@ router.post('/holds/:id/price', async (req, res) => {
         addOns: (booking.lineItems || []).filter(item => item.kind === 'addon').map(item => ({ name: item.label, quantity: item.quantity, unitPrice: item.unitPrice, amount: item.amount })),
         accommodation: (booking.lineItems || []).find(item => item.kind === 'accommodation')?.amount || 0,
         discount: booking.discountAmount || 0, tax: booking.taxAmount || 0, securityDeposit: booking.securityDepositAmount || 0,
-        total: booking.totalPrice, amountDueNow: booking.totalPrice, balance: 0, cancellationPolicy: booking.cancellationPolicy });
+        total: booking.totalPrice, amountDueNow: booking.onlineAmount ?? booking.totalPrice, balance: booking.balanceDue || 0,
+        paymentPlan: booking.paymentPlan || 'full', advancePercent: ADVANCE_PERCENT, cancellationPolicy: booking.cancellationPolicy,
+        guide: booking.guide?.requested ? { days: booking.guide.days, dailyRate: booking.guide.dailyRate, amount: booking.guide.amount } : null, guideOption: null });
     }
     const user = await User.findById(req.user.id).select('email phone');
     res.set('Cache-Control', 'no-store');
@@ -171,7 +230,7 @@ router.post('/holds/:id/pay', async (req, res) => {
     if (context.hold.status === 'payment_pending' && context.hold.booking && context.hold.orderId) {
       const existing = await Booking.findOne({ _id: context.hold.booking, user: req.user.id, status: 'pending', paymentStatus: 'pending' });
       if (!existing) throw new HttpError(409, 'This payment has changed. Open My Trips for its latest status.');
-      return res.json({ order_id: context.hold.orderId, amount: existing.totalPrice * 100, currency: 'INR', key_id: paymentGateway.keyId(), bookingId: existing._id, holdExpiresAt: context.hold.expiresAt });
+      return res.json({ order_id: context.hold.orderId, amount: (existing.onlineAmount ?? existing.totalPrice) * 100, currency: 'INR', key_id: paymentGateway.keyId(), bookingId: existing._id, holdExpiresAt: context.hold.expiresAt });
     }
     const guestName = cleanText(req.body?.guest?.name, 100);
     const guestPhone = cleanText(req.body?.guest?.phone, 20);
@@ -195,10 +254,12 @@ router.post('/holds/:id/pay', async (req, res) => {
       guest: { name: guestName, phone: guestPhone, phoneKey: phoneKey(guestPhone), email: guestEmail.toLowerCase() },
       guestDetails: { arrivalTime, idType, idLastFour: idNumber.slice(-4), specialRequests },
       checkIn: new Date(`${context.hold.checkIn}T00:00:00.000Z`), checkOut: new Date(`${context.hold.checkOut}T00:00:00.000Z`),
-      guests: context.hold.guests, totalPrice: pricing.total, taxAmount: pricing.tax, discountAmount: pricing.discount,
+      guests: context.hold.guests, totalPrice: pricing.total, paymentPlan: pricing.paymentPlan, onlineAmount: pricing.amountDueNow, balanceDue: pricing.balance, taxAmount: pricing.tax, discountAmount: pricing.discount,
       promotion: pricing.promotionId, securityDepositAmount: pricing.securityDeposit, cancellationPolicy: pricing.cancellationPolicy,
       lineItems: [{ kind: 'accommodation', label: `${context.room.name} · ${pricing.nights} night${pricing.nights === 1 ? '' : 's'}`, quantity: pricing.nights, unitPrice: pricing.nightlyRate, amount: pricing.accommodation },
-        ...pricing.addOns.map(item => ({ kind: 'addon', label: item.name, quantity: item.quantity, unitPrice: item.unitPrice, amount: item.amount, taxRate: item.taxRate, tax: item.tax }))],
+        ...pricing.addOns.map(item => ({ kind: 'addon', label: item.name, quantity: item.quantity, unitPrice: item.unitPrice, amount: item.amount, taxRate: item.taxRate, tax: item.tax })),
+        ...(pricing.guide ? [{ kind: 'fee', label: 'Local guide', quantity: pricing.guide.days, unitPrice: pricing.guide.dailyRate, amount: pricing.guide.amount }] : [])],
+      ...(pricing.guide && { guide: { requested: true, days: pricing.guide.days, dailyRate: pricing.guide.dailyRate, amount: pricing.guide.amount } }),
       razorpayOrderId: order.id, status: 'pending', paymentStatus: 'pending', source: 'website',
       actionHistory: [{ action: 'Payment Started', performedBy: `Traveler (${req.user.id})`, targetUser: 'Property Owner', reason: `Room ${context.room.number} held for checkout.` }] });
     await CustomerHold.updateOne({ _id: context.hold._id }, { $set: { booking: booking._id, orderId: order.id } });
@@ -226,7 +287,7 @@ router.post('/holds/:id/verify', async (req, res) => {
     if (orderId !== hold.orderId || typeof paymentId !== 'string' || !/^pay_[A-Za-z0-9]+$/.test(paymentId) || !paymentGateway.validSignature(orderId, paymentId, signature)) throw new HttpError(400, 'Payment details could not be verified.');
     if (booking.status === 'confirmed' && booking.paymentStatus === 'paid' && booking.razorpayPaymentId === paymentId) return res.json({ bookingId: booking._id, status: booking.status });
     const payment = await paymentGateway.fetchPayment(paymentId);
-    if (payment.order_id !== orderId || payment.status !== 'captured' || payment.currency !== 'INR' || payment.amount !== booking.totalPrice * 100) throw new HttpError(409, 'Payment is not captured for this booking.');
+    if (payment.order_id !== orderId || payment.status !== 'captured' || payment.currency !== 'INR' || payment.amount !== (booking.onlineAmount ?? booking.totalPrice) * 100) throw new HttpError(409, 'Payment is not captured for this booking.');
     if (booking.paymentStatus === 'paid') throw new HttpError(409, 'Payment is already recorded. Contact support for room conflict or refund review.');
     if (booking.status !== 'pending') {
       await Booking.updateOne({ _id: booking._id, paymentStatus: 'pending' }, { $set: { paymentStatus: 'paid', razorpayPaymentId: paymentId, paymentSource: 'razorpay', paymentMode: paymentGateway.mode(), paidAt: new Date() }, $push: { actionHistory: { action: 'Payment Captured After Cancellation', performedBy: 'Payment Verification', reason: 'Refund review required; no room was reserved.' } } });
@@ -270,11 +331,11 @@ router.post('/holds/:id/verify', async (req, res) => {
 router.get('/bookings/:id/confirmation', async (req, res) => {
   try {
     if (!validId(req.params.id)) throw new HttpError(404, 'Booking not found.');
-    const booking = await Booking.findOne({ _id: req.params.id, user: req.user.id }).populate('property', 'name location photos amenities mapLink stayInfo assignedCaretaker owner').populate('room', 'name type number capacity baseRate');
+    const booking = await Booking.findOne({ _id: req.params.id, user: req.user.id }).populate('property', 'name location photos amenities mapLink stayInfo assignedCaretaker owner +handover').populate('room', 'name type number capacity baseRate');
     if (!booking || booking.status !== 'confirmed' || booking.paymentStatus !== 'paid') throw new HttpError(404, 'Confirmed booking not found in your account.');
     const view = require('../services/publicViews').customerBooking(booking);
     res.set('Cache-Control', 'no-store');
-    res.json({ booking: view, amountPaid: booking.totalPrice, remainingBalance: 0 });
+    res.json({ booking: view, amountPaid: booking.onlineAmount ?? booking.totalPrice, remainingBalance: booking.balanceCollectedAt ? 0 : booking.balanceDue || 0, paymentPlan: booking.paymentPlan || 'full', caretaker: caretakerContact(booking.property), guide: await guideContact(booking) });
   } catch (error) { fail(res, error); }
 });
 

@@ -21,12 +21,14 @@ router.use(accountAuth, (req, res, next) => {
   if (req.user.role !== 'villa_manager' || !['active', 'approved'].includes(req.user.status)) return res.status(403).json({ msg: 'Access denied. An active Villa Manager account is required.' });
   res.set('Cache-Control', 'no-store'); next();
 });
+// Managed owners and their villas (add owner + villa, state now, history, website switch).
+router.use('/owner-directory', require('./villaManagerOwners'));
 const route = fn => async (req, res) => { try { await fn(req, res); } catch (err) { sendError(res, err, 'Villa Manager operations'); } };
 const oid = id => new mongoose.Types.ObjectId(id);
 const scope = req => ({ managementMode: 'BOOKMYVILLA_MANAGED', assignedVillaManager: oid(req.user.id) });
 const dayRange = (day = indiaDate()) => ({ $gte: new Date(`${day}T00:00:00Z`), $lt: new Date(`${addDays(day, 1)}T00:00:00Z`) });
 const propertyFields = '_id name owner type location status managementMode price';
-const bookingFields = '_id property room user guest.name guest.phone guest.email guestDetails.arrivalTime guestDetails.specialRequests checkIn checkOut guests status stayStatus paymentStatus securityDepositAmount operations actualCheckIn actualCheckOut actionHistory createdAt';
+const bookingFields = '_id property room user guest.name guest.phone guest.email guestDetails.arrivalTime guestDetails.specialRequests checkIn checkOut guests status stayStatus paymentStatus securityDepositAmount operations actualCheckIn actualCheckOut actionHistory guide createdAt';
 async function idsFor(req) {
   if (req.query.propertyId && req.query.propertyId !== 'all') return [(await requirePropertyAccess(req.user, req.query.propertyId))._id];
   return (await Property.find(propertyScope(req.user)).select('_id').lean()).map(p => p._id);
@@ -159,7 +161,7 @@ router.get('/resources/:kind', route(async (req, res) => {
 
 router.get('/bookings/:id', route(async (req, res) => {
   await findScoped(Booking, req, req.params.id);
-  const booking = await Booking.findById(req.params.id).select(bookingFields).populate('property', 'name').populate('room', 'name number capacity type').populate('user', 'name email phone').lean();
+  const booking = await Booking.findById(req.params.id).select(bookingFields).populate('property', 'name').populate('room', 'name number capacity type').populate('user', 'name email phone').populate('guide.assigned', 'name phone').lean();
   res.json(booking);
 }));
 router.patch('/bookings/:id/details', route(async (req, res) => {

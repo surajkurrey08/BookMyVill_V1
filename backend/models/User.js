@@ -25,11 +25,26 @@ const UserSchema = new mongoose.Schema({
   ownerSetupTokenHash: { type: String, default: null, select: false },
   ownerSetupExpiresAt: { type: Date, default: null, select: false },
   ownerPasswordSetAt: { type: Date, default: null },
+  // Set when Admin issues an Owner panel setup link for an owner who has no
+  // partner application (e.g. added by Data Entry); lets /owner-setup proceed.
+  ownerAccessApprovedAt: { type: Date, default: null },
   // Owners only, chosen by the admin when creating the owner: whether the
   // owner runs their properties themselves or BookMyVilla runs them from the
   // Villa Manager panel. New properties inherit this (see models/Property.js).
   ownerManagementMode: { type: String, enum: ['SELF_MANAGED', 'BOOKMYVILLA_MANAGED'], default: undefined },
   ownerVillaManager: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: undefined },
+  // Contact details for owners added by the Villa Manager team (BookMyVilla-
+  // managed owners don't sign in; the team contacts them directly).
+  ownerProfile: {
+    type: new mongoose.Schema({
+      whatsapp: { type: String, default: '', maxlength: 20 },
+      address: { type: String, default: '', maxlength: 300 },
+      alternateName: { type: String, default: '', maxlength: 100 },
+      alternatePhone: { type: String, default: '', maxlength: 20 },
+      notes: { type: String, default: '', maxlength: 1000 }
+    }, { _id: false }),
+    default: undefined
+  },
   createdAt: { type: Date, default: Date.now }
 });
 

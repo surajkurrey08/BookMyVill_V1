@@ -1,5 +1,5 @@
 import React, { useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, useLocation, Navigate } from 'react-router-dom';
 import Lenis from 'lenis';
 import OwnerSetup from './components/OwnerSetup/OwnerSetup';
 import UserDashboard from './components/UserDashboard/UserDashboard';
@@ -24,9 +24,14 @@ import 'lenis/dist/lenis.css';
 const QuoteView = lazy(() => import('./components/QuoteView/QuoteView'));
 const TripPage = lazy(() => import('./components/Trip/TripPage'));
 const PropertyPage = lazy(() => import('./components/BookingFlow/PropertyPage'));
-const RoomsPage = lazy(() => import('./components/BookingFlow/RoomsPage'));
 const CheckoutPage = lazy(() => import('./components/BookingFlow/CheckoutPage'));
 const ConfirmedPage = lazy(() => import('./components/BookingFlow/ConfirmedPage'));
+
+function LegacyVillaRoute() {
+  const { id } = useParams();
+  const { search } = useLocation();
+  return <Navigate to={`/property/${id}${search}`} replace />;
+}
 
 const AccessRestrictedModal = ({ title, message }) => {
   const navigate = useNavigate();
@@ -269,7 +274,7 @@ function App() {
           <Route path="/owner" element={<OwnerRedirect />} />
           <Route path="/owner-dashboard" element={<OwnerRedirect />} />
           <Route path="/property/:id" element={<Suspense fallback={null}><PropertyPage /></Suspense>} />
-          <Route path="/property/:id/rooms" element={<Suspense fallback={null}><RoomsPage /></Suspense>} />
+          <Route path="/property/:id/rooms" element={<Suspense fallback={null}><LegacyVillaRoute /></Suspense>} />
           <Route path="/booking/checkout/:holdId" element={<Suspense fallback={null}><CheckoutPage /></Suspense>} />
           <Route path="/booking/:bookingId/confirmed" element={<Suspense fallback={null}><ConfirmedPage /></Suspense>} />
           <Route path="/dashboard" element={<UserDashboard />} />

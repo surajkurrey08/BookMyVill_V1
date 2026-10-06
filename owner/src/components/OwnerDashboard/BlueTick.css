@@ -1,0 +1,15 @@
+/* Blue tick (Verified) status and request on owner property cards */
+.bt-badge { display: inline-flex; align-items: center; gap: 6px; margin: 6px 0; padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
+.bt-badge.is-verified { background: rgba(29, 114, 242, 0.15); color: #6aa8ff; }
+.bt-badge.is-pending { background: rgba(224, 168, 76, 0.15); color: #f0c674; }
+.bt-badge.is-rejected { background: rgba(231, 106, 96, 0.15); color: #f19a92; border-radius: 8px; }
+.bt-apply { margin: 6px 0; display: grid; gap: 8px; }
+.bt-apply form { display: grid; gap: 8px; }
+.bt-help { margin: 0; font-size: 0.78rem; opacity: 0.8; }
+.bt-apply textarea { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(0, 0, 0, 0.2); color: inherit; font: inherit; font-size: 0.82rem; resize: vertical; }
+.bt-btn { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; border: 1px solid #1d72f2; background: rgba(29, 114, 242, 0.15); color: #8fbcff; font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.bt-btn:hover:not(:disabled) { background: rgba(29, 114, 242, 0.28); }
+.bt-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.bt-link { background: none; border: 0; color: inherit; opacity: 0.75; font: inherit; font-size: 0.8rem; cursor: pointer; }
+.bt-actions { display: flex; justify-content: flex-end; gap: 10px; align-items: center; }
+.bt-error { margin: 0; color: #f19a92; font-size: 0.78rem; }

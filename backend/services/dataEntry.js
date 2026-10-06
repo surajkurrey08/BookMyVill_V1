@@ -86,6 +86,10 @@ function normalizedDraft(body, previous = {}) {
 }
 const roomContent = r => Object.fromEntries(ROOM_FIELDS.filter(k => r[k] !== undefined).map(k => [k, k === '_id' ? String(r[k]) : r[k]]));
 function currentDraft(property, rooms) {
+  if (property.bookingMode === 'ENTIRE') {
+    rooms = rooms.filter(r => r.active !== false);
+    if (property.listingDraft) return { ...property.listingDraft, rooms: rooms.map(r => property.listingDraft.rooms?.find(d => String(d._id) === String(r._id)) || roomContent(r)) };
+  }
   if (property.listingDraft) return property.listingDraft;
   return { name: property.name, type: property.type, location: property.location, mapLink: property.mapLink || '', amenities: property.amenities || [], facilities: property.facilities || [], photos: property.photos || [], videos: property.videos || [], photoCategories: property.listingData?.photoCategories || [], details: { ...(property.listingData?.details || {}), checkInTime: property.listingData?.details?.checkInTime || property.stayInfo?.checkInTime || '', checkOutTime: property.listingData?.details?.checkOutTime || property.stayInfo?.checkOutTime || '' }, rooms: rooms.map(roomContent) };
 }
@@ -122,9 +126,10 @@ async function saveDraft(user, id, body, revision) {
   const p = await assigned(user, id);
   if (['READY_FOR_REVIEW', 'COMPLETED'].includes(statusOf(p))) throw new HttpError(409, 'This listing is with Admin or completed. Ask Admin to request changes before editing.');
   if (revision !== undefined && revision !== (p.dataEntryRevision || 0)) throw new HttpError(409, 'This draft changed in another session. Reload before saving.');
-  const rooms = await Room.find({ property: p._id }).lean();
+  const rooms = await Room.find({ property: p._id, ...(p.bookingMode === 'ENTIRE' && { active: true }) }).lean();
   const draft = normalizedDraft(body, currentDraft(p, rooms));
   const existingIds = new Set(rooms.map(r => String(r._id)));
+  if (draft.rooms.some(r => !r._id)) throw new HttpError(403, 'New rooms cannot be added. Edit the existing villa unit and describe bedrooms in Property details.');
   if (draft.rooms.some(r => r._id && !existingIds.has(r._id)) || rooms.some(r => !draft.rooms.some(d => d._id === String(r._id)))) throw new HttpError(403, 'Existing rooms must remain linked to this property. Room deletion is an operational action.');
   const state = statusOf(p) === 'CHANGES_REQUIRED' ? 'CHANGES_REQUIRED' : completion(draft, p.price).complete ? 'IN_PROGRESS' : 'INCOMPLETE';
   const saved = await Property.findOneAndUpdate({ _id: p._id, assignedDataEntryUser: user.id, ...revisionFilter(p) }, { $set: { listingDraft: draft, dataEntryStatus: state, dataEntryCompletion: completion(draft, p.price).percent, dataEntryUpdatedAt: new Date() }, $inc: { dataEntryRevision: 1 } }, { new: true }).select(SELECT).populate('owner', 'name');

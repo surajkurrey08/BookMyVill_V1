@@ -8,6 +8,7 @@ import SalesSnapshot from '../Sales/SalesSnapshot';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { canOperateProperty, canOperateLegacyRecord, isManagedProperty, managementLabel } from '../../lib/propertyAccess';
+import BlueTick from './BlueTick';
 import ManagementNotice from './ManagementNotice';
 import { API_BASE_URL, GUEST_SITE_URL } from '../../config';
 import './OwnerDashboard.css';
@@ -54,6 +55,8 @@ const OwnerDashboard = () => {
 
   // Modals & Forms state
   const [showAddModal, setShowAddModal] = useState(false);
+  const [savingProperty, setSavingProperty] = useState(false);
+  const [readingMedia, setReadingMedia] = useState(0);
   const [editingProperty, setEditingProperty] = useState(null);
   const PRESET_AMENITIES = [
     'Private Swimming Pool',
@@ -86,6 +89,7 @@ const OwnerDashboard = () => {
     type: 'Villa',
     location: 'Mahabaleshwar',
     price: 15000,
+    maxGuests: 2,
     mapLink: '',
     amenities: [],
     photos: [],
@@ -541,6 +545,12 @@ const OwnerDashboard = () => {
   const handlePhotoFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
+    if (files.some(file => file.size > 30 * 1024 * 1024)) {
+      setError('Each media file must be 30 MB or smaller.');
+      e.target.value = '';
+      return;
+    }
+    setReadingMedia(count => count + 1);
     try {
       const base64Images = await Promise.all(files.map(f => convertFileToBase64(f)));
       setPropertyForm(prev => ({
@@ -549,6 +559,9 @@ const OwnerDashboard = () => {
       }));
     } catch (err) {
       console.error('Error reading image files:', err);
+      setError('Could not read the selected images. Please choose them again.');
+    } finally {
+      setReadingMedia(count => count - 1);
     }
   };
 
@@ -562,6 +575,12 @@ const OwnerDashboard = () => {
   const handleVideoFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
+    if (files.some(file => file.size > 30 * 1024 * 1024)) {
+      setError('Each media file must be 30 MB or smaller.');
+      e.target.value = '';
+      return;
+    }
+    setReadingMedia(count => count + 1);
     try {
       const base64Videos = await Promise.all(files.map(f => convertFileToBase64(f)));
       setPropertyForm(prev => ({
@@ -570,6 +589,9 @@ const OwnerDashboard = () => {
       }));
     } catch (err) {
       console.error('Error reading video files:', err);
+      setError('Could not read the selected videos. Please choose them again.');
+    } finally {
+      setReadingMedia(count => count - 1);
     }
   };
 
@@ -633,6 +655,7 @@ const OwnerDashboard = () => {
   // Add / Edit Property Submission
   const handleSaveProperty = async (e) => {
     e.preventDefault();
+    if (savingProperty || readingMedia) return;
     if (editingProperty && readOnlyProperty) return denyOperation();
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     setError('');
@@ -664,6 +687,7 @@ const OwnerDashboard = () => {
     const payload = {
       name: trimmedPropName,
       type: propertyForm.type,
+      maxGuests: propertyForm.maxGuests,
       location: propertyForm.location,
       price: Math.max(1, Math.abs(parseInt(propertyForm.price) || 10000)),
       mapLink: propertyForm.mapLink || '',
@@ -681,26 +705,16 @@ const OwnerDashboard = () => {
       }
     };
 
+    if (new Blob([JSON.stringify(payload)]).size > 49 * 1024 * 1024) {
+      setError('Selected media is too large for one submission. Use smaller files or fewer photos/videos, then add more through Edit Listing.');
+      return;
+    }
+
+    setSavingProperty(true);
     try {
-      let url = `${API_BASE_URL}/properties/add`;
-      let method = 'POST';
-
-      if (editingProperty) {
-        url = `${API_BASE_URL}/properties/${editingProperty._id}`;
-        method = 'PUT';
-      }
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token
-        },
-        body: JSON.stringify(payload)
+      await api(editingProperty ? `/properties/${editingProperty._id}` : '/properties/add', {
+        method: editingProperty ? 'PUT' : 'POST', body: payload
       });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.msg || 'Failed to save property');
 
       setActionSuccess(editingProperty ? 'Property details updated successfully!' : 'Property added successfully! Your new listing is pending Admin Approval before appearing on the public website.');
       setShowAddModal(false);
@@ -710,6 +724,8 @@ const OwnerDashboard = () => {
       fetchOwnerData(token);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSavingProperty(false);
     }
   };
 
@@ -721,6 +737,7 @@ const OwnerDashboard = () => {
       type: prop.type || 'Villa',
       location: prop.location || 'Mahabaleshwar',
       price: prop.price || 15000,
+      maxGuests: prop.listingData?.details?.guestCapacity || 2,
       mapLink: prop.mapLink || '',
       amenities: prop.amenities || [],
       photos: prop.photos || [],
@@ -937,7 +954,7 @@ const OwnerDashboard = () => {
               <i className="fa-solid fa-calendar-check"></i> Bookings
             </button>
             <button className={`nav-btn ${activeTab === 'rooms' ? 'active' : ''}`} onClick={() => handleTabChange('rooms')}>
-              <i className="fa-solid fa-bed"></i> Rooms & Availability
+              <i className="fa-solid fa-bed"></i> Villa Availability
             </button>
             <button className={`nav-btn ${activeTab === 'operations' ? 'active' : ''}`} onClick={() => handleTabChange('operations')}>
               <i className="fa-solid fa-concierge-bell"></i> Guest Operations
@@ -1005,7 +1022,7 @@ const OwnerDashboard = () => {
                 {activeTab === 'offers' && <><i className="fa-solid fa-tags"></i> Offers & Add-ons</>}
                 {activeTab === 'properties' && <><i className="fa-solid fa-hotel"></i> Properties ({properties.length})</>}
                 {activeTab === 'bookings' && <><i className="fa-solid fa-calendar-check"></i> Bookings ({bookings.length})</>}
-                {activeTab === 'rooms' && <><i className="fa-solid fa-bed"></i> Rooms & Availability</>}
+                {activeTab === 'rooms' && <><i className="fa-solid fa-bed"></i> Villa Availability</>}
                 {activeTab === 'operations' && <><i className="fa-solid fa-concierge-bell"></i> Guest Operations</>}
                 {activeTab === 'caretakers' && <><i className="fa-solid fa-user-shield"></i> Caretaker Tasks & Requests ({caretakerApps.length})</>}
                 {activeTab === 'tourists' && <><i className="fa-solid fa-users-viewfinder"></i> Tourist Register</>}
@@ -1454,6 +1471,7 @@ const OwnerDashboard = () => {
                             <div className="card-body">
                               <h3>{prop.name}</h3>
                               <p className="location">Management: {managementLabel(prop)}</p>
+                              <BlueTick property={prop} />
                               <p className="location">
                                 <i className="fa-solid fa-location-dot"></i> {prop.location}
                               </p>
@@ -2106,14 +2124,14 @@ const OwnerDashboard = () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h3>{editingProperty ? readOnlyProperty ? 'Property Details' : 'Edit Property Details' : 'Register New Property Listing'}</h3>
-                <button className="close-btn" onClick={() => setShowAddModal(false)}><i className="fa-solid fa-xmark"></i></button>
+                <button className="close-btn" disabled={savingProperty || readingMedia > 0} onClick={() => setShowAddModal(false)}><i className="fa-solid fa-xmark"></i></button>
               </div>
 
               <form onSubmit={handleSaveProperty} className="modal-form">
                 {editingProperty && <p>Management: {managementLabel(properties.find(property => property._id === editingProperty._id))}</p>}
                 <ManagementNotice property={properties.find(property => property._id === editingProperty?._id)} />
                 {readOnlyProperty && <p>Pricing managed by BookMyVilla. Property details are read-only.</p>}
-                <fieldset disabled={readOnlyProperty} style={{ display: 'contents' }}>
+                <fieldset disabled={readOnlyProperty || savingProperty || readingMedia > 0} style={{ display: 'contents' }}>
                 <div className="form-group">
                   <label>Property Name *</label>
                   <input
@@ -2140,7 +2158,7 @@ const OwnerDashboard = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>Price per Night (₹) *</label>
+                    <label>Whole Villa Price per Night (₹) *</label>
                     <input
                       type="number"
                       min="1"
@@ -2156,6 +2174,7 @@ const OwnerDashboard = () => {
                   </div>
                 </div>
 
+                <div className="form-group"><label htmlFor="villa-max-guests">Maximum guests for the whole villa *</label><input id="villa-max-guests" type="number" min="1" max="50" required value={propertyForm.maxGuests ?? 2} onChange={e => setPropertyForm({ ...propertyForm, maxGuests: e.target.value })} /></div>
                 <div className="form-group">
                   <label>Location / Area *</label>
                   <input
@@ -2333,10 +2352,11 @@ const OwnerDashboard = () => {
                 </div>
 
                 </fieldset>
+                {error && <p role="alert" style={{ color: '#ff9b9b' }}>{error}</p>}
                 <div className="modal-footer">
-                  <button type="button" className="btn-cancel" onClick={() => setShowAddModal(false)}>{readOnlyProperty ? 'Close' : 'Cancel'}</button>
-                  {!readOnlyProperty && <button type="submit" className="btn-primary-gold">
-                    {editingProperty ? 'Update Listing' : 'Submit Property Listing'}
+                  <button type="button" className="btn-cancel" disabled={savingProperty || readingMedia > 0} onClick={() => setShowAddModal(false)}>{readOnlyProperty ? 'Close' : 'Cancel'}</button>
+                  {!readOnlyProperty && <button type="submit" className="btn-primary-gold" disabled={savingProperty || readingMedia > 0}>
+                    {savingProperty ? 'Saving Listing...' : readingMedia ? 'Reading Media...' : editingProperty ? 'Update Listing' : 'Submit Property Listing'}
                   </button>}
                 </div>
               </form>

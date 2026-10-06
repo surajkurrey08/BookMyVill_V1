@@ -4,6 +4,8 @@ const { adminConsoleAuth, requirePermission } = require('../middleware/adminCons
 const User = require('../models/User');
 const Property = require('../models/Property');
 const Booking = require('../models/Booking');
+const LocalGuide = require('../models/LocalGuide');
+const { bookingGuideArea, assignBookingGuide } = require('../services/guides');
 const PartnerApplication = require('../models/PartnerApplication');
 const PartnerInquiry = require('../models/PartnerInquiry');
 const { seriousIssue, operationQueue } = require('../services/operationQueue');
@@ -328,7 +330,7 @@ router.get('/properties', requirePermission('properties.view'), async (req, res)
 router.get('/properties/:id', requirePermission('properties.view'), async (req, res) => {
   try {
     if (!validId(req.params.id)) throw new HttpError(400, 'Invalid property ID.');
-    const property = await populateManagement(Property.findById(req.params.id).select(MANAGEMENT_SELECT).populate('owner', 'name email phone status')).lean();
+    const property = await populateManagement(Property.findById(req.params.id).select(MANAGEMENT_SELECT).populate('owner', 'name email phone status ownerPasswordSetAt')).lean();
     if (!property) throw new HttpError(404, 'Property not found.');
     property.managementMode = managementMode(property);
     property.assignedVillaManager ||= null;
@@ -381,6 +383,7 @@ router.get('/bookings', requirePermission('bookings.view'), async (req, res) => 
     if (req.query.propertyId) { if (!validId(req.query.propertyId)) throw new HttpError(400, 'Invalid property filter.'); filter.property = req.query.propertyId; }
     if (req.query.ownerId) { if (!validId(req.query.ownerId)) throw new HttpError(400, 'Invalid owner filter.'); filter.property = { $in: await ownerPropertyIds(req.query.ownerId) }; }
     if (req.query.view === 'refund_review') Object.assign(filter, { status: 'cancelled', paymentStatus: 'paid', paymentMode: { $in: ['live', 'manual'] }, refundStatus: { $ne: 'processed' } });
+    if (req.query.view === 'guide_requests') Object.assign(filter, { 'guide.requested': true, status: 'confirmed', paymentStatus: 'paid', stayStatus: { $ne: 'checked_out' } });
     if (req.query.view === 'unpaid') Object.assign(filter, { paymentStatus: 'pending', status: { $ne: 'cancelled' } });
     const q = cleanText(req.query.q, 80);
     if (q) {
@@ -393,7 +396,7 @@ router.get('/bookings', requirePermission('bookings.view'), async (req, res) => 
     const { page, limit, skip } = pagination(req.query);
     const [items, total] = await Promise.all([
       Booking.find(filter).populate('user', 'name email').populate('property', 'name location').populate('room', 'name number').sort({ createdAt: -1 }).skip(skip).limit(limit)
-        .select('user guest property room checkIn checkOut status paymentStatus stayStatus totalPrice source createdAt refundStatus').lean(),
+        .select('user guest property room checkIn checkOut status paymentStatus stayStatus totalPrice source createdAt refundStatus guide').lean(),
       Booking.countDocuments(filter)
     ]);
     res.json({ items, total, page, pages: Math.max(1, Math.ceil(total / limit)) });
@@ -404,7 +407,7 @@ router.get('/bookings/:id', requirePermission('bookings.view'), async (req, res)
   try {
     if (!validId(req.params.id)) throw new HttpError(400, 'Invalid booking ID.');
     const booking = await Booking.findById(req.params.id)
-      .populate('user', 'name email phone status').populate('room', 'name number type')
+      .populate('user', 'name email phone status').populate('room', 'name number type').populate('guide.assigned', 'name phone')
       .populate({ path: 'property', select: 'name location owner', populate: { path: 'owner', select: 'name email phone' } }).lean();
     if (!booking) throw new HttpError(404, 'Booking not found.');
     const [requests, audit] = await Promise.all([
@@ -424,6 +427,29 @@ router.post('/bookings/:id/note', requirePermission('bookings.note'), async (req
     if (!booking) throw new HttpError(404, 'Booking not found.');
     const entry = await recordAudit(req.admin, { action: 'booking.note', entityType: 'booking', entityId: booking._id, entityLabel: booking.guest?.name || String(booking._id), reason: note, ip: req.ip });
     res.status(201).json(entry);
+  } catch (err) { fail(res, err); }
+});
+
+async function adminGuideBooking(id) {
+  if (!validId(id)) throw new HttpError(404, 'Booking not found.');
+  const booking = await Booking.findById(id).select('property status paymentStatus stayStatus guide').populate('property', 'location');
+  if (!booking) throw new HttpError(404, 'Booking not found.');
+  return { booking, area: await bookingGuideArea(booking, booking.property) };
+}
+
+router.get('/bookings/:id/guides', requirePermission('bookings.view'), requirePermission('properties.manage'), async (req, res) => {
+  try {
+    const { area } = await adminGuideBooking(req.params.id);
+    res.json({ area: area?.name || null, guides: area ? await LocalGuide.find({ area: area._id, active: true }).select('_id name phone languages').sort({ name: 1 }).lean() : [] });
+  } catch (err) { fail(res, err); }
+});
+
+router.post('/bookings/:id/guide', requirePermission('bookings.view'), requirePermission('properties.manage'), async (req, res) => {
+  try {
+    const { booking, area } = await adminGuideBooking(req.params.id);
+    const result = await assignBookingGuide(booking, area, req.body?.guideId, `Admin (${req.admin._id})`);
+    await recordAudit(req.admin, { action: 'booking.guide_assigned', entityType: 'booking', entityId: booking._id, after: { guideId: result.guide }, ip: req.ip });
+    res.json(result);
   } catch (err) { fail(res, err); }
 });
 
@@ -533,6 +559,51 @@ router.get('/search', requirePermission('dashboard.view'), async (req, res) => {
       ...bookings.map(b => ({ type: 'booking', id: b._id, title: b.guest?.name || b.user?.name || 'Guest', subtitle: `₹${(b.totalPrice || 0).toLocaleString('en-IN')} · ${b.status}` })),
       ...customers.map(o => ({ type: 'customer', id: o._id, title: o.name, subtitle: o.email }))
     ] });
+  } catch (err) { fail(res, err); }
+});
+
+// Owner panel setup link for a self-managed owner (e.g. added by Data Entry):
+// the owner opens it once to choose a password. Valid for 24 hours.
+router.post('/owners/:id/setup-link', requirePermission('owners.manage'), async (req, res) => {
+  try {
+    if (!validId(req.params.id)) throw new HttpError(404, 'Owner not found.');
+    const owner = await User.findOne({ _id: req.params.id, role: 'owner' });
+    if (!owner) throw new HttpError(404, 'Owner not found.');
+    if (owner.ownerManagementMode === 'BOOKMYVILLA_MANAGED') throw new HttpError(409, 'BookMyVilla-managed owners do not sign in to the Owner panel.');
+    if (!owner.email) throw new HttpError(409, 'Add the owner\x27s email before sending a setup link.');
+    if (owner.status === 'suspended') throw new HttpError(409, 'Reactivate the owner first.');
+    if (!await Property.exists({ owner: owner._id, status: 'approved', managementMode: 'SELF_MANAGED' })) throw new HttpError(409, 'Approve a self-managed villa for this owner before creating a setup link.');
+    const token = require('crypto').randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await User.updateOne({ _id: owner._id }, { $set: { ownerSetupTokenHash: require('crypto').createHash('sha256').update(token).digest('hex'), ownerSetupExpiresAt: expiresAt, ownerAccessApprovedAt: owner.ownerAccessApprovedAt || new Date() } });
+    await recordAudit(req.admin, { action: 'owner.setup_link', entityType: 'owner', entityId: owner._id, entityLabel: owner.name, after: { expiresAt }, ip: req.ip });
+    res.json({ email: owner.email, token, expiresAt });
+  } catch (err) { fail(res, err); }
+});
+
+// Blue tick ("Verified") requests from self-managed owners.
+router.get('/verification-requests', requirePermission('properties.approve'), async (req, res) => {
+  try {
+    const items = await Property.find({ 'verification.status': 'requested' }).select('name type location status photos owner verification').populate('owner', 'name email phone').sort({ 'verification.requestedAt': 1 }).lean();
+    res.json(items.map(p => ({ ...p, cover: p.photos?.find(src => /^https?:/.test(src)) || null, photos: undefined })));
+  } catch (err) { fail(res, err); }
+});
+
+router.post('/properties/:id/verification', requirePermission('properties.approve'), async (req, res) => {
+  try {
+    if (!validId(req.params.id)) throw new HttpError(400, 'Invalid property ID.');
+    const next = { approve: 'verified', reject: 'rejected', revoke: 'none' }[req.body?.action];
+    if (!next) throw new HttpError(400, 'Choose approve, reject or revoke.');
+    const reviewNote = cleanText(req.body?.note || '', 500);
+    if (reviewNote === null) throw new HttpError(400, 'Keep the note under 500 characters.');
+    if (next === 'rejected' && !reviewNote) throw new HttpError(400, 'Tell the owner why verification was not approved.');
+    const property = await Property.findById(req.params.id).select('name verification managementMode');
+    if (!property) throw new HttpError(404, 'Property not found.');
+    const before = property.verification?.status || 'none';
+    if (req.body.action !== 'revoke' && before !== 'requested') throw new HttpError(409, 'There is no pending verification request for this property.');
+    await Property.updateOne({ _id: property._id }, { $set: { 'verification.status': next, 'verification.reviewedAt': new Date(), 'verification.reviewNote': reviewNote } });
+    await recordAudit(req.admin, { action: 'property.verification_' + req.body.action, entityType: 'property', entityId: property._id, entityLabel: property.name, before: { verification: before }, after: { verification: next, note: reviewNote }, ip: req.ip });
+    res.json({ _id: property._id, verification: next });
   } catch (err) { fail(res, err); }
 });
 

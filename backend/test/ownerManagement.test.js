@@ -58,7 +58,7 @@ test('managed operational writes reject direct calls while mixed-owner self-mana
   assert.equal((await request('POST', `/api/owner-ops/staff/${managed._id}`, { name: 'Unauthorized', role: 'housekeeping' })).status, 403);
   assert.equal((await request('POST', '/api/owner-finance/expenses', { propertyId: String(managed._id), category: 'supplies', amount: 5, incurredOn: day(), description: 'Blocked' })).status, 403);
   assert.equal((await request('POST', '/api/caretaker/apply', { propertyId: String(managed._id) })).status, 403);
-  assert.equal((await request('POST', `/api/owner-pms/properties/${self._id}/rooms`, room)).status, 201);
+  assert.equal((await request('POST', `/api/owner-pms/properties/${self._id}/rooms`, room)).status, 409);
   assert.equal((await request('PUT', `/api/properties/${self._id}`, { price: 13000 })).status, 200);
   assert.equal((await request('POST', `/api/owner-ops/staff/${self._id}`, { name: 'Owner staff', role: 'housekeeping' })).status, 201);
   assert.equal((await request('POST', '/api/caretaker/apply', { propertyId: String(self._id), propertyName: self.name })).status, 201);
