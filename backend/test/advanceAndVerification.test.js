@@ -2,7 +2,7 @@ const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
 const h = require('./helpers');
-const gateway = require('../services/paymentGateway');
+const gateway = require('../services/payment-service/src/providers/razorpay');
 const User = require('../models/User');
 const Property = require('../models/Property');
 

@@ -3,7 +3,7 @@ const Quotation = require('../models/Quotation');
 const Room = require('../models/Room');
 const RoomNight = require('../models/RoomNight');
 const inventory = require('../services/inventory');
-const paymentGateway = require('../services/paymentGateway');
+const paymentClient = require('../services/paymentClient');
 const rateLimit = require('../middleware/rateLimit');
 const { logActivity, advanceInquiry } = require('../services/crm');
 const { sweepExpiredQuotes, convertQuote, MAX_QUOTE_NIGHTS } = require('../services/quotes');
@@ -35,8 +35,9 @@ async function loadQuote(token) {
   return quote;
 }
 
-function view(quote) {
-  const payable = quote.status === 'accepted' && paymentGateway.available() && quote.checkIn >= indiaDate();
+// `online`: whether payment-service can take payments (paymentClient.online).
+function view(quote, online) {
+  const payable = quote.status === 'accepted' && online && quote.checkIn >= indiaDate();
   const revision = quote.revisedBy;
   return {
     code: quote.code,
@@ -86,14 +87,14 @@ router.get('/:token', async (req, res) => {
       }
     }
     res.set('Cache-Control', 'no-store');
-    res.json(view(quote));
+    res.json(view(quote, await paymentClient.online(req.id)));
   } catch (err) { fail(res, err); }
 });
 
 router.post('/:token/accept', actionLimit, async (req, res) => {
   try {
     const quote = await loadQuote(req.params.token);
-    if (quote.status === 'accepted' || quote.status === 'converted') return res.json(view(quote));
+    if (quote.status === 'accepted' || quote.status === 'converted') return res.json(view(quote, await paymentClient.online(req.id)));
     if (quote.status === 'expired') throw new HttpError(410, 'This quotation has expired. Ask your host for an updated quote.');
     if (!['sent', 'viewed'].includes(quote.status)) throw new HttpError(409, 'This quotation can no longer be accepted.');
     const name = cleanText(req.body?.name, 100);
@@ -107,7 +108,7 @@ router.post('/:token/accept', actionLimit, async (req, res) => {
     if (!updated) throw new HttpError(409, 'This quotation expired or changed just now. Refresh the page.');
     await logActivity({ owner: quote.owner._id, inquiry: quote.inquiry, quotation: quote._id, type: 'quote_accepted', actorType: 'guest', direction: 'inbound', body: `${name} accepted ${quote.code} (₹${quote.totals.total.toLocaleString('en-IN')}).` });
     if (quote.inquiry) await advanceInquiry({ owner: quote.owner._id, inquiryId: quote.inquiry, target: 'payment_pending', actorType: 'guest', reason: `Guest accepted ${quote.code}.` });
-    res.json(view(await loadQuote(req.params.token)));
+    res.json(view(await loadQuote(req.params.token), await paymentClient.online(req.id)));
   } catch (err) { fail(res, err); }
 });
 
@@ -122,7 +123,7 @@ router.post('/:token/reject', actionLimit, async (req, res) => {
     await inventory.releaseHolds(quote._id);
     await logActivity({ owner: quote.owner._id, inquiry: quote.inquiry, quotation: quote._id, type: 'quote_rejected', actorType: 'guest', direction: 'inbound', body: `${quote.guest.name} declined ${quote.code}${reason ? `: ${reason}` : '.'}` });
     if (quote.inquiry) await Inquiry.updateOne({ _id: quote.inquiry, owner: quote.owner._id, status: 'quotation_sent' }, { $set: { status: 'follow_up' } });
-    res.json(view(await loadQuote(req.params.token)));
+    res.json(view(await loadQuote(req.params.token), await paymentClient.online(req.id)));
   } catch (err) { fail(res, err); }
 });
 
@@ -130,7 +131,7 @@ router.post('/:token/reject', actionLimit, async (req, res) => {
 // for the payment window.
 router.post('/:token/pay', actionLimit, async (req, res) => {
   try {
-    if (!paymentGateway.available()) throw new HttpError(503, 'Online payment is not available for this quotation. Please contact your host to pay.');
+    if (!await paymentClient.online(req.id)) throw new HttpError(503, 'Online payment is not available for this quotation. Please contact your host to pay.');
     const quote = await loadQuote(req.params.token);
     if (quote.status === 'converted') throw new HttpError(409, 'This quotation is already booked.');
     if (quote.status !== 'accepted') throw new HttpError(409, 'Accept the quotation before paying.');
@@ -147,14 +148,14 @@ router.post('/:token/pay', actionLimit, async (req, res) => {
     }
     let order;
     try {
-      order = await paymentGateway.createOrder({ amountPaise: quote.totals.total * 100, receipt: quote.code, notes: { quotation: String(quote._id) } });
+      order = await paymentClient.createOrder({ purpose: 'quote', amount: quote.totals.total, receipt: quote.code, quoteId: String(quote._id), notes: { quotation: String(quote._id) } }, req.id);
     } catch (err) {
       console.error('Quotation order creation error:', err);
       throw new HttpError(502, 'The payment provider is unavailable. No payment was taken; please try again shortly.');
     }
-    await Quotation.updateOne({ _id: quote._id }, { $push: { paymentOrders: { orderId: order.id, amount: order.amount } } });
+    await Quotation.updateOne({ _id: quote._id }, { $push: { paymentOrders: { orderId: order.order_id, amount: order.amount } } });
     res.json({
-      order_id: order.id, amount: order.amount, currency: 'INR', key_id: paymentGateway.keyId(),
+      order_id: order.order_id, amount: order.amount, currency: 'INR', key_id: order.key_id,
       description: `${quote.property?.name || 'Stay'} · ${quote.code}`,
       prefill: { name: quote.guest.name, email: quote.guest.email, contact: quote.guest.phone }
     });
@@ -163,7 +164,6 @@ router.post('/:token/pay', actionLimit, async (req, res) => {
 
 router.post('/:token/verify', actionLimit, async (req, res) => {
   try {
-    if (!paymentGateway.available()) throw new HttpError(503, 'Online payment is not configured.');
     const { razorpay_order_id: orderId, razorpay_payment_id: paymentId, razorpay_signature: signature } = req.body || {};
     if (typeof orderId !== 'string' || !/^order_[A-Za-z0-9]+$/.test(orderId) || typeof paymentId !== 'string' || !/^pay_[A-Za-z0-9]+$/.test(paymentId)) {
       throw new HttpError(400, 'Complete the payment in the Razorpay window first.');
@@ -171,22 +171,24 @@ router.post('/:token/verify', actionLimit, async (req, res) => {
     const quote = await loadQuote(req.params.token);
     const order = quote.paymentOrders.find(item => item.orderId === orderId);
     if (!order) throw new HttpError(404, 'This payment does not belong to this quotation.');
-    if (!paymentGateway.validSignature(orderId, paymentId, signature)) throw new HttpError(400, 'Payment signature could not be verified.');
+    // payment-service checks the signature and the captured amount with the provider.
     let payment;
-    try { payment = await paymentGateway.fetchPayment(paymentId); }
-    catch (err) { console.error('Quotation payment fetch error:', err); throw new HttpError(502, 'We could not confirm the payment with Razorpay yet. If money was deducted, it is safe — please refresh in a minute.'); }
-    if (payment.order_id !== orderId || payment.currency !== 'INR' || payment.amount !== order.amount) throw new HttpError(409, 'Payment details do not match this quotation.');
-    if (payment.status !== 'captured') throw new HttpError(409, 'Payment is not captured yet. Please refresh in a minute.');
+    try { payment = await paymentClient.verifyQuote({ orderId, paymentId, signature }, req.id); }
+    catch (err) {
+      if (err.status === 503) throw new HttpError(502, 'We could not confirm the payment with Razorpay yet. If money was deducted, it is safe — please refresh in a minute.');
+      throw err;
+    }
+    if (payment.amount !== order.amount) throw new HttpError(409, 'Payment details do not match this quotation.');
 
     if (quote.status === 'converted') {
       const Booking = require('../models/Booking');
       const booking = await Booking.findById(quote.booking?._id || quote.booking).select('razorpayPaymentId');
-      if (booking?.razorpayPaymentId === paymentId) return res.json({ msg: 'Payment already confirmed.', quote: view(quote) });
+      if (booking?.razorpayPaymentId === paymentId) return res.json({ msg: 'Payment already confirmed.', quote: view(quote, true) });
       await logActivity({ owner: quote.owner._id, inquiry: quote.inquiry, quotation: quote._id, type: 'payment', actorType: 'system', direction: 'inbound', body: `Second payment ${paymentId} (₹${(payment.amount / 100).toLocaleString('en-IN')}) captured for ${quote.code}, which was already booked. Refund the duplicate payment.` });
       throw new HttpError(409, 'This quotation was already paid. Your host has been notified and will refund the duplicate payment.');
     }
-    const result = await convertQuote(quote._id, { actorType: 'system', payment: { orderId, paymentId, amount: payment.amount, mode: paymentGateway.mode() } });
-    res.json({ msg: result.roomAssigned ? 'Payment received. Your stay is confirmed.' : 'Payment received. Your host will confirm your room shortly.', quote: view(await loadQuote(req.params.token)) });
+    const result = await convertQuote(quote._id, { actorType: 'system', payment: { orderId, paymentId, amount: payment.amount, mode: payment.mode } });
+    res.json({ msg: result.roomAssigned ? 'Payment received. Your stay is confirmed.' : 'Payment received. Your host will confirm your room shortly.', quote: view(await loadQuote(req.params.token), true) });
   } catch (err) { fail(res, err); }
 });
 

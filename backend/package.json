@@ -4,19 +4,27 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node --test \"test/*.test.js\"",
-    "start": "node index.js"
+    "test": "node --test \"test/*.test.js\" \"services/*/tests/*.test.js\"",
+    "start": "node index.js",
+    "start:gateway": "node api-gateway/src/server.js",
+    "start:service": "node services/$SERVICE_NAME/src/server.js",
+    "dev:all": "node scripts/dev-all.js",
+    "smoke": "node scripts/smoke-test.js",
+    "scaffold:services": "node scripts/scaffold-services.js",
+    "migrate:entire-villa": "node scripts/migrate-entire-villa.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "amqplib": "^0.10.9",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "iconv-lite": "^0.7.3",
+    "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.24.4",
     "razorpay": "^2.9.6"

@@ -98,7 +98,7 @@ test('local guide: Data Entry sets location rate + guides; guest adds a guide at
   assert.equal(advance.data.balance, 23100);
   assert.equal((await h.api('POST', `/api/customer-booking/holds/${holdId}/price`, { token: guest.token, body: { guideDays: 3 } })).status, 400, 'at most one day per night');
 
-  const gateway = require('../services/paymentGateway');
+  const gateway = require('../services/payment-service/src/providers/razorpay');
   const originals = Object.fromEntries(['available', 'keyId', 'mode', 'createOrder', 'fetchPayment', 'validSignature'].map(k => [k, gateway[k]]));
   try {
     gateway.available = () => true; gateway.keyId = () => 'k'; gateway.mode = () => 'test';

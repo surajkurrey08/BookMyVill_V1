@@ -1,0 +1,51 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace/namespace.yaml
+  - storage/uploads-pvc.yaml
+  - api-gateway/deployment.yaml
+  - api-gateway/service.yaml
+  - services/auth/deployment.yaml
+  - services/auth/service.yaml
+  - services/user/deployment.yaml
+  - services/user/service.yaml
+  - services/villa/deployment.yaml
+  - services/villa/service.yaml
+  - services/booking/deployment.yaml
+  - services/booking/service.yaml
+  - services/availability/deployment.yaml
+  - services/availability/service.yaml
+  - services/pricing/deployment.yaml
+  - services/pricing/service.yaml
+  - services/payment/deployment.yaml
+  - services/payment/service.yaml
+  - services/notification/deployment.yaml
+  - services/notification/service.yaml
+  - services/search/deployment.yaml
+  - services/search/service.yaml
+  - services/review/deployment.yaml
+  - services/review/service.yaml
+  - services/coupon/deployment.yaml
+  - services/coupon/service.yaml
+  - services/media/deployment.yaml
+  - services/media/service.yaml
+  - frontend/deployment.yaml
+  - frontend/service.yaml
+  - admin/deployment.yaml
+  - admin/service.yaml
+  - owner/deployment.yaml
+  - owner/service.yaml
+  - data-entry/deployment.yaml
+  - data-entry/service.yaml
+  - villa-manager/deployment.yaml
+  - villa-manager/service.yaml
+  - caretaker/deployment.yaml
+  - caretaker/service.yaml
+  - rabbitmq/statefulset.yaml
+  - rabbitmq/service.yaml
+  - redis/deployment.yaml
+  - redis/service.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: bookmyvilla
+    includeSelectors: false

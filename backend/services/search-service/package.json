@@ -1,0 +1,13 @@
+{
+  "name": "@bookmyvilla/search-service",
+  "private": true,
+  "description": "Public villa search with location, guests and date availability",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

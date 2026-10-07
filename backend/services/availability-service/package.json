@@ -1,0 +1,13 @@
+{
+  "name": "@bookmyvilla/availability-service",
+  "private": true,
+  "description": "Rooms/units, calendars, date blocks and availability checks",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

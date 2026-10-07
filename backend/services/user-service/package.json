@@ -1,0 +1,13 @@
+{
+  "name": "@bookmyvilla/user-service",
+  "private": true,
+  "description": "Admin console, owners, customers, staff accounts, partner applications",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@bookmyvilla/infrastructure",
+  "private": true,
+  "description": "Generators and validators for Docker Compose and Kubernetes manifests",
+  "scripts": {
+    "generate": "node scripts/generate-compose.js && node scripts/generate-k8s.js",
+    "validate": "node scripts/validate-k8s.js"
+  },
+  "devDependencies": { "js-yaml": "^4.1.0" }
+}

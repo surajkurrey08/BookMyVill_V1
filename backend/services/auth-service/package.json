@@ -1,0 +1,13 @@
+{
+  "name": "@bookmyvilla/auth-service",
+  "private": true,
+  "description": "Login, registration, mobile OTP, JWT, owner password setup",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

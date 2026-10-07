@@ -7,12 +7,8 @@ const { PUBLIC_LISTING, isPublicListing, publicProperty } = require('../services
 const accountAuth = require('../middleware/accountAuth');
 const { MANAGEMENT_FIELDS, MANAGEMENT_SELECT, LISTING_FIELDS, propertyScope, managementFilters, listingView, requirePropertyAccess, assertPropertyAccess, canAccessProperty, ownerPropertyView } = require('../services/propertyAccess');
 const { sendError, HttpError } = require('../utils/validate');
-const { mediaDirectory, storePropertyMedia, mediaOrigin, stayInfo } = require('../services/propertyMedia');
-router.use('/media', (req, res, next) => {
-  if (!/^\/[a-f0-9-]{36}\.(png|jpg|webp|mp4|webm|mov)$/.test(req.path)) return res.sendStatus(404);
-  res.set('X-Content-Type-Options', 'nosniff');
-  next();
-}, express.static(mediaDirectory, { index: false, dotfiles: 'deny', maxAge: '1y', immutable: true, fallthrough: false }));
+const { storePropertyMedia, mediaOrigin, stayInfo } = require('../services/propertyMedia');
+router.use('/media', require('./propertyMediaFiles'));
 router.use('/data-entry', require('./dataEntry'));
 
 // Add Property (Protected - Owners only)

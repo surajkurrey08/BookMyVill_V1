@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bookmyvilla-config
+  labels:
+    app.kubernetes.io/part-of: bookmyvilla
+data:
+  NODE_ENV: production
+  RABBITMQ_URL: "amqp://rabbitmq:5672"
+  REDIS_URL: "redis://redis:6379"
+  PROPERTY_MEDIA_DIR: /app/uploads/properties
+  HERO_UPLOAD_DIR: /app/uploads/site-heroes
+  PUBLIC_API_URL: "https://api.bookmyvilla.online"
+  GATEWAY_CRITICAL_SERVICES: "auth-service,user-service,villa-service,booking-service,payment-service"
+  LOG_LEVEL: info

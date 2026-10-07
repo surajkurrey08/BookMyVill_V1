@@ -1,4 +1,5 @@
 const express = require('express');
+const bus = require('../messaging');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
@@ -8,6 +9,12 @@ const { requirePropertyAccess } = require('../services/propertyAccess');
 const { customerBooking } = require('../services/publicViews');
 const { hasPermission } = require('../services/adminRbac');
 const { sendError } = require('../utils/validate');
+
+// Retired pre-hold payment API (POST /api/bookings, POST /api/bookings/verify):
+// checkout always goes through a room hold, verified by payment-service.
+const holdRequired = (req, res) => res.status(409).json({ msg: 'Choose an exact available room and use room hold checkout.', code: 'ROOM_HOLD_REQUIRED' });
+router.post('/', auth, holdRequired);
+router.post('/verify', auth, holdRequired);
 
 // Get logged in user's bookings
 router.get('/my-bookings', auth, async (req, res) => {
@@ -203,6 +210,8 @@ router.post('/cancel/:id', require('../middleware/accountAuth'), async (req, res
       booking.room = null;
       await booking.save();
     }
+    bus.publish(bus.events.BOOKING_CANCELLED, { bookingId: String(booking._id), propertyId: String(booking.property) }, { requestId: req.id });
+    bus.publish(bus.events.AVAILABILITY_CHANGED, { propertyId: String(booking.property) }, { requestId: req.id });
     res.json({ msg: 'Booking cancelled successfully', booking });
   } catch (err) {
     console.error(err.message);

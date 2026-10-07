@@ -98,4 +98,14 @@ PropertySchema.pre('validate', async function inheritOwnerManagement() {
   }
 });
 
+// Domain events for other services (e.g. the search index): every write path
+// announces itself, so routes and scripts never have to remember to publish.
+const announce = (event, villaId, extra) => require('../messaging').publish(event, { villaId: villaId ? String(villaId) : null, ...extra });
+PropertySchema.pre('save', function rememberNew() { this.$locals.wasNew = this.isNew; });
+PropertySchema.post('save', function announceSave(doc) { announce(this.$locals.wasNew ? 'villa.created' : 'villa.updated', doc._id); });
+PropertySchema.post('findOneAndUpdate', function announceUpdate(doc) { if (doc) announce('villa.updated', doc._id); });
+PropertySchema.post('updateOne', function announceUpdateOne() { const id = this.getFilter()._id; announce('villa.updated', typeof id === 'object' && id && !id._bsontype ? null : id, typeof id === 'object' && id && !id._bsontype ? { bulk: true } : undefined); });
+PropertySchema.post('updateMany', function announceBulk() { announce('villa.updated', null, { bulk: true }); });
+PropertySchema.post(['deleteOne', 'findOneAndDelete'], { document: false, query: true }, function announceDelete(doc) { const id = doc?._id || this.getFilter()._id; if (id) announce('villa.deleted', id); });
+
 module.exports = mongoose.model('Property', PropertySchema);

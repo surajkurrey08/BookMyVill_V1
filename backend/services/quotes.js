@@ -2,14 +2,13 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const Quotation = require('../models/Quotation');
 const Room = require('../models/Room');
-const AddOn = require('../models/AddOn');
 const Booking = require('../models/Booking');
 const Inquiry = require('../models/Inquiry');
 const User = require('../models/User');
-const Promotion = require('../models/Promotion');
 const inventory = require('./inventory');
 const { priceQuote, CANCELLATION_TEXT } = require('./quotePricing');
-const { promotionRuleFailure, guestRuleFailure, findPromotionByCode, redeemPromotion } = require('./promotions');
+const { guestRuleFailure } = require('./promotions');
+const couponClient = require('./couponClient');
 const { logActivity, advanceInquiry } = require('./crm');
 const { requirePropertyAccess } = require('./propertyAccess');
 const {
@@ -82,7 +81,7 @@ async function buildQuote(owner, body = {}, { quoteId = null, dropInvalidPromoti
   if (addOnInputs.length > 20) throw new HttpError(400, 'A quotation can include up to 20 add-ons.');
   const addOnIds = addOnInputs.map(item => String(item?.addOnId || ''));
   if (addOnIds.some(id => !validId(id)) || new Set(addOnIds).size !== addOnIds.length) throw new HttpError(400, 'Each add-on can be added once.');
-  const catalog = addOnIds.length ? await AddOn.find({ _id: { $in: addOnIds }, owner }).lean() : [];
+  const catalog = await couponClient.addOnsByIds(owner, addOnIds);
   const addOns = addOnInputs.map(item => {
     const addOn = catalog.find(entry => String(entry._id) === String(item.addOnId));
     if (!addOn) throw new HttpError(404, 'An add-on in this quotation no longer exists.');
@@ -115,8 +114,8 @@ async function buildQuote(owner, body = {}, { quoteId = null, dropInvalidPromoti
   let promotionInfo = { promotion: null, code: '', name: '', discountAmount: 0 };
   const promoCode = cleanText(body.promotionCode, 20);
   if (promoCode) {
-    const promo = await findPromotionByCode(owner, promoCode);
-    let failure = promo ? promotionRuleFailure(promo, { propertyId: property._id, today, checkIn: body.checkIn, nights, accommodationAmount: nightlyRate * nights, guests }) : `Promotion code ${promoCode.toUpperCase()} was not found.`;
+    const { promotion: promo, failure: ruleFailure } = await couponClient.evaluatePromotion({ owner, code: promoCode, propertyId: property._id, today, checkIn: body.checkIn, nights, accommodationAmount: nightlyRate * nights, guests });
+    let failure = promo ? ruleFailure : `Promotion code ${promoCode.toUpperCase()} was not found.`;
     if (!failure) failure = await guestRuleFailure(promo, { owner, guestPhoneKey: phoneKey(guestPhone), guestEmail, excludeQuotation: quoteId });
     if (failure && !dropInvalidPromotion) throw new HttpError(400, failure);
     if (failure) warnings.push(`${failure} The promotion was removed.`);
@@ -249,7 +248,7 @@ async function convertQuote(quoteId, { actorType = 'owner', actor = null, paymen
   try {
     if (!payment && quote.checkIn < indiaDate()) throw new HttpError(409, 'The check-in date has passed. Revise the quotation with new dates.');
     if (quote.promotion?.promotion) {
-      promotionRedeemed = await redeemPromotion(owner, quote.promotion.promotion, quote.promotion.discountAmount, { force: Boolean(payment) });
+      promotionRedeemed = await couponClient.redeem(owner, quote.promotion.promotion, quote.promotion.discountAmount, { force: Boolean(payment) });
       if (!promotionRedeemed) throw new HttpError(409, `Promotion ${quote.promotion.code} has reached its usage limit. Revise the quotation without it.`);
     }
     const room = await Room.findById(quote.room);
@@ -293,7 +292,7 @@ async function convertQuote(quoteId, { actorType = 'owner', actor = null, paymen
         const existing = await Booking.findOne({ razorpayPaymentId: payment.paymentId });
         if (existing) {
           // Duplicate payment callback: the first one already booked the stay.
-          if (promotionRedeemed) await Promotion.updateOne({ _id: quote.promotion.promotion }, { $inc: { usedCount: -1, discountGiven: -quote.promotion.discountAmount } });
+          if (promotionRedeemed) await couponClient.release(quote.promotion.promotion, quote.promotion.discountAmount);
           promotionRedeemed = false;
           await Quotation.updateOne({ _id: quote._id }, { $set: { status: 'converted', convertedAt: now, booking: existing._id, lockedUntil: null } });
           return { booking: existing, alreadyConverted: true, roomAssigned: Boolean(existing.room) };
@@ -324,7 +323,7 @@ async function convertQuote(quoteId, { actorType = 'owner', actor = null, paymen
     if (payment) await logActivity({ owner, inquiry: quote.inquiry, quotation: quote._id, booking: booking._id, type: 'payment', actorType: 'system', direction: 'inbound', body: `Online payment of ${rupees(payment.amount / 100)} captured (${payment.paymentId}).` });
     return { booking, roomAssigned, warning };
   } catch (err) {
-    if (promotionRedeemed) await Promotion.updateOne({ _id: quote.promotion.promotion }, { $inc: { usedCount: -1, discountGiven: -quote.promotion.discountAmount } });
+    if (promotionRedeemed) await couponClient.release(quote.promotion.promotion, quote.promotion.discountAmount).catch(error => console.error('Promotion release notice:', error));
     await unlock();
     throw err;
   }

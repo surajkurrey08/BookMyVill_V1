@@ -2,7 +2,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { start, stop, api, createOwner, createCustomer, createProperty, createBooking, day } = require('./helpers');
 const Inventory = require('../models/Inventory');
-const Feedback = require('../models/Feedback');
+// Reviews belong to the independent review-service (its own database).
+const Feedback = require('../services/review-service/src/models/Feedback');
 const TouristRegister = require('../models/TouristRegister');
 const Property = require('../models/Property');
 

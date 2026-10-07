@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: villa-manager
+  labels:
+    app.kubernetes.io/name: villa-manager
+    app.kubernetes.io/part-of: bookmyvilla
+    app.kubernetes.io/component: web
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: villa-manager
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

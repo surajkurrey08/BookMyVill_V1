@@ -3,6 +3,7 @@ const RoomNight = require('../models/RoomNight');
 const Property = require('../models/Property');
 const { HttpError } = require('../utils/validate');
 const { ensureModelIndexes } = require('../utils/modelIndexes');
+const holdLocks = require('./holdLocks');
 
 // Night-level inventory ledger shared by room blocks, room assignment and
 // quotation holds. It never relies on multi-document transactions (the
@@ -20,7 +21,7 @@ async function purgeExpiredHolds(roomId, dates) {
   return result.deletedCount || 0;
 }
 
-async function reserveNights(room, dates, kind, reference, { reason = '', expiresAt = null, conflictMessage } = {}) {
+async function reserveNights(room, dates, kind, reference, { reason = '', expiresAt = null, conflictMessage, ignoreHoldToken } = {}) {
   if (kind !== 'block') await require('./roomReadiness').requireRoomReady(room._id);
   // Legacy room bookings remain authoritative after whole-villa migration.
   // Several old rooms can own the same date; releasing one must not free the villa.
@@ -28,6 +29,11 @@ async function reserveNights(room, dates, kind, reference, { reason = '', expire
   if (legacyConflicts.length) {
     throw new HttpError(409, conflictMessage || 'The villa is already booked, blocked or held for these dates.');
   }
+  // Guests at checkout hold nights in Redis (services/holdLocks): never write
+  // over another guest's live hold. The converting hold itself is ignored.
+  const scope = await holdScope(room);
+  const held = await holdLocks.heldDates([scope], dates, ignoreHoldToken ?? reference);
+  if (held.size) throw new HttpError(409, conflictMessage || 'A guest is completing checkout for these dates. Try again in a few minutes.');
   const operationId = new mongoose.Types.ObjectId();
   const docs = dates.map(date => ({ property: room.property, room: room._id, date, kind, reference, operationId, reason, expiresAt: kind === 'hold' ? expiresAt : null }));
   // The unique {room, date} index must exist before any night is written.
@@ -55,6 +61,12 @@ async function conflictingNights(roomId, dates, ignoreReference = null) {
   const filter = { ...(wholeVilla ? { property: room.property } : { room: roomId }), date: { $in: dates }, ...activeNightFilter() };
   if (ignoreReference) filter.reference = { $ne: ignoreReference };
   return RoomNight.find(filter).select('date kind').sort({ date: 1 }).lean();
+}
+
+// Redis hold scope for a unit (whole villa vs single room).
+async function holdScope(room) {
+  const wholeVilla = await Property.exists({ _id: room.property, bookingMode: 'ENTIRE' });
+  return holdLocks.scopeFor(room.property, room._id, Boolean(wholeVilla));
 }
 
 async function releaseHolds(reference) {
@@ -86,7 +98,7 @@ async function convertHoldToBooking(room, dates, holdReference, bookingId) {
   const missing = dates.filter(date => !convertedDates.has(date));
   if (!missing.length) return { converted: converted.length, reserved: 0 };
   try {
-    await reserveNights(room, missing, 'booking', bookingId, { conflictMessage: `${room.name || 'The room'} is no longer available on ${missing.join(', ')}.` });
+    await reserveNights(room, missing, 'booking', bookingId, { ignoreHoldToken: holdReference, conflictMessage: `${room.name || 'The room'} is no longer available on ${missing.join(', ')}.` });
     return { converted: converted.length, reserved: missing.length };
   } catch (err) {
     if (converted.length) {
@@ -100,4 +112,4 @@ async function releaseBookingNights(bookingId) {
   await RoomNight.deleteMany({ kind: 'booking', reference: bookingId });
 }
 
-module.exports = { isDuplicate, activeNightFilter, purgeExpiredHolds, reserveNights, conflictingNights, releaseHolds, activeHoldCount, convertHoldToBooking, releaseBookingNights };
+module.exports = { isDuplicate, activeNightFilter, purgeExpiredHolds, reserveNights, conflictingNights, releaseHolds, activeHoldCount, convertHoldToBooking, releaseBookingNights, holdScope };

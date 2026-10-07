@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { start, stop, api, createOwner, createCustomer, createProperty, day } = require('./helpers');
-const gateway = require('../services/paymentGateway');
+const gateway = require('../services/payment-service/src/providers/razorpay');
 
 test('customer room availability, hold, server pricing, verified payment and confirmation', async () => {
   await start();
@@ -11,8 +11,8 @@ test('customer room availability, hold, server pricing, verified payment and con
     const customer = await createCustomer('booking-flow-guest');
     const other = await createCustomer('booking-flow-other');
     const { property, room } = await createProperty(owner.user, { price: 99999 });
-    const AddOn = require('../models/AddOn');
-    const Promotion = require('../models/Promotion');
+    const AddOn = require('../services/coupon-service/src/models/AddOn');
+    const Promotion = require('../services/coupon-service/src/models/Promotion');
     const addon = await AddOn.create({ owner: owner.user.id, property: property.id, name: 'Breakfast', category: 'meal', pricingUnit: 'per_night', price: 1500, createdBy: owner.user.id });
     await Promotion.create({ owner: owner.user.id, code: 'STAY10', name: 'Stay offer', type: 'promo_code', discountType: 'percent', discountValue: 10, createdBy: owner.user.id });
     const checkIn = day(3);

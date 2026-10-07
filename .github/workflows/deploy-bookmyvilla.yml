@@ -432,8 +432,8 @@ jobs:
 
             docker compose up -d --remove-orphans
 
-            # Retry a backend whose initial Atlas connection attempts expired.
-            docker compose restart backend
+            # The API Gateway (port 2001) and the 12 microservices each retry their
+            # Atlas connection on start; the health check below waits for all of them.
 
             echo ""
             echo "BookMyVilla container status:"
@@ -486,7 +486,7 @@ jobs:
 
             success=false
 
-            for attempt in $(seq 1 12); do
+            for attempt in $(seq 1 36); do
 
               if curl \
                 --fail \
@@ -502,7 +502,7 @@ jobs:
                 break
               fi
 
-              echo "Backend not ready - attempt ${attempt}/12"
+              echo "Backend not ready - attempt ${attempt}/36"
 
               sleep 5
             done
@@ -517,8 +517,12 @@ jobs:
               docker compose ps
 
               echo ""
+              echo "Gateway health:"
+              curl --silent --max-time 10 http://127.0.0.1:2001/api/health || true
+
+              echo ""
               echo "Backend logs:"
-              docker compose logs --tail=150 backend
+              docker compose logs --tail=60 api-gateway auth-service user-service villa-service booking-service payment-service
 
               exit 1
             fi

@@ -95,6 +95,12 @@ const BookingSchema = new mongoose.Schema({
   // Website checkout: 'full' pays everything online; 'advance' pays ADVANCE_PERCENT
   // online and the rest (balanceDue) at the villa on arrival.
   paymentPlan: { type: String, enum: ['full', 'advance'], default: 'full' },
+  // Result of handling payment.success for this booking (read by payment-service
+  // through the internal API): confirmed, or why a captured payment needs review.
+  paymentOutcome: {
+    type: new mongoose.Schema({ code: String, message: String, paymentId: String, eventId: String, at: Date }, { _id: false }),
+    default: undefined
+  },
   onlineAmount: { type: Number, default: null, min: 0 },
   balanceDue: { type: Number, default: 0, min: 0 },
   balanceCollectedAt: { type: Date, default: null },

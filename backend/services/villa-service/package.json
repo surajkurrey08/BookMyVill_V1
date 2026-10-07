@@ -1,0 +1,13 @@
+{
+  "name": "@bookmyvilla/villa-service",
+  "private": true,
+  "description": "Villas, listings, data-entry onboarding, villa-manager and on-site operations",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

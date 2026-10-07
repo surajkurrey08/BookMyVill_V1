@@ -1,27 +1,17 @@
-// Fixed-window, per-IP rate limiter for unauthenticated endpoints. State is
-// in memory, which matches the single backend container this app runs as; a
-// multi-instance deployment would need a shared store instead.
-module.exports = function rateLimit({ windowMs = 60000, max = 30, keyPrefix = 'rl', message = 'Too many requests. Please wait a minute and try again.' } = {}) {
-  const hits = new Map();
-  const sweep = setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of hits) if (entry.resetAt <= now) hits.delete(key);
-  }, windowMs);
-  sweep.unref();
+const { hit } = require('../shared/cache');
 
-  return function rateLimiter(req, res, next) {
-    const now = Date.now();
-    const key = `${keyPrefix}:${req.ip}`;
-    let entry = hits.get(key);
-    if (!entry || entry.resetAt <= now) {
-      entry = { count: 0, resetAt: now + windowMs };
-      hits.set(key, entry);
-    }
-    entry.count++;
-    if (entry.count > max) {
-      res.set('Retry-After', String(Math.ceil((entry.resetAt - now) / 1000)));
-      return res.status(429).json({ msg: message });
-    }
+// Fixed-window, per-IP rate limiter for unauthenticated endpoints. Counters
+// live in Redis when REDIS_URL is set (shared by every replica of a service)
+// and fall back to process memory otherwise.
+module.exports = function rateLimit({ windowMs = 60000, max = 30, keyPrefix = 'rl', message = 'Too many requests. Please wait a minute and try again.' } = {}) {
+  return async function rateLimiter(req, res, next) {
+    try {
+      const { count, resetMs } = await hit(`${keyPrefix}:${req.ip}`, windowMs);
+      if (count > max) {
+        res.set('Retry-After', String(Math.max(1, Math.ceil(resetMs / 1000))));
+        return res.status(429).json({ msg: message });
+      }
+    } catch { /* a limiter outage must not block guests */ }
     next();
   };
 };

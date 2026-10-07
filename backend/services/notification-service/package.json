@@ -1,0 +1,13 @@
+{
+  "name": "@bookmyvilla/notification-service",
+  "private": true,
+  "description": "Consumes booking/payment events and records guest/owner notifications",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

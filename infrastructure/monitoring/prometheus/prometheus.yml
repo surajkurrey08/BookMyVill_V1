@@ -1,0 +1,46 @@
+# Prometheus for BookMyVilla. Every backend process serves /metrics.
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  # Docker Compose: scrape the gateway and services on the internal network.
+  - job_name: bookmyvilla-compose
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - api-gateway:2001
+          - auth-service:2101
+          - user-service:2102
+          - villa-service:2103
+          - booking-service:2104
+          - availability-service:2105
+          - pricing-service:2106
+          - payment-service:2107
+          - notification-service:2108
+          - search-service:2109
+          - review-service:2110
+          - coupon-service:2111
+          - media-service:2112
+
+  # Kubernetes: pods annotated prometheus.io/scrape=true (see infrastructure/kubernetes).
+  - job_name: bookmyvilla-kubernetes-pods
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: [bookmyvilla]
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: "true"
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+        target_label: app

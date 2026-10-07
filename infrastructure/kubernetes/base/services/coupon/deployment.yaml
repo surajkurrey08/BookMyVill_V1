@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coupon-service
+  labels:
+    app.kubernetes.io/name: coupon-service
+    app.kubernetes.io/part-of: bookmyvilla
+    app.kubernetes.io/component: backend
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: coupon-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: coupon-service
+        app.kubernetes.io/part-of: bookmyvilla
+        app.kubernetes.io/component: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "2111"
+        prometheus.io/path: /metrics
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: coupon-service
+          image: "bookmyvilla/backend:latest"
+          imagePullPolicy: IfNotPresent
+          command:
+            - node
+            - services/coupon-service/src/server.js
+          ports:
+            - name: http
+              containerPort: 2111
+          env:
+            - name: SERVICE_NAME
+              value: coupon-service
+            - name: PORT
+              value: "2111"
+            - name: COUPON_MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: bookmyvilla-backend-secrets
+                  key: COUPON_MONGODB_URI
+                  optional: true
+            - name: COUPON_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: bookmyvilla-config
+                  key: COUPON_DB_NAME
+                  optional: true
+          envFrom:
+            - configMapRef:
+                name: bookmyvilla-config
+            - secretRef:
+                name: bookmyvilla-backend-secrets
+          resources:
+            requests:
+              cpu: 75m
+              memory: 160Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL

@@ -10,7 +10,7 @@ const Housekeeping = require('../models/HousekeepingTask');
 const Request = require('../models/GuestRequest');
 const Task = require('../models/OperationalTask');
 const Audit = require('../models/AdminAudit');
-const gateway = require('../services/paymentGateway');
+const gateway = require('../services/payment-service/src/providers/razorpay');
 const { CHECKLIST } = require('../services/roomReadiness');
 const photo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==';
 let admin, owner, customer, outsider, entry, entryB, manager, managerB, self, managed, originals, sequence = 0;
@@ -162,7 +162,7 @@ test('unassigned managed work stays in Admin fallback; shared maintenance/damage
 test('expired holds, late captured payment after cancellation/conflict and concurrent verification never double-book or auto-confirm on reads',async()=>{
  const v=await h.createProperty(owner.user,{name:'Late payment Villa'});
  const cancelled=await paid(v,customer,7);assert.equal((await call('POST','/api/bookings/cancel/'+cancelled.bookingId,customer.token,{})).status,200);assert.equal((await cancelled.verify()).status,409);let b=await Booking.findById(cancelled.bookingId);assert.equal(b.status,'cancelled');assert.equal(b.paymentStatus,'paid');assert.equal(await RoomNight.countDocuments({reference:b._id}),0);
- const expired=await paid(v,customer,9);await Hold.updateOne({_id:expired.holdId},{$set:{expiresAt:new Date(0)}});await RoomNight.updateMany({reference:expired.holdId},{$set:{expiresAt:new Date(0)}});
+ const expired=await paid(v,customer,9);await Hold.updateOne({_id:expired.holdId},{$set:{expiresAt:new Date(0)}});await RoomNight.updateMany({reference:expired.holdId},{$set:{expiresAt:new Date(0)}});await require('../services/holdLocks').release(expired.holdId);/* Redis TTL expiry */
  const winner=await paid(v,outsider,9);assert.equal((await winner.verify()).status,200);assert.equal((await expired.verify()).status,409);
  await call('GET','/api/bookings/my-bookings',customer.token);await call('GET','/api/bookings/owner',owner.token);b=await Booking.findById(expired.bookingId);assert.equal(b.status,'pending');assert.equal(b.paymentStatus,'paid');assert.equal(await RoomNight.countDocuments({room:v.room.id,date:h.day(9),kind:'booking'}),1);
  const race=await paid(v,customer,12);const responses=await Promise.all([race.verify(),race.verify()]);assert.ok(responses.some(r=>r.status===200));assert.ok(responses.every(r=>[200,409].includes(r.status)));assert.equal(await RoomNight.countDocuments({reference:race.bookingId,kind:'booking'}),1);assert.equal((await Booking.findById(race.bookingId)).status,'confirmed');assert.equal((await race.verify()).status,200);

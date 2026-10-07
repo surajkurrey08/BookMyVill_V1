@@ -1,0 +1,94 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bookmyvilla
+  labels:
+    app.kubernetes.io/part-of: bookmyvilla
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 55m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "75"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - bookmyvilla.online
+        - www.bookmyvilla.online
+        - api.bookmyvilla.online
+        - admin.bookmyvilla.online
+        - owner.bookmyvilla.online
+        - dataentry.bookmyvilla.online
+        - villamanage.bookmyvilla.online
+      secretName: bookmyvilla-tls
+  rules:
+    - host: bookmyvilla.online
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+    - host: www.bookmyvilla.online
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+    - host: api.bookmyvilla.online
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 2001
+    - host: admin.bookmyvilla.online
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin
+                port:
+                  number: 80
+    - host: owner.bookmyvilla.online
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: owner
+                port:
+                  number: 80
+    - host: dataentry.bookmyvilla.online
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: data-entry
+                port:
+                  number: 80
+    - host: villamanage.bookmyvilla.online
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: villa-manager
+                port:
+                  number: 80

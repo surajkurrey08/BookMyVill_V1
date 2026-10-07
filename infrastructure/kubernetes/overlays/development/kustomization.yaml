@@ -1,0 +1,69 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: bookmyvilla-dev
+resources:
+  - ../../base
+  - ../../config
+patches:
+  - target:
+      kind: Namespace
+      name: bookmyvilla
+    patch: "- op: replace\n  path: /metadata/name\n  value: bookmyvilla-dev\n"
+replicas:
+  - name: api-gateway
+    count: 1
+  - name: auth-service
+    count: 1
+  - name: user-service
+    count: 1
+  - name: villa-service
+    count: 1
+  - name: booking-service
+    count: 1
+  - name: availability-service
+    count: 1
+  - name: pricing-service
+    count: 1
+  - name: payment-service
+    count: 1
+  - name: notification-service
+    count: 1
+  - name: search-service
+    count: 1
+  - name: review-service
+    count: 1
+  - name: coupon-service
+    count: 1
+  - name: media-service
+    count: 1
+  - name: frontend
+    count: 1
+configMapGenerator:
+  - name: bookmyvilla-config
+    behavior: merge
+    literals:
+      - "NODE_ENV=development"
+      - "PUBLIC_API_URL=http://localhost:2001"
+      - "LOG_LEVEL=debug"
+images:
+  - name: bookmyvilla/backend
+    newName: REGISTRY/bookmyvilla/backend
+    newTag: dev
+  - name: bookmyvilla/frontend
+    newName: REGISTRY/bookmyvilla/frontend
+    newTag: dev
+  - name: bookmyvilla/admin
+    newName: REGISTRY/bookmyvilla/admin
+    newTag: dev
+  - name: bookmyvilla/owner
+    newName: REGISTRY/bookmyvilla/owner
+    newTag: dev
+  - name: bookmyvilla/data-entry
+    newName: REGISTRY/bookmyvilla/data-entry
+    newTag: dev
+  - name: bookmyvilla/villa-manager
+    newName: REGISTRY/bookmyvilla/villa-manager
+    newTag: dev
+  - name: bookmyvilla/caretaker
+    newName: REGISTRY/bookmyvilla/caretaker
+    newTag: dev

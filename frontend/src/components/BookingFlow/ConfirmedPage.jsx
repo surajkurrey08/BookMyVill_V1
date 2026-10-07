@@ -18,9 +18,20 @@ export default function ConfirmedPage() {
 
   useEffect(() => {
     if (!token()) { navigate('/signin', { state: { from: `/booking/${bookingId}/confirmed` } }); return; }
-    bookingApi(`/bookings/${bookingId}/confirmation`, { auth: true })
-      .then(result => { setData(result); setArrivalTime(result.booking.guestDetails?.arrivalTime || ''); setGuestNames((result.booking.guestDetails?.additionalGuests || []).join('\n')); setError(''); })
-      .catch(err => setError(err.message));
+    // Right after payment the booking may still be finalising (the payment
+    // service confirmed the payment; the booking service confirms the stay
+    // moments later), so a "not confirmed yet" answer is retried briefly.
+    let cancelled = false;
+    let timer;
+    const load = attempt => bookingApi(`/bookings/${bookingId}/confirmation`, { auth: true })
+      .then(result => { if (cancelled) return; setData(result); setArrivalTime(result.booking.guestDetails?.arrivalTime || ''); setGuestNames((result.booking.guestDetails?.additionalGuests || []).join('\n')); setError(''); setNotice(''); })
+      .catch(err => {
+        if (cancelled) return;
+        if (err.status === 404 && attempt < 20) { setNotice('Payment received. Finalising your booking…'); timer = setTimeout(() => load(attempt + 1), 2000); }
+        else { setNotice(''); setError(err.message); }
+      });
+    load(0);
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [bookingId, navigate]);
 
   const update = async body => {

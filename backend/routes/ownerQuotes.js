@@ -8,7 +8,7 @@ const inventory = require('../services/inventory');
 const { createWithCode } = require('../services/refCode');
 const { logActivity, advanceInquiry } = require('../services/crm');
 const { buildQuote, quoteInputs, sweepExpiredQuotes, convertQuote, newPublicToken, CONVERTIBLE, MAX_QUOTE_NIGHTS } = require('../services/quotes');
-const paymentGateway = require('../services/paymentGateway');
+const paymentClient = require('../services/paymentClient');
 const { requirePropertyAccess } = require('../services/propertyAccess');
 const { validId, escapeRegex, cleanText, pagination, stayNights, HttpError, sendError } = require('../utils/validate');
 
@@ -31,11 +31,12 @@ async function detail(req, quoteId) {
   const quote = await Quotation.findOne({ _id: quoteId, owner: req.user.id }).select('+publicToken')
     .populate('property', 'name type location').populate('inquiry', 'code guestName status').populate('booking', 'status paymentStatus room totalPrice')
     .populate('revisionOf', 'code status').populate('revisedBy', 'code status').lean();
-  const [activities, heldNights] = await Promise.all([
+  const [activities, heldNights, onlinePayment] = await Promise.all([
     CrmActivity.find({ owner: req.user.id, quotation: quoteId }).sort({ createdAt: -1 }).limit(50).populate('actor', 'name').lean(),
-    inventory.activeHoldCount(quote._id)
+    inventory.activeHoldCount(quote._id),
+    paymentClient.online(req.id)
   ]);
-  return { ...quote, publicPath: `/quote/${quote.publicToken}`, heldNights, activities, onlinePayment: paymentGateway.available() };
+  return { ...quote, publicPath: `/quote/${quote.publicToken}`, heldNights, activities, onlinePayment };
 }
 
 router.get('/', async (req, res) => {
@@ -89,7 +90,7 @@ router.post('/preview', async (req, res) => {
   try {
     const quoteId = req.body?.quoteId && validId(req.body.quoteId) ? req.body.quoteId : null;
     const built = await buildQuote(req.user.id, req.body || {}, { quoteId });
-    res.json({ ...built.values, warnings: built.warnings, conflicts: built.conflicts, accommodationTax: built.pricing.accommodationTax, onlinePayment: paymentGateway.available() });
+    res.json({ ...built.values, warnings: built.warnings, conflicts: built.conflicts, accommodationTax: built.pricing.accommodationTax, onlinePayment: await paymentClient.online(req.id) });
   } catch (err) { fail(res, err); }
 });
 

@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: bookmyvilla
+resources:
+  - ../../base
+  - ../../config
+  - ../../ingress
+  - ../../autoscaling
+images:
+  - name: bookmyvilla/backend
+    newName: REGISTRY/bookmyvilla/backend
+    newTag: IMAGE_TAG
+  - name: bookmyvilla/frontend
+    newName: REGISTRY/bookmyvilla/frontend
+    newTag: IMAGE_TAG
+  - name: bookmyvilla/admin
+    newName: REGISTRY/bookmyvilla/admin
+    newTag: IMAGE_TAG
+  - name: bookmyvilla/owner
+    newName: REGISTRY/bookmyvilla/owner
+    newTag: IMAGE_TAG
+  - name: bookmyvilla/data-entry
+    newName: REGISTRY/bookmyvilla/data-entry
+    newTag: IMAGE_TAG
+  - name: bookmyvilla/villa-manager
+    newName: REGISTRY/bookmyvilla/villa-manager
+    newTag: IMAGE_TAG
+  - name: bookmyvilla/caretaker
+    newName: REGISTRY/bookmyvilla/caretaker
+    newTag: IMAGE_TAG

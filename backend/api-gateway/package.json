@@ -1,0 +1,8 @@
+{
+  "name": "@bookmyvilla/api-gateway",
+  "private": true,
+  "description": "Public backend entry point (port 2001) routing to the BookMyVilla microservices",
+  "main": "src/server.js",
+  "scripts": { "start": "node src/server.js" },
+  "engines": { "node": ">=22" }
+}

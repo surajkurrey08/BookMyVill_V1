@@ -1,0 +1,59 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway
+  labels:
+    app.kubernetes.io/part-of: bookmyvilla
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-gateway
+---
+ apiVersion: policy/v1
+ kind: PodDisruptionBudget
+ metadata:
+   name: villa-service
+   labels:
+     app.kubernetes.io/part-of: bookmyvilla
+ spec:
+   minAvailable: 1
+   selector:
+     matchLabels:
+       app.kubernetes.io/name: villa-service
+---
+  apiVersion: policy/v1
+  kind: PodDisruptionBudget
+  metadata:
+    name: booking-service
+    labels:
+      app.kubernetes.io/part-of: bookmyvilla
+  spec:
+    minAvailable: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/name: booking-service
+---
+   apiVersion: policy/v1
+   kind: PodDisruptionBudget
+   metadata:
+     name: payment-service
+     labels:
+       app.kubernetes.io/part-of: bookmyvilla
+   spec:
+     minAvailable: 1
+     selector:
+       matchLabels:
+         app.kubernetes.io/name: payment-service
+---
+    apiVersion: policy/v1
+    kind: PodDisruptionBudget
+    metadata:
+      name: auth-service
+      labels:
+        app.kubernetes.io/part-of: bookmyvilla
+    spec:
+      minAvailable: 1
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: auth-service

@@ -4,6 +4,13 @@
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
 process.env.RAZORPAY_KEY_ID = '';
 process.env.RAZORPAY_KEY_SECRET = '';
+// No real broker/cache in tests; identities are never cached between requests.
+process.env.REDIS_URL = '';
+process.env.RABBITMQ_URL = '';
+process.env.IDENTITY_CACHE_SECONDS = '0';
+process.env.INTERNAL_SERVICE_TOKEN = '';
+// Expected warnings (retries, unreachable test upstreams) stay out of test output.
+process.env.LOG_LEVEL = process.env.LOG_LEVEL || 'error';
 
 const crypto = require('crypto');
 const express = require('express');
@@ -14,30 +21,11 @@ const jwt = require('jsonwebtoken');
 // before the connection opens. Models' automatic init then fails exactly as
 // it does in production, so tests catch code that relies on it.
 mongoose.set('bufferCommands', false);
-const routers = {
-  villaManager: require('../routes/villaManager'),
-  ownerPms: require('../routes/ownerPms'),
-  ownerOps: require('../routes/ownerOps'),
-  ownerCrm: require('../routes/ownerCrm'),
-  ownerQuotes: require('../routes/ownerQuotes'),
-  ownerCatalog: require('../routes/ownerCatalog'),
-  ownerFinance: require('../routes/ownerFinance'),
-  auth: require('../routes/auth'),
-  publicQuotes: require('../routes/publicQuotes'),
-  booking: require('../routes/booking'),
-  customerStay: require('../routes/customerStay'),
-  customerBooking: require('../routes/customerBooking'),
-  adminConsole: require('../routes/adminConsole'),
-  property: require('../routes/property'),
-  partner: require('../routes/partner'),
-  admin: require('../routes/admin'),
-  caretaker: require('../routes/caretaker'),
-  caretakerTasks: require('../routes/caretakerTasks'),
-  guestRequirements: require('../routes/guestRequirements'),
-  inventory: require('../routes/inventory'),
-  touristRegister: require('../routes/touristRegister'),
-  feedback: require('../routes/feedback')
-};
+// Every router is mounted exactly as production wires them (shared/runService),
+// so all models load before the connection opens, like index.js.
+const { mountAll, startAllConsumers } = require('../shared/runService');
+const quiet = { info() {}, warn() {}, error() {}, debug() {}, child() { return quiet; } };
+let independent = [];
 
 let memoryServer = null;
 let server = null;
@@ -51,42 +39,26 @@ async function start() {
     uri = memoryServer.getUri();
   }
   const dbName = `bmv_test_${process.pid}_${crypto.randomBytes(3).toString('hex')}`;
+  const app = express();
+  app.set('trust proxy', 'loopback');
+  app.use(express.json({ limit: '1mb' }));
+  independent = mountAll(app);
   await mongoose.connect(uri, { dbName, serverSelectionTimeoutMS: 5000 });
   // Same post-connect index build as index.js.
   const { ensureModelIndexes } = require('../utils/modelIndexes');
   await Promise.all(Object.values(mongoose.models).map(model => ensureModelIndexes(model)));
-
-  const app = express();
-  app.set('trust proxy', 'loopback');
-  app.use(express.json({ limit: '1mb' }));
-  app.use('/api/owner-pms', routers.ownerPms);
-  app.use('/api/villa-manager', routers.villaManager);
-  app.use('/api/owner-ops', routers.ownerOps);
-  app.use('/api/owner-crm', routers.ownerCrm);
-  app.use('/api/owner-quotes', routers.ownerQuotes);
-  app.use('/api/owner-catalog', routers.ownerCatalog);
-  app.use('/api/owner-finance', routers.ownerFinance);
-  app.use('/api/auth', routers.auth);
-  app.use('/api/public/quotes', routers.publicQuotes);
-  app.use('/api/bookings', routers.booking);
-  app.use('/api/stay', routers.customerStay);
-  app.use('/api/customer-booking', routers.customerBooking);
-  app.use('/api/admin-console', routers.adminConsole);
-  app.use('/api/properties', routers.property);
-  app.use('/api/partner', routers.partner);
-  app.use('/api/admin', routers.admin);
-  app.use('/api/caretaker', routers.caretaker);
-  app.use('/api/caretaker-tasks', routers.caretakerTasks);
-  app.use('/api/guest-requirements', routers.guestRequirements);
-  app.use('/api/inventory', routers.inventory);
-  app.use('/api/tourist-register', routers.touristRegister);
-  app.use('/api/feedback', routers.feedback);
+  // Each independent service gets its OWN database, proving data ownership.
+  for (const def of independent) await def.database.connect(quiet, { uri, dbName: `${dbName}_${def.database.key.toLowerCase()}` });
   await new Promise(resolve => { server = app.listen(0, '127.0.0.1', resolve); });
   baseUrl = `http://127.0.0.1:${server.address().port}`;
+  // Internal service-to-service calls reach this same app.
+  for (const name of Object.keys(require('../shared/serviceCatalog').SERVICES)) process.env[`${name.replace(/-/g, '_').toUpperCase()}_URL`] = baseUrl;
+  await startAllConsumers(quiet);
 }
 
 async function stop() {
   if (server) await new Promise(resolve => server.close(resolve));
+  for (const def of independent) { if (def.database.ready()) await def.database.connection.dropDatabase(); await def.database.close(); }
   if (mongoose.connection.readyState === 1) await mongoose.connection.dropDatabase();
   await mongoose.disconnect();
   if (memoryServer) await memoryServer.stop();

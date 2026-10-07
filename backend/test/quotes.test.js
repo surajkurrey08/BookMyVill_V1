@@ -19,7 +19,7 @@ test.before(async () => {
   RoomNight = require('../models/RoomNight');
   Quotation = require('../models/Quotation');
   Booking = require('../models/Booking');
-  Promotion = require('../models/Promotion');
+  Promotion = require('../services/coupon-service/src/models/Promotion');
   Inquiry = require('../models/Inquiry');
   ({ user: owner, token } = await createOwner('quotes'));
   ({ token: otherToken } = await createOwner('rival'));
@@ -215,7 +215,7 @@ test('guest decline moves the lead to follow-up and frees the room', async () =>
 });
 
 test('online payment (gateway stubbed): verify converts once, duplicates are idempotent, lost room is flagged', async () => {
-  const gateway = require('../services/paymentGateway');
+  const gateway = require('../services/payment-service/src/providers/razorpay');
   const secret = 'test_secret_value_123';
   const original = { available: gateway.available, keySecret: gateway.keySecret, keyId: gateway.keyId, createOrder: gateway.createOrder, fetchPayment: gateway.fetchPayment };
   const payments = new Map();

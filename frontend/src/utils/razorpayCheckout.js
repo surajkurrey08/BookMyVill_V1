@@ -17,7 +17,7 @@ function loadCheckout() {
   return scriptPromise;
 }
 
-export async function launchRazorpayCheckout({ order, token, propertyName, user, verifyPath = '/api/bookings/verify', onPaid, onError, onDismiss }) {
+export async function launchRazorpayCheckout({ order, token, propertyName, user, verifyPath, onPaid, onError, onDismiss }) {
   await loadCheckout();
   const checkout = new window.Razorpay({
     key: order.key_id,

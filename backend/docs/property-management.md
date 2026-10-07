@@ -71,6 +71,6 @@ All paths below are relative to `backend/`:
 - Routes: `routes/property.js`, `routes/adminConsole.js`, `routes/admin.js`,
   `routes/booking.js`, `routes/ownerPms.js`, `routes/ownerOps.js`,
   `routes/ownerFinance.js`, `routes/ownerCrm.js`, `routes/ownerQuotes.js`,
-  `routes/ownerCatalog.js`.
+  `services/coupon-service/src` (offers & add-ons).
 - Tests: `test/helpers.js`, `test/management.test.js`.
 - Documentation: `docs/property-management.md`.

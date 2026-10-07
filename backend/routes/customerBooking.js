@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const bus = require('../messaging');
 const accountAuth = require('../middleware/accountAuth');
 const Property = require('../models/Property');
 const Room = require('../models/Room');
@@ -7,13 +7,14 @@ const RoomNight = require('../models/RoomNight');
 const CustomerHold = require('../models/CustomerHold');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
-const AddOn = require('../models/AddOn');
 const inventory = require('../services/inventory');
-const paymentGateway = require('../services/paymentGateway');
+const holdLocks = require('../services/holdLocks');
+const paymentClient = require('../services/paymentClient');
 const { priceQuote } = require('../services/quotePricing');
 const { PUBLIC_LISTING } = require('../services/publicViews');
 const { guideOffer } = require('../services/guides');
-const { findPromotionByCode, promotionRuleFailure, guestRuleFailure, redeemPromotion } = require('../services/promotions');
+const { guestRuleFailure } = require('../services/promotions');
+const couponClient = require('../services/couponClient');
 const { validId, stayNights, indiaDate, cleanText, cleanMultiline, validEmail, validPhone, phoneKey, HttpError, sendError } = require('../utils/validate');
 
 const router = express.Router();
@@ -57,21 +58,22 @@ async function activeHold(userId, id) {
   if (!hold) throw new HttpError(404, 'Room hold not found in your account.');
   if (!['held', 'payment_pending'].includes(hold.status) || hold.expiresAt <= new Date()) throw new HttpError(410, 'This room hold has expired. Select an available room again.');
   const dates = datesFor(hold.checkIn, hold.checkOut);
-  if (await inventory.activeHoldCount(hold._id) !== dates.length) throw new HttpError(410, 'This room hold is no longer available. Select a room again.');
+  // Holds live in Redis; holds created before that change still have MongoDB nights until they expire.
+  if (!(await holdLocks.isHeld(hold._id)) && await inventory.activeHoldCount(hold._id) !== dates.length) throw new HttpError(410, 'This room hold is no longer available. Select a room again.');
   const [property, room] = await Promise.all([publicProperty(String(hold.property)), Room.findOne({ _id: hold.room, property: hold.property, active: true })]);
   if (!room) throw new HttpError(409, 'This room is no longer offered.');
   return { hold, property, room, dates };
 }
 
-async function catalog(property) {
-  return AddOn.find({ owner: property.owner, active: true, $or: [{ property: property._id }, { property: null }] })
-    .select('_id name description category pricingUnit price taxRate maxQuantity').sort({ name: 1 }).lean();
+// Add-ons belong to coupon-service.
+function catalog(property, requestId) {
+  return couponClient.offeredAddOns(property.owner, property._id, requestId);
 }
 
-async function calculate({ hold, property, room, dates }, body, user) {
+async function calculate({ hold, property, room, dates }, body, user, requestId) {
   const selected = Array.isArray(body.addOns) ? body.addOns : [];
   if (selected.length > 20 || new Set(selected.map(item => String(item?.addOnId))).size !== selected.length) throw new HttpError(400, 'Choose each add-on only once.');
-  const offered = await catalog(property);
+  const offered = await catalog(property, requestId);
   const addOns = selected.map(item => {
     const addon = offered.find(value => String(value._id) === String(item?.addOnId));
     if (!addon) throw new HttpError(409, 'An add-on is no longer available for this property.');
@@ -84,9 +86,10 @@ async function calculate({ hold, property, room, dates }, body, user) {
   const code = cleanText(body.promoCode || '', 20);
   if (code === null) throw new HttpError(400, 'Promo code is too long.');
   if (code) {
-    promotion = await findPromotionByCode(property.owner, code);
+    const evaluated = await couponClient.evaluatePromotion({ owner: property.owner, code, propertyId: property._id, today: indiaDate(), checkIn: hold.checkIn, nights: dates.length, accommodationAmount: room.baseRate * dates.length, guests: hold.guests }, requestId);
+    promotion = evaluated.promotion;
     if (!promotion) throw new HttpError(400, 'Promo code was not found.');
-    const failure = promotionRuleFailure(promotion, { propertyId: property._id, today: indiaDate(), checkIn: hold.checkIn, nights: dates.length, accommodationAmount: room.baseRate * dates.length, guests: hold.guests })
+    const failure = evaluated.failure
       || await guestRuleFailure(promotion, { owner: property.owner, guestPhoneKey: phoneKey(user.phone || ''), guestEmail: user.email || '' });
     if (failure) throw new HttpError(400, failure);
     if (promotion.maxUsesPerGuest) {
@@ -120,24 +123,11 @@ async function calculate({ hold, property, room, dates }, body, user) {
 // small). Listings with no units configured are left out rather than hidden.
 router.get('/availability', async (req, res) => {
   try {
-    const dates = datesFor(req.query.checkIn, req.query.checkOut);
-    const guests = Number(req.query.guests || 2);
-    if (!Number.isInteger(guests) || guests < 1 || guests > 50) throw new HttpError(400, 'Choose 1–50 guests.');
-    const properties = await Property.find(PUBLIC_LISTING).select('_id bookingMode').lean();
-    const ids = properties.map(p => p._id);
-    const entire = new Set(properties.filter(p => p.bookingMode === 'ENTIRE').map(p => String(p._id)));
-    const [units, nights] = await Promise.all([
-      Room.find({ property: { $in: ids }, active: true }).select('_id property capacity operationalStatus').lean(),
-      RoomNight.find({ property: { $in: ids }, date: { $in: dates }, ...inventory.activeNightFilter() }).select('room property').lean()
-    ]);
-    const taken = new Set(nights.map(n => String(n.room)));
-    const takenVillas = new Set(nights.filter(n => entire.has(String(n.property))).map(n => String(n.property)));
-    const withUnits = new Set(units.map(u => String(u.property)));
-    const unitCounts = new Map();
-    for (const unit of units) unitCounts.set(String(unit.property), (unitCounts.get(String(unit.property)) || 0) + 1);
-    const free = new Set(units.filter(u => unitCounts.get(String(u.property)) === 1 && u.capacity >= guests && (u.operationalStatus || 'ready') === 'ready' && !taken.has(String(u._id)) && !takenVillas.has(String(u.property))).map(u => String(u.property)));
+    const { guestCount, unavailableListings } = require('../services/availabilitySearch');
+    const guests = guestCount(req.query.guests);
+    const { unavailable } = await unavailableListings({ checkIn: req.query.checkIn, checkOut: req.query.checkOut, guests });
     res.set('Cache-Control', 'no-store');
-    res.json({ checkIn: req.query.checkIn, checkOut: req.query.checkOut, guests, unavailable: [...withUnits].filter(id => !free.has(id)) });
+    res.json({ checkIn: req.query.checkIn, checkOut: req.query.checkOut, guests, unavailable: [...unavailable] });
   } catch (error) { fail(res, error); }
 });
 
@@ -159,7 +149,7 @@ router.get('/properties/:propertyId/rooms', async (req, res) => {
 });
 
 router.get('/properties/:propertyId/add-ons', async (req, res) => {
-  try { res.json(await catalog(await publicProperty(req.params.propertyId))); }
+  try { res.json(await catalog(await publicProperty(req.params.propertyId), req.id)); }
   catch (error) { fail(res, error); }
 });
 
@@ -176,10 +166,14 @@ router.post('/holds', async (req, res) => {
     const guests = Number(req.body.guests);
     if (!Number.isInteger(guests) || guests < 1 || guests > room.capacity) throw new HttpError(400, `This room allows up to ${room.capacity} guests.`);
     hold = await CustomerHold.create({ user: req.user.id, property: property._id, room: room._id, checkIn: req.body.checkIn, checkOut: req.body.checkOut, guests, expiresAt: new Date(Date.now() + HOLD_MS) });
-    await inventory.reserveNights(room, dates, 'hold', hold._id, { expiresAt: hold.expiresAt, reason: 'Customer checkout', conflictMessage: 'This room was just selected by another guest. Choose another available room.' });
+    // Temporary hold = atomic Redis lock with TTL; permanent nights stay in MongoDB.
+    await require('../services/roomReadiness').requireRoomReady(room._id);
+    if ((await inventory.conflictingNights(room._id, dates)).length) throw new HttpError(409, 'This room was just selected by another guest. Choose another available room.');
+    const locked = await holdLocks.acquire({ scope: await inventory.holdScope(room), dates, token: String(hold._id), ttlMs: HOLD_MS });
+    if (!locked) throw new HttpError(409, 'This room was just selected by another guest. Choose another available room.');
     res.status(201).json({ holdId: hold._id, expiresAt: hold.expiresAt, room, property: { _id: property._id, name: property.name, location: property.location, photos: property.photos }, checkIn: hold.checkIn, checkOut: hold.checkOut, guests });
   } catch (error) {
-    if (hold) { await inventory.releaseHolds(hold._id); await CustomerHold.deleteOne({ _id: hold._id }); }
+    if (hold) { await holdLocks.releaseForHold(hold._id); await CustomerHold.deleteOne({ _id: hold._id }); }
     fail(res, error);
   }
 });
@@ -197,6 +191,7 @@ router.delete('/holds/:id', async (req, res) => {
     if (!validId(req.params.id)) throw new HttpError(404, 'Room hold not found.');
     const hold = await CustomerHold.findOneAndUpdate({ _id: req.params.id, user: req.user.id, status: 'held' }, { $set: { status: 'released' } });
     if (!hold) throw new HttpError(409, 'This room hold cannot be released now.');
+    await holdLocks.releaseForHold(hold._id);
     await inventory.releaseHolds(hold._id);
     res.json({ msg: 'Room hold released.' });
   } catch (error) { fail(res, error); }
@@ -218,19 +213,25 @@ router.post('/holds/:id/price', async (req, res) => {
     }
     const user = await User.findById(req.user.id).select('email phone');
     res.set('Cache-Control', 'no-store');
-    res.json(await calculate(context, req.body || {}, user || {}));
+    res.json(await calculate(context, req.body || {}, user || {}, req.id));
   } catch (error) { fail(res, error); }
 });
 
+// Starts payment: creates the pending booking (booking-service data) and asks
+// payment-service for a provider order. The booking is confirmed later by
+// booking-service when payment-service publishes payment.success.
 router.post('/holds/:id/pay', async (req, res) => {
   let locked = false;
+  let booking = null;
+  let ordered = false;
   try {
-    if (!paymentGateway.available()) throw new HttpError(503, 'Online payment is not configured. No booking has been confirmed.');
+    const payments = await paymentClient.config(req.id);
+    if (!payments.available) throw new HttpError(503, 'Online payment is not configured. No booking has been confirmed.');
     const context = await activeHold(req.user.id, req.params.id);
     if (context.hold.status === 'payment_pending' && context.hold.booking && context.hold.orderId) {
       const existing = await Booking.findOne({ _id: context.hold.booking, user: req.user.id, status: 'pending', paymentStatus: 'pending' });
       if (!existing) throw new HttpError(409, 'This payment has changed. Open My Trips for its latest status.');
-      return res.json({ order_id: context.hold.orderId, amount: (existing.onlineAmount ?? existing.totalPrice) * 100, currency: 'INR', key_id: paymentGateway.keyId(), bookingId: existing._id, holdExpiresAt: context.hold.expiresAt });
+      return res.json({ order_id: context.hold.orderId, amount: (existing.onlineAmount ?? existing.totalPrice) * 100, currency: 'INR', key_id: payments.keyId, bookingId: existing._id, holdExpiresAt: context.hold.expiresAt });
     }
     const guestName = cleanText(req.body?.guest?.name, 100);
     const guestPhone = cleanText(req.body?.guest?.phone, 20);
@@ -241,16 +242,17 @@ router.post('/holds/:id/pay', async (req, res) => {
     const specialRequests = cleanMultiline(req.body?.guest?.specialRequests || '', 500);
     if (!guestName || guestName.length < 2 || !validPhone(guestPhone) || !validEmail(guestEmail) || !idType || !idNumber || [arrivalTime, idType, idNumber, specialRequests].some(value => value === null)) throw new HttpError(400, 'Enter valid guest name, mobile number, email and ID details.');
     const user = await User.findById(req.user.id).select('email phone');
-    const pricing = await calculate(context, req.body || {}, { ...(user?.toObject() || {}), email: guestEmail, phone: guestPhone });
+    const pricing = await calculate(context, req.body || {}, { ...(user?.toObject() || {}), email: guestEmail, phone: guestPhone }, req.id);
     if (pricing.total <= 0) throw new HttpError(409, 'This stay has no payable amount. Contact the property.');
     const until = new Date(Date.now() + PAYMENT_MS);
     const claim = await CustomerHold.updateOne({ _id: context.hold._id, status: 'held', expiresAt: { $gt: new Date() } }, { $set: { status: 'payment_pending', expiresAt: until } });
     if (!claim.modifiedCount) throw new HttpError(409, 'This room hold changed. Refresh checkout.');
     locked = true;
+    // Keep the dates held while the guest pays (Redis lock; legacy MongoDB holds too).
+    const extended = await holdLocks.extend(context.hold._id, PAYMENT_MS);
     await RoomNight.updateMany({ kind: 'hold', reference: context.hold._id }, { $max: { expiresAt: until } });
-    if (await inventory.activeHoldCount(context.hold._id) !== context.dates.length) throw new HttpError(409, 'The room hold expired while payment was starting. Select the room again.');
-    const order = await paymentGateway.createOrder({ amountPaise: pricing.amountDueNow * 100, receipt: `bmv_${String(context.hold._id).slice(-16)}`, notes: { hold: String(context.hold._id) } });
-    const booking = await Booking.create({ user: req.user.id, property: context.property._id, room: context.room._id,
+    if (!extended && await inventory.activeHoldCount(context.hold._id) !== context.dates.length) throw new HttpError(409, 'The room hold expired while payment was starting. Select the room again.');
+    booking = await Booking.create({ user: req.user.id, property: context.property._id, room: context.room._id,
       guest: { name: guestName, phone: guestPhone, phoneKey: phoneKey(guestPhone), email: guestEmail.toLowerCase() },
       guestDetails: { arrivalTime, idType, idLastFour: idNumber.slice(-4), specialRequests },
       checkIn: new Date(`${context.hold.checkIn}T00:00:00.000Z`), checkOut: new Date(`${context.hold.checkOut}T00:00:00.000Z`),
@@ -260,73 +262,31 @@ router.post('/holds/:id/pay', async (req, res) => {
         ...pricing.addOns.map(item => ({ kind: 'addon', label: item.name, quantity: item.quantity, unitPrice: item.unitPrice, amount: item.amount, taxRate: item.taxRate, tax: item.tax })),
         ...(pricing.guide ? [{ kind: 'fee', label: 'Local guide', quantity: pricing.guide.days, unitPrice: pricing.guide.dailyRate, amount: pricing.guide.amount }] : [])],
       ...(pricing.guide && { guide: { requested: true, days: pricing.guide.days, dailyRate: pricing.guide.dailyRate, amount: pricing.guide.amount } }),
-      razorpayOrderId: order.id, status: 'pending', paymentStatus: 'pending', source: 'website',
+      status: 'pending', paymentStatus: 'pending', source: 'website',
       actionHistory: [{ action: 'Payment Started', performedBy: `Traveler (${req.user.id})`, targetUser: 'Property Owner', reason: `Room ${context.room.number} held for checkout.` }] });
-    await CustomerHold.updateOne({ _id: context.hold._id }, { $set: { booking: booking._id, orderId: order.id } });
-    res.json({ order_id: order.id, amount: order.amount, currency: 'INR', key_id: paymentGateway.keyId(), bookingId: booking._id, holdExpiresAt: until });
+    const order = await paymentClient.createOrder({ purpose: 'booking', amount: pricing.amountDueNow, receipt: `bmv_${String(context.hold._id).slice(-16)}`, bookingId: String(booking._id), holdId: String(context.hold._id), userId: String(req.user.id), notes: { hold: String(context.hold._id) } }, req.id);
+    ordered = true;
+    await Booking.updateOne({ _id: booking._id }, { $set: { razorpayOrderId: order.order_id } });
+    await CustomerHold.updateOne({ _id: context.hold._id }, { $set: { booking: booking._id, orderId: order.order_id } });
+    await bus.publish(bus.events.BOOKING_CREATED, { bookingId: String(booking._id), villaId: String(context.property._id), userId: String(req.user.id), checkIn: context.hold.checkIn, checkOut: context.hold.checkOut, total: pricing.total }, { requestId: req.id });
+    res.json({ order_id: order.order_id, amount: order.amount, currency: 'INR', key_id: order.key_id, bookingId: booking._id, holdExpiresAt: until });
   } catch (error) {
-    if (locked) {
+    if (booking && !ordered) await Booking.deleteOne({ _id: booking._id, status: 'pending', paymentStatus: 'pending' }).catch(() => {});
+    if (locked && !ordered) {
       const retryUntil = new Date(Date.now() + HOLD_MS);
       const reset = await CustomerHold.updateOne({ _id: req.params.id, booking: null }, { $set: { status: 'held', expiresAt: retryUntil } });
-      if (reset.modifiedCount) await RoomNight.updateMany({ kind: 'hold', reference: req.params.id }, { $set: { expiresAt: retryUntil } });
+      if (reset.modifiedCount) {
+        await holdLocks.extend(req.params.id, HOLD_MS).catch(() => false);
+        await RoomNight.updateMany({ kind: 'hold', reference: req.params.id }, { $set: { expiresAt: retryUntil } });
+      }
     }
     fail(res, error);
   }
 });
 
-router.post('/holds/:id/verify', async (req, res) => {
-  let claimed = false;
-  let verificationLease;
-  try {
-    if (!validId(req.params.id)) throw new HttpError(404, 'Room hold not found.');
-    const hold = await CustomerHold.findOne({ _id: req.params.id, user: req.user.id });
-    if (!hold?.booking || !hold.orderId) throw new HttpError(404, 'Payment order not found.');
-    const booking = await Booking.findOne({ _id: hold.booking, user: req.user.id, razorpayOrderId: hold.orderId });
-    if (!booking) throw new HttpError(404, 'Booking not found.');
-    const { razorpay_order_id: orderId, razorpay_payment_id: paymentId, razorpay_signature: signature } = req.body || {};
-    if (orderId !== hold.orderId || typeof paymentId !== 'string' || !/^pay_[A-Za-z0-9]+$/.test(paymentId) || !paymentGateway.validSignature(orderId, paymentId, signature)) throw new HttpError(400, 'Payment details could not be verified.');
-    if (booking.status === 'confirmed' && booking.paymentStatus === 'paid' && booking.razorpayPaymentId === paymentId) return res.json({ bookingId: booking._id, status: booking.status });
-    const payment = await paymentGateway.fetchPayment(paymentId);
-    if (payment.order_id !== orderId || payment.status !== 'captured' || payment.currency !== 'INR' || payment.amount !== (booking.onlineAmount ?? booking.totalPrice) * 100) throw new HttpError(409, 'Payment is not captured for this booking.');
-    if (booking.paymentStatus === 'paid') throw new HttpError(409, 'Payment is already recorded. Contact support for room conflict or refund review.');
-    if (booking.status !== 'pending') {
-      await Booking.updateOne({ _id: booking._id, paymentStatus: 'pending' }, { $set: { paymentStatus: 'paid', razorpayPaymentId: paymentId, paymentSource: 'razorpay', paymentMode: paymentGateway.mode(), paidAt: new Date() }, $push: { actionHistory: { action: 'Payment Captured After Cancellation', performedBy: 'Payment Verification', reason: 'Refund review required; no room was reserved.' } } });
-      await inventory.releaseHolds(hold._id);
-      throw new HttpError(409, 'Captured payment requires refund review. Cancelled booking remains cancelled.');
-    }
-    verificationLease = new Date(Date.now() + 120000);
-    const claim = await Booking.updateOne({ _id: booking._id, status: 'pending', paymentStatus: 'pending', $or: [{ paymentVerification: null }, { paymentVerification: { $lte: new Date() } }] }, { $set: { paymentVerification: verificationLease } });
-    if (!claim.modifiedCount) throw new HttpError(409, 'Payment verification is in progress. Refresh My Trips.');
-    claimed = true;
-    const room = await Room.findById(booking.room);
-    const dates = stayNights(hold.checkIn, hold.checkOut, 365);
-    if (!room || !dates) throw new HttpError(409, 'The selected room could not be verified. Contact support with your payment ID.');
-    try { await inventory.convertHoldToBooking(room, dates, hold._id, booking._id); }
-    catch (error) {
-      await Booking.updateOne({ _id: booking._id }, { $set: { paymentStatus: 'paid', razorpayPaymentId: paymentId, paymentSource: 'razorpay', paymentMode: paymentGateway.mode(), paidAt: new Date() }, $push: { actionHistory: { action: 'Payment Captured – Room Conflict', performedBy: 'Razorpay Payment Verification', targetUser: `Booking ${booking._id}`, reason: 'Room conflict requires support and refund review.' } } });
-      throw new HttpError(409, 'Payment was captured but the room could not be secured. Contact support with your payment ID; your booking is not confirmed.');
-    }
-    const updated = await Booking.findOneAndUpdate({ _id: booking._id, status: 'pending', paymentStatus: 'pending' }, { $set: { status: 'confirmed', paymentStatus: 'paid', razorpayPaymentId: paymentId, paymentSource: 'razorpay', paymentMode: paymentGateway.mode(), paidAt: new Date() }, $push: { actionHistory: { action: 'Payment Captured & Stay Confirmed', performedBy: 'Razorpay Payment Verification', targetUser: `Booking ${booking._id}`, reason: 'Payment and room inventory verified.' } } }, { new: true });
-    if (!updated) {
-      const latest = await Booking.findById(booking._id);
-      if (latest?.status === 'cancelled') {
-        await inventory.releaseBookingNights(booking._id);
-        await Booking.updateOne({ _id: booking._id }, { $set: { paymentStatus: 'paid', razorpayPaymentId: paymentId, paidAt: new Date() }, $push: { actionHistory: { action: 'Refund Review Required', performedBy: 'Payment Verification', reason: 'Cancellation occurred during capture.' } } });
-      }
-      throw new HttpError(409, 'Booking changed. Contact support for payment review.');
-    }
-    await CustomerHold.updateOne({ _id: hold._id }, { $set: { status: 'confirmed' } });
-    if (booking.promotion && booking.discountAmount > 0) {
-      try {
-        const property = await Property.findById(room.property).select('owner');
-        if (property) await redeemPromotion(property.owner, booking.promotion, booking.discountAmount, { force: true });
-      } catch (error) { console.error('Confirmed booking promotion accounting notice:', error); }
-    }
-    res.json({ bookingId: updated._id, status: updated.status });
-   } catch (error) { fail(res, error); } finally {
-    if (claimed) { const hold = await CustomerHold.findOne({ _id: req.params.id, user: req.user.id }); if (hold?.booking) await Booking.updateOne({ _id: hold.booking, paymentVerification: verificationLease }, { $unset: { paymentVerification: 1 } }); }
-  }
-});
+// Payment verification (/holds/:id/verify) is served by payment-service; the
+// booking is confirmed by booking-service on payment.success
+// (services/bookingConfirmation).
 
 router.get('/bookings/:id/confirmation', async (req, res) => {
   try {

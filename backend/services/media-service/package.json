@@ -1,0 +1,13 @@
+{
+  "name": "@bookmyvilla/media-service",
+  "private": true,
+  "description": "Property photos/videos and site hero images",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

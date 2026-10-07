@@ -74,118 +74,24 @@ app.use((req, res, next) => {
 // Routes
 // ======================================================
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/villa-manager', require('./routes/villaManager'));
-
-app.use(
-  '/api/properties',
-  require('./routes/property')
-);
-
-app.use(
-  '/api/admin',
-  require('./routes/admin')
-);
-
-app.use(
-  '/api/site-heroes',
-  require('./routes/siteHeroes')
-);
-
-app.use(
-  '/api/bookings',
-  require('./routes/payment')
-);
-
-app.use(
-  '/api/bookings',
-  require('./routes/booking')
-);
-
-app.use(
-  '/api/owner-pms',
-  require('./routes/ownerPms')
-);
-
-app.use(
-  '/api/owner-ops',
-  require('./routes/ownerOps')
-);
-
-app.use(
-  '/api/owner-finance',
-  require('./routes/ownerFinance')
-);
-
-app.use(
-  '/api/owner-crm',
-  require('./routes/ownerCrm')
-);
-
-app.use(
-  '/api/owner-quotes',
-  require('./routes/ownerQuotes')
-);
-
-app.use(
-  '/api/owner-catalog',
-  require('./routes/ownerCatalog')
-);
-
-app.use(
-  '/api/public/quotes',
-  require('./routes/publicQuotes')
-);
-
-app.use(
-  '/api/stay',
-  require('./routes/customerStay')
-);
-
-app.use(
-  '/api/customer-booking',
-  require('./routes/customerBooking')
-);
-
-app.use(
-  '/api/admin-console',
-  require('./routes/adminConsole')
-);
-
-app.use(
-  '/api/caretaker',
-  require('./routes/caretaker')
-);
-
-app.use(
-  '/api/partner',
-  require('./routes/partner')
-);
-
-app.use(
-  '/api/inventory',
-  require('./routes/inventory')
-);
-
-app.use(
-  '/api/tourist-register',
-  require('./routes/touristRegister')
-);
-
-app.use(
-  '/api/feedback',
-  require('./routes/feedback')
-);
-
-app.use(
-  '/api/caretaker-tasks',
-  require('./routes/caretakerTasks')
-);
-
-app.use(
-  '/api/guest-requirements',
-  require('./routes/guestRequirements')
-);
+// Legacy all-in-one mode: every microservice in one process, from the same
+// catalog the API Gateway uses. Production runs the gateway + services instead.
+{
+  const { createLogger } = require('./shared/logger');
+  const { mountAll, startAllConsumers } = require('./shared/runService');
+  const logger = createLogger('all-in-one');
+  // Internal service calls loop back to this process in all-in-one mode.
+  for (const name of Object.keys(require('./shared/serviceCatalog').SERVICES)) {
+    const key = `${name.replace(/-/g, '_').toUpperCase()}_URL`;
+    if (!process.env[key]) process.env[key] = `http://127.0.0.1:${process.env.PORT || 2001}`;
+  }
+  const independent = mountAll(app);
+  mongoose.connection.once('connected', async () => {
+    // Service-owned databases (same cluster; see shared/database.js) and event consumers.
+    await Promise.all(independent.map(def => def.database.connect(logger)));
+    await startAllConsumers(logger);
+  });
+}
 
 // ======================================================
 // Environment Status

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: coupon-service
+  labels:
+    app.kubernetes.io/name: coupon-service
+    app.kubernetes.io/part-of: bookmyvilla
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: coupon-service
+  ports:
+    - name: http
+      port: 2111
+      targetPort: http
