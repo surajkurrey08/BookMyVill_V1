@@ -6,10 +6,9 @@
 # Service-to-service /internal calls use INTERNAL_SERVICE_TOKEN from backend/.env.
 name: bookmyvilla
 
+# One backend image for the gateway and every service. Only api-gateway builds it;
+# the services reuse the local image (pull_policy: never), so the VPS builds once.
 x-backend: &backend
-  build:
-    context: ./backend
-    dockerfile: Dockerfile
   image: bookmyvilla/backend:local
   env_file:
     - path: ./backend/.env
@@ -31,6 +30,9 @@ x-backend-env: &backend-env
 services:
   api-gateway:
     <<: *backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: bookmyvilla-api-gateway
     command: ["node", "api-gateway/src/server.js"]
     ports:
@@ -49,6 +51,12 @@ services:
   auth-service:
     <<: *backend
     container_name: bookmyvilla-auth-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/auth-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -67,6 +75,12 @@ services:
   user-service:
     <<: *backend
     container_name: bookmyvilla-user-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/user-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -82,6 +96,12 @@ services:
   villa-service:
     <<: *backend
     container_name: bookmyvilla-villa-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/villa-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -97,6 +117,12 @@ services:
   booking-service:
     <<: *backend
     container_name: bookmyvilla-booking-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/booking-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -112,6 +138,12 @@ services:
   availability-service:
     <<: *backend
     container_name: bookmyvilla-availability-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/availability-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -127,6 +159,12 @@ services:
   pricing-service:
     <<: *backend
     container_name: bookmyvilla-pricing-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/pricing-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -142,6 +180,12 @@ services:
   payment-service:
     <<: *backend
     container_name: bookmyvilla-payment-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/payment-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -158,6 +202,12 @@ services:
   notification-service:
     <<: *backend
     container_name: bookmyvilla-notification-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/notification-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -174,6 +224,12 @@ services:
   search-service:
     <<: *backend
     container_name: bookmyvilla-search-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/search-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -190,6 +246,12 @@ services:
   review-service:
     <<: *backend
     container_name: bookmyvilla-review-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/review-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -206,6 +268,12 @@ services:
   coupon-service:
     <<: *backend
     container_name: bookmyvilla-coupon-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/coupon-service/src/server.js"]
     environment:
       <<: *backend-env
@@ -222,6 +290,12 @@ services:
   media-service:
     <<: *backend
     container_name: bookmyvilla-media-service
+    pull_policy: never
+    depends_on:
+      - api-gateway
+      - mongo
+      - rabbitmq
+      - redis
     command: ["node", "services/media-service/src/server.js"]
     environment:
       <<: *backend-env

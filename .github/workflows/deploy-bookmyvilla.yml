@@ -392,6 +392,10 @@ jobs:
             echo "Building BookMyVilla containers"
             echo "======================================"
 
+            # No provenance/SBOM attestations: they only slow the VPS build down.
+            export BUILDX_NO_DEFAULT_ATTESTATIONS=1
+
+            # One backend image (built by api-gateway, reused by the 12 services) + web apps.
             docker compose build --pull
 
           REMOTE
