@@ -23,6 +23,23 @@ Secrets come from `backend/.env` (created by the deploy workflow from the `BACKE
 
 Capacity note: the stack runs 13 Node processes (~70–120 MB each) plus RabbitMQ (~150 MB) and Redis. Check VPS memory before the first deploy; `npm start` (single process) remains available as a fallback by changing the gateway command in compose.
 
+## Public API health failures
+
+If CI prints that all five sites serve the production build and then reports HTTP 503,
+the failing request is `https://api.bookmyvilla.online/api/health`. Static frontend
+checks can pass while a backend service is unavailable. The public API check retries
+up to 12 times, accepting only HTTP 200 with JSON `status: "ok"`, and prints unhealthy
+response bodies so the gateway's per-service readiness report is retained.
+
+On failure, the **Diagnose backend health failure** CI step compares the gateway on
+port 2001 with host Nginx on port 8090, probes every service from the gateway container,
+and prints container status and recent critical-service logs. A service reported as
+`not_ready` is responding but failing readiness (currently gated by its MongoDB
+connection); `unreachable` calls for checking container status, service addresses and
+network connectivity. If the local and host Nginx checks pass while the public API
+fails, inspect public DNS and shared gateway routing for `api.bookmyvilla.online`.
+Persistent failures still fail deployment; retries do not bypass backend readiness.
+
 ## Kubernetes
 ```bash
 cd infrastructure && npm install && npm run validate      # offline manifest checks
