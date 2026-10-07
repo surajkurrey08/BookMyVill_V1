@@ -12,12 +12,19 @@ npm start                # legacy all-in-one server on :2001 (rollback / quick d
 
 ## Docker Compose (VPS)
 ```bash
-docker compose up -d --build          # gateway, 12 services, RabbitMQ, Redis, Mongo, web apps
+# Production: CI uploads frontend dist builds; host Nginx serves the sites.
+export COMPOSE_FILE=docker-compose.yaml:docker-compose.production.yaml
+docker compose build --pull api-gateway
+docker compose up -d --no-build
 docker compose ps
 docker compose logs -f api-gateway booking-service
 curl -fsS http://127.0.0.1:2001/api/health
-docker compose -f docker-compose.yaml -f docker-compose.monitoring.yaml up -d   # + Prometheus/Grafana
+docker compose -f docker-compose.yaml -f docker-compose.production.yaml -f docker-compose.monitoring.yaml up -d   # + Prometheus/Grafana
 ```
+Use the base `docker-compose.yaml` alone when you want the six Vite development containers.
+The production override assigns them to the optional `development` profile and the workflow
+checks the uploaded static files and public HTTPS sites instead of development-server ports.
+
 `docker-compose.yaml` is generated: `node infrastructure/scripts/generate-compose.js`.
 Secrets come from `backend/.env` (created by the deploy workflow from the `BACKEND_ENV` secret); nothing is baked into images.
 

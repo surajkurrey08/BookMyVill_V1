@@ -1,0 +1,16 @@
+# Production web sites use the dist builds uploaded by CI and host Nginx.
+# Keep Vite development containers available only when explicitly requested.
+# Use with: docker compose -f docker-compose.yaml -f docker-compose.production.yaml
+services:
+  frontend:
+    profiles: [development]
+  admin:
+    profiles: [development]
+  owner:
+    profiles: [development]
+  caretaker:
+    profiles: [development]
+  data-entry:
+    profiles: [development]
+  villa-manager:
+    profiles: [development]

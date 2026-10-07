@@ -1,6 +1,6 @@
 # BookMyVilla production deployment
 
-The [GitHub Actions workflow](../.github/workflows/deploy-bookmyvilla.yml) builds the guest, admin, owner, caretaker, data entry and villa manager apps, starts the Docker stack on the VPS, uploads production builds for the five public sites, configures host Nginx and TLS, and checks the public HTTPS responses. Data Entry and Villa Manager use static Nginx builds at their public domains and need no separate Vite server in production. The caretaker pages are served by the guest site; the separate caretaker container is checked on its local port.
+The [GitHub Actions workflow](../.github/workflows/deploy-bookmyvilla.yml) builds the guest, admin, owner, caretaker, data entry and villa manager apps, starts the Docker stack on the VPS, uploads production builds for the five public sites, configures host Nginx and TLS, and checks the public HTTPS responses. Data Entry and Villa Manager use static Nginx builds at their public domains and need no separate Vite server in production. The caretaker pages are served by the guest site. Production uses `docker-compose.production.yaml` to keep all six Vite development containers out of the deployment, so the VPS builds only the single backend image shared by the gateway and services. Local development can still use the base Compose file.
 
 ## VPS and DNS setup
 

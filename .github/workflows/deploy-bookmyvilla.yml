@@ -369,7 +369,7 @@ jobs:
 
             echo "Validating Docker Compose configuration..."
 
-            docker compose config >/dev/null
+            docker compose -f docker-compose.yaml -f docker-compose.production.yaml config >/dev/null
 
             echo "Docker Compose configuration valid"
           REMOTE
@@ -395,8 +395,9 @@ jobs:
             # No provenance/SBOM attestations: they only slow the VPS build down.
             export BUILDX_NO_DEFAULT_ATTESTATIONS=1
 
-            # One backend image (built by api-gateway, reused by the 12 services) + web apps.
-            docker compose build --pull
+            # Frontend dist builds are already uploaded and served by host Nginx.
+            # Build only the image shared by the gateway and all 12 services.
+            docker compose -f docker-compose.yaml -f docker-compose.production.yaml build --pull api-gateway
 
           REMOTE
           then
@@ -406,8 +407,8 @@ jobs:
             ssh bookmyvilla-vps <<'REMOTE'
               cd /var/www/bookmyvilla || exit 0
 
-              docker compose ps || true
-              docker compose logs --tail=100 || true
+              docker compose -f docker-compose.yaml -f docker-compose.production.yaml ps || true
+              docker compose -f docker-compose.yaml -f docker-compose.production.yaml logs --tail=100 || true
           REMOTE
 
             exit 1
@@ -434,7 +435,7 @@ jobs:
             echo "Starting BookMyVilla"
             echo "======================================"
 
-            docker compose up -d --remove-orphans
+            docker compose -f docker-compose.yaml -f docker-compose.production.yaml up -d --no-build --remove-orphans
 
             # The API Gateway (port 2001) and the 12 microservices each retry their
             # Atlas connection on start; the health check below waits for all of them.
@@ -442,7 +443,7 @@ jobs:
             echo ""
             echo "BookMyVilla container status:"
 
-            docker compose ps
+            docker compose -f docker-compose.yaml -f docker-compose.production.yaml ps
 
           REMOTE
           then
@@ -454,11 +455,11 @@ jobs:
 
               echo ""
               echo "Container status:"
-              docker compose ps || true
+              docker compose -f docker-compose.yaml -f docker-compose.production.yaml ps || true
 
               echo ""
               echo "Container logs:"
-              docker compose logs --tail=150 || true
+              docker compose -f docker-compose.yaml -f docker-compose.production.yaml logs --tail=150 || true
           REMOTE
 
             exit 1
@@ -519,7 +520,7 @@ jobs:
 
               echo ""
               echo "Container status:"
-              docker compose ps
+              docker compose -f docker-compose.yaml -f docker-compose.production.yaml ps
 
               echo ""
               echo "Gateway health:"
@@ -527,77 +528,35 @@ jobs:
 
               echo ""
               echo "Backend logs:"
-              docker compose logs --tail=60 api-gateway auth-service user-service villa-service booking-service payment-service
+              docker compose -f docker-compose.yaml -f docker-compose.production.yaml logs --tail=60 api-gateway auth-service user-service villa-service booking-service payment-service
 
               exit 1
             fi
           REMOTE
 
       # ============================================================
-      # 16. Check frontend/admin/owner/caretaker
+      # 16. Check uploaded production frontend builds
       # ============================================================
 
-      - name: Check frontend applications
+      - name: Check uploaded production frontend builds
         run: |
           set -euo pipefail
 
           ssh bookmyvilla-vps <<'REMOTE'
             set -euo pipefail
-
             cd /var/www/bookmyvilla
 
-            check_service() {
-
-              NAME="$1"
-              PORT="$2"
-
-              echo ""
-              echo "Checking ${NAME} on port ${PORT}..."
-
-              SUCCESS=false
-
-              for attempt in $(seq 1 10); do
-
-                if curl \
-                  --fail \
-                  --silent \
-                  --show-error \
-                  --max-time 10 \
-                  "http://127.0.0.1:${PORT}/" \
-                  >/dev/null
-                then
-
-                  echo "${NAME}: healthy"
-
-                  SUCCESS=true
-                  break
-                fi
-
-                echo "${NAME}: waiting (${attempt}/10)"
-
-                sleep 3
-              done
-
-              if [ "$SUCCESS" != "true" ]; then
-
-                echo ""
-                echo "ERROR: ${NAME} health check failed"
-
-                echo ""
-                docker compose ps
-
-                echo ""
-                docker compose logs --tail=100
-
+            for app in frontend admin owner data-entry villa-manager; do
+              if [[ ! -s "$app/dist/index.html" || ! -d "$app/dist/assets" ]]; then
+                echo "ERROR: Missing production build for $app"
                 exit 1
               fi
-            }
-
-            check_service "Frontend" 5173
-            check_service "Admin" 5174
-            check_service "Owner" 5175
-            check_service "Caretaker" 5176
-
+              if [[ -z "$(find "$app/dist/assets" -type f -print -quit)" ]]; then
+                echo "ERROR: Production assets are empty for $app"
+                exit 1
+              fi
+              echo "$app: production build is present"
+            done
           REMOTE
 
       - name: Configure public Nginx and TLS
@@ -682,7 +641,7 @@ jobs:
             cd /var/www/bookmyvilla
 
             echo 'BookMyVilla container status:'
-            docker compose ps -a || true
+            docker compose -f docker-compose.yaml -f docker-compose.production.yaml ps -a || true
 
             echo 'Gateway process and aggregate readiness on the VPS:'
             for endpoint in health api/health; do
@@ -696,7 +655,7 @@ jobs:
               http://127.0.0.1:8090/api/health || true
 
             echo 'Per-service readiness from inside the API gateway:'
-            docker compose exec -T api-gateway node -e '
+            docker compose -f docker-compose.yaml -f docker-compose.production.yaml exec -T api-gateway node -e '
               const { SERVICES, serviceUrl } = require("./shared/serviceCatalog");
               const { probe } = require("./api-gateway/src/proxy");
               Promise.all(Object.keys(SERVICES).map(async name => {
@@ -706,7 +665,7 @@ jobs:
             ' || true
 
             echo 'Recent gateway and critical-service logs:'
-            docker compose logs --no-color --tail=60 \
+            docker compose -f docker-compose.yaml -f docker-compose.production.yaml logs --no-color --tail=60 \
               api-gateway auth-service user-service villa-service booking-service payment-service || true
           REMOTE
 
@@ -729,17 +688,16 @@ jobs:
             echo "======================================"
             echo ""
 
-            docker compose ps
+            docker compose -f docker-compose.yaml -f docker-compose.production.yaml ps
 
             echo ""
-            echo "BookMyVilla internal endpoints:"
-            echo "--------------------------------------"
-            echo "Frontend  : http://127.0.0.1:5173"
-            echo "Admin     : http://127.0.0.1:5174"
-            echo "Owner     : http://127.0.0.1:5175"
-            echo "Caretaker : http://127.0.0.1:5176"
-            echo "Backend   : http://127.0.0.1:2001"
-            echo "--------------------------------------"
+            echo "BookMyVilla production endpoints:"
+            echo "Frontend  : https://bookmyvilla.online"
+            echo "Admin     : https://admin.bookmyvilla.online"
+            echo "Owner     : https://owner.bookmyvilla.online"
+            echo "Data Entry: https://dataentry.bookmyvilla.online"
+            echo "Manager   : https://villamanage.bookmyvilla.online"
+            echo "API       : https://api.bookmyvilla.online"
 
           REMOTE
 
