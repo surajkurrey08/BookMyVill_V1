@@ -397,7 +397,19 @@ jobs:
 
             # Frontend dist builds are already uploaded and served by host Nginx.
             # Build only the image shared by the gateway and all 12 services.
-            docker compose -f docker-compose.yaml -f docker-compose.production.yaml build --pull api-gateway
+            # Docker Hub pulls occasionally hit a TLS handshake timeout; retry a
+            # few times before failing the whole deployment.
+            for attempt in 1 2 3; do
+              if docker compose -f docker-compose.yaml -f docker-compose.production.yaml build --pull api-gateway; then
+                break
+              fi
+              if [ "$attempt" = 3 ]; then
+                echo "Docker build failed after 3 attempts"
+                exit 1
+              fi
+              echo "Build attempt ${attempt} failed (possible registry timeout) - retrying in 15s..."
+              sleep 15
+            done
 
           REMOTE
           then
