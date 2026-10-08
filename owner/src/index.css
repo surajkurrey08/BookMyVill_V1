@@ -1,16 +1,16 @@
 :root {
-  --bg-dark: #0b110f;
-  --bg-card: #131c19;
-  --bg-card-hover: #1b2723;
-  --border-color: #243530;
-  --text-main: #f2ece4;
-  --text-muted: #859690;
-  --accent-gold: #d4af37;
-  --accent-gold-hover: #b89628;
-  --accent-emerald: #102a24;
-  --status-approved: #2ea043;
+  --bg-dark: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --accent-gold: #b8860b;
+  --accent-gold-hover: #996e00;
+  --accent-emerald: #1e3a34;
+  --status-approved: #16a34a;
   --status-pending: #d97706;
-  --status-rejected: #da3633;
+  --status-rejected: #dc2626;
   --font-heading: 'Outfit', 'Inter', sans-serif;
   --font-body: 'Outfit', 'Inter', sans-serif;
 }

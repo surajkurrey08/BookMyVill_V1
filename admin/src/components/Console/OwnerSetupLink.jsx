@@ -11,7 +11,7 @@ export default function OwnerSetupLink({ owner }) {
     setBusy(true); setError(''); setNotice('');
     try {
       const result = await adminApi(`/owners/${owner._id}/setup-link`, { method: 'POST' });
-      const base = import.meta.env.VITE_OWNER_APP_URL || (import.meta.env.DEV ? 'http://localhost:5175' : window.location.origin);
+      const base = import.meta.env.VITE_OWNER_APP_URL || (import.meta.env.DEV ? 'http://:5175' : window.location.origin);
       const url = new URL('/owner-setup', base);
       url.hash = `token=${encodeURIComponent(result.token)}`;
       setLink({ ...result, url: url.toString() });

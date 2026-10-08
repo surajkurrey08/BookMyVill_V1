@@ -100,10 +100,7 @@ export default function HeroImageManager() {
   return (
     <div className="hero-manager">
       <div className="hero-manager-intro">
-        <div>
-          <h2>Website Hero Images</h2>
-          <p>Choose a separate cover image for each page. JPG, PNG and WebP files up to 8 MB are supported. Wide images work best.</p>
-        </div>
+        
         <span className="hero-manager-count">{pages.length} pages</span>
       </div>
 

@@ -5,8 +5,8 @@
 .ob-section textarea { min-height: 80px; }
 .ob-actions { display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; padding: 14px 0; background: var(--bg); border-top: 1px solid var(--border); }
 .ob-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.ob-mode { position: relative; display: grid; gap: 4px; padding: 14px 14px 14px 42px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--raised); cursor: pointer; }
-.ob-mode input { position: absolute; left: 14px; top: 16px; accent-color: var(--accent); }
+.ob-mode { position: relative; display: grid; gap: 4px; padding: 14px 16px 14px 44px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--raised); cursor: pointer; }
+.ob-mode input { position: absolute; left: 16px; top: 16px; width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; accent-color: var(--accent); cursor: pointer; }
 .ob-mode small { font-size: 12px; }
 .ob-mode.active { border-color: var(--accent); background: rgba(91, 141, 239, .12); }
 .ob-mode:focus-within { outline: 2px solid var(--link); outline-offset: 2px; }

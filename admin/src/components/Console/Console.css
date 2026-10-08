@@ -1,20 +1,20 @@
 /* BookMyVilla Admin Control Center — enterprise, dense, neutral. */
 .ac-shell {
-  --ac-bg: #0f141b; --ac-surface: #161d26; --ac-surface-2: #1b232e; --ac-raised: #212b38;
-  --ac-border: #28323f; --ac-hair: #202833;
-  --ac-text: #e7ecf3; --ac-dim: #b6c0cd; --ac-muted: #8795a6; --ac-faint: #5e6a79;
-  --ac-accent: #5b8def; --ac-accent-wash: rgba(91,141,239,.15);
-  --good: #4bbd8a; --good-bg: rgba(75,189,138,.15);
-  --warn: #e0a84c; --warn-bg: rgba(224,168,76,.15);
-  --bad: #e76a60; --bad-bg: rgba(231,106,96,.15);
-  --info: #6aa5f0; --info-bg: rgba(106,165,240,.15);
-  --neutral-bg: rgba(135,149,166,.16);
+  --ac-bg: #f8fafc; --ac-surface: #ffffff; --ac-surface-2: #f1f5f9; --ac-raised: #e2e8f0;
+  --ac-border: #cbd5e1; --ac-hair: #e2e8f0;
+  --ac-text: #0f172a; --ac-dim: #334155; --ac-muted: #64748b; --ac-faint: #94a3b8;
+  --ac-accent: #2563eb; --ac-accent-wash: rgba(37,99,235,.1);
+  --good: #16a34a; --good-bg: rgba(22,163,74,.12);
+  --warn: #d97706; --warn-bg: rgba(217,119,6,.12);
+  --bad: #dc2626; --bad-bg: rgba(220,38,38,.12);
+  --info: #2563eb; --info-bg: rgba(37,99,235,.12);
+  --neutral-bg: rgba(100,116,139,.12);
   --r: 10px;
   display: flex; min-height: 100vh; background: var(--ac-bg); color: var(--ac-text);
   font-family: 'Inter', -apple-system, system-ui, sans-serif; font-size: 14px;
 }
 .ac-shell *, .ac-overlay * { box-sizing: border-box; }
-.ac-boot { min-height: 100vh; display: grid; place-content: center; gap: 10px; background: #0f141b; color: #8795a6; font-family: 'Inter', sans-serif; text-align: center; }
+.ac-boot { min-height: 100vh; display: grid; place-content: center; gap: 10px; background: #f8fafc; color: #64748b; font-family: 'Inter', sans-serif; text-align: center; }
 .ac-boot i { font-size: 1.6rem; }
 
 /* Sidebar */
