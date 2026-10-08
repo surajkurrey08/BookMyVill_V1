@@ -65,6 +65,9 @@
 .packages-categories-shell {
   background: #fff;
   box-shadow: 0 4px 16px rgba(20, 31, 26, 0.045);
+  position: sticky;
+  top: 72px;
+  z-index: 900;
 }
 .packages-categories {
   display: flex;
