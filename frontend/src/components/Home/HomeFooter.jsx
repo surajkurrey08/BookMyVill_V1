@@ -82,7 +82,7 @@ const HomeFooter = () => {
         <div>
           <Link to="/about-us">Privacy Policy</Link>
           <Link to="/about-us">Terms &amp; Conditions</Link>
-          <Link to="/explore">Sitemap</Link>
+          <a href="/sitemap.xml">Sitemap</a>
         </div>
       </div>
     </footer>

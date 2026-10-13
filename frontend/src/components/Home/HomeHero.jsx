@@ -89,11 +89,11 @@ const HomeHero = ({ onCategory }) => {
         <div className="hp-hero-content">
           <span className="hp-eyebrow hp-hero-eyebrow hp-rise" style={{ '--d': '0.1s' }}>Discover Mahabaleshwar</span>
           <h1 className="hp-hero-title hp-rise" style={{ '--d': '0.2s' }}>
-            Your Luxury Escape
-            <span className="hp-gold">Above the Clouds</span>
+            Book Your Villa
+            <span className="hp-gold">in Mahabaleshwar</span>
           </h1>
           <p className="hp-hero-sub hp-rise" style={{ '--d': '0.35s' }}>
-            Breathe fresh air, explore scenic valleys, stay in a handpicked complete villa and create memories together.
+            Explore handpicked villas, resorts and holiday stays in Mahabaleshwar for your next hill-station getaway.
           </p>
 
           {/* Popovers open upwards: the bar sits near the bottom of the hero. */}

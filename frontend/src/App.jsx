@@ -25,6 +25,7 @@ import HomePage from './components/Home/HomePage';
 import LoginRoute from './components/Home/LoginRoute';
 import WelcomeLoginPrompt from './components/Home/WelcomeLoginPrompt';
 import CookieConsent from './components/CookieConsent/CookieConsent';
+import Seo from './components/Seo';
 import { ADMIN_PORTAL_URL, OWNER_PORTAL_URL } from './config';
 import './App.css';
 
@@ -246,6 +247,7 @@ function App() {
 
   return (
     <Router>
+      <Seo />
       <ScrollToTop />
       <div className="app">
         {/* Pages other than Home load on first visit, keeping the initial download small. */}

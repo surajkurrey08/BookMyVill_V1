@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { updateSeoMetadata } from '../../utils/seoMetadata';
 import Gallery from './Gallery';
 import PropertyMap from './PropertyMap';
 import { Amenity, Breadcrumb, DateGuestFields, FlowShell, Notice, addDays, bookingApi, icon, propertyPhotos, queryFor, rupees, today, token, useProperty } from './shared';
@@ -22,6 +23,20 @@ export default function PropertyPage() {
   const [copied, setCopied] = useState(false);
   const photos = propertyPhotos(property);
   const amenities = Array.isArray(property?.amenities) ? property.amenities : [];
+  useEffect(() => {
+    if (!property) return;
+
+    const location = property.location || 'Mahabaleshwar';
+    const propertyName = property.name || 'Villa';
+    const description = `Explore ${propertyName} in ${location}. View amenities, guest details and availability, then book your stay with BookMyVilla.`;
+
+    updateSeoMetadata({
+      title: `${propertyName} in ${location} | BookMyVilla`,
+      description,
+      canonicalUrl: `https://bookmyvilla.online/property/${encodeURIComponent(id)}`,
+      shouldIndex: true
+    });
+  }, [id, property]);
   const roomRates = rooms.filter(room => room.baseRate > 0).map(room => room.baseRate);
   const startingRate = roomRates.length ? Math.min(...roomRates) : Number(String(property?.priceValue ?? property?.price ?? 0).replace(/[^\d.]/g, '')) || 0;
   // Whole-villa properties are one bookable unit: no room step, book it straight from here.

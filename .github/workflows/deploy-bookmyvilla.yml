@@ -595,7 +595,23 @@ jobs:
             echo "$url serves the production build"
           }
 
-          check_page https://bookmyvilla.online/ 'BookMyVilla | Premium Hill Station Stays'
+          check_page https://bookmyvilla.online/ 'Book Villas &amp; Resorts in Mahabaleshwar | BookMyVilla'
+          check_page https://bookmyvilla.online/explore 'Explore Villas &amp; Stays in Mahabaleshwar | BookMyVilla'
+          check_page https://bookmyvilla.online/about-us 'About BookMyVilla | Mahabaleshwar Stays &amp; Experiences'
+          check_page https://bookmyvilla.online/join-us 'List Your Villa in Mahabaleshwar | Partner with BookMyVilla'
+
+          robots=$(curl --fail --silent --show-error --max-time 15 https://bookmyvilla.online/robots.txt)
+          if [[ "$robots" != *"Sitemap: https://bookmyvilla.online/sitemap.xml"* ]]; then
+            echo "::error::robots.txt is missing the sitemap declaration"
+            exit 1
+          fi
+
+          sitemap=$(curl --fail --silent --show-error --max-time 15 https://bookmyvilla.online/sitemap.xml)
+          if [[ "$sitemap" != *"<urlset"* || "$sitemap" != *"https://bookmyvilla.online/explore"* ]]; then
+            echo "::error::sitemap.xml is missing the expected public URLs"
+            exit 1
+          fi
+          echo "robots.txt and sitemap.xml are publicly available"
           check_page https://admin.bookmyvilla.online/ 'Mahabaleshwar Luxury | Admin Portal'
 
           if getent ahostsv4 owner.bookmyvilla.online >/dev/null; then
