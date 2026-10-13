@@ -684,4 +684,23 @@ router.delete('/offers/:id', adminConsoleAuth, async (req, res) => {
   }
 });
 
+// ---- SEO: live sitemap so every live villa page can be found by search engines ----
+const SITE_URL = 'https://bookmyvilla.online';
+const SITEMAP_PAGES = ['/', '/explore', '/about-us', '/join-us'];
+router.get('/seo/sitemap.xml', async (req, res) => {
+  try {
+    const villas = mongoose.connection.readyState === 1
+      ? await Property.find({ status: 'approved', websiteVisible: { $ne: false } }).select('_id updatedAt').sort({ updatedAt: -1 }).limit(5000).lean()
+      : [];
+    const day = d => (d ? new Date(d).toISOString().slice(0, 10) : '');
+    const entry = (path, lastmod) => ['  <url>', `    <loc>${SITE_URL}${path}</loc>`, ...(lastmod ? [`    <lastmod>${lastmod}</lastmod>`] : []), '  </url>'].join('\n');
+    const lines = [...SITEMAP_PAGES.map(p => entry(p)), ...villas.map(v => entry(`/property/${v._id}`, day(v.updatedAt)))];
+    const xml = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">', ...lines, '</urlset>', ''].join('\n');
+    res.type('application/xml').set('Cache-Control', 'public, max-age=3600').send(xml);
+  } catch (err) {
+    console.error('sitemap error:', err);
+    res.status(500).type('text/plain').send('Sitemap is temporarily unavailable.');
+  }
+});
+
 module.exports = router;

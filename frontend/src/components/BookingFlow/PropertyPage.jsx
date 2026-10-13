@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { updateSeoMetadata } from '../../utils/seoMetadata';
+import { setStructuredData, updateSeoMetadata } from '../../utils/seoMetadata';
 import Gallery from './Gallery';
 import PropertyMap from './PropertyMap';
 import { Amenity, Breadcrumb, DateGuestFields, FlowShell, Notice, addDays, bookingApi, icon, propertyPhotos, queryFor, rupees, today, token, useProperty } from './shared';
@@ -36,6 +36,28 @@ export default function PropertyPage() {
       canonicalUrl: `https://bookmyvilla.online/property/${encodeURIComponent(id)}`,
       shouldIndex: true
     });
+  }, [id, property]);
+
+  // Rich-result data for Google. Only real values: no invented ratings or prices.
+  useEffect(() => {
+    if (!property?.name) return undefined;
+    const images = propertyPhotos(property).filter(src => /^https?:\/\//.test(src)).slice(0, 5);
+    const rate = Number(property.priceValue ?? String(property.price ?? '').replace(/[^\d.]/g, ''));
+    const hasCoords = Number.isFinite(Number(property.coordinates?.lat)) && Number.isFinite(Number(property.coordinates?.lng));
+    setStructuredData('villa', {
+      '@context': 'https://schema.org',
+      '@type': 'LodgingBusiness',
+      name: property.name,
+      url: `https://bookmyvilla.online/property/${encodeURIComponent(id)}`,
+      ...(property.description && { description: property.description }),
+      ...(images.length && { image: images }),
+      address: { '@type': 'PostalAddress', addressLocality: property.location || 'Mahabaleshwar', addressRegion: 'Maharashtra', addressCountry: 'IN' },
+      ...(hasCoords && { geo: { '@type': 'GeoCoordinates', latitude: Number(property.coordinates.lat), longitude: Number(property.coordinates.lng) } }),
+      ...(rate > 0 && { priceRange: `From ₹${Math.round(rate).toLocaleString('en-IN')} per night` }),
+      ...(Array.isArray(property.amenities) && property.amenities.length && { amenityFeature: property.amenities.slice(0, 20).map(name => ({ '@type': 'LocationFeatureSpecification', name, value: true })) }),
+      ...(Number(property.rating) > 0 && Number(property.reviewsCount) > 0 && { aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(property.rating), reviewCount: Number(property.reviewsCount) } })
+    });
+    return () => setStructuredData('villa', null);
   }, [id, property]);
   const roomRates = rooms.filter(room => room.baseRate > 0).map(room => room.baseRate);
   const startingRate = roomRates.length ? Math.min(...roomRates) : Number(String(property?.priceValue ?? property?.price ?? 0).replace(/[^\d.]/g, '')) || 0;

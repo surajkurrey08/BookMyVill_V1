@@ -601,8 +601,14 @@ jobs:
           set -euo pipefail
 
           check_page() {
-            local url="$1" title="$2" response
-            response=$(curl --fail --silent --show-error --max-time 15 "$url")
+            local url="$1" title="$2" response body redirects
+            body=$(mktemp)
+            redirects=$(curl --fail --silent --show-error --location --max-time 15 --output "$body" --write-out "%{num_redirects}" "$url")
+            response=$(<"$body")
+            rm -f "$body"
+            if [[ "$redirects" != 0 ]]; then
+              echo "::warning::$url redirected $redirects time(s); search engines prefer a direct 200 response"
+            fi
             if [[ "$response" != *"<title>$title</title>"* || "$response" != *'/assets/'* ]]; then
               echo "::error::$url did not return the production build"
               exit 1

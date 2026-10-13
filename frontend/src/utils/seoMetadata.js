@@ -32,3 +32,16 @@ export function updateSeoMetadata({ title, description, canonicalUrl, shouldInde
   setMeta('name', 'twitter:description', description);
   setCanonical(canonicalUrl);
 }
+
+// Adds (or replaces) a schema.org JSON-LD block that search engines read for rich results.
+export function setStructuredData(id, data) {
+  let element = document.head.querySelector(`script[data-seo="${id}"]`);
+  if (!data) { element?.remove(); return; }
+  if (!element) {
+    element = document.createElement('script');
+    element.type = 'application/ld+json';
+    element.setAttribute('data-seo', id);
+    document.head.appendChild(element);
+  }
+  element.textContent = JSON.stringify(data);
+}
