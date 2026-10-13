@@ -168,7 +168,7 @@ const AdminLogin = () => {
             </div>
             {fieldErrors.password && (
               <span className="form-error-msg">
-                <i className="fa-solid fa-circle-exclamation"></i> {fieldErrors.password}
+                 <i className="fa-solid fa-circle-exclamation"></i> {fieldErrors.password}
               </span>
             )}
           </div>

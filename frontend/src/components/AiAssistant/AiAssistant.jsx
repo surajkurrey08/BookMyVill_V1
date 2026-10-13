@@ -129,11 +129,18 @@ const AiAssistant = () => {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const chatBodyRef = useRef(null);
+  const inputRef = useRef(null);
   // A header "AI Assistant" button is on screen: hide the floating trigger and open under the header.
   const [docked, setDocked] = useState(hasHeaderButton);
 
   useEffect(() => {
-    const onToggle = () => setIsOpen((open) => !open);
+    const onToggle = (e) => {
+      if (e?.detail && typeof e.detail.open === 'boolean') {
+        setIsOpen(e.detail.open);
+      } else {
+        setIsOpen((open) => !open);
+      }
+    };
     const onDock = () => setDocked(hasHeaderButton());
     window.addEventListener(AI_TOGGLE_EVENT, onToggle);
     window.addEventListener(AI_DOCK_EVENT, onDock);
@@ -145,6 +152,12 @@ const AiAssistant = () => {
       window.removeEventListener(AI_DOCK_EVENT, onDock);
     };
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 150);
+    }
+  }, [isOpen]);
 
   // Keeps header buttons' arrow in sync (also re-sent when a new header mounts).
   useEffect(() => {
@@ -313,7 +326,7 @@ const DYNAMIC_NLP_TOPICS = [
 
       {/* Floating AI Chat Window */}
       {isOpen && (
-        <div className={`ai-assistant-window ${docked ? 'is-docked' : ''}`} data-lenis-prevent>
+        <div className={`ai-assistant-window ${docked ? 'is-docked' : ''}`}>
           {/* Header */}
           <div className="ai-window-header">
             <div className="ai-header-info">
@@ -340,7 +353,7 @@ const DYNAMIC_NLP_TOPICS = [
           </div>
 
           {/* Chat Body */}
-          <div className="ai-chat-body" ref={chatBodyRef} data-lenis-prevent>
+          <div className="ai-chat-body" ref={chatBodyRef}>
             {messages.map((msg) => (
               <div key={msg.id} className={`ai-msg-row ${msg.sender}`}>
                 {msg.sender === 'bot' && (
@@ -401,6 +414,7 @@ const DYNAMIC_NLP_TOPICS = [
               }}
             >
               <input 
+                ref={inputRef}
                 type="text"
                 className="ai-chat-input"
                 placeholder="Ask AI Assistant anything..."

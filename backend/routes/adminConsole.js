@@ -14,7 +14,12 @@ const AdminAudit = require('../models/AdminAudit');
 const { effectivePermissions, PERMISSIONS, ROLE_PERMISSIONS, ROLE_LABELS } = require('../services/adminRbac');
 const { reviewProperty, setAccountStatus, setAdminRole, setPropertyManagement, recordAudit, propertyImpact } = require('../services/adminActions');
 const { managementFilters, managementMode, MANAGEMENT_SELECT } = require('../services/propertyAccess');
+const { normalizeMediaUrl } = require('../services/propertyMedia');
+const { updateVilla, deleteVilla, updateOwner, deleteOwner } = require('../services/villaRecords');
+const { resolveMapLocation } = require('../utils/mapLocation');
+const Room = require('../models/Room');
 const { validId, validEmail, validPhone, escapeRegex, cleanText, pagination, addDays, daysBetween, indiaDate, indiaDayStart, DAY_MS, HttpError, sendError } = require('../utils/validate');
+
 
 const router = express.Router();
 router.use(adminConsoleAuth);
@@ -303,6 +308,29 @@ router.post('/owners/:id/status', requirePermission('owners.manage'), async (req
   } catch (err) { fail(res, err); }
 });
 
+// Edit an owner's contact details (shared rules: services/villaRecords).
+router.patch('/owners/:id', requirePermission('owners.manage'), async (req, res) => {
+  try {
+    if (!validId(req.params.id)) throw new HttpError(400, 'Invalid owner ID.');
+    const { before, after } = await updateOwner(req.params.id, req.body);
+    await recordAudit(req.admin, { action: 'owner.updated', entityType: 'owner', entityId: req.params.id, entityLabel: after.name, before, after, ip: req.ip });
+    res.json({ _id: req.params.id, ...after });
+  } catch (err) { fail(res, err); }
+});
+
+// Delete an owner and all their villas — only when nothing booked or quoted
+// must be kept; otherwise suspend the owner instead.
+router.delete('/owners/:id', requirePermission('owners.manage'), async (req, res) => {
+  try {
+    if (!validId(req.params.id)) throw new HttpError(400, 'Invalid owner ID.');
+    const reason = cleanText(req.body?.reason, 500);
+    if (!reason) throw new HttpError(400, 'Give a reason for deleting this owner (kept in the audit trail).');
+    const owner = await deleteOwner(req.params.id);
+    await recordAudit(req.admin, { action: 'owner.deleted', entityType: 'owner', entityId: owner._id, entityLabel: owner.name, before: { name: owner.name, email: owner.email || '', phone: owner.phone || '', villas: owner.villas }, reason, ip: req.ip });
+    res.json({ _id: owner._id, deleted: true, villas: owner.villas });
+  } catch (err) { fail(res, err); }
+});
+
 // --------------------------------------------------------------- properties
 router.get('/properties', requirePermission('properties.view'), async (req, res) => {
   try {
@@ -320,7 +348,18 @@ router.get('/properties', requirePermission('properties.view'), async (req, res)
       Property.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }])
     ]);
     res.json({
-      items: items.map(p => ({ ...p, managementMode: managementMode(p), assignedVillaManager: p.assignedVillaManager || null, assignedDataEntryUser: p.assignedDataEntryUser || null, photoCount: p.photos?.length || 0, cover: p.photos?.[0] && /^https?:/.test(p.photos[0]) ? p.photos[0] : null, photos: undefined })),
+      items: items.map(p => {
+        const cover = p.photos?.[0] ? normalizeMediaUrl(p.photos[0]) : null;
+        return {
+          ...p,
+          managementMode: managementMode(p),
+          assignedVillaManager: p.assignedVillaManager || null,
+          assignedDataEntryUser: p.assignedDataEntryUser || null,
+          photoCount: p.photos?.length || 0,
+          cover,
+          photos: undefined
+        };
+      }),
       total, page, pages: Math.max(1, Math.ceil(total / limit)),
       statusCounts: Object.fromEntries(statusRows.map(r => [r._id, r.count]))
     });
@@ -330,15 +369,20 @@ router.get('/properties', requirePermission('properties.view'), async (req, res)
 router.get('/properties/:id', requirePermission('properties.view'), async (req, res) => {
   try {
     if (!validId(req.params.id)) throw new HttpError(400, 'Invalid property ID.');
-    const property = await populateManagement(Property.findById(req.params.id).select(MANAGEMENT_SELECT).populate('owner', 'name email phone status ownerPasswordSetAt')).lean();
+    const property = await populateManagement(Property.findById(req.params.id).select(`${MANAGEMENT_SELECT} +handover`).populate('owner', 'name email phone status ownerPasswordSetAt')).lean();
     if (!property) throw new HttpError(404, 'Property not found.');
     property.managementMode = managementMode(property);
     property.assignedVillaManager ||= null;
     property.assignedDataEntryUser ||= null;
-    const [impact, audit, bookingCount] = await Promise.all([
+    if (Array.isArray(property.photos)) {
+      property.photos = property.photos.map(url => normalizeMediaUrl(url));
+    }
+
+    const [impact, audit, bookingCount, unit] = await Promise.all([
       propertyImpact(property._id),
       AdminAudit.find({ entityType: 'property', entityId: property._id }).sort({ createdAt: -1 }).limit(20).lean(),
-      Booking.countDocuments({ property: property._id })
+      Booking.countDocuments({ property: property._id }),
+      property.bookingMode === 'ENTIRE' ? Room.findOne({ property: property._id, active: { $ne: false } }).select('capacity baseRate extraGuestRate').lean() : null
     ]);
     // Data-quality checks surfaced to the reviewer.
     const checks = {
@@ -346,7 +390,7 @@ router.get('/properties/:id', requirePermission('properties.view'), async (req, 
       hasAmenities: (property.amenities?.length || 0) > 0, hasOwner: Boolean(property.owner), validPrice: Number(property.price) > 0
     };
     const operations = (req.adminPermissions.includes('*') || req.adminPermissions.includes('bookings.view')) && property.managementMode === 'BOOKMYVILLA_MANAGED' && !property.assignedVillaManager ? await operationQueue([property._id]) : null;
-    res.json({ property, impact, audit, bookingCount, checks, operations });
+    res.json({ property, unit, impact, audit, bookingCount, checks, operations });
   } catch (err) { fail(res, err); }
 });
 
@@ -366,6 +410,33 @@ router.post('/properties/:id/review', async (req, res) => {
 router.patch('/properties/:id/management', requirePermission('properties.manage'), async (req, res) => {
   try {
     res.json(await setPropertyManagement(req.admin, req.params.id, req.body, { ip: req.ip }));
+  } catch (err) { fail(res, err); }
+});
+
+// Pasted Google Maps link / coordinates / address -> pin for the edit form.
+router.post('/map-location', requirePermission('properties.manage'), async (req, res) => {
+  try { res.json(await resolveMapLocation(req.body?.input)); } catch (err) { fail(res, err); }
+});
+
+// Edit a property's details (approval status is unchanged).
+router.put('/properties/:id/details', requirePermission('properties.manage'), async (req, res) => {
+  try {
+    if (!validId(req.params.id)) throw new HttpError(400, 'Invalid property ID.');
+    const { before, after } = await updateVilla(req.params.id, req.body);
+    await recordAudit(req.admin, { action: 'property.updated', entityType: 'property', entityId: req.params.id, entityLabel: after.name, before, after, ip: req.ip });
+    res.json({ _id: req.params.id, ...after });
+  } catch (err) { fail(res, err); }
+});
+
+// Delete a property with no bookings or other kept records.
+router.delete('/properties/:id', requirePermission('properties.manage'), async (req, res) => {
+  try {
+    if (!validId(req.params.id)) throw new HttpError(400, 'Invalid property ID.');
+    const reason = cleanText(req.body?.reason, 500);
+    if (!reason) throw new HttpError(400, 'Give a reason for deleting this property (kept in the audit trail).');
+    const property = await deleteVilla(req.params.id);
+    await recordAudit(req.admin, { action: 'property.deleted', entityType: 'property', entityId: property._id, entityLabel: property.name, before: { name: property.name, owner: property.owner }, reason, ip: req.ip });
+    res.json({ _id: property._id, deleted: true });
   } catch (err) { fail(res, err); }
 });
 

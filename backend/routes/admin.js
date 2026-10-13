@@ -10,6 +10,9 @@ const CaretakerApplication = require('../models/CaretakerApplication');
 const { requirePermission, adminConsoleAuth } = require('../middleware/adminConsoleAuth');
 const { MANAGEMENT_SELECT, managementMode } = require('../services/propertyAccess');
 
+const SocialLinks = require('../models/SocialLinks');
+const SiteOffer = require('../models/SiteOffer');
+
 // Get all users (Admin only)
 router.get('/users', adminConsoleAuth, requirePermission('customers.view'), async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
@@ -304,5 +307,303 @@ router.post('/send-user-request', adminConsoleAuth, requirePermission('customers
   }
 });
 
-module.exports = router;
+//social media links
+const Social_Fields = [
+  'facebook',
+  'instagram',
+  'x',
+  'youtube',
+  'whatsapp',
+  'linkedin'
+];
 
+// Friendly names and the websites each link is allowed to point to.
+const Social_Rules = {
+  facebook: { label: 'Facebook', hosts: ['facebook.com', 'fb.com', 'fb.me'] },
+  instagram: { label: 'Instagram', hosts: ['instagram.com', 'instagr.am'] },
+  x: { label: 'X / Twitter', hosts: ['x.com', 'twitter.com'] },
+  youtube: { label: 'YouTube', hosts: ['youtube.com', 'youtu.be'] },
+  whatsapp: { label: 'WhatsApp', hosts: ['wa.me', 'whatsapp.com'] },
+  linkedin: { label: 'LinkedIn', hosts: ['linkedin.com'] }
+};
+
+const emptySocialLinks = () =>
+  Object.fromEntries(Social_Fields.map(field => [field,'']));
+
+const pickSocialLinks = settings =>
+  Object.fromEntries(Social_Fields.map(field => [field, settings[field] || '']));
+
+function validateSocialLinks(body){
+  const links = {};
+  const errors = {};
+
+  for (const field of Social_Fields) {
+    const rule = Social_Rules[field];
+    let value = typeof body[field] === 'string' ? body[field].trim() : '';
+
+    if (!value) {
+      links[field] = '';
+      continue;
+    }
+
+    // Admins often paste "facebook.com/page" without the https:// part.
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) value = `https://${value}`;
+
+    let parsed;
+    try {
+      parsed = new URL(value);
+    } catch {
+      errors[field] = `This doesn't look like a web link. Paste the full ${rule.label} page address.`;
+      continue;
+    }
+
+    const host = parsed.hostname.toLowerCase().replace(/^www\./, '').replace(/^m\./, '');
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      errors[field] = 'The link must start with https://';
+    } else if (!rule.hosts.some(allowed => host === allowed || host.endsWith(`.${allowed}`))) {
+      errors[field] = `This link is not from ${rule.label}. It should start with https://${rule.hosts[0]}/`;
+    } else if (parsed.pathname.replace(/\//g, '') === '' && !parsed.search) {
+      errors[field] = `Add your page name after ${rule.hosts[0]}/ so visitors land on your ${rule.label} page.`;
+    } else {
+      links[field] = parsed.toString();
+    }
+  }
+
+  if (Object.keys(errors).length) {
+    const count = Object.keys(errors).length;
+    return {
+      errors,
+      error: count === 1
+        ? 'One link needs fixing before saving.'
+        : `${count} links need fixing before saving.`
+    };
+  }
+
+  return { links };
+}
+
+//public endpoint: customer footer reads the saved links.
+router.get('/social-links/public', async (req,res) => {
+  try{
+     
+    if (mongoose.connection.readyState !==1){
+      return res.status(503).json({
+        msg: 'Database unavailable.'
+      });
+    }
+    const settings = await SocialLinks.findOne({ key: 'footer'}).lean();
+
+    const links = settings ? pickSocialLinks(settings) : emptySocialLinks();
+
+    res.set('Cache-Control', 'no-store');
+    return res.json({links});
+  }catch(err){
+    console.error('public social links error:', err);
+    return res.status(500).json({
+      msg: 'Could not load social links',
+      error: err.message
+    });
+  }
+});
+
+//admin endpoit: load currnet settings.
+
+router.get('/social-links',
+            adminConsoleAuth,
+            async(req,res) =>{
+               try{
+                const settings = await SocialLinks.findOne({key: 'footer'}).lean();
+
+                return res.json({
+                  links: settings ? pickSocialLinks(settings) : emptySocialLinks()
+                });
+              }catch(err){
+                console.error('Admin social links read error:', err);
+                return res.status(500).json({msg: 'Could not load the saved links. Please refresh the page.'});
+
+              }
+            }
+);
+
+//admin endpoint: save settings.
+router.put(
+  '/social-links',
+  adminConsoleAuth,
+  async (req, res) =>{
+    try{
+      const { links, error, errors } = validateSocialLinks(req.body || {});
+
+      if (error){
+        return res.status(400).json({ msg: error, errors });
+      }
+
+      const settings = await SocialLinks.findOneAndUpdate(
+        { key: 'footer'},
+        { $set: links, $setOnInsert: {key: 'footer'} },
+        {
+          new: true,
+          upsert: true,
+          runValidators: true,
+          setDefaultsOnInsert: true
+         }
+      ).lean();
+
+      return res.json({
+        msg: 'Saved. The website footer now shows these links.',
+        links: pickSocialLinks(settings),
+      });
+
+    }catch(err){
+      console.error('Admin social links save error:',err);
+      return res.status(500).json({msg: 'Could not save right now. Please try again in a moment.'});
+    }
+  }
+);
+
+// ---- Hero offers (slides on the website hero) ----
+const MAX_OFFER_IMAGE_CHARS = 2 * 1024 * 1024;
+
+const publicOffer = o => ({
+  id: String(o._id), title: o.title, subtitle: o.subtitle, badge: o.badge,
+  ctaLabel: o.ctaLabel, ctaLink: o.ctaLink, endsAt: o.endsAt,
+  imageUrl: o.imageVersion ? `/api/admin/offers/${o._id}/image?v=${o.imageVersion}` : ''
+});
+const adminOffer = o => ({ ...publicOffer(o), active: o.active, startsAt: o.startsAt, order: o.order });
+
+// Turns the admin form into a clean record, or returns plain-language errors per field.
+function validateOffer(body, { partial = false } = {}) {
+  const errors = {};
+  const out = {};
+  const text = (key, max) => typeof body[key] === 'string' ? body[key].trim().slice(0, max + 1) : undefined;
+
+  const title = text('title', 80);
+  if (title !== undefined || !partial) {
+    if (!title) errors.title = 'Enter a headline for the offer.';
+    else if (title.length > 80) errors.title = 'Keep the headline under 80 characters.';
+    else out.title = title;
+  }
+  for (const [key, max, label] of [['subtitle', 160, 'description'], ['badge', 24, 'tag'], ['ctaLabel', 24, 'button text']]) {
+    const v = text(key, max);
+    if (v === undefined) continue;
+    if (v.length > max) errors[key] = `Keep the ${label} under ${max} characters.`;
+    else out[key] = v;
+  }
+  const link = text('ctaLink', 300);
+  if (link !== undefined) {
+    if (link && !/^(\/(?!\/)|https:\/\/)\S*$/.test(link)) errors.ctaLink = 'Use a page like /explore or a full link starting with https://';
+    else out.ctaLink = link;
+  }
+  const date = key => {
+    if (body[key] === undefined) return;
+    if (!body[key]) { out[key] = null; return; }
+    const d = new Date(body[key]);
+    if (Number.isNaN(d.getTime())) errors[key] = 'This date is not valid.'; else out[key] = d;
+  };
+  date('startsAt'); date('endsAt');
+  if (out.startsAt && out.endsAt && out.endsAt < out.startsAt) errors.endsAt = 'The end date must be after the start date.';
+  if (body.active !== undefined) out.active = Boolean(body.active);
+  if (!errors.ctaLink && (body.ctaLabel || '').trim() && !(body.ctaLink || '').trim()) errors.ctaLink = 'Add where the button should go.';
+
+  if (typeof body.image === 'string' && body.image) {
+    if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(body.image)) errors.image = 'Use a JPG, PNG or WebP picture.';
+    else if (body.image.length > MAX_OFFER_IMAGE_CHARS) errors.image = 'This picture is too large. Choose a smaller one.';
+    else { out.imageData = body.image; out.imageVersion = Date.now(); }
+  } else if (body.image === null || body.removeImage) { out.imageData = ''; out.imageVersion = 0; }
+
+  return Object.keys(errors).length ? { errors, error: 'Please fix the fields marked in red.' } : { data: out };
+}
+
+router.get('/offers/public', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) return res.json({ offers: [] });
+    const now = new Date();
+    const offers = await SiteOffer.find({
+      active: true,
+      $and: [{ $or: [{ startsAt: null }, { startsAt: { $lte: now } }] }, { $or: [{ endsAt: null }, { endsAt: { $gte: now } }] }]
+    }).sort({ order: 1, createdAt: -1 }).limit(10).lean();
+    res.set('Cache-Control', 'no-store').json({ offers: offers.map(publicOffer) });
+  } catch (err) {
+    console.error('public offers error:', err);
+    res.status(500).json({ msg: 'Could not load offers.' });
+  }
+});
+
+router.get('/offers/:id/image', async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.sendStatus(404);
+    const offer = await SiteOffer.findById(req.params.id).select('+imageData').lean();
+    const match = offer?.imageData && /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(offer.imageData);
+    if (!match) return res.sendStatus(404);
+    res.set('Content-Type', match[1]).set('Cache-Control', 'public, max-age=31536000, immutable').send(Buffer.from(match[2], 'base64'));
+  } catch (err) {
+    console.error('offer image error:', err);
+    res.sendStatus(500);
+  }
+});
+
+router.get('/offers', adminConsoleAuth, async (req, res) => {
+  try {
+    const offers = await SiteOffer.find().sort({ order: 1, createdAt: -1 }).lean();
+    res.json({ offers: offers.map(adminOffer) });
+  } catch (err) {
+    console.error('admin offers read error:', err);
+    res.status(500).json({ msg: 'Could not load the offers. Please refresh the page.' });
+  }
+});
+
+router.post('/offers', adminConsoleAuth, async (req, res) => {
+  try {
+    const { data, error, errors } = validateOffer(req.body || {});
+    if (error) return res.status(400).json({ msg: error, errors });
+    if (await SiteOffer.countDocuments() >= 20) return res.status(400).json({ msg: 'You can keep up to 20 offers. Delete one you no longer need first.' });
+    const last = await SiteOffer.findOne().sort({ order: -1 }).select('order').lean();
+    const offer = await SiteOffer.create({ ...data, order: (last?.order ?? -1) + 1 });
+    res.status(201).json({ msg: 'Offer added.', offer: adminOffer(offer) });
+  } catch (err) {
+    console.error('admin offer create error:', err);
+    res.status(500).json({ msg: 'Could not save the offer right now. Please try again.' });
+  }
+});
+
+router.put('/offers/:id', adminConsoleAuth, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ msg: 'This offer no longer exists. Refresh the page.' });
+    const { data, error, errors } = validateOffer(req.body || {}, { partial: true });
+    if (error) return res.status(400).json({ msg: error, errors });
+    const offer = await SiteOffer.findByIdAndUpdate(req.params.id, { $set: data }, { new: true });
+    if (!offer) return res.status(404).json({ msg: 'This offer no longer exists. Refresh the page.' });
+    res.json({ msg: 'Offer saved.', offer: adminOffer(offer) });
+  } catch (err) {
+    console.error('admin offer update error:', err);
+    res.status(500).json({ msg: 'Could not save the offer right now. Please try again.' });
+  }
+});
+
+// Move an offer one place earlier or later in the slideshow.
+router.post('/offers/:id/move', adminConsoleAuth, async (req, res) => {
+  try {
+    const list = await SiteOffer.find().sort({ order: 1, createdAt: -1 }).select('_id');
+    const i = list.findIndex(o => String(o._id) === req.params.id);
+    if (i < 0) return res.status(404).json({ msg: 'This offer no longer exists. Refresh the page.' });
+    const j = i + (req.body?.direction === 'up' ? -1 : 1);
+    if (j >= 0 && j < list.length) [list[i], list[j]] = [list[j], list[i]];
+    await SiteOffer.bulkWrite(list.map((o, order) => ({ updateOne: { filter: { _id: o._id }, update: { $set: { order } } } })));
+    res.json({ msg: 'Order updated.' });
+  } catch (err) {
+    console.error('admin offer move error:', err);
+    res.status(500).json({ msg: 'Could not change the order. Please try again.' });
+  }
+});
+
+router.delete('/offers/:id', adminConsoleAuth, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ msg: 'This offer no longer exists.' });
+    await SiteOffer.findByIdAndDelete(req.params.id);
+    res.json({ msg: 'Offer deleted.' });
+  } catch (err) {
+    console.error('admin offer delete error:', err);
+    res.status(500).json({ msg: 'Could not delete the offer. Please try again.' });
+  }
+});
+
+module.exports = router;

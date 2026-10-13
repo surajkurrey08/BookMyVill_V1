@@ -5,10 +5,13 @@ const User = require('../models/User');
 const Room = require('../models/Room');
 const Booking = require('../models/Booking');
 const { propertyScope, requirePropertyAccess } = require('../services/propertyAccess');
-const { storePropertyMedia, mediaOrigin } = require('../services/propertyMedia');
+const { storePropertyMedia, mediaOrigin, normalizeMediaUrl } = require('../services/propertyMedia');
 const LocalGuide = require('../models/LocalGuide');
 const { bookingGuideArea, assignBookingGuide } = require('../services/guides');
 const { HttpError, sendError, validId, indiaDate, addDays, escapeRegex } = require('../utils/validate');
+const { resolveMapLocation, coordinatesInput } = require('../utils/mapLocation');
+const { updateVilla, deleteVilla, updateOwner, deleteOwner, findOwner } = require('../services/villaRecords');
+const { AMENITIES } = require('../services/dataEntry');
 
 // Villa Manager "Owners": BookMyVilla-managed owners and their villas.
 // The manager adds an owner (contact only — they never sign in) together with a
@@ -19,7 +22,7 @@ const router = express.Router();
 const route = fn => async (req, res) => { try { await fn(req, res); } catch (err) { sendError(res, err, 'Villa Manager owners'); } };
 
 const { field, photoList, ownerInput, villaInput, createVilla: createVillaRecord } = require('../services/villaOnboarding');
-const VILLA_FIELDS = '_id name owner type location status websiteVisible price bookingMode mapLink photos stayInfo listingData createdAt';
+const VILLA_FIELDS = '_id name owner type location status websiteVisible price bookingMode mapLink coordinates amenities photos stayInfo listingData createdAt';
 
 // Villas a manager adds are BookMyVilla-managed and assigned to that manager.
 const createVilla = (req, ownerId, villa) => createVillaRecord({ origin: mediaOrigin(req), ownerId, villa, managementMode: 'BOOKMYVILLA_MANAGED', assignedVillaManager: req.user.id });
@@ -49,7 +52,8 @@ async function stayState(ids) {
 const websiteState = v => v.status === 'approved' ? (v.websiteVisible === false ? 'hidden' : 'live') : v.status === 'pending' ? 'pending_approval' : v.status;
 
 function ownerCard(owner) {
-  return { _id: owner._id, name: owner.name, phone: owner.phone || '', email: owner.email || '', whatsapp: owner.ownerProfile?.whatsapp || '', profile: owner.ownerProfile || {}, createdAt: owner.createdAt };
+  // signsIn: has an Owner panel login, so only Admin may change the email or delete the account.
+  return { _id: owner._id, name: owner.name, phone: owner.phone || '', email: owner.email || '', whatsapp: owner.ownerProfile?.whatsapp || '', profile: owner.ownerProfile || {}, signsIn: Boolean(owner.ownerPasswordSetAt), managed: owner.ownerManagementMode === 'BOOKMYVILLA_MANAGED', createdAt: owner.createdAt };
 }
 
 // Owners whose villas this manager runs, with each villa's state right now.
@@ -66,6 +70,14 @@ router.get('/', route(async (req, res) => {
   }));
 }));
 
+// Standard amenities the villa forms offer as one-click choices (same list as Data Entry).
+router.get('/amenities', (req, res) => res.json(AMENITIES));
+
+// Pasted Google Maps link / coordinates / address -> pin for the manager to confirm.
+router.post('/map-location', route(async (req, res) => {
+  res.json(await resolveMapLocation(req.body?.input));
+}));
+
 // One owner: contact, villas (info, unit, state now), upcoming bookings and history.
 router.get('/:ownerId', route(async (req, res) => {
   if (!validId(req.params.ownerId)) throw new HttpError(404, 'Owner not found.');
@@ -75,7 +87,7 @@ router.get('/:ownerId', route(async (req, res) => {
   const start = dayStart(indiaDate());
   const bookingFields = '_id property checkIn checkOut guests guest.name guest.phone user status stayStatus paymentStatus totalPrice paymentPlan onlineAmount balanceDue balanceCollectedAt guide createdAt';
   const [owner, now, units, upcoming, history, totals] = await Promise.all([
-    User.findById(req.params.ownerId).select('_id name phone email ownerProfile createdAt').lean(),
+    User.findById(req.params.ownerId).select('_id name phone email ownerProfile ownerPasswordSetAt ownerManagementMode createdAt').lean(),
     stayState(ids),
     Room.find({ property: { $in: ids } }).select('property name capacity baseRate extraGuestRate active operationalStatus').lean(),
     Booking.find({ property: { $in: ids }, status: 'confirmed', stayStatus: { $in: ['expected', 'in_house'] }, checkOut: { $gte: start } }).select(bookingFields).populate('user', 'name phone').populate('guide.assigned', 'name phone').sort({ checkIn: 1 }).limit(100).lean(),
@@ -88,8 +100,8 @@ router.get('/:ownerId', route(async (req, res) => {
   res.json({
     owner: ownerCard(owner),
     villas: villas.map(v => ({
-      _id: v._id, name: v.name, type: v.type, location: v.location, mapLink: v.mapLink, price: v.price, bookingMode: v.bookingMode,
-      status: v.status, websiteVisible: v.websiteVisible !== false, website: websiteState(v), photos: v.photos || [],
+      _id: v._id, name: v.name, type: v.type, location: v.location, mapLink: v.mapLink, coordinates: v.coordinates || null, price: v.price, bookingMode: v.bookingMode,
+      status: v.status, websiteVisible: v.websiteVisible !== false, website: websiteState(v), photos: (v.photos || []).map(url => normalizeMediaUrl(url, mediaOrigin(req))), amenities: v.amenities || [],
       details: v.listingData?.details || {}, stayInfo: v.stayInfo || {}, handover: v.handover || {},
       unit: units.find(u => String(u.property) === String(v._id)) || null, now: now.get(String(v._id))
     })),
@@ -132,14 +144,65 @@ router.patch('/villas/:id/website', route(async (req, res) => {
   res.json({ _id: property._id, websiteVisible: req.body.visible, website: req.body.visible ? 'live' : 'hidden' });
 }));
 
+// Edit a villa's details (photos have their own endpoint; approval and the
+// website switch are unchanged).
+router.put('/villas/:id', route(async (req, res) => {
+  const property = await requirePropertyAccess(req.user, req.params.id);
+  const { after } = await updateVilla(property._id, req.body);
+  res.json({ _id: property._id, ...after });
+}));
+
+// Delete a villa that has no bookings or other kept records.
+router.delete('/villas/:id', route(async (req, res) => {
+  const property = await requirePropertyAccess(req.user, req.params.id);
+  await deleteVilla(property._id);
+  res.json({ _id: property._id, deleted: true });
+}));
+
+// Owners this manager works with: one of their villas is assigned to the manager.
+async function managedOwner(req) {
+  if (!validId(req.params.ownerId) || !await Property.exists({ ...propertyScope(req.user), owner: req.params.ownerId })) throw new HttpError(404, 'Owner not found among the villas you manage.');
+  return findOwner(req.params.ownerId);
+}
+
+// Edit an owner's contact details. An owner who signs in to the Owner panel
+// keeps their email (their login); only Admin can change it.
+router.put('/:ownerId', route(async (req, res) => {
+  const owner = await managedOwner(req);
+  const { after } = await updateOwner(owner._id, req.body, { lockEmail: Boolean(owner.ownerPasswordSetAt) });
+  res.json({ _id: owner._id, ...after });
+}));
+
+// Delete an owner (and their villas) the manager fully runs: BookMyVilla-managed,
+// no Owner panel login, every villa assigned to this manager, nothing booked.
+router.delete('/:ownerId', route(async (req, res) => {
+  const owner = await managedOwner(req);
+  if (owner.ownerManagementMode !== 'BOOKMYVILLA_MANAGED' || owner.ownerPasswordSetAt) throw new HttpError(403, 'This owner has an Owner panel login. Ask Admin to remove the account.');
+  if (await Property.exists({ owner: owner._id, $nor: [propertyScope(req.user)] })) throw new HttpError(403, "Some of this owner's villas are run by someone else. Ask Admin to remove the account.");
+  const removed = await deleteOwner(owner._id);
+  res.json({ _id: owner._id, deleted: true, villas: removed.villas });
+}));
+
+// Confirmed map pin (and its Google Maps link) for an existing villa.
+router.put('/villas/:id/location', route(async (req, res) => {
+  const property = await requirePropertyAccess(req.user, req.params.id);
+  const coordinates = coordinatesInput(req.body?.coordinates);
+  if (!coordinates) throw new HttpError(400, 'Find and confirm the villa location first.');
+  const mapLink = field(req.body?.mapLink, 500, 'Google Maps link');
+  if (mapLink && !/^https?:\/\//i.test(mapLink)) throw new HttpError(400, 'Google Maps link must start with http:// or https://.');
+  await Property.updateOne({ _id: property._id }, { $set: { coordinates, ...(mapLink && { mapLink }) } });
+  res.json({ _id: property._id, coordinates, mapLink: mapLink || property.mapLink || '' });
+}));
+
 // Replace a villa's photos (kept URLs stay; new uploads are saved). First photo is the cover.
 router.put('/villas/:id/photos', route(async (req, res) => {
   const property = await requirePropertyAccess(req.user, req.params.id);
   const media = await storePropertyMedia(photoList(req.body?.photos), undefined, mediaOrigin(req));
   try { await Property.updateOne({ _id: property._id }, { $set: { photos: media.photos } }); }
   catch (err) { await media.cleanup(); throw err; }
-  res.json({ _id: property._id, photos: media.photos });
+  res.json({ _id: property._id, photos: media.photos.map(url => normalizeMediaUrl(url, mediaOrigin(req))) });
 }));
+
 
 // Advance bookings: record that the balance was collected at the villa.
 router.post('/bookings/:id/collect-balance', route(async (req, res) => {

@@ -35,7 +35,8 @@ const useReveal = (rootRef) => {
           }
         });
       },
-      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+      // Reveal a little before a section scrolls in, so it is already visible on arrival.
+      { threshold: 0, rootMargin: '0px 0px 15% 0px' }
     );
 
     const observeAll = () =>
@@ -56,6 +57,7 @@ const HomePage = () => {
   const rootRef = useRef(null);
   const navigate = useNavigate();
   const [stayFilter, setStayFilter] = useState('All');
+  const [destinationFilter, setDestinationFilter] = useState('');
   const [mapFocus, setMapFocus] = useState(null);
 
   useReveal(rootRef);
@@ -84,13 +86,28 @@ const HomePage = () => {
     scrollToId('hp-map');
   };
 
+  const handleDestinationSelect = (destName) => {
+    setDestinationFilter(destName);
+    scrollToId('hp-stays');
+  };
+
+  const handleClearDestination = () => {
+    setDestinationFilter('');
+  };
+
   return (
     <div className="hp-root" ref={rootRef}>
-      <HomeHeader />
+      <HomeHeader onOpenFavourites={() => { setStayFilter('Favourites'); scrollToId('hp-stays'); }} />
       <main>
         <HomeHero onCategory={handleCategory} />
-        <HillStations />
-        <CuratedStays filter={stayFilter} onFilterChange={setStayFilter} onMapView={handleMapView} />
+        <HillStations onSelectDestination={handleDestinationSelect} />
+        <CuratedStays
+          filter={stayFilter}
+          onFilterChange={setStayFilter}
+          onMapView={handleMapView}
+          destinationFilter={destinationFilter}
+          onClearDestination={handleClearDestination}
+        />
         <section className="hp-section hp-map-section">
           <div className="hp-container hp-map-split">
             <LocationsMap focus={mapFocus} />

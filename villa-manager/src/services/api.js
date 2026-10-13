@@ -1,5 +1,30 @@
 const configured = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:2001/api').replace(/\/+$/, '');
 const BASE = configured.endsWith('/api') ? configured : `${configured}/api`;
+export const API_ORIGIN = BASE.replace(/\/api$/, '');
+
+export function mediaUrl(value) {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  if (/^(data:|blob:)/i.test(trimmed)) return trimmed;
+  const match = /(?:\/api\/properties\/media\/|\/uploads\/properties\/)([a-f0-9-]{36}\.(?:png|jpg|webp|mp4|webm|mov))/i.exec(trimmed);
+  if (match) {
+    return `${API_ORIGIN}/api/properties/media/${match[1]}`;
+  }
+  if (trimmed.startsWith('/')) {
+    return `${API_ORIGIN}${trimmed}`;
+  }
+  if (/^http:\/\/api\.bookmyvilla\.online/i.test(trimmed)) {
+    return trimmed.replace(/^http:/i, 'https:');
+  }
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && /^http:\/\/localhost(?::\d+)?/i.test(trimmed)) {
+    return trimmed.replace(/^http:\/\/localhost(?::\d+)?/i, API_ORIGIN);
+  }
+  if (/^https?:\/\/[a-z0-9_-]+-service(?::\d+)?/i.test(trimmed)) {
+    return trimmed.replace(/^https?:\/\/[a-z0-9_-]+-service(?::\d+)?/i, API_ORIGIN);
+  }
+  return trimmed;
+}
+
 export const session = { get: () => sessionStorage.getItem('bmv_vm_token'), set: token => sessionStorage.setItem('bmv_vm_token', token), clear: () => sessionStorage.removeItem('bmv_vm_token') };
 export async function api(path, { method = 'GET', body, signal, token = session.get() } = {}) {
   let response;
@@ -17,7 +42,7 @@ export async function login(email, password) {
   session.set(result.token); return verified;
 }
 export const propertyService = { list: filters => manager('/properties?' + query(filters)), owners: () => manager('/owners'), get: id => manager('/properties/' + id) };
-export const ownerService = { guides: id => manager(`/owner-directory/bookings/${id}/guides`), assignGuide: (id, guideId) => manager(`/owner-directory/bookings/${id}/guide`, { method: 'POST', body: { guideId } }), list: q => manager('/owner-directory?' + query({ q })), get: id => manager('/owner-directory/' + id), create: body => manager('/owner-directory', { method: 'POST', body }), addVilla: (id, body) => manager(`/owner-directory/${id}/villas`, { method: 'POST', body }), website: (villaId, visible) => manager(`/owner-directory/villas/${villaId}/website`, { method: 'PATCH', body: { visible } }), photos: (villaId, photos) => manager(`/owner-directory/villas/${villaId}/photos`, { method: 'PUT', body: { photos } }), collect: bookingId => manager(`/owner-directory/bookings/${bookingId}/collect-balance`, { method: 'POST' }) };
+export const ownerService = { guides: id => manager(`/owner-directory/bookings/${id}/guides`), assignGuide: (id, guideId) => manager(`/owner-directory/bookings/${id}/guide`, { method: 'POST', body: { guideId } }), list: q => manager('/owner-directory?' + query({ q })), get: id => manager('/owner-directory/' + id), create: body => manager('/owner-directory', { method: 'POST', body }), addVilla: (id, body) => manager(`/owner-directory/${id}/villas`, { method: 'POST', body }), website: (villaId, visible) => manager(`/owner-directory/villas/${villaId}/website`, { method: 'PATCH', body: { visible } }), photos: (villaId, photos) => manager(`/owner-directory/villas/${villaId}/photos`, { method: 'PUT', body: { photos } }), updateOwner: (id, body) => manager('/owner-directory/' + id, { method: 'PUT', body }), deleteOwner: id => manager('/owner-directory/' + id, { method: 'DELETE' }), updateVilla: (villaId, body) => manager(`/owner-directory/villas/${villaId}`, { method: 'PUT', body }), deleteVilla: villaId => manager(`/owner-directory/villas/${villaId}`, { method: 'DELETE' }), amenities: () => manager('/owner-directory/amenities'), mapLocation: input => manager('/owner-directory/map-location', { method: 'POST', body: { input } }), location: (villaId, body) => manager(`/owner-directory/villas/${villaId}/location`, { method: 'PUT', body }), collect: bookingId => manager(`/owner-directory/bookings/${bookingId}/collect-balance`, { method: 'POST' }) };
 export const bookingService = { get: id => manager('/bookings/' + id), details: (id, body) => manager(`/bookings/${id}/details`, { method: 'PATCH', body }), alternatives: id => manager(`/bookings/${id}/alternatives`), assign: (id, roomId, reason, hasRoom) => hasRoom ? manager(`/bookings/${id}/reassign`, { method: 'POST', body: { roomId, reason } }) : api(`/owner-pms/bookings/${id}/assign-room`, { method: 'POST', body: { roomId } }), stay: (id, action) => api(`/owner-ops/bookings/${id}/${action}`, { method: 'POST', body: {} }) };
 export const taskService = { create: body => manager('/tasks', { method: 'POST', body }), update: (id, body) => manager('/tasks/' + id, { method: 'PATCH', body }) };
 export const requestService = { update: (id, body) => api('/owner-ops/guest-request/' + id, { method: 'PATCH', body }) };

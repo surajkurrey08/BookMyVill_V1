@@ -4,10 +4,12 @@ import HomeFooter from '../Home/HomeFooter';
 import { stays, testimonials } from '../Home/homeData';
 import { properties as mockProperties } from '../../data/mockData';
 import { API_BASE_URL } from '../../config';
-import defaultHeroImage from '../../assets/hero_page1.png';
+import defaultHeroImage from '../../assets/hero_page1.webp';
 import useSiteHero from '../../hooks/useSiteHero';
+import { resolveMediaUrl } from '../../utils/mediaUrl';
+import { useHeroOffers, OfferBackdrop, OfferBanner } from '../Offers/HeroOffers';
 import StaySearchForm from '../StaySearch/StaySearchForm';
-import { DEFAULT_LOCATION, addDays, todayISO } from '../StaySearch/searchUtils';
+import { DEFAULT_LOCATION, addDays, todayISO, matchesPropertyLocation } from '../StaySearch/searchUtils';
 import '../Home/Home.css';
 import './ExploreStaysPage.css';
 
@@ -24,11 +26,8 @@ const curatedImages = [stays[3].image, stays[2].image, stays[1].image, stays[4].
 const Icon = ({ name }) => <i className={`fa-solid fa-${name}`} aria-hidden="true" />;
 const numberPrice = (value) => typeof value === 'number' ? value : Number(String(value ?? '').replace(/[^\d]/g, '')) || 0;
 const priceLabel = (value) => `₹${value.toLocaleString('en-IN')}`;
-const imageUrl = (value, fallback) => {
-  if (!value || typeof value !== 'string') return fallback;
-  if (/^(https?:|data:|blob:)/i.test(value)) return value;
-  return value.startsWith('/') ? `${API_BASE_URL}${value}` : fallback;
-};
+const imageUrl = (value, fallback) => resolveMediaUrl(value, fallback);
+
 const normalizeStay = (item, index, source) => {
   const image = source === 'database' ? imageUrl(item.photos?.[0] || item.image, curatedImages[index % curatedImages.length]) : curatedImages[index % curatedImages.length];
   const amenities = Array.isArray(item.amenities) && item.amenities.length ? item.amenities : source === 'mock' ? ['WiFi', index % 2 ? 'Breakfast Included' : 'Parking', index % 3 ? 'Mountain View' : 'Swimming Pool'] : [];
@@ -86,8 +85,7 @@ const revealResults = (section, { smooth = true } = {}) => {
   if (!section) return;
   const offset = window.matchMedia(STICKY_SEARCH_QUERY).matches ? 120 : 16;
   const top = section.getBoundingClientRect().top + window.scrollY - offset;
-  if (window.__lenis) window.__lenis.scrollTo(top, smooth ? { duration: 1.1 } : { immediate: true });
-  else window.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
+  window.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
 };
 
 const PropertyCard = ({ property, favorite, onFavorite, searchParams }) => {
@@ -98,14 +96,34 @@ const PropertyCard = ({ property, favorite, onFavorite, searchParams }) => {
   const amenities = property.amenities.length ? property.amenities.slice(0, 3) : ['Parking', 'Breakfast', 'WiFi'];
   const amenityIcon = (label) => /pool|lake/i.test(label) ? 'water-ladder' : /breakfast|meal|restaurant/i.test(label) ? 'mug-hot' : /wi-?fi/i.test(label) ? 'wifi' : /park/i.test(label) ? 'square-parking' : /view|balcony/i.test(label) ? 'mountain-sun' : 'check';
   return <article className="es-stay-card">
-    <div className="es-card-photo"><Link to={href} state={detailsState} aria-label={`View ${property.name}`}><img src={property.image} alt={property.name} loading="lazy" /></Link><span className="es-card-badge">{property.badge}</span><button type="button" className={`es-favorite ${favorite ? 'is-saved' : ''}`} onClick={() => onFavorite(property.id)} aria-label={`${favorite ? 'Remove' : 'Add'} ${property.name} ${favorite ? 'from' : 'to'} favorites`} aria-pressed={favorite}><i className={`${favorite ? 'fa-solid' : 'fa-regular'} fa-heart`} aria-hidden="true" /></button></div>
+    <div className="es-card-photo">
+      <Link to={href} state={detailsState} aria-label={`View ${property.name}`}>
+        <img
+          src={property.image}
+          alt={property.name}
+          loading="lazy"
+          onError={(e) => {
+            const fallback = curatedImages[(property.order || 0) % curatedImages.length];
+            if (e.currentTarget.src !== fallback) {
+              e.currentTarget.src = fallback;
+            }
+          }}
+        />
+      </Link>
+      <span className="es-card-badge">{property.badge}</span>
+      <button type="button" className={`es-favorite ${favorite ? 'is-saved' : ''}`} onClick={() => onFavorite(property.id)} aria-label={`${favorite ? 'Remove' : 'Add'} ${property.name} ${favorite ? 'from' : 'to'} favorites`} aria-pressed={favorite}>
+        <i className={`${favorite ? 'fa-solid' : 'fa-regular'} fa-heart`} aria-hidden="true" />
+      </button>
+    </div>
     <div className="es-card-body"><div className="es-card-heading"><Link to={href} state={detailsState}>{property.name}{property.verified && <span className="es-verified" title="Verified by BookMyVilla" aria-label="Verified by BookMyVilla"><Icon name="circle-check" /></span>}</Link><span className="es-card-rating"><Icon name="star" /> {property.rating.toFixed(1)} <small>({property.reviewsCount})</small></span></div><p className="es-card-location"><Icon name="location-dot" /> {property.location}</p><div className="es-card-facts"><Icon name="user-group" /> 2 guests / night</div><div className="es-card-amenities">{amenities.map((amenity) => <span key={amenity}><Icon name={amenityIcon(amenity)} /> {amenity.replace(' Included', '')}</span>)}</div><div className="es-card-bottom"><div><strong>{priceLabel(property.priceValue)}</strong><span> / night</span></div><Link to={href} state={detailsState} className="es-details-btn">View Details <Icon name="arrow-right" /></Link></div></div>
   </article>;
+
 };
 const FilterGroup = ({ title, children }) => <fieldset className="es-filter-group"><legend>{title}</legend>{children}</fieldset>;
 
 const ExploreStaysPage = () => {
   const heroImage = useSiteHero('explore', defaultHeroImage);
+  const heroOffers = useHeroOffers();
   const { search } = useLocation();
   const navigate = useNavigate();
   const resultsRef = useRef(null);
@@ -113,10 +131,18 @@ const ExploreStaysPage = () => {
   const [searchStuck, setSearchStuck] = useState(false);
   const params = useMemo(() => new URLSearchParams(search), [search]);
   const searchTerm = params.has('search') ? params.get('search').trim() : DEFAULT_LOCATION;
+  const initialPlaceId = params.get('placeId') || '';
+  const initialLat = params.get('lat') ? Number(params.get('lat')) : null;
+  const initialLng = params.get('lng') ? Number(params.get('lng')) : null;
   const [destination, setDestination] = useState(searchTerm);
+  const [selectedPlace, setSelectedPlace] = useState(
+    initialPlaceId || (initialLat !== null && initialLng !== null)
+      ? { placeId: initialPlaceId, lat: initialLat, lng: initialLng, name: searchTerm }
+      : null
+  );
   const [checkIn, setCheckIn] = useState(params.get('checkIn') || addDays(todayISO(), 1));
   const [checkOut, setCheckOut] = useState(params.get('checkOut') || addDays(todayISO(), 3));
-  const [guests, setGuests] = useState(Math.max(1, Number(params.get('guests')) || 2));
+  const [guests, setGuests] = useState(Math.max(1, Number(params.get('guests')) || 1));
   const [databaseProperties, setDatabaseProperties] = useState([]);
   // Stays already booked for the searched dates (whole villas booked by someone else).
   const [unavailable, setUnavailable] = useState(() => new Set());
@@ -141,9 +167,17 @@ const ExploreStaysPage = () => {
   }, []);
   useEffect(() => {
     setDestination(searchTerm);
+    const pId = params.get('placeId') || '';
+    const pLat = params.get('lat') ? Number(params.get('lat')) : null;
+    const pLng = params.get('lng') ? Number(params.get('lng')) : null;
+    setSelectedPlace(
+      pId || (pLat !== null && pLng !== null)
+        ? { placeId: pId, lat: pLat, lng: pLng, name: searchTerm }
+        : null
+    );
     setCheckIn(params.get('checkIn') || addDays(todayISO(), 1));
     setCheckOut(params.get('checkOut') || addDays(todayISO(), 3));
-    setGuests(Math.max(1, Number(params.get('guests')) || 2));
+    setGuests(Math.max(1, Number(params.get('guests')) || 1));
     setPage(1);
   }, [params, searchTerm]);
   useEffect(() => {
@@ -179,10 +213,11 @@ const ExploreStaysPage = () => {
     return [...databaseProperties, ...localProperties.filter((item) => !names.has(item.name.trim().toLowerCase()))];
   }, [databaseProperties]);
   const filtered = useMemo(() => {
-    const term = searchTerm.toLowerCase();
+    const lat = params.get('lat') ? Number(params.get('lat')) : null;
+    const lng = params.get('lng') ? Number(params.get('lng')) : null;
     const result = allProperties.filter((property) => {
       if (property.source === 'database' && unavailable.has(String(property.id))) return false;
-      if (term && ![property.name, property.location, property.region, property.type].some((value) => contains(value, term))) return false;
+      if (!matchesPropertyLocation(property, searchTerm, lat, lng)) return false;
       if (property.priceValue > applied.maxPrice || property.rating < applied.rating) return false;
       if (applied.types.length && !applied.types.some((type) => isType(property, type))) return false;
       if (applied.amenities.length && !applied.amenities.every((amenity) => hasAmenity(property, amenity))) return false;
@@ -197,7 +232,7 @@ const ExploreStaysPage = () => {
       return rank[a.source] - rank[b.source] || a.order - b.order;
     });
     return result;
-  }, [allProperties, searchTerm, applied, sort, unavailable]);
+  }, [allProperties, searchTerm, params, applied, sort, unavailable]);
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pages);
   const visibleProperties = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -208,27 +243,48 @@ const ExploreStaysPage = () => {
   const updateList = (key, value) => setDraft((current) => ({ ...current, [key]: current[key].includes(value) ? current[key].filter((item) => item !== value) : [...current[key], value] }));
   const clearFilters = () => { setDraft(emptyFilters()); setApplied(emptyFilters()); setPage(1); };
   const showResults = () => revealResults(resultsRef.current);
-  const applyFilters = () => { setApplied({ ...draft }); setPage(1); setFiltersOpen(false); showResults(); };
+  // Filters take effect as soon as they change; no separate Apply step.
+  useEffect(() => { setApplied({ ...draft }); setPage(1); }, [draft]);
   const changePage = (number) => { setPage(number); showResults(); };
   const toggleFavorite = (id) => setFavorites((current) => { const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id]; try { localStorage.setItem('bookmyvilla-explore-favorites', JSON.stringify(next)); } catch { /* storage unavailable */ } return next; });
-  const handleSearch = () => { const next = new URLSearchParams(); next.set('search', destination.trim()); if (checkIn) next.set('checkIn', checkIn); if (checkOut) next.set('checkOut', checkOut); next.set('guests', String(guests)); navigate(`/explore?${next}`); showResults(); };
+  const handleSearch = () => {
+    const next = new URLSearchParams();
+    if (destination.trim()) next.set('search', destination.trim());
+    if (selectedPlace?.placeId) next.set('placeId', selectedPlace.placeId);
+    if (
+      selectedPlace?.lat !== undefined &&
+      selectedPlace?.lat !== null &&
+      selectedPlace?.lng !== undefined &&
+      selectedPlace?.lng !== null &&
+      !isNaN(selectedPlace.lat) &&
+      !isNaN(selectedPlace.lng)
+    ) {
+      next.set('lat', String(selectedPlace.lat));
+      next.set('lng', String(selectedPlace.lng));
+    }
+    if (checkIn) next.set('checkIn', checkIn);
+    if (checkOut) next.set('checkOut', checkOut);
+    if (guests) next.set('guests', String(guests));
+    navigate(next.toString() ? `/explore?${next}` : '/explore');
+    showResults();
+  };
   // React Router records its history index; with nothing earlier in this tab, go home.
   const goBack = () => { if (window.history.state?.idx > 0) navigate(-1); else navigate('/'); };
 
   return <div className="hp-root es-page"><main>
-    <section className="es-hero" style={{ backgroundImage: `url(${heroImage})` }}><div className="es-hero-shade" /><div className="es-hero-inner"><div className="es-hero-top"><button type="button" className="es-back" onClick={goBack} aria-label="Go back"><Icon name="arrow-left" /></button><nav className="es-breadcrumb" aria-label="Breadcrumb"><Link to="/">Home</Link><span>›</span><span>Explore Stays</span></nav></div><div className="es-hero-copy"><h1>{searchTerm ? <><span>Explore Stays in</span> {searchTerm.replace(/\b\p{L}/gu, (letter) => letter.toUpperCase())}</> : <><span>Explore</span> All Stays</>}</h1><p>Find the perfect stay for your next trip</p></div>
+    <section className={`es-hero${heroOffers.offers.length ? ' has-offers' : ''}`} style={{ backgroundImage: `url(${heroImage})` }}><OfferBackdrop offers={heroOffers.offers} index={heroOffers.index} fallback={heroImage} /><div className="es-hero-shade" /><div className="es-hero-inner"><div className="es-hero-top"><button type="button" className="es-back" onClick={goBack} aria-label="Go back"><Icon name="arrow-left" /></button><nav className="es-breadcrumb" aria-label="Breadcrumb"><Link to="/">Home</Link><span>›</span><span>Explore Stays</span></nav></div><div className="es-hero-copy"><h1>{searchTerm ? <><span>Explore Stays in</span> {searchTerm.replace(/\b\p{L}/gu, (letter) => letter.toUpperCase())}</> : <><span>Explore</span> All Stays</>}</h1><p>Find the perfect stay for your next trip</p><OfferBanner {...heroOffers} /></div>
     </div></section>
     <section className="es-listing-section">
       {/* Sticky within this section: it starts over the hero's bottom edge, stays
           pinned while the stays scroll past, and leaves with the listing. */}
-      <div className={`es-search-dock ${searchStuck ? 'is-stuck' : ''}`} ref={searchDockRef}><div className="es-search-dock-inner"><StaySearchForm destination={destination} checkIn={checkIn} checkOut={checkOut} guests={guests} onDestinationChange={setDestination} onCheckInChange={setCheckIn} onCheckOutChange={setCheckOut} onGuestsChange={setGuests} onSubmit={handleSearch} /></div></div>
-      <div className="es-layout" ref={resultsRef}><button type="button" className="es-mobile-filter-toggle" onClick={() => setFiltersOpen((open) => !open)} aria-expanded={filtersOpen} aria-controls="es-filters"><Icon name="sliders" /> Filters <Icon name={filtersOpen ? 'chevron-up' : 'chevron-down'} /></button><aside id="es-filters" className={`es-sidebar ${filtersOpen ? 'is-open' : ''}`} aria-label="Filter stays" tabIndex={0} data-lenis-prevent><div className="es-filter-top"><h2>Filter Stays</h2><button type="button" onClick={clearFilters}>Clear All</button></div>
+      <div className={`es-search-dock ${searchStuck ? 'is-stuck' : ''}`} ref={searchDockRef}><div className="es-search-dock-inner"><StaySearchForm destination={destination} checkIn={checkIn} checkOut={checkOut} guests={guests} onDestinationChange={setDestination} onPlaceChange={setSelectedPlace} onCheckInChange={setCheckIn} onCheckOutChange={setCheckOut} onGuestsChange={setGuests} onSubmit={handleSearch} /></div></div>
+      <div className="es-layout" ref={resultsRef}><button type="button" className="es-mobile-filter-toggle" onClick={() => setFiltersOpen((open) => !open)} aria-expanded={filtersOpen} aria-controls="es-filters"><Icon name="sliders" /> Filters <Icon name={filtersOpen ? 'chevron-up' : 'chevron-down'} /></button><aside id="es-filters" className={`es-sidebar ${filtersOpen ? 'is-open' : ''}`} aria-label="Filter stays" tabIndex={0}><div className="es-filter-top"><h2>Filter Stays</h2><button type="button" onClick={clearFilters}>Clear All</button></div>
       <FilterGroup title="Price Range (per night)"><input className="es-price-slider" type="range" min="0" max={PRICE_LIMIT} step="500" value={draft.maxPrice} onChange={(event) => setDraft((current) => ({ ...current, maxPrice: Number(event.target.value) }))} aria-label="Maximum nightly price" style={{ '--fill': `${draft.maxPrice / PRICE_LIMIT * 100}%` }} /><div className="es-price-ends"><span>₹0</span><span>{priceLabel(draft.maxPrice)}{draft.maxPrice === PRICE_LIMIT ? '+' : ''}</span></div></FilterGroup>
       <FilterGroup title="Property Type">{typeOptions.map(([label, value]) => <label className="es-filter-option" key={value}><input type="checkbox" checked={draft.types.includes(value)} onChange={() => updateList('types', value)} /><span>{label}</span><small>{allProperties.filter((property) => isType(property, value)).length}</small></label>)}</FilterGroup>
       <FilterGroup title="Amenities">{amenityOptions.map((amenity) => <label className="es-filter-option" key={amenity}><input type="checkbox" checked={draft.amenities.includes(amenity)} onChange={() => updateList('amenities', amenity)} /><span>{amenity}</span></label>)}</FilterGroup>
       <FilterGroup title="Ideal For">{idealOptions.map((ideal) => <label className="es-filter-option" key={ideal}><input type="checkbox" checked={draft.idealFor.includes(ideal)} onChange={() => updateList('idealFor', ideal)} /><span>{ideal}</span></label>)}</FilterGroup>
       <FilterGroup title="Guest Rating">{[4.5, 4, 3.5].map((rating) => <label className="es-filter-option es-rating-option" key={rating}><input type="radio" name="rating" checked={draft.rating === rating} onChange={() => setDraft((current) => ({ ...current, rating }))} /><span className="es-rating-stars">★★★</span><span>{rating} &amp; above</span></label>)}</FilterGroup>
-      <button type="button" className="es-apply-btn" onClick={applyFilters}>Apply Filters</button><div className="es-help-card"><span className="es-help-icon"><Icon name="phone" /></span><div><strong>Need Help?</strong><span>Talk to our travel expert</span></div><a href="tel:+919876543210">+91 98765 43210</a><small>24/7 Support · Free Consultation</small></div>
+      <div className="es-help-card"><span className="es-help-icon"><Icon name="phone" /></span><div><strong>Need Help?</strong><span>Talk to our travel expert</span></div><a href="tel:+919876543210">+91 98765 43210</a><small>24/7 Support · Free Consultation</small></div>
     </aside><div className="es-results" role="region" aria-label="Stay search results"><div className="es-results-head"><div><h2 aria-live="polite">{filtered.length} Stays in {searchTerm || 'All Destinations'}</h2><p>Explore the matching properties below.</p></div><label>Sort by <select value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }}><option value="popular">Most Popular</option><option value="rating">Top Rated</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option></select></label></div>
       {visibleProperties.length ? <div className="es-card-grid">{visibleProperties.map((property) => <PropertyCard key={`${property.source}-${property.id}`} property={property} favorite={favorites.includes(property.id)} onFavorite={toggleFavorite} searchParams={cardParams} />)}</div> : <div className="es-empty"><Icon name="mountain-sun" /><h3>No stays found</h3><p>Try another destination or clear some filters to see more stays.</p><button type="button" onClick={() => { clearFilters(); navigate(`/explore?search=${DEFAULT_LOCATION}`); }}>Show All Stays</button></div>}
       {filtered.length > PAGE_SIZE && <nav className="es-pagination" aria-label="Stay pages">{Array.from({ length: pages }, (_, index) => <button key={index + 1} type="button" className={currentPage === index + 1 ? 'is-current' : ''} onClick={() => changePage(index + 1)} aria-current={currentPage === index + 1 ? 'page' : undefined}>{index + 1}</button>)}<button type="button" disabled={currentPage === pages} onClick={() => changePage(currentPage + 1)} aria-label="Next page"><Icon name="arrow-right" /></button></nav>}

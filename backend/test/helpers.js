@@ -4,6 +4,8 @@
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
 process.env.RAZORPAY_KEY_ID = '';
 process.env.RAZORPAY_KEY_SECRET = '';
+// Device uploads stay in the throwaway local folder, never the real Cloudinary account.
+process.env.MEDIA_STORAGE = 'local';
 // No real broker/cache in tests; identities are never cached between requests.
 process.env.REDIS_URL = '';
 process.env.RABBITMQ_URL = '';

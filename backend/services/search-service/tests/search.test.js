@@ -38,4 +38,12 @@ test('index follows villa events and hides villas booked or held for the dates',
   const Property = require('../../../models/Property');
   await Property.updateOne({ _id: property._id }, { websiteVisible: false });
   assert.ok(await waitFor(async () => !(await SearchListing.exists({ villaId: String(property._id) }))), 'villa.updated removed a hidden villa from the index');
+
+  // Verify coordinates and query parameter validation
+  const badLat = await h.api('GET', '/api/search/villas?lat=999');
+  assert.equal(badLat.status, 400);
+  const badLng = await h.api('GET', '/api/search/villas?lng=999');
+  assert.equal(badLng.status, 400);
+  const validCoords = await h.api('GET', '/api/search/villas?search=Panchgani&lat=17.92&lng=73.80&placeId=test_place_id');
+  assert.equal(validCoords.status, 200);
 });

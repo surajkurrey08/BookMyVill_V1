@@ -38,6 +38,15 @@ const PropertySchema = new mongoose.Schema({
   location: { type: String, required: true },
   price: { type: Number, default: 10000 },
   mapLink: { type: String, default: '' },
+  // Exact pin the Villa Manager confirmed from a pasted Google Maps link,
+  // coordinates or address; the guest map uses it instead of a name search.
+  coordinates: {
+    type: new mongoose.Schema({
+      lat: { type: Number, required: true, min: -90, max: 90 },
+      lng: { type: Number, required: true, min: -180, max: 180 }
+    }, { _id: false }),
+    default: undefined
+  },
   amenities: [{ type: String }],
   facilities: [{ type: String }],
   photos: [{ type: String }],

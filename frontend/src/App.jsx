@@ -1,24 +1,32 @@
 import React, { useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, useLocation, Navigate } from 'react-router-dom';
-import Lenis from 'lenis';
-import OwnerSetup from './components/OwnerSetup/OwnerSetup';
-import UserDashboard from './components/UserDashboard/UserDashboard';
-import UserProfile from './components/UserProfile/UserProfile';
-import CaretakerApply from './components/Caretaker/CaretakerApply';
-import Packages from './components/Packages/Packages';
-import JoinUs from './components/JoinUs/JoinUs';
-import AboutUs from './components/AboutUs/AboutUs';
-import CaretakerDashboard from './components/Caretaker/CaretakerDashboard';
-import PartnerContactPage from './components/JoinUs/PartnerContactPage';
-import ExploreStaysPage from './components/ExploreStays/ExploreStaysPage';
-import AiAssistant from './components/AiAssistant/AiAssistant';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, useLocation, useNavigationType, Navigate } from 'react-router-dom';
+// Every new page opens at the top. Back/forward keep the old position, and #links still jump to their section.
+function ScrollToTop() {
+  const { pathname, hash } = useLocation();
+  const type = useNavigationType();
+  useEffect(() => {
+    if (type !== 'POP' && !hash) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
+const OwnerSetup = lazy(() => import('./components/OwnerSetup/OwnerSetup'));
+const UserDashboard = lazy(() => import('./components/UserDashboard/UserDashboard'));
+const UserProfile = lazy(() => import('./components/UserProfile/UserProfile'));
+const CaretakerApply = lazy(() => import('./components/Caretaker/CaretakerApply'));
+const Packages = lazy(() => import('./components/Packages/Packages'));
+const JoinUs = lazy(() => import('./components/JoinUs/JoinUs'));
+const AboutUs = lazy(() => import('./components/AboutUs/AboutUs'));
+const CaretakerDashboard = lazy(() => import('./components/Caretaker/CaretakerDashboard'));
+const PartnerContactPage = lazy(() => import('./components/JoinUs/PartnerContactPage'));
+const ExploreStaysPage = lazy(() => import('./components/ExploreStays/ExploreStaysPage'));
+const AiAssistant = lazy(() => import('./components/AiAssistant/AiAssistant'));
 import HomePage from './components/Home/HomePage';
 import LoginRoute from './components/Home/LoginRoute';
 import WelcomeLoginPrompt from './components/Home/WelcomeLoginPrompt';
 import CookieConsent from './components/CookieConsent/CookieConsent';
 import { ADMIN_PORTAL_URL, OWNER_PORTAL_URL } from './config';
 import './App.css';
-import 'lenis/dist/lenis.css';
 
 // Guest quotation links are opened directly from WhatsApp/email; load the page on demand.
 const QuoteView = lazy(() => import('./components/QuoteView/QuoteView'));
@@ -231,37 +239,17 @@ const ProtectedCaretakerDashboard = () => {
   return <CaretakerDashboard />;
 };
 
+// Shown while a page's code loads (usually a fraction of a second).
+const PageLoader = () => <div className="page-loader" role="status" aria-label="Loading"><span /></div>;
+
 function App() {
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 2.5,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      lerp: 0.05,
-      wheelMultiplier: 0.8,
-      infinite: false,
-    });
-
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    // Exposed so overlays (e.g. the login modal) can pause/resume Lenis —
-    // Lenis drives scroll via JS, so `overflow: hidden` on the body alone
-    // doesn't stop it.
-    window.__lenis = lenis;
-
-    return () => {
-      lenis.destroy();
-      if (window.__lenis === lenis) window.__lenis = null;
-    };
-  }, []);
 
   return (
     <Router>
+      <ScrollToTop />
       <div className="app">
+        {/* Pages other than Home load on first visit, keeping the initial download small. */}
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/signin" element={<LoginRoute />} />
@@ -290,7 +278,8 @@ function App() {
           <Route path="/quote/:token" element={<Suspense fallback={null}><QuoteView /></Suspense>} />
           <Route path="/trips/:id" element={<Suspense fallback={null}><TripPage /></Suspense>} />
         </Routes>
-        <AiAssistant />
+        </Suspense>
+        <Suspense fallback={null}><AiAssistant /></Suspense>
         <CookieConsent />
         <WelcomeLoginPrompt />
       </div>

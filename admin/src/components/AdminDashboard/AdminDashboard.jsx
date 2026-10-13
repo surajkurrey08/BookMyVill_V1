@@ -5,6 +5,9 @@ import { API_BASE_URL } from '../../config';
 import { readAdminSession, clearAdminSession } from '../../session';
 import HeroImageManager from '../HeroImageManager/HeroImageManager';
 import { managementLabel, staffName } from '../Console/config';
+import SocialMediaLinksManager from '../SocialMediaLinksManager/SocialMediaLinksManager';
+import OffersManager from '../OffersManager/OffersManager';
+
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('owner-requests');
@@ -36,9 +39,8 @@ const AdminDashboard = () => {
     message: ''
   });
   const [isSendingCaretakerMsg, setIsSendingCaretakerMsg] = useState(false);
-  const [isSidebarHidden, setIsSidebarHidden] = useState(false);
+  const [isSidebarHidden, setIsSidebarHidden] = useState(() => window.innerWidth < 992);
   const [isCardsHidden, setIsCardsHidden] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [rejectTarget, setRejectTarget] = useState(null);
   const [ownerSetupLink, setOwnerSetupLink] = useState(null);
   const [setupLinkBusyId, setSetupLinkBusyId] = useState(null);
@@ -242,7 +244,7 @@ const AdminDashboard = () => {
   }, [activeTab, navigate]);
 
   const fetchAdminData = async () => {
-    if (activeTab === 'hero-images') {
+    if (activeTab === 'hero-images' || activeTab === 'social-links' || activeTab === 'offers') {
       setLoading(false);
       return;
     }
@@ -561,161 +563,20 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard-wrapper">
-      {/* STATIC HEADER WITH LOGO BRANDING */}
-      <div style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-        background: 'rgba(9, 14, 13, 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(212, 175, 55, 0.25)',
-        padding: '12px 28px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
-      }}>
-        {/* LOGO BRANDING */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <span style={{
-            color: '#d4af37',
-            fontFamily: "'Playfair Display', 'Cinzel', 'Outfit', serif",
-            fontSize: '1.25rem',
-            fontWeight: '800',
-            letterSpacing: '2.5px',
-            lineHeight: '1.1',
-            textTransform: 'uppercase',
-            textShadow: '0 0 10px rgba(212, 175, 55, 0.2)'
-          }}>
-            MAHABLESHWAR
-          </span>
-          <span style={{
-            color: '#38bdf8',
-            fontFamily: "'Inter', sans-serif",
-            fontSize: '0.68rem',
-            fontWeight: '700',
-            letterSpacing: '3.5px',
-            textTransform: 'uppercase',
-            opacity: 0.9
-          }}>
-            ADMIN PANEL
-          </span>
-        </div>
-      </div>
-
-      {/* SLIDE-OUT MENU DRAWER OVERLAY & PANEL */}
-      {isDrawerOpen && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(0, 0, 0, 0.7)',
-            backdropFilter: 'blur(5px)',
-            zIndex: 99999,
-            transition: 'opacity 0.3s ease'
-          }}
-          onClick={() => setIsDrawerOpen(false)}
-        />
-      )}
-
-      <aside
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: isDrawerOpen ? 0 : '-340px',
-          width: '300px',
-          height: '100vh',
-          background: 'linear-gradient(180deg, #0d1613 0%, #08110e 100%)',
-          borderRight: '1px solid rgba(212, 175, 55, 0.35)',
-          zIndex: 100000,
-          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '24px',
-          boxShadow: '10px 0 30px rgba(0, 0, 0, 0.6)'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <div>
-            <h3 style={{ margin: 0, color: '#d4af37', fontFamily: 'Outfit, serif', fontSize: '1.1rem', letterSpacing: '1px' }}>MAHABLESHWAR</h3>
-            <span style={{ fontSize: '0.65rem', color: '#38bdf8', letterSpacing: '2px', fontWeight: '700' }}>ADMIN NAVIGATION DRAWER</span>
-          </div>
-          <button 
-            onClick={() => setIsDrawerOpen(false)}
-            style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: '1.5rem', cursor: 'pointer', opacity: 0.8 }}
-          >
-            ×
-          </button>
-        </div>
-
-        <nav className="sidebar-nav" style={{ display: 'flex', flexDirection: 'column', gap: '10px', flexGrow: 1 }}>
-          <button
-            className={`nav-item ${activeTab === 'owner-requests' ? 'active' : ''}`}
-            onClick={() => { handleTabSwitch('owner-requests'); setIsDrawerOpen(false); }}
-          >
-            Owner Requests
-          </button>
-          <button
-            className={`nav-item ${activeTab === 'caretakers' ? 'active' : ''}`}
-            onClick={() => { handleTabSwitch('caretakers'); setIsDrawerOpen(false); }}
-          >
-            Caretaker Requests
-          </button>
-          <button
-            className={`nav-item ${activeTab === 'caretaker-owner-msg' ? 'active' : ''}`}
-            onClick={() => { handleOpenCaretakerOwnerMsg(null); setStatusFilter('all'); setSearchQuery(''); setIsDrawerOpen(false); }}
-          >
-            Message Owners
-          </button>
-          <button
-            className={`nav-item ${activeTab === 'properties' ? 'active' : ''}`}
-            onClick={() => { handleTabSwitch('properties'); setIsDrawerOpen(false); }}
-          >
-            Properties
-          </button>
-          <button
-            className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-            onClick={() => { handleTabSwitch('users'); setIsDrawerOpen(false); }}
-          >
-            Users
-          </button>
-          <button
-            className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
-            onClick={() => { handleTabSwitch('bookings'); setIsDrawerOpen(false); }}
-          >
-            Bookings
-          </button>
-          <button
-            className={`nav-item ${activeTab === 'feedback' ? 'active' : ''}`}
-            onClick={() => { handleTabSwitch('feedback'); setIsDrawerOpen(false); }}
-          >
-            Tourist Feedback
-          </button>
-          <button
-            className={`nav-item ${activeTab === 'hero-images' ? 'active' : ''}`}
-            onClick={() => { handleTabSwitch('hero-images'); setIsDrawerOpen(false); }}
-          >
-            Hero Images
-          </button>
-        </nav>
-
-        <div className="sidebar-footer" style={{ paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <button onClick={() => { setIsDrawerOpen(false); handleLogout(); }} className="btn-logout">
-            Logout Session
-          </button>
-        </div>
-      </aside>
-
       <div className={`admin-dashboard-container ${isSidebarHidden ? 'sidebar-hidden' : ''}`}>
         {/* Sidebar Menu Bar */}
+        {!isSidebarHidden && window.innerWidth < 992 && (
+          <button type="button" className="sidebar-scrim" aria-label="Close menu" onClick={() => setIsSidebarHidden(true)} />
+        )}
         {!isSidebarHidden && (
           <aside className="admin-sidebar">
-            <nav className="sidebar-nav">
+            <div className="sidebar-brand-row">
+              <span className="sidebar-logo">MAHABALESHWAR</span>
+              <button type="button" className="sidebar-hide-btn" onClick={() => setIsSidebarHidden(true)} aria-label="Hide sidebar" title="Hide sidebar">
+                <i className="fa-solid fa-angles-left"></i>
+              </button>
+            </div>
+            <nav className="sidebar-nav" onClick={event => { if (event.target.closest('button') && window.innerWidth < 992) setIsSidebarHidden(true); }}>
               <button
                 className={`nav-item ${activeTab === 'owner-requests' ? 'active' : ''}`}
                 onClick={() => handleTabSwitch('owner-requests')}
@@ -764,9 +625,24 @@ const AdminDashboard = () => {
               >
                 Hero Images
               </button>
+
+              <button
+                className={`nav-item ${activeTab === 'offers' ? 'active' : ''}`}
+                onClick={() => handleTabSwitch('offers')}>
+                Hero Offers
+              </button>
+
+              <button
+                className={`nav-item ${activeTab === 'social-links' ? 'active' : ''}`}
+                onClick={()=> handleTabSwitch('social-links')}>
+                Social Media Links
+              </button>
             </nav>
 
             <div className="sidebar-footer">
+              <button type="button" onClick={() => navigate('/console')} className="btn-main-panel">
+                <i className="fa-solid fa-gauge-high"></i> Admin Control Center
+              </button>
               <button onClick={handleLogout} className="btn-logout">
                 Logout Session
               </button>
@@ -776,6 +652,11 @@ const AdminDashboard = () => {
 
         {/* Main Content */}
         <main className="admin-main">
+          {isSidebarHidden && (
+            <button type="button" className="sidebar-show-btn" onClick={() => setIsSidebarHidden(false)} aria-label="Show sidebar">
+              <i className="fa-solid fa-bars"></i> Menu
+            </button>
+          )}
           <header className="admin-header">
             <div className="header-title">
               <h1>
@@ -787,6 +668,8 @@ const AdminDashboard = () => {
                 {activeTab === 'bookings' && 'Guest Reservations Master Log'}
                 {activeTab === 'feedback' && '💬 Tourist Stay Reviews & Feedback Center'}
                 {activeTab === 'hero-images' && 'Website Hero Images'}
+                {activeTab === 'social-links' && 'Social Media Links Management'}
+                {activeTab === 'offers' && 'Hero Offers'}
               </h1>
               <p className="header-subtitle">
                 {activeTab === 'owner-requests' && 'Centralized hub for receiving, evaluating, and taking action on property listing registrations & caretaker staff requests from hosts.'}
@@ -797,6 +680,8 @@ const AdminDashboard = () => {
                 {activeTab === 'bookings' && 'Track check-ins, guest payments, and stay reservation statuses.'}
                 {activeTab === 'feedback' && 'Monitor, feature, and manage tourist review ratings and feedback submitted for Mahabaleshwar properties.'}
                 {activeTab === 'hero-images' && 'Upload and manage the cover image shown at the top of each website page.'}
+                {activeTab === 'social-links' && 'Manage the social media links displayed in the website footer.'}
+                {activeTab === 'offers' && 'Create, schedule and reorder the offers that slide on the website hero.'}
               </p>
             </div>
           </header>
@@ -804,9 +689,9 @@ const AdminDashboard = () => {
           <section className="admin-section fade-in">
             {actionNotice.msg && (
               <div style={{
-                background: actionNotice.type === 'error' ? 'rgba(239, 68, 68, 0.18)' : 'rgba(16, 185, 129, 0.18)',
+                background: actionNotice.type === 'error' ? '#fef3f2' : '#ecfdf3',
                 border: actionNotice.type === 'error' ? '1px solid #ef4444' : '1px solid #10b981',
-                color: actionNotice.type === 'error' ? '#fca5a5' : '#6ee7b7',
+                color: actionNotice.type === 'error' ? '#b42318' : '#067647',
                 padding: '12px 20px',
                 borderRadius: '14px',
                 marginBottom: '20px',
@@ -815,7 +700,7 @@ const AdminDashboard = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+                boxShadow: '0 4px 15px rgba(15, 23, 42, 0.12)'
               }}>
                 <span>
                   <i className={`fa-solid ${actionNotice.type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}`} style={{ marginRight: '8px' }}></i>
@@ -827,11 +712,15 @@ const AdminDashboard = () => {
 
             {activeTab === 'hero-images' && <HeroImageManager />}
 
+            {activeTab === 'social-links' && <SocialMediaLinksManager />}
+
+            {activeTab === 'offers' && <OffersManager />}
+
             {/* Summary Metrics Bar - Rendered only on Main Dashboard page when Cards are not hidden */}
             {activeTab === 'owner-requests' && !isCardsHidden && (
               <div className="admin-metrics-row">
               <div className="metric-card">
-                <div className="metric-icon" style={{ color: '#ffd700', background: 'rgba(255, 215, 0, 0.15)', borderColor: 'rgba(255, 215, 0, 0.35)' }}>
+                <div className="metric-icon" style={{ color: '#8a6d12', background: 'rgba(255, 215, 0, 0.15)', borderColor: 'rgba(255, 215, 0, 0.35)' }}>
                   <i className="fa-solid fa-bell-concierge"></i>
                 </div>
                 <div>
@@ -840,7 +729,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="metric-card">
-                <div className="metric-icon" style={{ color: '#52b788', background: 'rgba(82, 183, 136, 0.15)', borderColor: 'rgba(82, 183, 136, 0.35)' }}>
+                <div className="metric-icon" style={{ color: '#1f7a4d', background: 'rgba(82, 183, 136, 0.15)', borderColor: 'rgba(82, 183, 136, 0.35)' }}>
                   <i className="fa-solid fa-shield-check"></i>
                 </div>
                 <div>
@@ -849,7 +738,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="metric-card">
-                <div className="metric-icon" style={{ color: '#d4af37', background: 'rgba(212, 175, 55, 0.15)', borderColor: 'rgba(212, 175, 55, 0.35)' }}>
+                <div className="metric-icon" style={{ color: '#8a6d12', background: 'rgba(212, 175, 55, 0.15)', borderColor: 'rgba(212, 175, 55, 0.35)' }}>
                   <i className="fa-solid fa-clock-rotate-left"></i>
                 </div>
                 <div>
@@ -858,7 +747,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="metric-card">
-                <div className="metric-icon" style={{ color: '#38bdf8', background: 'rgba(56, 189, 248, 0.15)', borderColor: 'rgba(56, 189, 248, 0.35)' }}>
+                <div className="metric-icon" style={{ color: '#0369a1', background: 'rgba(56, 189, 248, 0.15)', borderColor: 'rgba(56, 189, 248, 0.35)' }}>
                   <i className="fa-solid fa-hotel"></i>
                 </div>
                 <div>
@@ -869,7 +758,8 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {loading ? (
+          {/* Hero Images and Social Links are standalone settings pages: no request table, search or filters */}
+          {activeTab === 'hero-images' || activeTab === 'social-links' || activeTab === 'offers' ? null : loading ? (
             <div className="loading-state">
               <i className="fa-solid fa-spinner fa-spin"></i>
               <p>Retrieving property owner requests...</p>
@@ -918,25 +808,25 @@ const AdminDashboard = () => {
 
               {/* DEDICATED FULL-PAGE VIEW: CLEAN 3-STEP MESSAGING DISPATCH CENTER */}
               {activeTab === 'caretaker-owner-msg' && (
-                <div className="caretaker-msg-full-page glass-morphism fade-in" style={{ padding: '32px', borderRadius: '24px', background: 'linear-gradient(145deg, rgba(24, 35, 31, 0.95) 0%, rgba(13, 22, 19, 0.98) 100%)', border: '1px solid rgba(212, 175, 55, 0.35)', color: '#ffffff', boxShadow: '0 20px 50px rgba(0,0,0,0.6)', marginBottom: '30px' }}>
+                <div className="caretaker-msg-full-page glass-morphism fade-in" style={{ padding: '32px', borderRadius: '24px', background: '#ffffff', border: '1px solid rgba(212, 175, 55, 0.35)', color: '#0f172a', boxShadow: '0 20px 50px rgba(15, 23, 42, 0.12)', marginBottom: '30px' }}>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', flexWrap: 'wrap', gap: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px', flexWrap: 'wrap', gap: '15px' }}>
                     <div>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(212, 175, 55, 0.15)', color: '#ffd700', border: '1px solid rgba(212, 175, 55, 0.3)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', marginBottom: '10px' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(212, 175, 55, 0.15)', color: '#8a6d12', border: '1px solid rgba(212, 175, 55, 0.3)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', marginBottom: '10px' }}>
                         <i className="fa-solid fa-paper-plane"></i> Message Dispatch Center
                       </span>
-                      <h2 style={{ margin: 0, color: '#ffffff', fontSize: '1.75rem', fontFamily: 'Outfit, sans-serif' }}>
+                      <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.75rem', fontFamily: 'Outfit, sans-serif' }}>
                         Message Center
                       </h2>
-                      <p style={{ margin: '6px 0 0 0', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
+                      <p style={{ margin: '6px 0 0 0', color: '#475569', fontSize: '0.9rem' }}>
                         Select category ➔ Pick user ➔ Send details to recipient.
                       </p>
                     </div>
                   </div>
 
                   {/* STEP 1: USER ROLE / CATEGORY SELECTOR TABS */}
-                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: '16px 20px', borderRadius: '18px', border: '1px solid rgba(212,175,55,0.25)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                    <span style={{ color: '#ffd700', fontWeight: '700', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ background: '#f8fafc', padding: '16px 20px', borderRadius: '18px', border: '1px solid rgba(212,175,55,0.25)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                    <span style={{ color: '#8a6d12', fontWeight: '700', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <i className="fa-solid fa-users-gear"></i> 1. Category:
                     </span>
                     <div style={{ display: 'flex', gap: '12px' }}>
@@ -952,9 +842,9 @@ const AdminDashboard = () => {
                         style={{
                           padding: '10px 22px',
                           borderRadius: '20px',
-                          border: msgTargetRole === 'owner' ? '2px solid #d4af37' : '1px solid rgba(255,255,255,0.2)',
-                          background: msgTargetRole === 'owner' ? 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)' : 'rgba(255,255,255,0.05)',
-                          color: msgTargetRole === 'owner' ? '#1a1a1a' : '#ffffff',
+                          border: msgTargetRole === 'owner' ? '2px solid #d4af37' : '1px solid #cbd5e1',
+                          background: msgTargetRole === 'owner' ? 'linear-gradient(135deg, #d4af37 0%, #b89628 100%)' : '#f8fafc',
+                          color: msgTargetRole === 'owner' ? '#1a1a1a' : '#0f172a',
                           fontWeight: '800',
                           fontSize: '0.88rem',
                           cursor: 'pointer',
@@ -979,9 +869,9 @@ const AdminDashboard = () => {
                         style={{
                           padding: '10px 22px',
                           borderRadius: '20px',
-                          border: msgTargetRole === 'caretaker' ? '2px solid #38bdf8' : '1px solid rgba(255,255,255,0.2)',
-                          background: msgTargetRole === 'caretaker' ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : 'rgba(255,255,255,0.05)',
-                          color: '#ffffff',
+                          border: msgTargetRole === 'caretaker' ? '2px solid #38bdf8' : '1px solid #cbd5e1',
+                          background: msgTargetRole === 'caretaker' ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : '#f8fafc',
+                          color: msgTargetRole === 'caretaker' ? '#ffffff' : '#0f172a',
                           fontWeight: '800',
                           fontSize: '0.88rem',
                           cursor: 'pointer',
@@ -1003,8 +893,8 @@ const AdminDashboard = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
                       {/* STEP 2: Dropdown for Source User Details */}
-                      <div style={{ background: 'rgba(0,0,0,0.35)', padding: '20px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                        <label style={{ display: 'block', fontSize: '0.88rem', fontWeight: '700', color: '#d4af37', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
+                      <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '18px', border: '1px solid #e2e8f0' }}>
+                        <label style={{ display: 'block', fontSize: '0.88rem', fontWeight: '700', color: '#8a6d12', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
                           <i className="fa-solid fa-user-check" style={{ marginRight: '8px' }}></i> 2. Select {msgTargetRole === 'owner' ? 'Owner' : 'Caretaker'} *
                         </label>
                         <select
@@ -1018,8 +908,8 @@ const AdminDashboard = () => {
                             padding: '14px 18px',
                             borderRadius: '14px',
                             border: '1.5px solid rgba(212, 175, 55, 0.45)',
-                            background: 'rgba(0, 0, 0, 0.75)',
-                            color: '#ffffff',
+                            background: '#ffffff',
+                            color: '#0f172a',
                             fontSize: '0.95rem',
                             fontWeight: '600',
                             outline: 'none',
@@ -1042,30 +932,30 @@ const AdminDashboard = () => {
                       {/* Selected Source User Details Preview Card */}
                       {selectedSourceUserRecord && (
                         <div style={{ background: 'rgba(212, 175, 55, 0.08)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '18px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          <h4 style={{ margin: 0, color: '#ffd700', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <h4 style={{ margin: 0, color: '#8a6d12', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <i className="fa-solid fa-address-card"></i> User Record
                           </h4>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.88rem' }}>
                             <div>
-                              <span style={{ color: 'rgba(255,255,255,0.6)', display: 'block', fontSize: '0.78rem' }}>Full Name</span>
-                              <strong style={{ color: '#ffffff' }}>{selectedSourceUserRecord.fullName || selectedSourceUserRecord.name || selectedSourceUserRecord.provider?.name || 'N/A'}</strong>
+                              <span style={{ color: '#475569', display: 'block', fontSize: '0.78rem' }}>Full Name</span>
+                              <strong style={{ color: '#0f172a' }}>{selectedSourceUserRecord.fullName || selectedSourceUserRecord.name || selectedSourceUserRecord.provider?.name || 'N/A'}</strong>
                             </div>
                             <div>
-                              <span style={{ color: 'rgba(255,255,255,0.6)', display: 'block', fontSize: '0.78rem' }}>Contact Phone</span>
-                              <strong style={{ color: '#52b788' }}>{selectedSourceUserRecord.phone || selectedSourceUserRecord.provider?.phone || 'N/A'}</strong>
+                              <span style={{ color: '#475569', display: 'block', fontSize: '0.78rem' }}>Contact Phone</span>
+                              <strong style={{ color: '#1f7a4d' }}>{selectedSourceUserRecord.phone || selectedSourceUserRecord.provider?.phone || 'N/A'}</strong>
                             </div>
                             <div>
-                              <span style={{ color: 'rgba(255,255,255,0.6)', display: 'block', fontSize: '0.78rem' }}>Property Villa</span>
-                              <strong style={{ color: '#ffd700' }}>{selectedSourceUserRecord.propertyName || 'Villa Estate'}</strong>
+                              <span style={{ color: '#475569', display: 'block', fontSize: '0.78rem' }}>Property Villa</span>
+                              <strong style={{ color: '#8a6d12' }}>{selectedSourceUserRecord.propertyName || 'Villa Estate'}</strong>
                             </div>
                             <div>
-                              <span style={{ color: 'rgba(255,255,255,0.6)', display: 'block', fontSize: '0.78rem' }}>Role / Status</span>
-                              <strong style={{ color: selectedSourceUserRecord.status === 'approved' ? '#52b788' : '#ffd700' }}>
+                              <span style={{ color: '#475569', display: 'block', fontSize: '0.78rem' }}>Role / Status</span>
+                              <strong style={{ color: selectedSourceUserRecord.status === 'approved' ? '#1f7a4d' : '#8a6d12' }}>
                                 {selectedSourceUserRecord.partnerType || selectedSourceUserRecord.positionRole || 'Active Account'}
                               </strong>
                             </div>
                           </div>
-                          <div style={{ marginTop: '6px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'flex-end' }}>
+                          <div style={{ marginTop: '6px', paddingTop: '10px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
                             <button
                               type="button"
                               onClick={() => handleOpenDetails(selectedSourceUserRecord, msgTargetRole === 'owner' ? 'partner' : 'caretaker')}
@@ -1091,8 +981,8 @@ const AdminDashboard = () => {
                       )}
 
                       {/* STEP 3: Dropdown for Recipient User Who Wants These Details */}
-                      <div style={{ background: 'rgba(0,0,0,0.35)', padding: '20px', borderRadius: '18px', border: '1px solid rgba(37,211,102,0.3)' }}>
-                        <label style={{ display: 'block', fontSize: '0.88rem', fontWeight: '700', color: '#25D366', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
+                      <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '18px', border: '1px solid rgba(37,211,102,0.3)' }}>
+                        <label style={{ display: 'block', fontSize: '0.88rem', fontWeight: '700', color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
                           <i className="fa-solid fa-paper-plane" style={{ marginRight: '8px' }}></i> 3. Select Recipient *
                         </label>
                         <select
@@ -1105,8 +995,8 @@ const AdminDashboard = () => {
                             padding: '14px 18px',
                             borderRadius: '14px',
                             border: '1.5px solid rgba(37, 211, 102, 0.45)',
-                            background: 'rgba(0, 0, 0, 0.75)',
-                            color: '#ffffff',
+                            background: '#ffffff',
+                            color: '#0f172a',
                             fontSize: '0.95rem',
                             fontWeight: '600',
                             outline: 'none',
@@ -1128,11 +1018,11 @@ const AdminDashboard = () => {
                     </div>
 
                     {/* RIGHT COLUMN: Full Page Message Composer Form */}
-                    <form onSubmit={handleSendCaretakerOwnerMsg} style={{ background: 'rgba(0,0,0,0.35)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <form onSubmit={handleSendCaretakerOwnerMsg} style={{ background: '#f8fafc', padding: '24px', borderRadius: '20px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
                       {/* Subject Input */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '0.9rem', fontWeight: '700', color: '#e2e8f0' }}>Subject *</label>
+                        <label style={{ fontSize: '0.9rem', fontWeight: '700', color: '#334155' }}>Subject *</label>
                         <input
                           type="text"
                           value={caretakerMsgData.subject}
@@ -1142,9 +1032,9 @@ const AdminDashboard = () => {
                             width: '100%',
                             padding: '13px 18px',
                             borderRadius: '12px',
-                            border: '1.5px solid rgba(255,255,255,0.2)',
-                            background: 'rgba(0,0,0,0.55)',
-                            color: '#ffffff',
+                            border: '1.5px solid #cbd5e1',
+                            background: '#ffffff',
+                            color: '#0f172a',
                             fontSize: '0.95rem',
                             fontWeight: '600',
                             outline: 'none'
@@ -1155,7 +1045,7 @@ const AdminDashboard = () => {
 
                       {/* Message Body Textarea */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
-                        <label style={{ fontSize: '0.9rem', fontWeight: '700', color: '#e2e8f0' }}>Message *</label>
+                        <label style={{ fontSize: '0.9rem', fontWeight: '700', color: '#334155' }}>Message *</label>
                         <textarea
                           rows="8"
                           value={caretakerMsgData.message}
@@ -1165,9 +1055,9 @@ const AdminDashboard = () => {
                             width: '100%',
                             padding: '15px 18px',
                             borderRadius: '14px',
-                            border: '1.5px solid rgba(255,255,255,0.2)',
-                            background: 'rgba(0,0,0,0.55)',
-                            color: '#ffffff',
+                            border: '1.5px solid #cbd5e1',
+                            background: '#ffffff',
+                            color: '#0f172a',
                             fontSize: '0.95rem',
                             lineHeight: '1.6',
                             fontFamily: 'inherit',
@@ -1180,7 +1070,7 @@ const AdminDashboard = () => {
                       </div>
 
                       {/* Action Buttons */}
-                      <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                      <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid #e2e8f0' }}>
                         <button
                           type="button"
                           onClick={() => {
@@ -1236,7 +1126,7 @@ const AdminDashboard = () => {
               )}
 
               {/* DEDICATED PAGE: OWNER REQUESTS CENTER */}
-              {activeTab === 'owner-requests' && <p style={{ marginBottom: 18 }}><a href="/console?section=owner-requests" style={{ color: '#d4af37', fontWeight: 600 }}>View owner registrations and partnership inquiries →</a></p>}
+              {activeTab === 'owner-requests' && <p className="table-subnav"><a href="/console?section=owner-requests">View owner registrations and partnership inquiries <i className="fa-solid fa-arrow-right"></i></a></p>}
               {activeTab === 'owner-requests' && (
                 <div className="table-responsive">
                   <table>
@@ -1264,7 +1154,7 @@ const AdminDashboard = () => {
                         })
                         .length === 0 ? (
                         <tr>
-                          <td colSpan="5" className="empty-row" style={{ padding: '40px', textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
+                          <td colSpan="5" className="empty-row" style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
                             No property owner requests match search/filter criteria.
                           </td>
                         </tr>
@@ -1285,21 +1175,21 @@ const AdminDashboard = () => {
                             const isListingReq = req.reqType === 'property-listing' || req.partnerType === 'Property Owner';
                             return (
                               <tr key={`${req._id}-${req.reqType || 'req'}-${idx}`}>
-                                <td style={{ textAlign: 'center', fontWeight: '800', color: '#d4af37', fontSize: '0.9rem', verticalAlign: 'middle' }}>
+                                <td style={{ textAlign: 'center', fontWeight: '800', color: '#8a6d12', fontSize: '0.9rem', verticalAlign: 'middle' }}>
                                   {idx + 1}
                                 </td>
                                 <td>
                                   <div>
-                                    <strong style={{ color: '#ffffff', fontSize: '0.92rem' }}>{req.fullName || req.provider?.name || 'Property Owner'}</strong>
-                                    <div style={{ color: '#52b788', fontSize: '0.8rem', fontWeight: '700', marginTop: '2px' }}>
+                                    <strong style={{ color: '#0f172a', fontSize: '0.92rem' }}>{req.fullName || req.provider?.name || 'Property Owner'}</strong>
+                                    <div style={{ color: '#1f7a4d', fontSize: '0.8rem', fontWeight: '700', marginTop: '2px' }}>
                                       <i className="fa-solid fa-phone" style={{ marginRight: '4px' }}></i>{req.phone}
                                     </div>
                                   </div>
                                 </td>
                                 <td>
                                   <div>
-                                    <strong style={{ color: '#ffd700', fontSize: '0.92rem' }}>{req.applicationType === 'owner-registration' ? 'Owner Registration' : req.propertyName || 'Villa Estate'}</strong>
-                                    <div style={{ color: '#cbd5e1', fontSize: '0.8rem', marginTop: '2px' }}>
+                                    <strong style={{ color: '#8a6d12', fontSize: '0.92rem' }}>{req.applicationType === 'owner-registration' ? 'Owner Registration' : req.propertyName || 'Villa Estate'}</strong>
+                                    <div style={{ color: '#475569', fontSize: '0.8rem', marginTop: '2px' }}>
                                       📍 {req.propertyAddress || req.city || req.location || 'Mahabaleshwar'}
                                     </div>
                                   </div>
@@ -1406,7 +1296,7 @@ const AdminDashboard = () => {
                         })
                         .length === 0 ? (
                         <tr>
-                          <td colSpan="6" className="empty-row" style={{ padding: '40px', textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
+                          <td colSpan="6" className="empty-row" style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
                             No caretaker applications match search/filter criteria.
                           </td>
                         </tr>
@@ -1424,25 +1314,25 @@ const AdminDashboard = () => {
                             return true;
                           })
                           .map((app, idx) => (
-                            <tr key={app._id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                              <td style={{ textAlign: 'center', fontWeight: '800', color: '#d4af37', fontSize: '0.9rem', padding: '14px 16px', verticalAlign: 'middle' }}>
+                            <tr key={app._id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                              <td style={{ textAlign: 'center', fontWeight: '800', color: '#8a6d12', fontSize: '0.9rem', padding: '14px 16px', verticalAlign: 'middle' }}>
                                 {idx + 1}
                               </td>
                               <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
                                 <div>
-                                  <span className="applicant-name-text" style={{ display: 'block', fontWeight: '700', color: '#ffffff' }}>{app.provider?.name || 'Caretaker Applicant'}</span>
-                                  <span className="applied-date-sub" style={{ display: 'block', fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.6)' }}>{app.provider?.email || 'N/A'}</span>
+                                  <span className="applicant-name-text" style={{ display: 'block', fontWeight: '700', color: '#0f172a' }}>{app.provider?.name || 'Caretaker Applicant'}</span>
+                                  <span className="applied-date-sub" style={{ display: 'block', fontSize: '0.78rem', color: '#475569' }}>{app.provider?.email || 'N/A'}</span>
                                 </div>
                               </td>
                               <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
                                 <div className="contact-item-row" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                  <i className="fa-solid fa-phone" style={{ color: '#d4af37' }}></i>
-                                  <span className="contact-phone-num" style={{ fontWeight: '700', color: '#ffffff' }}>{app.phone}</span>
+                                  <i className="fa-solid fa-phone" style={{ color: '#8a6d12' }}></i>
+                                  <span className="contact-phone-num" style={{ fontWeight: '700', color: '#0f172a' }}>{app.phone}</span>
                                 </div>
                               </td>
                               <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
-                                <span style={{ color: '#38bdf8', fontWeight: '700', fontSize: '0.88rem' }}>
-                                  <i className="fa-solid fa-award" style={{ marginRight: '6px', color: '#d4af37' }}></i>
+                                <span style={{ color: '#0369a1', fontWeight: '700', fontSize: '0.88rem' }}>
+                                  <i className="fa-solid fa-award" style={{ marginRight: '6px', color: '#8a6d12' }}></i>
                                   {app.experience || '3+ Years'}
                                 </span>
                               </td>
@@ -1512,7 +1402,7 @@ const AdminDashboard = () => {
                         })
                         .length === 0 ? (
                         <tr>
-                          <td colSpan="7" className="empty-row" style={{ padding: '40px', textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
+                          <td colSpan="7" className="empty-row" style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
                             No properties match search/filter criteria.
                           </td>
                         </tr>
@@ -1531,27 +1421,27 @@ const AdminDashboard = () => {
                             return true;
                           })
                           .map((prop, idx) => (
-                            <tr key={prop._id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                              <td style={{ textAlign: 'center', fontWeight: '800', color: '#d4af37', fontSize: '0.9rem', padding: '14px 16px', verticalAlign: 'middle' }}>
+                            <tr key={prop._id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                              <td style={{ textAlign: 'center', fontWeight: '800', color: '#8a6d12', fontSize: '0.9rem', padding: '14px 16px', verticalAlign: 'middle' }}>
                                 {idx + 1}
                               </td>
                               <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
                                 <div>
-                                  <span className="applicant-name-text" style={{ display: 'block', color: '#d4af37', fontWeight: '700' }}>{prop.name}</span>
-                                  <span className="applied-date-sub" style={{ display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.65)' }}>{prop.type}</span>
+                                  <span className="applicant-name-text" style={{ display: 'block', color: '#8a6d12', fontWeight: '700' }}>{prop.name}</span>
+                                  <span className="applied-date-sub" style={{ display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.78rem', color: '#475569' }}>{prop.type}</span>
                                 </div>
                               </td>
                               <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
                                 <div>
-                                  <strong style={{ color: '#ffffff', fontSize: '0.88rem' }}>{prop.owner?.name || 'Registered Host'}</strong>
-                                  <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.78rem', marginTop: '2px' }}>{prop.owner?.email || 'N/A'}</div>
+                                  <strong style={{ color: '#0f172a', fontSize: '0.88rem' }}>{prop.owner?.name || 'Registered Host'}</strong>
+                                  <div style={{ color: '#475569', fontSize: '0.78rem', marginTop: '2px' }}>{prop.owner?.email || 'N/A'}</div>
                                 </div>
                               </td>
                               <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
-                                <span style={{ color: '#ffffff', fontWeight: '600' }}>📍 {prop.location}</span>
+                                <span style={{ color: '#0f172a', fontWeight: '600' }}>📍 {prop.location}</span>
                               </td>
                               <td className="price-cell" style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
-                                <span style={{ color: '#52b788', fontWeight: '800' }}>₹{prop.price ? prop.price.toLocaleString('en-IN') : '12,000'}</span>
+                                <span style={{ color: '#1f7a4d', fontWeight: '800' }}>₹{prop.price ? prop.price.toLocaleString('en-IN') : '12,000'}</span>
                               </td>
                               <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
                                 <strong>{managementLabel(prop.managementMode)}</strong>
@@ -1571,7 +1461,7 @@ const AdminDashboard = () => {
                                   <button className="btn-table btn-price" onClick={() => {
                                     const p = prompt('Update pricing for ' + prop.name + ':', prop.price);
                                     if (p && !isNaN(p)) handleUpdatePrice(prop._id, p);
-                                  }} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff', padding: '6px 10px', borderRadius: '16px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}>
+                                  }} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a', padding: '6px 10px', borderRadius: '16px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}>
                                     Price
                                   </button>
                                   {prop.status !== 'approved' && (
@@ -1609,24 +1499,24 @@ const AdminDashboard = () => {
                     <tbody>
                       {data.users.length === 0 ? (
                         <tr>
-                          <td colSpan="6" className="empty-row" style={{ padding: '40px', textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>No users registered.</td>
+                          <td colSpan="6" className="empty-row" style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>No users registered.</td>
                         </tr>
                       ) : (
                         data.users.map((user, idx) => (
-                          <tr key={user._id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                            <td style={{ textAlign: 'center', fontWeight: '800', color: '#d4af37', fontSize: '0.9rem', padding: '14px 16px', verticalAlign: 'middle' }}>
+                          <tr key={user._id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                            <td style={{ textAlign: 'center', fontWeight: '800', color: '#8a6d12', fontSize: '0.9rem', padding: '14px 16px', verticalAlign: 'middle' }}>
                               {idx + 1}
                             </td>
                             <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
-                              <span className="applicant-name-text" style={{ fontWeight: '700', color: '#ffffff' }}>{user.name}</span>
+                              <span className="applicant-name-text" style={{ fontWeight: '700', color: '#0f172a' }}>{user.name}</span>
                             </td>
-                            <td style={{ padding: '14px 16px', verticalAlign: 'middle', color: 'rgba(255, 255, 255, 0.8)' }}>{user.email}</td>
+                            <td style={{ padding: '14px 16px', verticalAlign: 'middle', color: '#475569' }}>{user.email}</td>
                             <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
-                              <span className="role-tag" style={{ background: user.role === 'admin' ? 'rgba(218, 54, 51, 0.2)' : user.role === 'owner' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(82, 183, 136, 0.2)', color: user.role === 'admin' ? '#f85149' : user.role === 'owner' ? '#ffd700' : '#52b788', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase' }}>
+                              <span className="role-tag" style={{ background: user.role === 'admin' ? 'rgba(218, 54, 51, 0.2)' : user.role === 'owner' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(82, 183, 136, 0.2)', color: user.role === 'admin' ? '#f85149' : user.role === 'owner' ? '#8a6d12' : '#1f7a4d', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase' }}>
                                 {user.role || 'user'}
                               </span>
                             </td>
-                            <td style={{ padding: '14px 16px', verticalAlign: 'middle', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.85rem' }}>{new Date(user.createdAt || Date.now()).toLocaleDateString()}</td>
+                            <td style={{ padding: '14px 16px', verticalAlign: 'middle', color: '#475569', fontSize: '0.85rem' }}>{new Date(user.createdAt || Date.now()).toLocaleDateString()}</td>
                             <td style={{ textAlign: 'center', padding: '14px 16px', verticalAlign: 'middle' }}>
                               <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
                                 <button
@@ -1686,14 +1576,14 @@ const AdminDashboard = () => {
                           <tr key={booking._id}>
                             <td>
                               <div className="guest-info" style={{ display: 'flex', flexDirection: 'column' }}>
-                                <strong style={{ color: '#ffffff', fontSize: '0.9rem' }}>{booking.user?.name || 'Guest User'}</strong>
-                                <span style={{ fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.6)' }}>{booking.user?.email}</span>
+                                <strong style={{ color: '#0f172a', fontSize: '0.9rem' }}>{booking.user?.name || 'Guest User'}</strong>
+                                <span style={{ fontSize: '0.78rem', color: '#475569' }}>{booking.user?.email}</span>
                               </div>
                             </td>
                             <td>
                               <div className="property-cell" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                <span className="property-title" style={{ fontWeight: '700', color: '#ffffff' }}>{booking.property?.name || 'Deleted Property'}</span>
-                                <span className="property-type" style={{ fontSize: '0.78rem', color: 'rgba(255, 255, 255, 0.6)' }}>{booking.property?.location || ''}</span>
+                                <span className="property-title" style={{ fontWeight: '700', color: '#0f172a' }}>{booking.property?.name || 'Deleted Property'}</span>
+                                <span className="property-type" style={{ fontSize: '0.78rem', color: '#475569' }}>{booking.property?.location || ''}</span>
                               </div>
                             </td>
                             <td>{new Date(booking.checkIn).toLocaleDateString()}</td>
@@ -1741,26 +1631,26 @@ const AdminDashboard = () => {
                           <tr key={fb._id || fb.id}>
                             <td>
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <strong style={{ color: '#ffffff', fontSize: '0.9rem' }}>{fb.guestName || 'Guest Tourist'}</strong>
-                                <span style={{ fontSize: '0.78rem', color: '#d4af37' }}>{fb.guestPhone || 'No Phone'}</span>
+                                <strong style={{ color: '#0f172a', fontSize: '0.9rem' }}>{fb.guestName || 'Guest Tourist'}</strong>
+                                <span style={{ fontSize: '0.78rem', color: '#8a6d12' }}>{fb.guestPhone || 'No Phone'}</span>
                               </div>
                             </td>
                             <td>
-                              <strong style={{ color: '#ffffff', fontSize: '0.9rem' }}>{fb.propertyName}</strong>
+                              <strong style={{ color: '#0f172a', fontSize: '0.9rem' }}>{fb.propertyName}</strong>
                             </td>
                             <td>
-                              <div style={{ color: '#d4af37', fontWeight: '700', fontSize: '0.9rem' }}>
-                                {'★'.repeat(fb.rating || 5)} <span style={{ color: '#ffffff', fontSize: '0.8rem' }}>({fb.rating}/5)</span>
+                              <div style={{ color: '#8a6d12', fontWeight: '700', fontSize: '0.9rem' }}>
+                                {'★'.repeat(fb.rating || 5)} <span style={{ color: '#0f172a', fontSize: '0.8rem' }}>({fb.rating}/5)</span>
                               </div>
                             </td>
                             <td style={{ maxWidth: '300px' }}>
-                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.88)', fontStyle: 'italic' }}>
+                              <p style={{ margin: 0, fontSize: '0.85rem', color: '#475569', fontStyle: 'italic' }}>
                                 "{fb.reviewText}"
                               </p>
                               {Array.isArray(fb.facilitiesUsed) && fb.facilitiesUsed.length > 0 && (
                                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
                                   {fb.facilitiesUsed.map((fac, idx) => (
-                                    <span key={idx} style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '10px', padding: '2px 6px', fontSize: '0.7rem', color: '#d4af37' }}>
+                                    <span key={idx} style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '10px', padding: '2px 6px', fontSize: '0.7rem', color: '#8a6d12' }}>
                                       ✓ {fac}
                                     </span>
                                   ))}
@@ -1773,9 +1663,9 @@ const AdminDashboard = () => {
                                 borderRadius: '12px',
                                 fontSize: '0.75rem',
                                 fontWeight: '700',
-                                background: fb.selectedForHotelPage ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                                color: fb.selectedForHotelPage ? '#10b981' : '#a3b18a',
-                                border: fb.selectedForHotelPage ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)'
+                                background: fb.selectedForHotelPage ? 'rgba(16, 185, 129, 0.2)' : '#f8fafc',
+                                color: fb.selectedForHotelPage ? '#047857' : '#a3b18a',
+                                border: fb.selectedForHotelPage ? '1px solid #10b981' : '1px solid #cbd5e1'
                               }}>
                                 {fb.selectedForHotelPage ? 'Featured on Hotel Page' : 'Hidden'}
                               </span>
@@ -1803,7 +1693,7 @@ const AdminDashboard = () => {
                                   }}
                                   style={{
                                     background: fb.selectedForHotelPage ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                                    color: fb.selectedForHotelPage ? '#ef4444' : '#10b981',
+                                    color: fb.selectedForHotelPage ? '#ef4444' : '#047857',
                                     border: '1px solid currentColor',
                                     borderRadius: '8px',
                                     padding: '6px 12px',
@@ -1856,6 +1746,8 @@ const AdminDashboard = () => {
                   </table>
                 </div>
               )}
+
+              
             </div>
           )}
         </section>
@@ -1867,7 +1759,7 @@ const AdminDashboard = () => {
           <div className="admin-modal-container" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal-header">
               <div className="modal-title-box">
-                <i className={`fa-solid ${detailModalType === 'partner' ? 'fa-user-tie' : detailModalType === 'property' ? 'fa-hotel' : 'fa-user-gear'}`} style={{ color: '#d4af37', fontSize: '1.5rem', marginRight: '12px' }}></i>
+                <i className={`fa-solid ${detailModalType === 'partner' ? 'fa-user-tie' : detailModalType === 'property' ? 'fa-hotel' : 'fa-user-gear'}`} style={{ color: '#8a6d12', fontSize: '1.5rem', marginRight: '12px' }}></i>
                 <div>
                   <h3>
                     {detailModalType === 'partner' ? 'Property Owner Application Details' :
@@ -1881,20 +1773,20 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            <div className="admin-modal-body" style={{ padding: '24px', background: '#0f1715' }}>
+            <div className="admin-modal-body" style={{ padding: '24px', background: '#f8fafc' }}>
               <div style={{
-                background: 'rgba(255, 255, 255, 0.03)',
+                background: '#f8fafc',
                 border: '1px solid rgba(212, 175, 55, 0.25)',
                 borderRadius: '20px',
                 padding: '24px',
-                color: '#ffffff'
+                color: '#0f172a'
               }}>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '20px',
                   paddingBottom: '20px',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderBottom: '1px solid #e2e8f0',
                   marginBottom: '20px'
                 }}>
                   <div style={{
@@ -1908,14 +1800,14 @@ const AdminDashboard = () => {
                     justifyContent: 'center',
                     fontSize: '1.8rem',
                     fontWeight: '800',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+                    boxShadow: '0 8px 20px rgba(15, 23, 42, 0.12)',
                     flexShrink: 0
                   }}>
                     {(selectedDetailItem.fullName || selectedDetailItem.name || selectedDetailItem.provider?.name || 'H').charAt(0).toUpperCase()}
                   </div>
                   <div style={{ flexGrow: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                      <h2 style={{ margin: 0, fontSize: '1.4rem', color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
+                      <h2 style={{ margin: 0, fontSize: '1.4rem', color: '#0f172a', fontFamily: 'Outfit, sans-serif' }}>
                         {selectedDetailItem.fullName || selectedDetailItem.name || selectedDetailItem.provider?.name || 'Property Owner'}
                       </h2>
                       <span className={`status-badge-pill ${selectedDetailItem.status || 'pending'}`}>
@@ -1923,9 +1815,9 @@ const AdminDashboard = () => {
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '6px', flexWrap: 'wrap', fontSize: '0.88rem', color: '#a3b18a' }}>
-                      <span><i className="fa-solid fa-shield-check" style={{ color: '#d4af37' }}></i> {selectedDetailItem.partnerType || selectedDetailItem.positionRole || 'Property Owner & Host'}</span>
-                      <span><i className="fa-solid fa-envelope" style={{ color: '#38bdf8' }}></i> {selectedDetailItem.email || selectedDetailItem.owner?.email || selectedDetailItem.provider?.email || 'N/A'}</span>
-                      <span><i className="fa-solid fa-phone" style={{ color: '#10b981' }}></i> {selectedDetailItem.phone || 'N/A'}</span>
+                      <span><i className="fa-solid fa-shield-check" style={{ color: '#8a6d12' }}></i> {selectedDetailItem.partnerType || selectedDetailItem.positionRole || 'Property Owner & Host'}</span>
+                      <span><i className="fa-solid fa-envelope" style={{ color: '#0369a1' }}></i> {selectedDetailItem.email || selectedDetailItem.owner?.email || selectedDetailItem.provider?.email || 'N/A'}</span>
+                      <span><i className="fa-solid fa-phone" style={{ color: '#047857' }}></i> {selectedDetailItem.phone || 'N/A'}</span>
                     </div>
                   </div>
                 </div>
@@ -1935,26 +1827,26 @@ const AdminDashboard = () => {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
                   gap: '24px',
                   paddingBottom: '20px',
-                  borderBottom: (selectedDetailItem.message || selectedDetailItem.bio || selectedDetailItem.description || selectedDetailItem.status === 'approved') ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
+                  borderBottom: (selectedDetailItem.message || selectedDetailItem.bio || selectedDetailItem.description || selectedDetailItem.status === 'approved') ? '1px solid #e2e8f0' : 'none',
                   marginBottom: (selectedDetailItem.message || selectedDetailItem.bio || selectedDetailItem.description || selectedDetailItem.status === 'approved') ? '20px' : '0'
                 }}>
                   <div>
-                    <h4 style={{ color: '#d4af37', fontSize: '0.95rem', margin: '0 0 12px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <h4 style={{ color: '#8a6d12', fontSize: '0.95rem', margin: '0 0 12px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       <i className="fa-solid fa-address-card" style={{ marginRight: '6px' }}></i> Contact & Identity
                     </h4>
                     <div className="detail-row"><span className="detail-label">Full Name:</span><span className="detail-val">{selectedDetailItem.fullName || selectedDetailItem.name || selectedDetailItem.provider?.name || 'N/A'}</span></div>
                     <div className="detail-row"><span className="detail-label">Email Address:</span><span className="detail-val">{selectedDetailItem.email || selectedDetailItem.owner?.email || selectedDetailItem.provider?.email || 'N/A'}</span></div>
                     <div className="detail-row"><span className="detail-label">Contact Phone:</span><span className="detail-val">{selectedDetailItem.phone || 'N/A'}</span></div>
                     {selectedDetailItem.govtId && (
-                      <div className="detail-row"><span className="detail-label">Govt ID Proof:</span><span className="detail-val" style={{ color: '#ffd700', fontWeight: '700' }}>{selectedDetailItem.govtId}</span></div>
+                      <div className="detail-row"><span className="detail-label">Govt ID Proof:</span><span className="detail-val" style={{ color: '#8a6d12', fontWeight: '700' }}>{selectedDetailItem.govtId}</span></div>
                     )}
                   </div>
 
                   <div>
-                    <h4 style={{ color: '#d4af37', fontSize: '0.95rem', margin: '0 0 12px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <h4 style={{ color: '#8a6d12', fontSize: '0.95rem', margin: '0 0 12px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       <i className="fa-solid fa-building" style={{ marginRight: '6px' }}></i> Property & Stay Specs
                     </h4>
-                    <div className="detail-row"><span className="detail-label">Property Name:</span><span className="detail-val" style={{ color: '#d4af37', fontWeight: '700' }}>{selectedDetailItem.propertyName || selectedDetailItem.name || 'N/A'}</span></div>
+                    <div className="detail-row"><span className="detail-label">Property Name:</span><span className="detail-val" style={{ color: '#8a6d12', fontWeight: '700' }}>{selectedDetailItem.propertyName || selectedDetailItem.name || 'N/A'}</span></div>
                     {detailModalType === 'property' && <>
                       <div className="detail-row"><span className="detail-label">Management:</span><span className="detail-val">{managementLabel(selectedDetailItem.managementMode)}</span></div>
                       <div className="detail-row"><span className="detail-label">Villa Manager:</span><span className="detail-val">{staffName(selectedDetailItem.assignedVillaManager)}</span></div>
@@ -1963,13 +1855,13 @@ const AdminDashboard = () => {
                     </>}
                     <div className="detail-row"><span className="detail-label">Location / Address:</span><span className="detail-val">{selectedDetailItem.propertyAddress || selectedDetailItem.city || selectedDetailItem.location || 'Mahabaleshwar'}</span></div>
                     {selectedDetailItem.positionRole && (
-                      <div className="detail-row"><span className="detail-label">Position Required:</span><span className="detail-val" style={{ color: '#ffd700', fontWeight: '700' }}>{selectedDetailItem.positionRole}</span></div>
+                      <div className="detail-row"><span className="detail-label">Position Required:</span><span className="detail-val" style={{ color: '#8a6d12', fontWeight: '700' }}>{selectedDetailItem.positionRole}</span></div>
                     )}
                     {selectedDetailItem.experience && (
-                      <div className="detail-row"><span className="detail-label">Required Experience:</span><span className="detail-val" style={{ color: '#38bdf8', fontWeight: '700' }}>{selectedDetailItem.experience}</span></div>
+                      <div className="detail-row"><span className="detail-label">Required Experience:</span><span className="detail-val" style={{ color: '#0369a1', fontWeight: '700' }}>{selectedDetailItem.experience}</span></div>
                     )}
                     {selectedDetailItem.assignedCaretakerName && (
-                      <div className="detail-row"><span className="detail-label">Allocated Caretaker:</span><span className="detail-val" style={{ color: '#10b981', fontWeight: '700' }}>{selectedDetailItem.assignedCaretakerName} ({selectedDetailItem.assignedCaretakerPhone})</span></div>
+                      <div className="detail-row"><span className="detail-label">Allocated Caretaker:</span><span className="detail-val" style={{ color: '#047857', fontWeight: '700' }}>{selectedDetailItem.assignedCaretakerName} ({selectedDetailItem.assignedCaretakerPhone})</span></div>
                     )}
                   </div>
                 </div>
@@ -1978,9 +1870,9 @@ const AdminDashboard = () => {
                   <div style={{
                     marginBottom: selectedDetailItem.status === 'approved' ? '20px' : '0',
                     paddingBottom: selectedDetailItem.status === 'approved' ? '20px' : '0',
-                    borderBottom: selectedDetailItem.status === 'approved' ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
+                    borderBottom: selectedDetailItem.status === 'approved' ? '1px solid #e2e8f0' : 'none'
                   }}>
-                    <h4 style={{ color: '#d4af37', fontSize: '0.95rem', margin: '0 0 10px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <h4 style={{ color: '#8a6d12', fontSize: '0.95rem', margin: '0 0 10px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       <i className="fa-solid fa-comment-dots" style={{ marginRight: '6px' }}></i> Message / Bio Details
                     </h4>
                     <p className="detail-message-text">
@@ -1996,10 +1888,10 @@ const AdminDashboard = () => {
                     borderRadius: '16px',
                     padding: '16px 20px'
                   }}>
-                    <h4 style={{ color: '#25D366', display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 6px 0', fontSize: '1rem' }}>
+                    <h4 style={{ color: '#15803d', display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 6px 0', fontSize: '1rem' }}>
                       <i className="fa-brands fa-whatsapp" style={{ fontSize: '1.2rem' }}></i> WhatsApp Dispatch Notification Center
                     </h4>
-                    <p style={{ fontSize: '0.84rem', color: 'rgba(255, 255, 255, 0.8)', margin: '0 0 12px 0' }}>
+                    <p style={{ fontSize: '0.84rem', color: '#475569', margin: '0 0 12px 0' }}>
                       Dispatch verified contact and property details directly via WhatsApp:
                     </p>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -2021,7 +1913,7 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            <div className="admin-modal-footer" style={{ display: 'flex', gap: '14px', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <div className="admin-modal-footer" style={{ display: 'flex', gap: '14px', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
               <button
                 className="btn-modal-action btn-approve"
                 style={{
@@ -2082,17 +1974,17 @@ const AdminDashboard = () => {
       {/* REJECTION CONFIRMATION CARD MODAL */}
       {ownerSetupLink && (
         <div className="admin-modal-overlay" onClick={() => setOwnerSetupLink(null)} style={{ zIndex: 100020 }}>
-          <div className="admin-modal-container" onClick={event => event.stopPropagation()} style={{ maxWidth: '620px', color: '#fff' }}>
-            <h3 style={{ marginTop: 0 }}>Owner Login Link</h3>
-            <p>Owner login ID: <strong>{ownerSetupLink.email}</strong></p>
-            <p>Share this link only with the approved owner. It expires in 24 hours and works once.</p>
-            <input aria-label="Owner password setup link" readOnly value={ownerSetupLink.url} onFocus={event => event.target.select()} style={{ width: '100%', padding: '12px', boxSizing: 'border-box' }} />
-            <p style={{ fontSize: '0.85rem' }}>Expires: {new Date(ownerSetupLink.expiresAt).toLocaleString()}</p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button type="button" onClick={() => navigator.clipboard.writeText(ownerSetupLink.url).then(() => showNotice('success', 'Link copied.')).catch(() => showNotice('error', 'Select and copy the link manually.'))}>
+          <div className="admin-modal-container" onClick={event => event.stopPropagation()} style={{ maxWidth: '620px', color: '#0f172a', padding: '26px 28px', gap: '12px' }}>
+            <h3 style={{ margin: 0 }}>Owner Login Link</h3>
+            <p style={{ margin: 0, color: '#334155' }}>Owner login ID: <strong>{ownerSetupLink.email}</strong></p>
+            <p style={{ margin: 0, color: '#475569', fontSize: '0.9rem' }}>Share this link only with the approved owner. It expires in 24 hours and works once.</p>
+            <input aria-label="Owner password setup link" readOnly value={ownerSetupLink.url} onFocus={event => event.target.select()} style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a', fontSize: '0.88rem' }} />
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>Expires: {new Date(ownerSetupLink.expiresAt).toLocaleString()}</p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '6px' }}>
+              <button type="button" className="btn-modal-close-secondary" onClick={() => setOwnerSetupLink(null)}>Close</button>
+              <button type="button" className="btn-modal-action" style={{ background: '#d4af37', color: '#13251a' }} onClick={() => navigator.clipboard.writeText(ownerSetupLink.url).then(() => showNotice('success', 'Link copied.')).catch(() => showNotice('error', 'Select and copy the link manually.'))}>
                 Copy Link
               </button>
-              <button type="button" onClick={() => setOwnerSetupLink(null)}>Close</button>
             </div>
           </div>
         </div>
@@ -2106,12 +1998,12 @@ const AdminDashboard = () => {
               maxWidth: '460px',
               width: '100%',
               borderRadius: '24px',
-              background: 'linear-gradient(145deg, #1f1212 0%, #0d0707 100%)',
+              background: '#ffffff',
               border: '1px solid rgba(239, 68, 68, 0.45)',
-              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.95)',
+              boxShadow: '0 25px 60px rgba(15, 23, 42, 0.12)',
               padding: '32px 28px',
               textAlign: 'center',
-              color: '#ffffff'
+              color: '#0f172a'
             }}
           >
             <div style={{
@@ -2131,21 +2023,21 @@ const AdminDashboard = () => {
               <i className="fa-solid fa-triangle-exclamation"></i>
             </div>
 
-            <h3 style={{ margin: '0 0 10px 0', color: '#ffffff', fontSize: '1.35rem', fontFamily: 'Outfit, sans-serif', fontWeight: '800' }}>
+            <h3 style={{ margin: '0 0 10px 0', color: '#0f172a', fontSize: '1.35rem', fontFamily: 'Outfit, sans-serif', fontWeight: '800' }}>
               Confirm Rejection?
             </h3>
 
-            <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.92rem', lineHeight: '1.5', margin: '0 0 26px 0' }}>
-              Are you sure you want to reject <strong style={{ color: '#fca5a5' }}>"{rejectTarget.name}"</strong>? This will mark the request status as <span style={{ color: '#ef4444', fontWeight: '800' }}>Rejected ❌</span>.
+            <p style={{ color: '#475569', fontSize: '0.92rem', lineHeight: '1.5', margin: '0 0 26px 0' }}>
+              Are you sure you want to reject <strong style={{ color: '#b42318' }}>"{rejectTarget.name}"</strong>? This will mark the request status as <span style={{ color: '#ef4444', fontWeight: '800' }}>Rejected ❌</span>.
             </p>
 
             <div style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}>
               <button
                 onClick={() => setRejectTarget(null)}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  color: '#ffffff',
+                  background: '#f8fafc',
+                  border: '1px solid #cbd5e1',
+                  color: '#0f172a',
                   padding: '11px 22px',
                   borderRadius: '20px',
                   fontWeight: '700',
@@ -2187,26 +2079,26 @@ const AdminDashboard = () => {
       {/* TARGETED CARETAKER-SEEKING OWNER MESSAGING MODAL */}
       {showCaretakerOwnerModal && (
         <div className="modal-overlay">
-          <div className="modal-content glass-morphism" style={{ maxWidth: '680px', width: '100%', padding: '30px', borderRadius: '24px', background: 'linear-gradient(145deg, #18231f 0%, #0d1613 100%)', border: '1px solid rgba(212, 175, 55, 0.4)', color: '#ffffff', boxShadow: '0 25px 60px rgba(0,0,0,0.85)' }}>
+          <div className="modal-content glass-morphism" style={{ maxWidth: '680px', width: '100%', padding: '30px', borderRadius: '24px', background: '#ffffff', border: '1px solid rgba(212, 175, 55, 0.4)', color: '#0f172a', boxShadow: '0 25px 60px rgba(0,0,0,0.85)' }}>
 
             {/* Modal Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
               <div>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(212, 175, 55, 0.15)', color: '#ffd700', border: '1px solid rgba(212, 175, 55, 0.3)', padding: '4px 14px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '700', marginBottom: '8px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(212, 175, 55, 0.15)', color: '#8a6d12', border: '1px solid rgba(212, 175, 55, 0.3)', padding: '4px 14px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '700', marginBottom: '8px' }}>
                   <i className="fa-solid fa-paper-plane"></i> Targeted Caretaker Host Communication
                 </span>
-                <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1.45rem', fontFamily: 'Outfit, sans-serif' }}>
+                <h3 style={{ margin: 0, color: '#0f172a', fontSize: '1.45rem', fontFamily: 'Outfit, sans-serif' }}>
                   Message Property Owners Seeking Caretakers
                 </h3>
               </div>
-              <button onClick={() => setShowCaretakerOwnerModal(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.8rem', cursor: 'pointer', opacity: 0.8 }}>×</button>
+              <button onClick={() => setShowCaretakerOwnerModal(false)} style={{ background: 'none', border: 'none', color: '#0f172a', fontSize: '1.8rem', cursor: 'pointer', opacity: 0.8 }}>×</button>
             </div>
 
             <form onSubmit={handleSendCaretakerOwnerMsg} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
               {/* Target Owner Selection Dropdown (FILTERED ONLY TO CARETAKER REQUESTING OWNERS) */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#d4af37', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#8a6d12', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   <i className="fa-solid fa-user-shield" style={{ marginRight: '6px' }}></i> Select Caretaker-Seeking Property Owner ({caretakerSeekingOwners.length}) *
                 </label>
                 <select
@@ -2221,8 +2113,8 @@ const AdminDashboard = () => {
                     padding: '12px 16px',
                     borderRadius: '12px',
                     border: '1.5px solid rgba(212, 175, 55, 0.4)',
-                    background: 'rgba(0, 0, 0, 0.65)',
-                    color: '#ffffff',
+                    background: '#ffffff',
+                    color: '#0f172a',
                     fontSize: '0.92rem',
                     fontWeight: '600',
                     outline: 'none'
@@ -2243,7 +2135,7 @@ const AdminDashboard = () => {
 
               {/* Template Quick Selector */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#cbd5e1' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#475569' }}>
                   ⚡ Quick Caretaker Notice Templates:
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
@@ -2253,9 +2145,9 @@ const AdminDashboard = () => {
                     style={{
                       padding: '8px 12px',
                       borderRadius: '10px',
-                      border: caretakerMsgData.templateType === 'staff_allocation' ? '1.5px solid #d4af37' : '1px solid rgba(255,255,255,0.15)',
-                      background: caretakerMsgData.templateType === 'staff_allocation' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.05)',
-                      color: caretakerMsgData.templateType === 'staff_allocation' ? '#ffd700' : '#ffffff',
+                      border: caretakerMsgData.templateType === 'staff_allocation' ? '1.5px solid #d4af37' : '1px solid #e2e8f0',
+                      background: caretakerMsgData.templateType === 'staff_allocation' ? 'rgba(212, 175, 55, 0.2)' : '#f8fafc',
+                      color: caretakerMsgData.templateType === 'staff_allocation' ? '#8a6d12' : '#0f172a',
                       fontSize: '0.8rem',
                       fontWeight: '700',
                       cursor: 'pointer'
@@ -2269,9 +2161,9 @@ const AdminDashboard = () => {
                     style={{
                       padding: '8px 12px',
                       borderRadius: '10px',
-                      border: caretakerMsgData.templateType === 'verification_request' ? '1.5px solid #d4af37' : '1px solid rgba(255,255,255,0.15)',
-                      background: caretakerMsgData.templateType === 'verification_request' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.05)',
-                      color: caretakerMsgData.templateType === 'verification_request' ? '#ffd700' : '#ffffff',
+                      border: caretakerMsgData.templateType === 'verification_request' ? '1.5px solid #d4af37' : '1px solid #e2e8f0',
+                      background: caretakerMsgData.templateType === 'verification_request' ? 'rgba(212, 175, 55, 0.2)' : '#f8fafc',
+                      color: caretakerMsgData.templateType === 'verification_request' ? '#8a6d12' : '#0f172a',
                       fontSize: '0.8rem',
                       fontWeight: '700',
                       cursor: 'pointer'
@@ -2285,9 +2177,9 @@ const AdminDashboard = () => {
                     style={{
                       padding: '8px 12px',
                       borderRadius: '10px',
-                      border: caretakerMsgData.templateType === 'duty_schedule' ? '1.5px solid #d4af37' : '1px solid rgba(255,255,255,0.15)',
-                      background: caretakerMsgData.templateType === 'duty_schedule' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.05)',
-                      color: caretakerMsgData.templateType === 'duty_schedule' ? '#ffd700' : '#ffffff',
+                      border: caretakerMsgData.templateType === 'duty_schedule' ? '1.5px solid #d4af37' : '1px solid #e2e8f0',
+                      background: caretakerMsgData.templateType === 'duty_schedule' ? 'rgba(212, 175, 55, 0.2)' : '#f8fafc',
+                      color: caretakerMsgData.templateType === 'duty_schedule' ? '#8a6d12' : '#0f172a',
                       fontSize: '0.8rem',
                       fontWeight: '700',
                       cursor: 'pointer'
@@ -2301,9 +2193,9 @@ const AdminDashboard = () => {
                     style={{
                       padding: '8px 12px',
                       borderRadius: '10px',
-                      border: caretakerMsgData.templateType === 'custom' ? '1.5px solid #d4af37' : '1px solid rgba(255,255,255,0.15)',
-                      background: caretakerMsgData.templateType === 'custom' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.05)',
-                      color: caretakerMsgData.templateType === 'custom' ? '#ffd700' : '#ffffff',
+                      border: caretakerMsgData.templateType === 'custom' ? '1.5px solid #d4af37' : '1px solid #e2e8f0',
+                      background: caretakerMsgData.templateType === 'custom' ? 'rgba(212, 175, 55, 0.2)' : '#f8fafc',
+                      color: caretakerMsgData.templateType === 'custom' ? '#8a6d12' : '#0f172a',
                       fontSize: '0.8rem',
                       fontWeight: '700',
                       cursor: 'pointer'
@@ -2316,7 +2208,7 @@ const AdminDashboard = () => {
 
               {/* Subject Input */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#e2e8f0' }}>Message Subject *</label>
+                <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#334155' }}>Message Subject *</label>
                 <input
                   type="text"
                   value={caretakerMsgData.subject}
@@ -2326,9 +2218,9 @@ const AdminDashboard = () => {
                     width: '100%',
                     padding: '11px 15px',
                     borderRadius: '10px',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    background: 'rgba(0,0,0,0.45)',
-                    color: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#0f172a',
                     fontSize: '0.9rem',
                     outline: 'none'
                   }}
@@ -2338,7 +2230,7 @@ const AdminDashboard = () => {
 
               {/* Message Body Textarea */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#e2e8f0' }}>Message Content *</label>
+                <label style={{ fontSize: '0.85rem', fontWeight: '700', color: '#334155' }}>Message Content *</label>
                 <textarea
                   rows="5"
                   value={caretakerMsgData.message}
@@ -2348,9 +2240,9 @@ const AdminDashboard = () => {
                     width: '100%',
                     padding: '12px 15px',
                     borderRadius: '12px',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    background: 'rgba(0,0,0,0.45)',
-                    color: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#0f172a',
                     fontSize: '0.9rem',
                     fontFamily: 'inherit',
                     outline: 'none',

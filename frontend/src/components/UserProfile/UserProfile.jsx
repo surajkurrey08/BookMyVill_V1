@@ -71,11 +71,17 @@ const UserProfile = () => {
     }
 
     if (name === 'phone') {
-      const cleanPhone = trimmed.replace(/\D/g, '');
-      if (!cleanPhone) {
-        error = 'Phone Number is required.';
-      } else if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
-        error = 'Please enter a valid 10-digit mobile phone number starting with 6, 7, 8, or 9.';
+      if (!trimmed) {
+        error = 'Contact Phone Number is required.';
+      } else if (/[a-zA-Z]/.test(trimmed)) {
+        error = 'Contact Phone Number accepts only valid numeric input and rejects alphabetical characters.';
+      } else if (!/^[0-9+\s-]*$/.test(trimmed)) {
+        error = 'Contact Phone Number can only contain numeric digits (0-9).';
+      } else {
+        const cleanPhone = trimmed.replace(/\D/g, '');
+        if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+          error = 'Please enter a valid 10-digit mobile phone number starting with 6, 7, 8, or 9.';
+        }
       }
     }
 
@@ -287,9 +293,20 @@ const UserProfile = () => {
               </label>
               <input
                 type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className={`profile-input ${errors.phone ? 'has-error' : form.phone && !errors.phone ? 'is-valid' : ''}`}
-                placeholder="e.g. +91 9876543210"
+                placeholder="e.g. 9876543210"
                 value={form.phone}
+                onKeyDown={(e) => {
+                  if (/[a-zA-Z]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    setErrors((prev) => ({
+                      ...prev,
+                      phone: 'Contact Phone Number accepts only valid numeric input and rejects alphabetical characters.'
+                    }));
+                  }
+                }}
                 onChange={(e) => handleChange('phone', e.target.value)}
                 required
               />

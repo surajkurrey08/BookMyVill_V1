@@ -32,7 +32,7 @@
 .es-search-field > i { flex: 0 0 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: #edf4ef; color: var(--es-green); font-size: .95rem; transition: background-color .2s ease, color .2s ease; }
 .es-search-field:is(:focus-within, .is-open) > i { background: var(--es-green); color: #fff; }
 .es-search-copy { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 4px; }
-.es-search-copy > span { color: #7d877f; font-size: .66rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+.es-search-copy > span { color: #5d6760; font-size: .66rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
 .es-search-copy > strong,
 .es-search-copy > input { width: 100%; min-width: 0; margin: 0; padding: 0; border: 0; outline: 0; background: none; color: var(--es-ink); font-family: inherit; font-size: .95rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .es-search-copy > input::placeholder { color: #9aa29b; font-weight: 600; }
@@ -43,15 +43,21 @@
 .es-location-clear { flex: 0 0 auto; width: 26px; height: 26px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: #eceee9; color: #59635b; font-size: .72rem; cursor: pointer; opacity: 0; visibility: hidden; transition: opacity .15s ease, background-color .15s ease; }
 .es-location-field:is(:hover, :focus-within) .es-location-clear { opacity: 1; visibility: visible; }
 .es-location-clear:hover { background: #dfe3dc; color: var(--es-ink); }
-.es-location-list { margin: 0; padding: 8px; list-style: none; width: max(100%, 320px); }
-.es-location-list li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; cursor: pointer; }
+.es-location-popover { min-width: 340px; max-width: 420px; overflow: hidden; }
+.es-location-list { margin: 0; padding: 8px; list-style: none; width: 100%; max-height: 320px; overflow-y: auto; overscroll-behavior: contain; }
+.es-location-list li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; cursor: pointer; transition: background-color .15s ease; }
 .es-location-list li.is-active { background: #f2f5f1; }
 .es-location-pin { flex: 0 0 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: #edf4ef; color: var(--es-green); font-size: .85rem; }
-.es-location-list li strong { display: block; color: var(--es-ink); font-size: .9rem; font-weight: 700; }
-.es-location-list li small { display: block; margin-top: 2px; color: #7d877f; font-size: .74rem; }
+.es-location-list li strong { display: block; color: var(--es-ink); font-size: .9rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.es-location-list li small { display: block; margin-top: 2px; color: #5d6760; font-size: .74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.es-location-loading { display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #5d6760; font-size: .82rem; font-weight: 600; border-bottom: 1px solid #f2f4ef; }
+.es-location-loading i { color: var(--es-green); }
+.es-location-empty { padding: 14px 16px !important; color: #5d6760; font-size: .82rem; font-weight: 500; cursor: default !important; line-height: 1.4; }
+.es-location-empty:hover { background: none !important; }
+.es-google-attribution { display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding: 6px 14px; background: #fafbf9; border-top: 1px solid #edf0ea; font-size: .68rem; color: #9aa29b; font-weight: 600; }
 
 /* Popover shell shared by the suggestions and the calendars. */
-.es-popover { position: absolute; top: calc(100% + 12px); left: 0; z-index: 40; background: #fff; border: 1px solid #ecefe9; border-radius: 18px; box-shadow: 0 18px 44px rgba(12, 40, 29, .18); cursor: default; animation: es-pop-down .16s ease-out; }
+.es-popover { position: absolute; top: calc(100% + 12px); left: 0; z-index: 1050; background: #fff; border: 1px solid #ecefe9; border-radius: 18px; box-shadow: 0 18px 44px rgba(12, 40, 29, .18); cursor: default; animation: es-pop-down .16s ease-out; }
 .es-search.is-top .es-popover { top: auto; bottom: calc(100% + 12px); box-shadow: 0 -10px 44px rgba(12, 40, 29, .2); animation-name: es-pop-up; }
 @keyframes es-pop-down { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @keyframes es-pop-up { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }

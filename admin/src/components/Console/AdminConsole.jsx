@@ -29,7 +29,8 @@ export default function AdminConsole() {
   const [me, setMe] = useState(null);
   const [error, setError] = useState('');
   const [section, setSection] = useState(() => { const params = new URLSearchParams(window.location.search); return params.get('propertyId') ? 'properties' : ['properties', 'owner-requests'].includes(params.get('section')) ? params.get('section') : 'dashboard'; });
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(() => window.innerWidth > 900);
+  const closeOnMobile = () => { if (window.innerWidth <= 900) setDrawerOpen(false); };
   const [palette, setPalette] = useState(null);
   const [focus, setFocus] = useState(() => { const id = new URLSearchParams(window.location.search).get('propertyId'); return id ? { type: 'property', id } : null; }); // { type, id } to open a detail from search
 
@@ -56,7 +57,7 @@ export default function AdminConsole() {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  if (error && !me) return <div className="ac-shell"><main className="ac-main"><Alert>{error}</Alert></main></div>;
+  if (error && !me) return <div className={`ac-shell ${drawerOpen ? '' : 'sidebar-closed'}`}><main className="ac-main"><Alert>{error}</Alert></main></div>;
   if (!me) return <div className="ac-boot"><Icon name="fa-shield-halved" /> Loading admin console…</div>;
 
   const visibleNav = NAV.filter(item => can(item.perm));
@@ -66,9 +67,10 @@ export default function AdminConsole() {
 
   return <div className="ac-shell">
     <aside className={`ac-sidebar ${drawerOpen ? 'open' : ''}`}>
-      <div className="ac-brand"><span className="ac-brand-mark"><Icon name="fa-shield-halved" /></span><div><strong>BookMyVilla</strong><span>Admin Control Center</span></div></div>
+      <div className="ac-brand"><strong className="ac-logo">MAHABALESHWAR</strong><button type="button" className="ac-hide-btn" onClick={() => setDrawerOpen(false)} aria-label="Hide sidebar" title="Hide sidebar"><Icon name="fa-angles-left" /></button></div>
+      <button type="button" className="ac-search-trigger" onClick={() => { setPalette({ q: '', results: [] }); closeOnMobile(); }}><Icon name="fa-magnifying-glass" /> Search<kbd>⌘K</kbd></button>
       <nav className="ac-nav">
-        {visibleNav.map(item => <button key={item.id} type="button" className={section === item.id ? 'active' : ''} aria-current={section === item.id ? 'page' : undefined} onClick={() => { setSection(item.id); setDrawerOpen(false); }}>
+        {visibleNav.map(item => <button key={item.id} type="button" className={section === item.id ? 'active' : ''} aria-current={section === item.id ? 'page' : undefined} onClick={() => { setSection(item.id); closeOnMobile(); }}>
           <Icon name={item.icon} />{item.label}
         </button>)}
       </nav>
@@ -81,11 +83,10 @@ export default function AdminConsole() {
     <div className={`ac-backdrop ${drawerOpen ? 'show' : ''}`} onClick={() => setDrawerOpen(false)}></div>
 
     <main className="ac-main">
-      <header className="ac-topbar">
-        <button type="button" className="ac-hamburger" onClick={() => setDrawerOpen(v => !v)} aria-label="Menu"><Icon name="fa-bars" /></button>
+      <div className="ac-page-title">
+        {!drawerOpen && <button type="button" className="ac-show-btn" onClick={() => setDrawerOpen(true)} aria-label="Show sidebar"><Icon name="fa-bars" /> Menu</button>}
         <h1>{NAV.find(n => n.id === section)?.label}</h1>
-        <button type="button" className="ac-search-trigger" onClick={() => setPalette({ q: '', results: [] })}><Icon name="fa-magnifying-glass" /> Search<kbd>⌘K</kbd></button>
-      </header>
+      </div>
 
       {section === 'dashboard' && <Dashboard can={can} onGo={go} onSection={setSection} />}
       {section === 'owners' && can('owners.view') && <OwnersSection can={can} focus={focus?.type === 'owner' ? focus : null} />}

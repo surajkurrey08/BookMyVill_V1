@@ -15,7 +15,7 @@ const navItems = [
   { label: 'Join Us', to: '/join-us' },
 ];
 
-const HomeHeader = () => {
+const HomeHeader = ({ onOpenFavourites }) => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -132,6 +132,18 @@ const HomeHeader = () => {
           )}
 
           <AiAssistantButton />
+
+          {onOpenFavourites && (
+            <button
+              type="button"
+              className="hp-fav-header-btn"
+              onClick={onOpenFavourites}
+              aria-label="View Saved Favourites"
+              title="Saved Favourites"
+            >
+              <i className="fa-solid fa-heart"></i>
+            </button>
+          )}
 
           <button
             type="button"

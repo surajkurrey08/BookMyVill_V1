@@ -9,3 +9,9 @@
 main {
   flex: 1 0 auto;
 }
+
+/* Route loading indicator (App.jsx PageLoader) */
+.page-loader { min-height: 60vh; display: grid; place-items: center; }
+.page-loader span { width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(6, 75, 59, .15); border-top-color: #064b3b; animation: page-loader-spin .7s linear infinite; }
+@keyframes page-loader-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .page-loader span { animation-duration: 2s; } }

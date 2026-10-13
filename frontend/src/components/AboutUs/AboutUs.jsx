@@ -4,9 +4,9 @@ import HomeHeader from '../Home/HomeHeader';
 import HomeFooter from '../Home/HomeFooter';
 import '../Home/Home.css';
 import './AboutUs.css';
-import heroImage from '../../assets/hero_page1.png';
-import storyImage from '../../assets/home/lakeside-resort.jpg';
-import journeyImage from '../../assets/Home_page3.png';
+import heroImage from '../../assets/hero_page1.webp';
+import storyImage from '../../assets/home/lakeside-resort.webp';
+import journeyImage from '../../assets/Home_page3.webp';
 import useSiteHero from '../../hooks/useSiteHero';
 
 const highlights = [

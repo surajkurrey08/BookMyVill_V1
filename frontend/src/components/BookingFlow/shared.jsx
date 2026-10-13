@@ -4,11 +4,12 @@ import { Link, useLocation } from 'react-router-dom';
 import HomeFooter from '../Home/HomeFooter';
 import { stays } from '../Home/homeData';
 import { properties as mockProperties } from '../../data/mockData';
-import heroVilla from '../../assets/home/hero-villa.jpg';
-import suitePanorama from '../../assets/home/suite-panorama.jpg';
-import suiteBalcony from '../../assets/home/suite-balcony.jpg';
-import lakesideResort from '../../assets/home/lakeside-resort.jpg';
+import heroVilla from '../../assets/home/hero-villa.webp';
+import suitePanorama from '../../assets/home/suite-panorama.webp';
+import suiteBalcony from '../../assets/home/suite-balcony.webp';
+import lakesideResort from '../../assets/home/lakeside-resort.webp';
 import { API_BASE_URL } from '../../config';
+import { resolveMediaUrl } from '../../utils/mediaUrl';
 import '../Home/Home.css';
 import './BookingFlow.css';
 
@@ -20,9 +21,9 @@ export const addDays = (iso, count) => { const d = new Date(`${iso}T12:00:00`); 
 export const longDate = iso => iso ? new Date(`${iso.slice(0, 10)}T12:00:00`).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : 'Choose date';
 export const photoUrl = value => {
   if (!value) return fallbackPhotos[0];
-  if (/^(https?:|data:|blob:)/i.test(value)) return value;
-  return /^\/(?:uploads|api)\//i.test(value) ? `${API_BASE_URL}${value}` : value;
+  return resolveMediaUrl(value, fallbackPhotos[0]);
 };
+
 export const queryFor = ({ checkIn, checkOut, guests }) => new URLSearchParams({ checkIn, checkOut, guests: String(guests) }).toString();
 export const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
 
@@ -66,7 +67,7 @@ export function useProperty(id) {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [id, location.state]);
-  return { property, loading, error, bookable: /^[a-f0-9]{24}$/i.test(id) && property?.status === 'approved' };
+  return { property, loading, error, bookable: Boolean(property) };
 }
 
 export const propertyPhotos = property => {

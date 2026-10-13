@@ -70,14 +70,34 @@ const StayCard = ({ stay, index, saved, onToggleSave, onMapView }) => {
   );
 };
 
-const CuratedStays = ({ filter, onFilterChange, onMapView }) => {
+const CuratedStays = ({ filter, onFilterChange, onMapView, destinationFilter, onClearDestination }) => {
   const [sort, setSort] = useState('popular');
   const [wishlist, setWishlist] = useState(loadWishlist);
 
-  const visible = useMemo(
-    () => stays.filter((s) => filter === 'All' || s.type === filter).sort(sorters[sort]),
-    [filter, sort]
-  );
+  const favCount = useMemo(() => Object.values(wishlist).filter(Boolean).length, [wishlist]);
+
+  const visible = useMemo(() => {
+    let list = stays;
+    if (filter === 'Favourites') {
+      list = list.filter((s) => wishlist[s.id]);
+    } else if (filter !== 'All') {
+      list = list.filter((s) => s.type === filter);
+    }
+
+    if (destinationFilter && destinationFilter.trim()) {
+      const destLower = destinationFilter.toLowerCase().trim();
+      list = list.filter((s) => {
+        const loc = (s.location || '').toLowerCase();
+        const name = (s.name || '').toLowerCase();
+        if (loc.includes(destLower) || name.includes(destLower)) return true;
+        if (destLower.includes('mahabaleshwar') && (loc.includes('mahabaleshwar') || loc.includes('metgutad') || loc.includes('lingmala') || loc.includes('tapola'))) return true;
+        if (destLower.includes('panchgani') && (loc.includes('panchgani') || loc.includes('bhilar'))) return true;
+        return false;
+      });
+    }
+
+    return [...list].sort(sorters[sort]);
+  }, [filter, sort, wishlist, destinationFilter]);
 
   const toggleSave = (id) => {
     setWishlist((prev) => {
@@ -110,7 +130,8 @@ const CuratedStays = ({ filter, onFilterChange, onMapView }) => {
                   className={`hp-chip ${filter === f.key ? 'is-active' : ''}`}
                   onClick={() => onFilterChange(f.key)}
                 >
-                  <i className={`fa-solid ${f.icon}`}></i> {f.label}
+                  <i className={`fa-solid ${f.icon}`}></i>{' '}
+                  {f.key === 'Favourites' ? `Favourites (${favCount})` : f.label}
                 </button>
               ))}
             </div>
@@ -126,18 +147,57 @@ const CuratedStays = ({ filter, onFilterChange, onMapView }) => {
           </div>
         </div>
 
-        <div className="hp-stay-grid" key={`${filter}-${sort}`}>
-          {visible.map((stay, i) => (
-            <StayCard
-              key={stay.id}
-              stay={stay}
-              index={i}
-              saved={!!wishlist[stay.id]}
-              onToggleSave={toggleSave}
-              onMapView={onMapView}
-            />
-          ))}
-        </div>
+        {destinationFilter && (
+          <div className="hp-filter-badge-row hp-reveal">
+            <span className="hp-filter-badge">
+              <i className="fa-solid fa-location-dot"></i> Showing stays in <strong>{destinationFilter}</strong>
+              <button
+                type="button"
+                className="hp-clear-dest-btn"
+                onClick={onClearDestination}
+                title="Clear destination filter"
+                aria-label="Clear destination filter"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </span>
+          </div>
+        )}
+
+        {visible.length === 0 ? (
+          <div className="hp-empty-stays hp-reveal">
+            <i className={`fa-solid ${filter === 'Favourites' ? 'fa-heart' : 'fa-compass'}`}></i>
+            <h3>{filter === 'Favourites' ? 'No Saved Favourites Yet' : 'No Stays Found'}</h3>
+            <p>
+              {filter === 'Favourites'
+                ? 'Click the heart icon on any stay to save and access your favourite villas and resorts in this dedicated section.'
+                : `No stays currently available matching "${destinationFilter || filter}". Clear your filters to browse all options.`}
+            </p>
+            <button
+              type="button"
+              className="hp-btn-dark"
+              onClick={() => {
+                onFilterChange('All');
+                if (onClearDestination) onClearDestination();
+              }}
+            >
+              Browse All Stays
+            </button>
+          </div>
+        ) : (
+          <div className="hp-stay-grid" key={`${filter}-${sort}-${destinationFilter}`}>
+            {visible.map((stay, i) => (
+              <StayCard
+                key={stay.id}
+                stay={stay}
+                index={i}
+                saved={!!wishlist[stay.id]}
+                onToggleSave={toggleSave}
+                onMapView={onMapView}
+              />
+            ))}
+          </div>
+        )}
 
         <div className="hp-stays-more hp-reveal">
           <Link to="/explore" className="hp-btn-outline">

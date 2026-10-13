@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { destinations } from './homeData';
 
-const HillStations = () => {
+const HillStations = ({ onSelectDestination }) => {
   const trackRef = useRef(null);
   const navigate = useNavigate();
   const [edges, setEdges] = useState({ start: true, end: false });
@@ -28,6 +28,14 @@ const HillStations = () => {
     const card = el.querySelector('.hp-dest-card');
     const step = card ? card.offsetWidth + 20 : el.clientWidth * 0.8;
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
+  const handleCardClick = (destName) => {
+    if (onSelectDestination) {
+      onSelectDestination(destName);
+    } else {
+      navigate(`/explore?search=${encodeURIComponent(destName)}`);
+    }
   };
 
   return (
@@ -56,7 +64,7 @@ const HillStations = () => {
               type="button"
               className="hp-dest-card hp-reveal"
               style={{ '--d': `${Math.min(i, 3) * 0.08}s` }}
-              onClick={() => navigate(`/explore?search=${encodeURIComponent(dest.name)}`)}
+              onClick={() => handleCardClick(dest.name)}
             >
               <img src={dest.image} alt={dest.name} loading="lazy" />
               <span className="hp-dest-shade"></span>

@@ -490,7 +490,12 @@ router.put('/profile', auth, async (req, res) => {
     if (!user) return res.status(404).json({ msg: 'User not found' });
 
     if (name) user.name = name;
-    if (phone !== undefined) user.phone = phone;
+    if (phone !== undefined) {
+      if (typeof phone === 'string' && /[a-zA-Z]/.test(phone)) {
+        return res.status(400).json({ msg: 'Contact Phone Number must contain valid numeric digits only' });
+      }
+      user.phone = phone;
+    }
     if (bio !== undefined) user.bio = bio;
 
     await user.save();

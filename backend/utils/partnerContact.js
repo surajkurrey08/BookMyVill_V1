@@ -4,6 +4,9 @@ function partnerContact(body) {
   const fullName = text('fullName');
   const email = text('email').toLowerCase();
   const rawPhone = text('phone');
+  if (/[a-zA-Z]/.test(rawPhone)) {
+    throw new Error('Contact phone number accepts only numeric digits. Alphabetical characters are not allowed.');
+  }
   const phone = rawPhone.replace(/[\s()+.-]/g, '');
   if (fullName.length < 3 || fullName.length > 100 || !/^[\p{L}\p{M}\s.'-]+$/u.test(fullName)) {
     throw new Error('Enter your full name using letters (3–100 characters).');

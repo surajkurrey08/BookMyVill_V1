@@ -9,19 +9,32 @@ const HomeHero = ({ onCategory }) => {
   const heroImage = useSiteHero('home', images.heroVilla);
   const navigate = useNavigate();
   const [location, setLocation] = useState(DEFAULT_LOCATION);
+  const [selectedPlace, setSelectedPlace] = useState(null);
   const [checkIn, setCheckIn] = useState(() => addDays(todayISO(), 1));
   const [checkOut, setCheckOut] = useState(() => addDays(todayISO(), 3));
-  const [guests, setGuests] = useState(2);
+  const [guests, setGuests] = useState(1);
 
   // Explore Stays reads these parameters, shows the searched place and
   // scrolls to its results.
   const handleSearch = () => {
     const params = new URLSearchParams();
-    params.set('search', location.trim());
+    if (location.trim()) params.set('search', location.trim());
+    if (selectedPlace?.placeId) params.set('placeId', selectedPlace.placeId);
+    if (
+      selectedPlace?.lat !== undefined &&
+      selectedPlace?.lat !== null &&
+      selectedPlace?.lng !== undefined &&
+      selectedPlace?.lng !== null &&
+      !isNaN(selectedPlace.lat) &&
+      !isNaN(selectedPlace.lng)
+    ) {
+      params.set('lat', String(selectedPlace.lat));
+      params.set('lng', String(selectedPlace.lng));
+    }
     if (checkIn) params.set('checkIn', checkIn);
     if (checkOut) params.set('checkOut', checkOut);
-    params.set('guests', String(guests));
-    navigate(`/explore?${params}`);
+    if (guests) params.set('guests', String(guests));
+    navigate(params.toString() ? `/explore?${params}` : '/explore');
   };
 
   return (
@@ -49,6 +62,7 @@ const HomeHero = ({ onCategory }) => {
           checkOut={checkOut}
           guests={guests}
           onDestinationChange={setLocation}
+          onPlaceChange={setSelectedPlace}
           onCheckInChange={setCheckIn}
           onCheckOutChange={setCheckOut}
           onGuestsChange={setGuests}

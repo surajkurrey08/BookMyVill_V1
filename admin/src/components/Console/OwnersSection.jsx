@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { adminApi, query } from './api';
 import { rupees, compactRupees, shortDate, dateTime, ACCOUNT_STATUS, KYC_STATUS, BOOKING_STATUS, MANAGEMENT_STATUS, managementLabel } from './config';
 import { Alert, Drawer, EmptyState, Facts, Icon, Pager, StatusBadge, AuditTimeline, ConfirmDialog, Labelled } from './ui';
+import { EditOwnerForm } from './RecordForms';
 
 export default function OwnersSection({ can, focus }) {
   const [status, setStatus] = useState('');
@@ -47,7 +48,7 @@ export default function OwnersSection({ can, focus }) {
         </table></div>}
       {data && <Pager page={data.page} pages={data.pages} total={data.total} onPage={setPage} label="owners" />}
     </section>
-    {openId && <OwnerDrawer id={openId} can={can} onClose={() => setOpenId(null)} onChanged={load} />}
+    {openId && <OwnerDrawer key={openId} id={openId} can={can} onClose={() => setOpenId(null)} onChanged={load} onDeleted={owner => { setOpenId(null); setNotice(`${owner} and their properties were deleted.`); load(); }} />}
     {adding && can('owners.manage') && <AddOwnerDrawer onClose={() => setAdding(false)} onCreated={owner => {
       setAdding(false); setNotice(owner.managementMode === 'BOOKMYVILLA_MANAGED'
         ? `Owner account created for ${owner.email}. Their properties will be run from the Villa Manager panel; they can sign in to the Owner panel for reports.`
@@ -116,8 +117,10 @@ function AddOwnerDrawer({ onClose, onCreated }) {
   </Drawer>;
 }
 
-function OwnerDrawer({ id, can, onClose, onChanged }) {
+function OwnerDrawer({ id, can, onClose, onChanged, onDeleted }) {
   const [data, setData] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [confirm, setConfirm] = useState(null);
   const [reason, setReason] = useState('');
@@ -131,17 +134,30 @@ function OwnerDrawer({ id, can, onClose, onChanged }) {
     catch (err) { setError(err.message); }
     finally { setBusy(false); }
   }
+  async function remove() {
+    setBusy(true); setError('');
+    try { await adminApi(`/owners/${id}`, { method: 'DELETE', body: { reason } }); onDeleted(o.name); }
+    catch (err) { setError(err.message); setConfirm(null); }
+    finally { setBusy(false); }
+  }
   const o = data?.owner;
-  return <Drawer title={o?.name || 'Owner'} subtitle={o ? `${o.email || o.phone} · joined ${shortDate(o.createdAt)}` : ''} onClose={onClose}
-    actions={o && can('owners.manage') && <div className="ac-drawer-actions">
+  return <Drawer title={editing ? `Edit · ${o.name}` : o?.name || 'Owner'} subtitle={o ? `${o.email || o.phone} · joined ${shortDate(o.createdAt)}` : ''} onClose={onClose}
+    actions={o && can('owners.manage') && !editing && <div className="ac-drawer-actions">
+      <button type="button" className="ac-btn ghost" onClick={() => { setNotice(''); setEditing(true); }}><Icon name="fa-pen" /> Edit details</button>
+      <button type="button" className="ac-btn ghost danger" onClick={() => { setReason(''); setConfirm('delete'); }}><Icon name="fa-trash" /> Delete</button>
       {o.status !== 'suspended' && <button type="button" className="ac-btn bad" onClick={() => { setReason(''); setConfirm('suspend'); }}>Suspend</button>}
       {o.status !== 'restricted' && o.status !== 'suspended' && <button type="button" className="ac-btn warn" onClick={() => { setReason(''); setConfirm('restrict'); }}>Restrict</button>}
       {['suspended', 'restricted'].includes(o.status) && <button type="button" className="ac-btn good" onClick={() => { setReason(''); setConfirm('activate'); }}>Reactivate</button>}
     </div>}>
     <Alert onClose={() => setError('')}>{error}</Alert>
-    {!data ? <p className="ac-muted">Loading…</p> : <>
+    {notice && <Alert kind="success" onClose={() => setNotice('')}>{notice}</Alert>}
+    {!data ? <p className="ac-muted">Loading…</p> : editing ? <EditOwnerForm owner={o} onCancel={() => setEditing(false)} onSaved={async () => { setEditing(false); setNotice('Owner details saved.'); await load(); onChanged(); }} /> : <>
       <div className="ac-drawer-bar"><StatusBadge meta={ACCOUNT_STATUS[o.status]} fallback={o.status} />{data.application && <StatusBadge meta={KYC_STATUS[data.application.status]} />}{o.statusReason && <span className="ac-tag">Reason: {o.statusReason}</span>}</div>
       <Facts items={[
+        ['Mobile', o.phone || '—'],
+        ['WhatsApp', o.ownerProfile?.whatsapp || o.phone || '—'],
+        ['Address', o.ownerProfile?.address || '—'],
+        o.ownerProfile?.alternateName && ['Alternate contact', `${o.ownerProfile.alternateName} ${o.ownerProfile.alternatePhone || ''}`],
         ['Management', managementLabel(o.ownerManagementMode)],
         ['Properties', `${data.properties.length} (${data.properties.filter(p => p.status === 'approved').length} live)`],
         ['Bookings', data.stats.total],
@@ -154,7 +170,11 @@ function OwnerDrawer({ id, can, onClose, onChanged }) {
       <section className="ac-sub"><h4>Recent bookings</h4>{data.recentBookings.length === 0 ? <p className="ac-muted">None.</p> : <ul className="ac-mini-list">{data.recentBookings.map(b => <li key={b._id}><div><strong>{b.user?.name || b.guest?.name || 'Guest'}</strong><small>{b.property?.name} · {shortDate(b.checkIn)}</small></div><span>{rupees(b.totalPrice)} · <StatusBadge meta={BOOKING_STATUS[b.status]} fallback={b.status} /></span></li>)}</ul>}</section>
       <section className="ac-sub"><h4>Admin history</h4><AuditTimeline entries={data.audit} /></section>
     </>}
-    {confirm && <ConfirmDialog title={`${confirm === 'activate' ? 'Reactivate' : confirm === 'restrict' ? 'Restrict' : 'Suspend'} ${o.name}?`} tone={confirm === 'activate' ? 'good' : confirm === 'suspend' ? 'bad' : 'warn'} confirmLabel={confirm === 'activate' ? 'Reactivate' : confirm === 'restrict' ? 'Restrict account' : 'Suspend account'} busy={busy} onClose={() => setConfirm(null)} onConfirm={() => act(confirm)} reason={reason} setReason={setReason} reasonRequired={confirm !== 'activate'}>
+    {confirm === 'delete' && <ConfirmDialog title={`Delete ${o.name}?`} tone="bad" confirmLabel="Delete owner" busy={busy} onClose={() => setConfirm(null)} onConfirm={remove} reason={reason} setReason={setReason} reasonRequired>
+      <p>The owner account and {data.properties.length ? `all ${data.properties.length} of their properties` : 'their profile'} are removed for good, with units, calendar blocks and their sales leads. Owners with bookings or quotations can't be deleted — suspend them instead.</p>
+      {data.stats.total > 0 && <p className="ac-impact"><Icon name="fa-triangle-exclamation" /> This owner has {data.stats.total} booking{data.stats.total === 1 ? '' : 's'}, so deleting will be refused.</p>}
+    </ConfirmDialog>}
+    {confirm && confirm !== 'delete' && <ConfirmDialog title={`${confirm === 'activate' ? 'Reactivate' : confirm === 'restrict' ? 'Restrict' : 'Suspend'} ${o.name}?`} tone={confirm === 'activate' ? 'good' : confirm === 'suspend' ? 'bad' : 'warn'} confirmLabel={confirm === 'activate' ? 'Reactivate' : confirm === 'restrict' ? 'Restrict account' : 'Suspend account'} busy={busy} onClose={() => setConfirm(null)} onConfirm={() => act(confirm)} reason={reason} setReason={setReason} reasonRequired={confirm !== 'activate'}>
       <p>{confirm === 'suspend' ? 'The owner will be locked out of the owner panel immediately. Existing bookings are kept. Their live properties stay listed unless you also suspend them.' : confirm === 'restrict' ? 'The account is flagged as restricted for review. Sign-in still works.' : 'The account returns to active and the owner regains access.'}</p>
     </ConfirmDialog>}
   </Drawer>;

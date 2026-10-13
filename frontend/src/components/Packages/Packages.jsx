@@ -6,11 +6,11 @@ import useSiteHero from '../../hooks/useSiteHero';
 import '../Home/Home.css';
 import './Packages.css';
 
-import lakeValley from '../../assets/home/lake-valley.jpg';
-import hillChalet from '../../assets/home/hill-chalet.jpg';
-import lakesideResort from '../../assets/home/lakeside-resort.jpg';
-import cliffValley from '../../assets/home/cliff-valley.jpg';
-import heroVilla from '../../assets/home/hero-villa.jpg';
+import lakeValley from '../../assets/home/lake-valley.webp';
+import hillChalet from '../../assets/home/hill-chalet.webp';
+import lakesideResort from '../../assets/home/lakeside-resort.webp';
+import cliffValley from '../../assets/home/cliff-valley.webp';
+import heroVilla from '../../assets/home/hero-villa.webp';
 import waterfallValley from '../../assets/waterfallvalley.jpg';
 
 const categories = ['All Packages', 'Family', 'Couples', 'Adventure', 'Luxury', 'Weekend', 'Custom'];

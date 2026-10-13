@@ -1,8 +1,39 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import BrandLogo from '../Brand/BrandLogo';
 import { scrollToId } from './scroll';
+import { useEffect, useState } from 'react';
+import { API_BASE_URL } from '../../config';
+import { SocialIcons } from '../Footer/socialPlatforms';
 
 const HomeFooter = () => {
+  const [socialLinks, setSocialLinks] = useState({});
+
+  useEffect(() => {
+    const controller = new AbortController(); 
+
+    const loadSocialLinks = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/social-links/public`, { signal: controller.signal });
+        
+        if (!response.ok) {
+          throw new Error(`Social links API failed: ${response.status}`);
+        } 
+         
+        const result = await response.json();
+
+        setSocialLinks(result.links || {});
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Unable to load footer social links:', error);
+        }
+      }
+    };
+
+    loadSocialLinks();
+
+    return () => controller.abort();
+  }, []);
+
   const location = useLocation();
   const navigate = useNavigate();
   const goToHomeSection = (id) => {
@@ -18,34 +49,25 @@ const HomeFooter = () => {
         <p>
           Creating unforgettable experiences in the hills. Book your perfect stay and explore the beauty of Mahabaleshwar with us.
         </p>
-        <div className="hp-socials">
-          <a href="#facebook" aria-label="Facebook"><i className="fa-brands fa-facebook-f"></i></a>
-          <a href="#instagram" aria-label="Instagram"><i className="fa-brands fa-instagram"></i></a>
-          <a href="#x" aria-label="X">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
-          </a>
-          <a href="#youtube" aria-label="YouTube"><i className="fa-brands fa-youtube"></i></a>
-        </div>
+        <SocialIcons links={socialLinks} className="hp-socials" />
       </div>
 
       <div className="hp-footer-col">
         <h4>Quick Links</h4>
         <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</Link>
-        <button type="button" onClick={() => goToHomeSection('hp-destinations')}>Explore</button>
+        <Link to="/explore">Explore</Link>
         <Link to="/explore">Stays</Link>
         <Link to="/packages">Experiences</Link>
-        <button type="button" onClick={() => goToHomeSection('hp-contact')}>Contact</button>
+        <Link to="/join-us">Contact</Link>
       </div>
 
       <div className="hp-footer-col">
         <h4>Support</h4>
         <Link to="/about-us">Help Center</Link>
         <Link to="/dashboard">Booking Guide</Link>
-        <a href="#cancellation">Cancellation Policy</a>
-        <a href="#terms">Terms &amp; Conditions</a>
-        <a href="#privacy">Privacy Policy</a>
+        <Link to="/about-us">Cancellation Policy</Link>
+        <Link to="/about-us">Terms &amp; Conditions</Link>
+        <Link to="/about-us">Privacy Policy</Link>
       </div>
 
       <div className="hp-footer-col hp-footer-contact">
@@ -59,9 +81,9 @@ const HomeFooter = () => {
     <div className="hp-container hp-footer-bottom">
       <p>© {new Date().getFullYear()} BookMyVilla. All rights reserved.</p>
       <div>
-        <a href="#privacy">Privacy Policy</a>
-        <a href="#terms">Terms &amp; Conditions</a>
-        <a href="#sitemap">Sitemap</a>
+        <Link to="/about-us">Privacy Policy</Link>
+        <Link to="/about-us">Terms &amp; Conditions</Link>
+        <Link to="/explore">Sitemap</Link>
       </div>
     </div>
   </footer>

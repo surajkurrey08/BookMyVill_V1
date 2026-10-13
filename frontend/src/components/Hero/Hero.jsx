@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './Hero.css';
 import { API_BASE_URL } from '../../config';
 import { properties } from '../../data/mockData';
+import { getPlacePredictions, getPlaceDetails, createSessionToken } from '../../services/googleMaps';
 
 import bg1 from '../../assets/hillstationhome (1).jpg';
 import bg2 from '../../assets/hillstationhome (2).jpg';
@@ -33,11 +34,22 @@ const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [hotels, setHotels] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedPlace, setSelectedPlace] = useState(null);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('1');
   const navigate = useNavigate();
   const destScrollRef = useRef(null);
+
+  // Autocomplete state
+  const locationFieldRef = useRef(null);
+  const sessionTokenRef = useRef(null);
+  const debounceTimerRef = useRef(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [predictions, setPredictions] = useState([]);
+  const [isPlacesLoading, setIsPlacesLoading] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
+  const [isTyped, setIsTyped] = useState(false);
 
   useEffect(() => {
     // Fetch registered hotels and merge with mock data
@@ -96,6 +108,81 @@ const Hero = () => {
     ])
   ).sort();
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (locationFieldRef.current && !locationFieldRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Debounced Google Places autocomplete predictions
+  useEffect(() => {
+    if (!isTyped || selectedLocation.trim().length < 2) {
+      setPredictions([]);
+      setIsPlacesLoading(false);
+      return;
+    }
+
+    if (!sessionTokenRef.current) {
+      sessionTokenRef.current = createSessionToken();
+    }
+
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    setIsPlacesLoading(true);
+
+    debounceTimerRef.current = setTimeout(async () => {
+      try {
+        const results = await getPlacePredictions(selectedLocation, sessionTokenRef.current);
+        setPredictions(results || []);
+      } catch {
+        setPredictions([]);
+      } finally {
+        setIsPlacesLoading(false);
+        setActiveIdx(-1);
+      }
+    }, 280);
+
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, [selectedLocation, isTyped]);
+
+  const choosePrediction = async (prediction) => {
+    setSelectedLocation(prediction.mainText || prediction.description);
+    setIsTyped(false);
+    setActiveIdx(-1);
+    setIsDropdownOpen(false);
+    try {
+      const details = await getPlaceDetails(prediction);
+      sessionTokenRef.current = null;
+      if (details) {
+        setSelectedPlace(details);
+      } else {
+        setSelectedPlace({ placeId: prediction.placeId, name: prediction.mainText, formattedAddress: prediction.description });
+      }
+    } catch {
+      setSelectedPlace({ placeId: prediction.placeId, name: prediction.mainText, formattedAddress: prediction.description });
+    }
+  };
+
+  const chooseFallback = (locName) => {
+    setSelectedLocation(locName);
+    setIsTyped(false);
+    setActiveIdx(-1);
+    setIsDropdownOpen(false);
+    sessionTokenRef.current = null;
+    setSelectedPlace({ placeId: '', name: locName, formattedAddress: `${locName}, India` });
+  };
+
+  const term = selectedLocation.trim().toLowerCase();
+  const filteredFallback = isTyped && term
+    ? uniqueLocations.filter((loc) => loc.toLowerCase().includes(term))
+    : uniqueLocations;
+
   const getTodayDateString = () => {
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -107,7 +194,19 @@ const Hero = () => {
   const handleSearch = () => {
     if (selectedLocation) {
       const queryParams = new URLSearchParams();
-      queryParams.append('search', selectedLocation);
+      queryParams.append('search', selectedLocation.trim());
+      if (selectedPlace?.placeId) queryParams.append('placeId', selectedPlace.placeId);
+      if (
+        selectedPlace?.lat !== undefined &&
+        selectedPlace?.lat !== null &&
+        selectedPlace?.lng !== undefined &&
+        selectedPlace?.lng !== null &&
+        !isNaN(selectedPlace.lat) &&
+        !isNaN(selectedPlace.lng)
+      ) {
+        queryParams.append('lat', String(selectedPlace.lat));
+        queryParams.append('lng', String(selectedPlace.lng));
+      }
       if (checkIn) queryParams.append('checkIn', checkIn);
       if (checkOut) queryParams.append('checkOut', checkOut);
       if (guests) queryParams.append('guests', guests);
@@ -124,6 +223,7 @@ const Hero = () => {
 
   const handleSelectDest = (destName) => {
     setSelectedLocation(destName);
+    setSelectedPlace(null);
     const queryParams = new URLSearchParams();
     queryParams.append('search', destName);
     if (checkIn) queryParams.append('checkIn', checkIn);
@@ -199,24 +299,107 @@ const Hero = () => {
         <p>Book exclusive hotels, private villas, and boutique cabins in the most breathtaking hill stations.</p>
         
         <div className="search-bar-container">
-          <div className="search-field">
+          <div className="search-field hero-location-field" ref={locationFieldRef}>
             <label>TRIP LOCATION</label>
             <input 
               type="text"
-              list="locations-list"
+              autoComplete="off"
               className="search-input"
               placeholder="Where to? (e.g. Mahabaleshwar)"
               value={selectedLocation} 
-              onChange={(e) => setSelectedLocation(e.target.value)}
+              onFocus={() => {
+                setIsTyped(false);
+                setActiveIdx(-1);
+                setIsDropdownOpen(true);
+              }}
+              onChange={(e) => {
+                setSelectedLocation(e.target.value);
+                setSelectedPlace(null);
+                setIsTyped(true);
+                setActiveIdx(-1);
+                setIsDropdownOpen(true);
+              }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSearch();
+                const total = predictions.length > 0 ? predictions.length : filteredFallback.length;
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setIsDropdownOpen(true);
+                  setActiveIdx((idx) => Math.min(idx + 1, total - 1));
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setActiveIdx((idx) => Math.max(idx - 1, 0));
+                } else if (e.key === 'Enter') {
+                  if (isDropdownOpen && activeIdx >= 0 && activeIdx < total) {
+                    e.preventDefault();
+                    if (predictions.length > 0) {
+                      choosePrediction(predictions[activeIdx]);
+                    } else {
+                      chooseFallback(filteredFallback[activeIdx]);
+                    }
+                  } else {
+                    handleSearch();
+                  }
+                } else if (e.key === 'Escape') {
+                  setIsDropdownOpen(false);
+                }
               }}
             />
-            <datalist id="locations-list">
-              {uniqueLocations.map((loc, idx) => (
-                <option key={idx} value={loc} />
-              ))}
-            </datalist>
+            {isDropdownOpen && (
+              <ul className="hero-location-dropdown" role="listbox">
+                {isPlacesLoading && (
+                  <li className="hero-location-loading">
+                    <i className="fa-solid fa-spinner fa-spin"></i>
+                    <span>Finding destinations...</span>
+                  </li>
+                )}
+                {predictions.length > 0 ? (
+                  predictions.map((p, idx) => (
+                    <li
+                      key={p.placeId || idx}
+                      className={`hero-location-item ${idx === activeIdx ? 'is-active' : ''}`}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onMouseEnter={() => setActiveIdx(idx)}
+                      onClick={() => choosePrediction(p)}
+                    >
+                      <span className="hero-location-pin">
+                        <i className="fa-solid fa-location-dot"></i>
+                      </span>
+                      <span className="hero-location-info">
+                        <strong>{p.mainText}</strong>
+                        {p.secondaryText && <small>{p.secondaryText}</small>}
+                      </span>
+                    </li>
+                  ))
+                ) : filteredFallback.length > 0 ? (
+                  filteredFallback.map((loc, idx) => (
+                    <li
+                      key={loc}
+                      className={`hero-location-item ${idx === activeIdx ? 'is-active' : ''}`}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onMouseEnter={() => setActiveIdx(idx)}
+                      onClick={() => chooseFallback(loc)}
+                    >
+                      <span className="hero-location-pin">
+                        <i className="fa-solid fa-location-dot"></i>
+                      </span>
+                      <span className="hero-location-info">
+                        <strong>{loc}</strong>
+                        <small>Popular destination</small>
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="hero-location-empty">
+                    <span>No suggestions found for "{selectedLocation}". Press Search to find stays.</span>
+                  </li>
+                )}
+                {predictions.length > 0 && (
+                  <li className="hero-location-attribution" onMouseDown={(e) => e.preventDefault()}>
+                    <span>Google Maps Platform</span>
+                  </li>
+                )}
+              </ul>
+            )}
           </div>
 
           <div className="search-field">
@@ -314,5 +497,3 @@ const Hero = () => {
 };
 
 export default Hero;
-
-

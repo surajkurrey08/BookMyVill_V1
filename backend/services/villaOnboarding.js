@@ -2,6 +2,7 @@ const Property = require('../models/Property');
 const Room = require('../models/Room');
 const { storePropertyMedia } = require('./propertyMedia');
 const { HttpError, validEmail, validPhone, cleanText, intInRange } = require('../utils/validate');
+const { coordinatesInput } = require('../utils/mapLocation');
 
 // Shared by the Villa Manager and Data Entry panels: validates owner + villa
 // forms and creates a villa as ONE bookable "Entire villa" unit (guests always
@@ -76,6 +77,7 @@ function villaInput(body = {}) {
     location: field(body.location, 120, 'Location', true),
     address: field(body.address, 300, 'Villa address'),
     mapLink,
+    coordinates: coordinatesInput(body.coordinates),
     description: longText(body.description, 3000, 'Description'),
     amenities: list(body.amenities, 40, 60, 'amenities'),
     maxGuests: number(body.maxGuests, 1, 50, 'Maximum guests', true),
@@ -108,7 +110,7 @@ async function createVilla({ origin, ownerId, villa: v, managementMode = 'BOOKMY
     checkInTime: v.checkInTime, checkOutTime: v.checkOutTime
   };
   const property = await Property.create({
-    owner: ownerId, name: v.name, type: v.type, location: v.location, mapLink: v.mapLink, price: v.price,
+    owner: ownerId, name: v.name, type: v.type, location: v.location, mapLink: v.mapLink, ...(v.coordinates && { coordinates: v.coordinates }), price: v.price,
     photos: media.photos, amenities: v.amenities,
     managementMode, assignedVillaManager: managementMode === 'BOOKMYVILLA_MANAGED' ? assignedVillaManager : null, assignedDataEntryUser,
     bookingMode: 'ENTIRE', websiteVisible: true,

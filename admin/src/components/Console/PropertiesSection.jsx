@@ -3,6 +3,7 @@ import { adminApi, query } from './api';
 import { rupees, shortDate, PROPERTY_STATUS, MANAGEMENT_STATUS, staffName } from './config';
 import PropertyManagement from './PropertyManagement';
 import OwnerSetupLink from './OwnerSetupLink';
+import { EditPropertyForm } from './RecordForms';
 import { Alert, Drawer, EmptyState, Facts, Icon, Pager, StatusBadge, AuditTimeline, ConfirmDialog } from './ui';
 
 const TABS = [
@@ -129,6 +130,9 @@ export default function PropertiesSection({ can, focus }) {
 
 function PropertyDrawer({ id, can, onClose, onChanged }) {
   const [data, setData] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [confirm, setConfirm] = useState(null);
   const [reason, setReason] = useState('');
@@ -142,15 +146,26 @@ function PropertyDrawer({ id, can, onClose, onChanged }) {
     catch (err) { setError(err.message); }
     finally { setBusy(false); }
   }
+  async function remove() {
+    setBusy(true); setError('');
+    try { await adminApi(`/properties/${id}`, { method: 'DELETE', body: { reason } }); await onChanged(); onClose(); }
+    catch (err) { setError(err.message); setDeleting(false); }
+    finally { setBusy(false); }
+  }
   const p = data?.property;
   const checks = data?.checks || {};
+  const manage = p && can('properties.manage') && !editing;
   const actions = p ? ACTIONS_FOR(p.status).filter(a => can(ACTION_META[a].perm)) : [];
   const checkRow = (ok, label) => <li className={ok ? 'ok' : 'miss'}><Icon name={ok ? 'fa-circle-check' : 'fa-circle-xmark'} /> {label}</li>;
 
-  return <Drawer title={p?.name || 'Property'} subtitle={p ? `${p.location} · ${p.type}` : ''} onClose={onClose}
-    actions={actions.length > 0 && <div className="ac-drawer-actions">{actions.map(a => <button key={a} type="button" className={`ac-btn ${ACTION_META[a].tone}`} onClick={() => { setReason(''); setConfirm(a); }}>{ACTION_META[a].label}</button>)}</div>}>
+  return <Drawer title={editing ? `Edit · ${p.name}` : p?.name || 'Property'} subtitle={p ? `${p.location} · ${p.type}` : ''} onClose={onClose}
+    actions={!editing && (actions.length > 0 || manage) && <div className="ac-drawer-actions">
+      {manage && <><button type="button" className="ac-btn ghost" onClick={() => { setNotice(''); setEditing(true); }}><Icon name="fa-pen" /> Edit details</button><button type="button" className="ac-btn ghost danger" onClick={() => { setReason(''); setDeleting(true); }}><Icon name="fa-trash" /> Delete</button></>}
+      {actions.map(a => <button key={a} type="button" className={`ac-btn ${ACTION_META[a].tone}`} onClick={() => { setReason(''); setConfirm(a); }}>{ACTION_META[a].label}</button>)}
+    </div>}>
     <Alert onClose={() => setError('')}>{error}</Alert>
-    {!data ? <p className="ac-muted">Loading…</p> : <>
+    {notice && <Alert kind="success" onClose={() => setNotice('')}>{notice}</Alert>}
+    {!data ? <p className="ac-muted">Loading…</p> : editing ? <EditPropertyForm property={p} unit={data.unit} onCancel={() => setEditing(false)} onSaved={async () => { setEditing(false); setNotice('Property details saved.'); await load(); await onChanged(); }} /> : <>
       <div className="ac-drawer-bar"><StatusBadge meta={PROPERTY_STATUS[p.status]} fallback={p.status} /><span className="ac-tag">{data.bookingCount} bookings</span></div>
       {data.impact.futureBookings > 0 && <Alert kind="warn">{data.impact.futureBookings} upcoming confirmed booking{data.impact.futureBookings === 1 ? '' : 's'}{data.impact.checkingInWithin7Days > 0 ? `, ${data.impact.checkingInWithin7Days} checking in within 7 days` : ''}. Suspending hides the listing but keeps these bookings — handle affected guests separately.</Alert>}
       <Facts items={[
@@ -175,6 +190,10 @@ function PropertyDrawer({ id, can, onClose, onChanged }) {
       {p.photos?.length > 0 && <section className="ac-sub"><h4>Photos</h4><div className="ac-photo-strip">{p.photos.slice(0, 8).map((src, i) => <img key={i} src={src} alt={`Photo ${i + 1}`} onError={e => { e.currentTarget.style.display = 'none'; }} />)}</div></section>}
       <section className="ac-sub"><h4>Admin history</h4><AuditTimeline entries={data.audit} /></section>
     </>}
+    {deleting && <ConfirmDialog title={`Delete ${p.name}?`} tone="bad" confirmLabel="Delete permanently" busy={busy} onClose={() => setDeleting(false)} onConfirm={remove} reason={reason} setReason={setReason} reasonRequired>
+      <p>The property, its bookable unit, calendar blocks and task lists are removed for good. A property with bookings or quotations can't be deleted — suspend it instead.</p>
+      {data?.bookingCount > 0 && <p className="ac-impact"><Icon name="fa-triangle-exclamation" /> This property has {data.bookingCount} booking{data.bookingCount === 1 ? '' : 's'}, so deleting will be refused.</p>}
+    </ConfirmDialog>}
     {confirm && <ConfirmDialog title={`${ACTION_META[confirm].label}?`} tone={ACTION_META[confirm].tone} confirmLabel={ACTION_META[confirm].label} busy={busy} onClose={() => setConfirm(null)} onConfirm={() => run(confirm)} reason={reason} setReason={setReason} reasonRequired={ACTION_META[confirm].needsReason}>
       <p>{confirm === 'approve' ? 'The property goes live and becomes bookable by customers.' : confirm === 'reject' ? 'The property is rejected and stays hidden. The owner should be told why.' : confirm === 'request_changes' ? 'The listing is moved to “changes requested” and hidden until re-approved.' : confirm === 'suspend' ? 'The listing is hidden from customers immediately. Existing bookings are preserved.' : 'The listing is restored and becomes live again.'}</p>
       {data?.impact.futureBookings > 0 && ['suspend', 'reject', 'request_changes'].includes(confirm) && <p className="ac-impact"><Icon name="fa-triangle-exclamation" /> {data.impact.futureBookings} upcoming booking{data.impact.futureBookings === 1 ? '' : 's'} will be affected.</p>}

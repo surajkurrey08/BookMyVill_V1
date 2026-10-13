@@ -16,8 +16,15 @@ function PartnerContactForm({ inquiry }) {
     event.preventDefault();
     if (busy) return;
     setError('');
+    if (/[a-zA-Z]/.test(values.phone)) {
+      setError('Contact phone number accepts only valid numeric input and rejects alphabetical characters.');
+      return;
+    }
     const phone = values.phone.replace(/[\s()+.-]/g, '');
-    if (!/^\d{10,15}$/.test(phone)) { setError('Enter a valid phone number with 10–15 digits.'); return; }
+    if (!/^\d{10,15}$/.test(phone)) { 
+      setError('Enter a valid phone number with 10–15 digits.'); 
+      return; 
+    }
     setBusy(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/partner/${inquiry ? 'inquiry' : 'apply'}`, {
@@ -55,14 +62,47 @@ function PartnerContactForm({ inquiry }) {
         ['propertyName', 'Property Name', 'text', false, 'Your villa, resort or boutique stay', 150],
       ].map(([name, label, type, required, placeholder, maxLength]) => <label key={name} className={name === 'propertyName' ? 'partner-wide-field' : ''}>
         <span>{label}{required ? ' *' : ' (optional)'}</span>
-        <input name={name} type={type} required={required} minLength={name === 'fullName' ? 3 : undefined} maxLength={maxLength} autoComplete={name === 'fullName' ? 'name' : name === 'email' ? 'email' : name === 'phone' ? 'tel' : 'off'} placeholder={placeholder} value={values[name]} onChange={e => setValues(previous => ({ ...previous, [name]: e.target.value }))} />
+        <input 
+          id={name === 'phone' ? 'partner-phone-input' : undefined}
+          name={name} 
+          type={type} 
+          required={required} 
+          minLength={name === 'fullName' ? 3 : undefined} 
+          maxLength={maxLength} 
+          autoComplete={name === 'fullName' ? 'name' : name === 'email' ? 'email' : name === 'phone' ? 'tel' : 'off'} 
+          placeholder={placeholder} 
+          value={values[name]} 
+          onKeyDown={name === 'phone' ? (e) => {
+            if (/^[a-zA-Z]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+              e.preventDefault();
+              setError('Contact phone number accepts only valid numeric input and rejects alphabetical characters.');
+            }
+          } : undefined}
+          onChange={e => {
+            const rawVal = e.target.value;
+            let val = rawVal;
+            if (name === 'phone') {
+              if (/[a-zA-Z]/.test(rawVal)) {
+                setError('Contact phone number accepts only valid numeric input and rejects alphabetical characters.');
+                val = rawVal.replace(/[a-zA-Z]/g, '');
+              } else if (error && error.includes('phone')) {
+                setError('');
+              }
+            }
+            setValues(previous => ({ ...previous, [name]: val }));
+          }} 
+        />
+        {name === 'phone' && error && error.includes('phone') && <span style={{ color: '#ef4444', fontSize: '0.82rem', marginTop: '4px', display: 'block' }} role="alert"><i className="fa-solid fa-circle-exclamation" style={{ marginRight: '4px' }}></i>{error}</span>}
       </label>)}
       <label className="partner-wide-field"><span>{inquiry ? 'Your Inquiry *' : 'Message (optional)'}</span>
         <textarea name="message" required={inquiry} minLength={inquiry ? 10 : undefined} maxLength={2000} rows={5} placeholder={inquiry ? 'Tell us what you would like to know about partnering with BookMyVilla.' : 'Tell us about your property or anything our team should know.'} value={values.message} onChange={e => setValues(previous => ({ ...previous, message: e.target.value }))} />
       </label>
     </div>
     {error && <p className="partner-contact-error" role="alert">{error}</p>}
-    <button className="partner-submit" type="submit" disabled={busy}>{busy ? 'Sending…' : inquiry ? 'Send Inquiry to Admin' : 'Submit Owner Application'}<i className="fa-solid fa-arrow-right" aria-hidden="true" /></button>
+    <button className="partner-submit" type="submit" disabled={busy} id="partner-send-enquiry-btn">
+      {busy ? 'Sending…' : 'Send Enquiry'}
+      <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+    </button>
     <p className="partner-form-note">We will contact you using the email or phone number provided.</p>
   </form>;
 }

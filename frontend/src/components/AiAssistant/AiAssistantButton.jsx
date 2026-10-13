@@ -16,6 +16,8 @@ const AiAssistantButton = () => {
 
   return (
     <button
+      id="hp-ai-button"
+      data-testid="ai-button"
       type="button"
       className={`ai-header-btn ${open ? 'is-open' : ''}`}
       onClick={toggleAiAssistant}

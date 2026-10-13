@@ -6,6 +6,8 @@ import './UserDashboard.css';
 import bgImage from '../../assets/hillstationhome (1).jpg';
 import { API_BASE_URL, OWNER_PORTAL_URL } from '../../config';
 import { clearSession, updateSessionUser } from '../../lib/session';
+import { resolveMediaUrl } from '../../utils/mediaUrl';
+
 
 const UserDashboard = () => {
   const [bookings, setBookings] = useState([]);
@@ -471,15 +473,16 @@ const UserDashboard = () => {
     return (
       <div className="bookings-list">
         {bookingsList.map((booking) => {
+          const fallbackDefault = "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=800";
           const propertyImg = (booking.property?.photos && booking.property.photos.length > 0)
-            ? (booking.property.photos[0].startsWith('http') || booking.property.photos[0].startsWith('data:') ? booking.property.photos[0] : "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=800")
-            : (booking.property?.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');
+            ? resolveMediaUrl(booking.property.photos[0], fallbackDefault)
+            : resolveMediaUrl(booking.property?.image, fallbackDefault);
           
           return (
             <div key={booking._id} className="booking-list-item glass-morphism">
               {/* COL 1: PROPERTY THUMBNAIL & STATUS BADGE */}
               <div className="booking-list-image">
-                <img src={propertyImg} alt={booking.property?.name} />
+                <img src={propertyImg} alt={booking.property?.name} onError={e => { if (e.currentTarget.src !== fallbackDefault) e.currentTarget.src = fallbackDefault; }} />
                 <div className={`booking-status-badge ${booking.status}`}>
                   {booking.status}
                 </div>
@@ -487,6 +490,7 @@ const UserDashboard = () => {
                   {booking.property?.type || 'Luxury Stay'}
                 </div>
               </div>
+
               
               {/* COL 2: MAIN DETAILS, HOST HELPLINE, DATES & REFUND */}
               <div className="booking-list-details">

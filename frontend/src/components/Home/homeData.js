@@ -1,17 +1,17 @@
-import heroVilla from '../../assets/home/hero-villa.jpg';
-import cliffValley from '../../assets/home/cliff-valley.jpg';
-import lakeValley from '../../assets/home/lake-valley.jpg';
-import forestViewpoint from '../../assets/home/forest-viewpoint.jpg';
-import lakesideResort from '../../assets/home/lakeside-resort.jpg';
-import hillChalet from '../../assets/home/hill-chalet.jpg';
-import suiteBalcony from '../../assets/home/suite-balcony.jpg';
-import suitePanorama from '../../assets/home/suite-panorama.jpg';
-import spa from '../../assets/home/spa.jpg';
-import redCottage from '../../assets/home/red-cottage.jpg';
+import heroVilla from '../../assets/home/hero-villa.webp';
+import cliffValley from '../../assets/home/cliff-valley.webp';
+import lakeValley from '../../assets/home/lake-valley.webp';
+import forestViewpoint from '../../assets/home/forest-viewpoint.webp';
+import lakesideResort from '../../assets/home/lakeside-resort.webp';
+import hillChalet from '../../assets/home/hill-chalet.webp';
+import suiteBalcony from '../../assets/home/suite-balcony.webp';
+import suitePanorama from '../../assets/home/suite-panorama.webp';
+import spa from '../../assets/home/spa.webp';
+import redCottage from '../../assets/home/red-cottage.webp';
 import strawberries from '../../assets/hillstationhome (2).jpg';
 import ridgeView from '../../assets/hillstationhome (1).jpg';
 import waterfallValley from '../../assets/waterfallvalley.jpg';
-import katesPointView from '../../assets/home/kates-point.jpg';
+import katesPointView from '../../assets/home/kates-point.webp';
 import krishnabaiTemple from '../../assets/krishnabai-temple-mahabaleshwar-maharashtra-1-attr-nearby.jpg';
 import morarjiCastle from '../../assets/morarji-castle-.jpg';
 
@@ -105,6 +105,7 @@ export const stays = [
 
 export const stayFilters = [
   { key: 'All', label: 'All', icon: 'fa-house' },
+  { key: 'Favourites', label: 'Favourites', icon: 'fa-heart' },
   { key: 'Resort', label: 'Resorts', icon: 'fa-umbrella-beach' },
   { key: 'Villa', label: 'Villas', icon: 'fa-building' },
   { key: 'Hotel', label: 'Hotels', icon: 'fa-hotel' },

@@ -410,14 +410,9 @@ const LoginModal = ({ open, onClose, onSuccess, initialTab = 'login' }) => {
     };
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
-    // The site uses Lenis for smooth scrolling, which drives scroll via JS
-    // (wheel/touch handlers), so it keeps scrolling the page underneath
-    // even with the body's native overflow hidden — stop it explicitly too.
-    window.__lenis?.stop();
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
-      window.__lenis?.start();
     };
   }, [open, onClose, initialTab]);
 
@@ -429,9 +424,7 @@ const LoginModal = ({ open, onClose, onSuccess, initialTab = 'login' }) => {
 
   return (
     <div className="hp-modal-overlay" onMouseDown={handleOverlayClick} role="presentation">
-      {/* data-lenis-prevent: Lenis is stopped while the modal is open and would
-          otherwise swallow wheel/touch scrolling inside the card too. */}
-      <div className="hp-modal-card" role="dialog" aria-modal="true" aria-label="Log in or create an account" ref={dialogRef} data-lenis-prevent>
+      <div className="hp-modal-card" role="dialog" aria-modal="true" aria-label="Log in or create an account" ref={dialogRef}>
         <button type="button" className="hp-modal-close" onClick={onClose} aria-label="Close">
           <i className="fa-solid fa-xmark"></i>
         </button>

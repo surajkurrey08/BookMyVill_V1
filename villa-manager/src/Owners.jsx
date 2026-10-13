@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Result, useData } from './App';
 import GuideAssignment from './GuideAssignment';
-import { ownerService } from './services/api';
+import MapLocationField from './MapLocation';
+import AmenityPicker from './AmenityPicker';
+import { ownerService, mediaUrl } from './services/api';
 import { Badge, date, Drawer, Empty, Field, Icon, money, Table } from './ui';
+
 
 // BookMyVilla-managed owners: add owner + villa, see each villa's state right
 // now, bookings and history, and switch villas on/off for the website.
@@ -16,6 +19,9 @@ const NOW = { occupied: 'Guest staying', arriving: 'Arriving today', vacant: 'Va
 const WEBSITE = { live: 'On website', hidden: 'Hidden from website', pending_approval: 'Admin approval pending', under_review: 'Changes requested', rejected: 'Rejected', suspended: 'Suspended' };
 function State({ now }) { return <span className={'badge tone-' + now.state}>{NOW[now.state]}</span>; }
 function Website({ value }) { return <span className={'badge tone-web-' + value}>{WEBSITE[value] || value}</span>; }
+// A photo whose file is gone shows a neutral "missing" tile instead of a broken image.
+const MISSING_PHOTO = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120"><rect width="160" height="120" fill="#f1f5f9"/><text x="80" y="64" font-family="sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Photo missing</text></svg>');
+const missingPhoto = e => { if (e.currentTarget.src !== MISSING_PHOTO) { e.currentTarget.src = MISSING_PHOTO; e.currentTarget.title = 'This photo file is missing — re-upload it under Photos.'; } };
 const digits = value => String(value || '').replace(/\D/g, '');
 const whatsappHref = value => `https://wa.me/${digits(value).length === 10 ? '91' + digits(value) : digits(value)}`;
 
@@ -27,11 +33,10 @@ function OwnerList() {
       <div className="actions"><button onClick={state.reload}>Refresh</button><button className="primary" onClick={() => setAdding(true)}>Add owner + villa</button></div></div>
     <section className="panel">
       <div className="filters"><Field label="Search owners" type="search" placeholder="Name or mobile" value={q} onChange={e => setQ(e.target.value)}/></div>
-      <Result state={state}>{state.data && (state.data.length ? <div className="owner-grid">{state.data.map(o => <Link key={o._id} className="owner-card" to={'/owners/' + o._id}>
-        <div className="owner-card-head"><span className="owner-avatar">{o.name.charAt(0).toUpperCase()}</span><div><strong>{o.name}</strong><small>{o.phone}</small></div><Icon name="arrow"/></div>
-        <div className="owner-card-stats"><span><strong>{o.villas.length}</strong> villa{o.villas.length === 1 ? '' : 's'}</span><span><strong>{o.occupied}</strong> occupied</span><span><strong>{o.vacant}</strong> vacant</span></div>
-        <ul className="owner-villas">{o.villas.map(v => <li key={v._id}><span>{v.name}</span><State now={v.now}/></li>)}</ul>
-      </Link>)}</div> : <Empty title={q ? 'No owners match your search' : 'No managed owners yet'}>{q ? 'Try another name or mobile number.' : 'Add the first owner and their villa to start managing it.'}</Empty>)}</Result>
+      <Result state={state}>{state.data && (state.data.length ? <div className="owner-grid">{state.data.map(o => <div key={o._id} className="owner-card">
+        <Link className="owner-card-head" to={'/owners/' + o._id}><span className="owner-avatar">{o.name.charAt(0).toUpperCase()}</span><div><strong title={o.name}>{o.name}</strong><small>{o.phone}</small></div><Icon name="arrow"/></Link>
+        <Link className="owner-card-villas" to={'/owners/' + o._id + '#villas'}><Icon name="home"/><span><strong>{o.villas.length}</strong> villa{o.villas.length === 1 ? '' : 's'}</span><em>View villas</em></Link>
+      </div>)}</div> : <Empty title={q ? 'No owners match your search' : 'No managed owners yet'}>{q ? 'Try another name or mobile number.' : 'Add the first owner and their villa to start managing it.'}</Empty>)}</Result>
     </section>
     {adding && <Drawer title="Add owner + villa" close={() => setAdding(false)}><AddOwnerForm onDone={result => { setAdding(false); navigate('/owners/' + result.owner._id); }}/></Drawer>}
   </>;
@@ -81,7 +86,7 @@ function PhotoPicker({ photos, onChange }) {
     </div>
     {error && <p className="error" role="alert">{error}</p>}
     {photos.length ? <ul className="photo-grid">{photos.map((src, i) => <li key={`${i}-${src.length}`}>
-      <img src={src} alt={`Villa photo ${i + 1}`}/>
+      <img src={mediaUrl(src)} alt={`Villa photo ${i + 1}`} onError={missingPhoto}/>
       {i === 0 ? <span className="photo-cover">Cover</span> : <button type="button" className="photo-cover-btn" onClick={() => makeCover(i)}>Make cover</button>}
       <button type="button" className="photo-remove" aria-label={`Remove photo ${i + 1}`} onClick={() => remove(i)}><Icon name="close"/></button>
     </li>)}</ul> : <p className="hint">No photos yet. The first photo becomes the cover on the website.</p>}
@@ -90,19 +95,22 @@ function PhotoPicker({ photos, onChange }) {
 }
 
 const EMPTY_OWNER = { name: '', phone: '', whatsapp: '', email: '', address: '', alternateName: '', alternatePhone: '', notes: '' };
-const EMPTY_VILLA = { photos: [], name: '', type: 'Villa', location: '', address: '', mapLink: '', maxGuests: '', bedrooms: '', bathrooms: '', price: '', extraGuestRate: '', checkInTime: '1:00 PM', checkOutTime: '11:00 AM', wifiName: '', wifiPassword: '', keyLocation: '', caretakerName: '', caretakerPhone: '', handoverNotes: '' };
+const EMPTY_VILLA = { photos: [], name: '', type: 'Villa', location: '', address: '', mapLink: '', coordinates: null, mapPending: false, description: '', amenities: [], maxGuests: '', bedrooms: '', bathrooms: '', price: '', extraGuestRate: '', checkInTime: '1:00 PM', checkOutTime: '11:00 AM', wifiName: '', wifiPassword: '', keyLocation: '', caretakerName: '', caretakerPhone: '', handoverNotes: '' };
 
-function VillaFields({ villa, set }) {
+function VillaFields({ villa, set, withPhotos = true }) {
   const f = key => e => set(v => ({ ...v, [key]: e.target.value }));
   return <>
     <fieldset className="form-section"><legend>Villa</legend><div className="form-grid">
       <Field label="Villa name *" required maxLength="120" value={villa.name} onChange={f('name')}/>
       <Field label="Type"><select value={villa.type} onChange={f('type')}>{['Villa', 'Cottage', 'Homestay', 'Apartment'].map(t => <option key={t}>{t}</option>)}</select></Field>
       <Field label="Location *" required maxLength="120" placeholder="Mahabaleshwar" value={villa.location} onChange={f('location')}/>
-      <Field label="Google Maps link" type="url" maxLength="500" placeholder="https://maps.google.com/…" value={villa.mapLink} onChange={f('mapLink')}/>
       <Field label="Full address" maxLength="300" value={villa.address} onChange={f('address')}/>
-    </div></fieldset>
-    <fieldset className="form-section"><legend>Photos</legend><PhotoPicker photos={villa.photos} onChange={photos => set(v => ({ ...v, photos }))}/></fieldset>
+    </div>
+    <Field label="Description"><textarea maxLength="3000" placeholder="What makes this villa special — views, rooms, nearby places…" value={villa.description} onChange={f('description')}/></Field>
+    <MapLocationField value={villa} onChange={loc => set(v => ({ ...v, coordinates: loc.coordinates, mapLink: loc.mapLink, mapPending: loc.pending, address: v.address || loc.address || '' }))}/>
+    </fieldset>
+    <fieldset className="form-section"><legend>Amenities</legend><AmenityPicker value={villa.amenities} onChange={amenities => set(v => ({ ...v, amenities }))}/></fieldset>
+    {withPhotos && <fieldset className="form-section"><legend>Photos</legend><PhotoPicker photos={villa.photos} onChange={photos => set(v => ({ ...v, photos }))}/></fieldset>}
     <fieldset className="form-section"><legend>Booking — the whole villa is booked together</legend><div className="form-grid">
       <Field label="Max guests *" type="number" required min="1" max="50" value={villa.maxGuests} onChange={f('maxGuests')}/>
       <Field label="Bedrooms" type="number" min="0" max="50" value={villa.bedrooms} onChange={f('bedrooms')}/>
@@ -123,10 +131,12 @@ function VillaFields({ villa, set }) {
   </>;
 }
 
+const MAP_PENDING = 'Confirm the villa location on the map (or clear it) before saving.';
+
 function AddOwnerForm({ onDone }) {
   const [owner, setOwner] = useState(EMPTY_OWNER); const [villa, setVilla] = useState(EMPTY_VILLA); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
   const f = key => e => setOwner(o => ({ ...o, [key]: e.target.value }));
-  async function submit(e) { e.preventDefault(); setBusy(true); setError(''); try { onDone(await ownerService.create({ owner, villa })); } catch (err) { setError(err.message); } finally { setBusy(false); } }
+  async function submit(e) { e.preventDefault(); if (villa.mapPending) { setError(MAP_PENDING); return; } setBusy(true); setError(''); try { onDone(await ownerService.create({ owner, villa })); } catch (err) { setError(err.message); } finally { setBusy(false); } }
   return <form className="drawer-form" onSubmit={submit}>
     <p>The owner doesn't need a login — just their contact details. The villa goes to Admin for approval before it appears on the website.</p>
     <fieldset className="form-section"><legend>Owner</legend><div className="form-grid">
@@ -147,7 +157,7 @@ function AddOwnerForm({ onDone }) {
 
 function AddVillaForm({ ownerId, onDone }) {
   const [villa, setVilla] = useState(EMPTY_VILLA); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
-  async function submit(e) { e.preventDefault(); setBusy(true); setError(''); try { await ownerService.addVilla(ownerId, villa); onDone(); } catch (err) { setError(err.message); } finally { setBusy(false); } }
+  async function submit(e) { e.preventDefault(); if (villa.mapPending) { setError(MAP_PENDING); return; } setBusy(true); setError(''); try { await ownerService.addVilla(ownerId, villa); onDone(); } catch (err) { setError(err.message); } finally { setBusy(false); } }
   return <form className="drawer-form" onSubmit={submit}><p>The new villa goes to Admin for approval before it appears on the website.</p><VillaFields villa={villa} set={setVilla}/>{error && <p className="error" role="alert">{error}</p>}<div className="drawer-actions"><button className="primary" disabled={busy}>{busy ? 'Saving…' : 'Save villa'}</button></div></form>;
 }
 
@@ -157,32 +167,111 @@ function PhotosForm({ villa, onDone }) {
   return <form className="drawer-form" onSubmit={save}><p>Changes show on the website once the villa is live. The first photo is the cover.</p><PhotoPicker photos={photos} onChange={setPhotos}/>{error && <p className="error" role="alert">{error}</p>}<div className="drawer-actions"><button className="primary" disabled={busy}>{busy ? 'Saving…' : 'Save photos'}</button></div></form>;
 }
 
+// Owner contact details. Owners who sign in to the Owner panel keep their email (Admin changes it).
+function EditOwnerForm({ owner, onDone }) {
+  const p = owner.profile || {};
+  const [form, setForm] = useState({ name: owner.name, phone: owner.phone, whatsapp: p.whatsapp || '', email: owner.email, address: p.address || '', alternateName: p.alternateName || '', alternatePhone: p.alternatePhone || '', notes: p.notes || '' });
+  const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
+  const f = key => e => setForm(o => ({ ...o, [key]: e.target.value }));
+  async function submit(e) { e.preventDefault(); setBusy(true); setError(''); try { await ownerService.updateOwner(owner._id, form); onDone(); } catch (err) { setError(err.message); } finally { setBusy(false); } }
+  return <form className="drawer-form" onSubmit={submit}>
+    <fieldset className="form-section"><legend>Owner</legend><div className="form-grid">
+      <Field label="Owner name *" required maxLength="100" value={form.name} onChange={f('name')}/>
+      <Field label="Mobile number *" type="tel" required maxLength="20" value={form.phone} onChange={f('phone')}/>
+      <Field label="WhatsApp number" type="tel" maxLength="20" placeholder="Same as mobile if blank" value={form.whatsapp} onChange={f('whatsapp')}/>
+      <Field label={owner.signsIn ? 'Email (sign-in — Admin can change it)' : 'Email (optional)'} type="email" maxLength="120" required={Boolean(owner.email)} disabled={owner.signsIn} value={form.email} onChange={f('email')}/>
+      <Field label="Address" maxLength="300" value={form.address} onChange={f('address')}/>
+      <Field label="Alternate contact name" maxLength="100" value={form.alternateName} onChange={f('alternateName')}/>
+      <Field label="Alternate contact number" type="tel" maxLength="20" value={form.alternatePhone} onChange={f('alternatePhone')}/>
+      <Field label="Notes"><textarea maxLength="1000" value={form.notes} onChange={f('notes')}/></Field>
+    </div></fieldset>
+    {error && <p className="error" role="alert">{error}</p>}
+    <div className="drawer-actions"><button className="primary" disabled={busy}>{busy ? 'Saving…' : 'Save owner'}</button></div>
+  </form>;
+}
+
+// Saved villa -> edit form values (the "Entire villa" unit holds the live rates).
+const blank = value => value === null || value === undefined ? '' : String(value);
+const villaForm = v => ({
+  ...EMPTY_VILLA, name: v.name, type: v.type, location: v.location, address: v.details.address || '', description: v.details.description || '',
+  mapLink: v.mapLink || '', coordinates: v.coordinates || null, amenities: v.amenities || [],
+  maxGuests: blank(v.unit?.capacity ?? v.details.guestCapacity), bedrooms: blank(v.details.bedrooms), bathrooms: blank(v.details.bathrooms),
+  price: blank(v.unit?.baseRate ?? v.price), extraGuestRate: blank(v.unit?.extraGuestRate),
+  checkInTime: v.stayInfo.checkInTime || '', checkOutTime: v.stayInfo.checkOutTime || '', wifiName: v.stayInfo.wifiName || '', wifiPassword: v.stayInfo.wifiPassword || '',
+  keyLocation: v.handover.keyLocation || '', caretakerName: v.handover.caretakerName || '', caretakerPhone: v.handover.caretakerPhone || '', handoverNotes: v.handover.notes || ''
+});
+
+function EditVillaForm({ villa: saved, onDone }) {
+  const [villa, setVilla] = useState(() => villaForm(saved)); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
+  async function submit(e) { e.preventDefault(); if (villa.mapPending) { setError(MAP_PENDING); return; } setBusy(true); setError(''); try { await ownerService.updateVilla(saved._id, villa); onDone(); } catch (err) { setError(err.message); } finally { setBusy(false); } }
+  return <form className="drawer-form" onSubmit={submit}><p>Changes are saved straight away and show on the website when the villa is live. Photos are edited separately.</p><VillaFields villa={villa} set={setVilla} withPhotos={false}/>{error && <p className="error" role="alert">{error}</p>}<div className="drawer-actions"><button className="primary" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button></div></form>;
+}
+
+// Pin an existing villa on the map (or move its pin).
+function LocationForm({ villa, onDone }) {
+  const [loc, setLoc] = useState({ coordinates: villa.coordinates, mapLink: villa.mapLink || '', pending: false }); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
+  async function save(e) {
+    e.preventDefault();
+    if (!loc.coordinates) { setError(loc.pending ? 'Confirm the location on the map first.' : 'Paste the villa location from Google Maps first.'); return; }
+    setBusy(true); setError('');
+    try { await ownerService.location(villa._id, { coordinates: loc.coordinates, mapLink: loc.mapLink }); onDone(); } catch (err) { setError(err.message); } finally { setBusy(false); }
+  }
+  return <form className="drawer-form" onSubmit={save}><p>Guests see this pin on the villa's page and use it for directions.</p><MapLocationField value={loc} onChange={setLoc} autoFind/>{error && <p className="error" role="alert">{error}</p>}<div className="drawer-actions"><button className="primary" disabled={busy}>{busy ? 'Saving…' : 'Save location'}</button></div></form>;
+}
+
 function OwnerDetail({ id }) {
+  const navigate = useNavigate();
   const state = useData(() => ownerService.get(id), 'owner:' + id);
-  const [adding, setAdding] = useState(false); const [busy, setBusy] = useState(''); const [error, setError] = useState(''); const [photosFor, setPhotosFor] = useState(null); const [guideFor, setGuideFor] = useState(null);
+  const [adding, setAdding] = useState(false); const [busy, setBusy] = useState(''); const [error, setError] = useState(''); const [photosFor, setPhotosFor] = useState(null); const [locationFor, setLocationFor] = useState(null); const [editFor, setEditFor] = useState(null); const [editingOwner, setEditingOwner] = useState(false); const [guideFor, setGuideFor] = useState(null);
   async function collect(booking) { if (!window.confirm(`Mark ${money(booking.balanceDue)} as collected from ${booking.guestName}?`)) return; setBusy(booking._id); setError(''); try { await ownerService.collect(booking._id); state.reload(); } catch (err) { setError(err.message); } finally { setBusy(''); } }
+  async function removeOwner() {
+    const count = d.villas.length;
+    if (!window.confirm(`Delete ${d.owner.name} and ${count === 1 ? 'their villa' : `all ${count} villas`} permanently?
+
+This cannot be undone. Owners with bookings can't be deleted.`)) return;
+    setBusy('owner'); setError('');
+    try { await ownerService.deleteOwner(id); navigate('/owners'); }
+    catch (err) { setError(err.message); } finally { setBusy(''); }
+  }
+  async function remove(villa) {
+    if (!window.confirm(`Delete ${villa.name} permanently?
+
+Its unit, calendar blocks and task lists are removed too. This cannot be undone.`)) return;
+    setBusy(villa._id); setError('');
+    try { await ownerService.deleteVilla(villa._id); if (d.villas.length === 1) navigate('/owners'); else state.reload(); }
+    catch (err) { setError(err.message); } finally { setBusy(''); }
+  }
   async function toggle(villa) { setBusy(villa._id); setError(''); try { await ownerService.website(villa._id, !villa.websiteVisible); state.reload(); } catch (err) { setError(err.message); } finally { setBusy(''); } }
+  useEffect(() => { if (state.data && window.location.hash === '#villas') document.getElementById('villas')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [state.data]);
   const d = state.data; const villaName = pid => d?.villas.find(v => v._id === pid)?.name || '';
   return <Result state={state}>{d && <>
     <div className="page-head"><div><Link to="/owners">← All owners</Link><h1>{d.owner.name}</h1><p>Owner since {date(d.owner.createdAt)} · {d.villas.length} villa{d.villas.length === 1 ? '' : 's'}</p></div>
-      <div className="actions"><a className="icon-btn" href={'tel:' + d.owner.phone}>Call {d.owner.phone}</a><a className="icon-btn" href={whatsappHref(d.owner.whatsapp || d.owner.phone)} target="_blank" rel="noreferrer">WhatsApp</a><button className="primary" onClick={() => setAdding(true)}>Add villa</button></div></div>
+      <div className="actions"><a className="icon-btn" href={'tel:' + d.owner.phone}>Call {d.owner.phone}</a><a className="icon-btn" href={whatsappHref(d.owner.whatsapp || d.owner.phone)} target="_blank" rel="noreferrer">WhatsApp</a><button onClick={() => setEditingOwner(true)}>Edit owner</button>{d.owner.managed && !d.owner.signsIn && <button className="danger" disabled={busy === 'owner'} onClick={removeOwner}>Delete owner</button>}<button className="primary" onClick={() => setAdding(true)}>Add villa</button></div></div>
     {error && <p className="error" role="alert">{error}</p>}
     <div className="stats owner-stats"><div><strong>{d.totals.stays}</strong><span>Completed stays</span></div><div><strong>{d.totals.nights}</strong><span>Nights hosted</span></div><div><strong>{money(d.totals.revenue)}</strong><span>Paid revenue</span></div><div><strong>{d.upcoming.length}</strong><span>Upcoming / current</span></div></div>
     <section className="panel"><h2>Contact</h2><dl className="details"><dt>Mobile</dt><dd>{d.owner.phone}</dd><dt>WhatsApp</dt><dd>{d.owner.whatsapp || d.owner.phone}</dd><dt>Email</dt><dd>{d.owner.email || '—'}</dd><dt>Address</dt><dd>{d.owner.profile.address || '—'}</dd><dt>Alternate contact</dt><dd>{d.owner.profile.alternateName ? `${d.owner.profile.alternateName} · ${d.owner.profile.alternatePhone || ''}` : '—'}</dd><dt>Notes</dt><dd>{d.owner.profile.notes || '—'}</dd></dl></section>
+    <div id="villas" className="villas-head"><h2>Villas <span>{d.villas.length}</span></h2></div>
     {d.villas.map(v => <section className="panel villa-panel" key={v._id}>
       <div className="section-head"><div><h2>{v.name}</h2><p>{v.type} · {v.location} · whole villa · up to {v.unit?.capacity || v.details.guestCapacity || '—'} guests</p></div><div className="actions"><State now={v.now}/><Website value={v.website}/></div></div>
-      {v.photos.length > 0 && <div className="villa-photos">{v.photos.slice(0, 5).map((src, i) => <img key={i} src={src} alt={`${v.name} photo ${i + 1}`}/>)}{v.photos.length > 5 && <span>+{v.photos.length - 5}</span>}</div>}
+      {(v.details.description || v.details.address) && <div className="villa-about">{v.details.description && <p>{v.details.description}</p>}{v.details.address && <small>📍 {v.details.address}</small>}</div>}
+      {v.photos.length > 0 && <div className="villa-photos">{v.photos.slice(0, 5).map((src, i) => <img key={i} src={mediaUrl(src)} alt={`${v.name} photo ${i + 1}`} onError={missingPhoto}/>)}{v.photos.length > 5 && <span>+{v.photos.length - 5}</span>}</div>}
       <div className="villa-now">{v.now.current ? <p><strong>{v.now.state === 'occupied' ? 'Staying now:' : 'Arriving today:'}</strong> {v.now.current.name} · {v.now.current.guests} guests · {date(v.now.current.checkIn)} → {date(v.now.current.checkOut)}{v.now.current.phone && <> · <a href={'tel:' + v.now.current.phone}>{v.now.current.phone}</a></>}</p> : <p><strong>Vacant now.</strong> {v.now.nextCheckIn ? `Next check-in ${date(v.now.nextCheckIn)}.` : 'No upcoming bookings.'}</p>}</div>
-      <dl className="details"><dt>Price</dt><dd>{money(v.unit?.baseRate ?? v.price)} / night{v.unit?.extraGuestRate ? ` · extra guest ${money(v.unit.extraGuestRate)}` : ''}</dd><dt>Bedrooms / bathrooms</dt><dd>{v.details.bedrooms ?? '—'} / {v.details.bathrooms ?? '—'}</dd><dt>Check-in / out</dt><dd>{v.stayInfo.checkInTime || '—'} / {v.stayInfo.checkOutTime || '—'}</dd><dt>Keys / caretaker</dt><dd>{v.handover.keyLocation || '—'}{v.handover.caretakerName ? ` · ${v.handover.caretakerName} ${v.handover.caretakerPhone || ''}` : ''}</dd><dt>Wi-Fi</dt><dd>{v.stayInfo.wifiName ? `${v.stayInfo.wifiName} / ${v.stayInfo.wifiPassword}` : '—'}</dd>{v.handover.notes && <><dt>Handover notes</dt><dd>{v.handover.notes}</dd></>}{v.mapLink && <><dt>Map</dt><dd><a href={v.mapLink} target="_blank" rel="noreferrer">Open in Google Maps</a></dd></>}</dl>
+      <dl className="details"><dt>Price</dt><dd>{money(v.unit?.baseRate ?? v.price)} / night{v.unit?.extraGuestRate ? ` · extra guest ${money(v.unit.extraGuestRate)}` : ''}</dd><dt>Bedrooms / bathrooms</dt><dd>{v.details.bedrooms ?? '—'} / {v.details.bathrooms ?? '—'}</dd><dt>Check-in / out</dt><dd>{v.stayInfo.checkInTime || '—'} / {v.stayInfo.checkOutTime || '—'}</dd><dt>Keys / caretaker</dt><dd>{v.handover.keyLocation || '—'}{v.handover.caretakerName ? ` · ${v.handover.caretakerName} ${v.handover.caretakerPhone || ''}` : ''}</dd><dt>Wi-Fi</dt><dd>{v.stayInfo.wifiName ? `${v.stayInfo.wifiName} / ${v.stayInfo.wifiPassword}` : '—'}</dd>{v.handover.notes && <><dt>Handover notes</dt><dd>{v.handover.notes}</dd></>}<dt>Amenities</dt><dd>{v.amenities.length ? <ul className="amenity-tags">{v.amenities.map(a => <li key={a}>{a}</li>)}</ul> : <>None yet · <button type="button" className="link-btn" onClick={() => setEditFor(v)}>Add amenities</button></>}</dd><dt>Map location</dt><dd>{v.coordinates ? `${v.coordinates.lat.toFixed(6)}, ${v.coordinates.lng.toFixed(6)}` : 'Not pinned yet'}{(v.mapLink || v.coordinates) && <> · <a href={v.mapLink || `https://www.google.com/maps/search/?api=1&query=${v.coordinates.lat},${v.coordinates.lng}`} target="_blank" rel="noreferrer">Open in Google Maps</a></>}</dd></dl>
       <div className="actions">
         {v.status === 'approved' ? <button disabled={busy === v._id} onClick={() => toggle(v)}>{v.websiteVisible ? 'Hide from website' : 'Show on website'}</button> : <span className="hint">The website switch unlocks after Admin approves this villa.</span>}
+        <button onClick={() => setEditFor(v)}>Edit details</button>
+        <button onClick={() => setLocationFor(v)}>{v.coordinates ? 'Map location' : 'Pin on map'}</button>
         <button onClick={() => setPhotosFor(v)}>{v.photos.length ? `Photos (${v.photos.length})` : 'Add photos'}</button>
         <Link className="icon-btn" to={'/properties/' + v._id}>Operations</Link><Link className="icon-btn" to={'/calendar?propertyId=' + v._id}>Calendar</Link>
+        <button className="danger" disabled={busy === v._id} onClick={() => remove(v)}>Delete villa</button>
       </div>
     </section>)}
     <section className="panel"><h2>Upcoming & current bookings</h2>{d.upcoming.length ? <Table headings={['Guest', 'Villa', 'Dates', 'Guests', 'Stay', 'Paid online', 'Collect at villa', 'Guide', 'Total']}>{d.upcoming.map(b => <tr key={b._id}><td><Link className="row-link" to={'/bookings/' + b._id}>{b.guestName}</Link><small>{b.guestPhone}</small></td><td>{villaName(b.property)}</td><td>{date(b.checkIn)} → {date(b.checkOut)}</td><td>{b.guests}</td><td><Badge value={b.stayStatus}/></td><td>{money(b.paidOnline)}<small>{b.paymentPlan === 'advance' ? 'Advance' : 'Full payment'}</small></td><td>{b.balanceDue > 0 ? <><strong>{money(b.balanceDue)}</strong><button className="text-btn" disabled={busy === b._id} onClick={() => collect(b)}>Mark collected</button></> : '—'}</td><td>{b.guide ? <><strong>{b.guide.assigned?.name || 'Guide needed'}</strong><small>{b.guide.days} day{b.guide.days === 1 ? '' : 's'}</small><button className="text-btn" onClick={() => setGuideFor(b)}>{b.guide.assigned ? 'Change guide' : 'Assign guide'}</button></> : '—'}</td><td>{money(b.totalPrice)}</td></tr>)}</Table> : <Empty title="No upcoming bookings">New bookings for this owner's villas will appear here.</Empty>}</section>
     <section className="panel"><h2>History</h2>{d.history.length ? <Table headings={['Guest', 'Villa', 'Dates', 'Guests', 'Status', 'Payment', 'Amount']}>{d.history.map(b => <tr key={b._id}><td>{b.guestName}<small>{b.guestPhone}</small></td><td>{villaName(b.property)}</td><td>{date(b.checkIn)} → {date(b.checkOut)}</td><td>{b.guests}</td><td><Badge value={b.status === 'cancelled' ? 'cancelled' : b.stayStatus}/></td><td><Badge value={b.paymentStatus}/></td><td>{money(b.totalPrice)}</td></tr>)}</Table> : <Empty title="No past stays yet">Completed and cancelled bookings will appear here.</Empty>}</section>
     {guideFor && <Drawer title="Assign local guide" close={() => setGuideFor(null)}><GuideAssignment booking={guideFor} onSaved={() => { setGuideFor(null); state.reload(); }} /></Drawer>}
+    {editingOwner && <Drawer title={'Edit owner · ' + d.owner.name} close={() => setEditingOwner(false)}><EditOwnerForm owner={d.owner} onDone={() => { setEditingOwner(false); state.reload(); }}/></Drawer>}
+    {editFor && <Drawer title={'Edit · ' + editFor.name} close={() => setEditFor(null)}><EditVillaForm villa={editFor} onDone={() => { setEditFor(null); state.reload(); }}/></Drawer>}
+    {locationFor && <Drawer title={'Map location · ' + locationFor.name} close={() => setLocationFor(null)}><LocationForm villa={locationFor} onDone={() => { setLocationFor(null); state.reload(); }}/></Drawer>}
     {photosFor && <Drawer title={'Photos · ' + photosFor.name} close={() => setPhotosFor(null)}><PhotosForm villa={photosFor} onDone={() => { setPhotosFor(null); state.reload(); }}/></Drawer>}
     {adding && <Drawer title={'Add villa for ' + d.owner.name} close={() => setAdding(false)}><AddVillaForm ownerId={id} onDone={() => { setAdding(false); state.reload(); }}/></Drawer>}
   </>}</Result>;

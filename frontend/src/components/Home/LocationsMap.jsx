@@ -49,11 +49,18 @@ const LocationsMap = ({ focus }) => {
       zoomControl: false,
       attributionControl: true,
     });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '&copy; OpenStreetMap contributors',
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+
+    const onResize = () => map.invalidateSize();
+    window.addEventListener('resize', onResize);
 
     L.marker(TOWN_CENTER, {
       interactive: false,
@@ -69,6 +76,7 @@ const LocationsMap = ({ focus }) => {
     mapRef.current = map;
 
     return () => {
+      window.removeEventListener('resize', onResize);
       map.remove();
       mapRef.current = null;
     };
@@ -118,7 +126,8 @@ const LocationsMap = ({ focus }) => {
     const hotel = stays.find((s) => s.id === focus.id);
     const map = mapRef.current;
     if (hotel && map) {
-      setTimeout(() => map.flyTo([hotel.lat, hotel.lon], 14, { duration: 1 }), 850);
+      map.invalidateSize();
+      setTimeout(() => map.flyTo([hotel.lat, hotel.lon], 14, { duration: 1 }), 400);
     }
   }, [focus]);
 

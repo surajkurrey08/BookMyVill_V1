@@ -45,9 +45,16 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
         }
         break;
       case 'phone': {
-        const digits = (value || '').replace(/\D/g, '');
-        if (!value || digits.length < 10) {
-          return 'Contact phone number must contain at least 10 digits.';
+        const val = (value || '').trim();
+        if (!val) {
+          return 'Contact phone number is required.';
+        }
+        if (/[a-zA-Z]/.test(val)) {
+          return 'Contact phone number accepts only valid numeric input and rejects alphabetical characters.';
+        }
+        const digits = val.replace(/\D/g, '');
+        if (digits.length < 10 || digits.length > 15) {
+          return 'Contact phone number must contain 10 to 15 digits.';
         }
         break;
       }
@@ -354,9 +361,22 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                   <label>Contact Phone Number *</label>
                   <input 
                     type="tel" 
+                    id="property-listing-phone"
                     className={errors.phone ? 'field-invalid' : ''}
                     value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onKeyDown={(e) => {
+                      if (/^[a-zA-Z]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                        e.preventDefault();
+                        setErrors(prev => ({ ...prev, phone: 'Contact phone number accepts only valid numeric input and rejects alphabetical characters.' }));
+                      }
+                    }}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/[a-zA-Z]/.test(val)) {
+                        setErrors(prev => ({ ...prev, phone: 'Contact phone number accepts only valid numeric input and rejects alphabetical characters.' }));
+                      }
+                      handleInputChange('phone', val);
+                    }}
                     onBlur={() => handleInputBlur('phone')}
                     placeholder="+91 9876543210" 
                   />
@@ -597,9 +617,10 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
                   type="submit" 
                   disabled={isSubmitting} 
                   className="btn-primary"
+                  id="registration-submit-btn"
                   style={{ padding: '13px 36px', fontSize: '0.95rem', fontWeight: '700', border: 'none', borderRadius: '50px', display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
-                  <i className="fa-solid fa-check"></i> {isSubmitting ? 'Submitting...' : 'Submit'}
+                  <i className="fa-solid fa-check"></i> {isSubmitting ? 'Submitting...' : 'Send Enquiry / Submit Listing'}
                 </button>
               </div>
             </form>

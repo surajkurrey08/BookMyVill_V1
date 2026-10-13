@@ -12,8 +12,22 @@ function guestCount(value) {
 }
 
 async function search(query) {
-  const q = cleanText(query.q || query.location || '', 80);
+  const q = cleanText(query.q || query.location || query.search || '', 80);
   if (q === null) throw new HttpError(400, 'Search text is too long.');
+
+  if (query.lat !== undefined && query.lat !== null && query.lat !== '') {
+    const lat = Number(query.lat);
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90) throw new HttpError(400, 'Invalid latitude range (-90 to 90).');
+  }
+  if (query.lng !== undefined && query.lng !== null && query.lng !== '') {
+    const lng = Number(query.lng);
+    if (!Number.isFinite(lng) || lng < -180 || lng > 180) throw new HttpError(400, 'Invalid longitude range (-180 to 180).');
+  }
+  if (query.placeId !== undefined && query.placeId !== null && query.placeId !== '') {
+    const placeId = cleanText(query.placeId, 120);
+    if (placeId === null) throw new HttpError(400, 'Invalid placeId.');
+  }
+
   const [key, direction] = SORTS[query.sort] || SORTS.name;
   const page = Math.max(1, Number.parseInt(query.page, 10) || 1);
   const limit = Math.min(50, Math.max(1, Number.parseInt(query.limit, 10) || 20));

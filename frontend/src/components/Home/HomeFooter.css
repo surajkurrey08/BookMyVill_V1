@@ -1,0 +1,23 @@
+.footer-socials {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #c9a227;
+  border-radius: 50%;
+  color: #d4a72c;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.footer-socials a:hover {
+  background: #d4a72c;
+  color: #10291e;
+}
