@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { getJwtSecret } = require('../utils/jwtSecret');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const { effectivePermissions } = require('../services/adminRbac');
@@ -12,7 +13,7 @@ async function adminConsoleAuth(req, res, next) {
   if (!token) return res.status(401).json({ msg: 'Admin sign-in required.' });
   if (mongoose.connection.readyState !== 1) return res.status(503).json({ msg: 'Admin console is temporarily unavailable.' });
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026');
+    const decoded = jwt.verify(token, getJwtSecret());
     const id = decoded.id || decoded.user?.id;
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(401).json({ msg: 'Invalid admin session.' });
     const admin = await User.findById(id).select('_id name email role adminRole adminPermissions status');

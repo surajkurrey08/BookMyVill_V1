@@ -23,6 +23,8 @@ app.set('trust proxy', 'loopback');
 // Middleware
 // ======================================================
 
+app.disable('x-powered-by');
+app.use(require('./middleware/securityHeaders'));
 app.use(require('./services/cors'));
 
 app.use(

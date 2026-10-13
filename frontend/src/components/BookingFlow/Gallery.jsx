@@ -59,7 +59,7 @@ function PhotoViewer({ photos, name, start, book, onClose }) {
   }, [go, onClose]);
 
   return <div className="bf-viewer" role="dialog" aria-modal="true" aria-label={`${name} photos`} onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
-    <div className="bf-viewer-top"><span>{index + 1} / {count}</span><div className="bf-viewer-actions">{book && <><span className="bf-viewer-price"><strong>{book.price}</strong> / night</span><button type="button" className="bf-viewer-book" disabled={book.disabled} onClick={() => { onClose(); book.onBook(); }}>Book Now {icon('arrow-right')}</button></>}<button type="button" onClick={onClose} aria-label="Close photos">{icon('xmark')}</button></div></div>
+    <div className="bf-viewer-top"><span>{index + 1} / {count}</span><div className="bf-viewer-actions">{book && <><span className="bf-viewer-price"><strong>{book.price}</strong> whole villa / night</span><button type="button" className="bf-viewer-book" disabled={book.disabled} onClick={() => { onClose(); book.onBook(); }}>Book Entire Villa {icon('arrow-right')}</button></>}<button type="button" onClick={onClose} aria-label="Close photos">{icon('xmark')}</button></div></div>
     <div className="bf-viewer-stage">
       {count > 1 && <button type="button" className="bf-viewer-nav is-prev" onClick={() => go(-1)} aria-label="Previous photo">{icon('chevron-left')}</button>}
       <img

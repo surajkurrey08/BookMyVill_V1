@@ -128,7 +128,7 @@ export default function QuoteView() {
             <div><dt>Check-out</dt><dd>{longDate(quote.stay.checkOut)}</dd></div>
             <div><dt>Nights</dt><dd>{quote.stay.nights}</dd></div>
             <div><dt>Guests</dt><dd>{guests}</dd></div>
-            <div className="wide"><dt>Accommodation</dt><dd>{quote.room.name}{quote.room.type ? ` · ${quote.room.type}` : ''}{quote.room.capacity ? ` · sleeps ${quote.room.capacity}` : ''}</dd></div>
+            <div className="wide"><dt>Booking</dt><dd>Entire villa{quote.room.capacity ? ` · up to ${quote.room.capacity} guests` : ''}</dd></div>
           </dl>
           {quote.notesToGuest && <><h3>From your host</h3><p className="qv-note">{quote.notesToGuest}</p></>}
           <h3>Cancellation policy</h3>
@@ -138,7 +138,7 @@ export default function QuoteView() {
         <section className="qv-card">
           <h2>Price</h2>
           <dl className="qv-lines">
-            <div><dt>{rupees(quote.nightlyRate)} × {quote.stay.nights} night{quote.stay.nights === 1 ? '' : 's'}</dt><dd>{rupees(quote.totals.accommodation)}</dd></div>
+            <div><dt>Entire villa · {rupees(quote.nightlyRate)} × {quote.stay.nights} night{quote.stay.nights === 1 ? '' : 's'}</dt><dd>{rupees(quote.totals.accommodation)}</dd></div>
             {quote.addOns.map(line => <div key={line.name}><dt>{line.name} <small>{line.quantity > 1 ? `× ${line.quantity} ` : ''}{line.unit}</small></dt><dd>{rupees(line.amount)}</dd></div>)}
             {quote.fees.map(line => <div key={line.label}><dt>{line.label}</dt><dd>{rupees(line.amount)}</dd></div>)}
             {quote.discounts.map(line => <div key={line.label} className="discount"><dt>{line.label}</dt><dd>−{rupees(line.amount)}</dd></div>)}
@@ -176,7 +176,7 @@ export default function QuoteView() {
           {quote.host.phone && <a className="qv-ghost" href={`tel:${quote.host.phone.replace(/[^\d+]/g, '')}`}><i className="fa-solid fa-phone" aria-hidden="true"></i> Call</a>}
         </div>
       </section>
-      <p className="qv-fine">Prices are in Indian Rupees. This quotation is not a booking until it is confirmed by your host or paid online.</p>
+      <p className="qv-fine">The price covers the entire villa and is in Indian Rupees. This quotation becomes a booking after host confirmation or online payment.</p>
     </main>
   </div>;
 }

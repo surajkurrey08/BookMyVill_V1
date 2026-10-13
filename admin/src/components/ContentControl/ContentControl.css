@@ -1,0 +1,81 @@
+.content-control {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.content-control-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-width: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.content-control-nav-heading {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 3px;
+  color: #0f172a;
+}
+
+.content-control-nav-heading span { font-size: .84rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+.content-control-nav-heading small { color: #64748b; font-size: .75rem; }
+.content-control-tabs {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.content-control-tab {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-width: 172px;
+  padding: 9px 11px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #475569;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.content-control-tab > i:first-child {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.content-control-tab span { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.content-control-tab strong { color: inherit; font-size: .86rem; }
+.content-control-tab small { overflow: hidden; color: #64748b; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
+.content-control-tab:hover { background: #f8fafc; color: #0f172a; }
+.content-control-tab.active { border-color: #e7d7a8; background: #fffbeb; color: #846b1c; }
+.content-control-tab.active > i:first-child { background: #fff4c7; color: #846b1c; }
+.content-control-tab:focus-visible { outline: 2px solid #d4af37; outline-offset: 2px; }
+.content-control-panel { min-width: 0; }
+
+@media (max-width: 1100px) {
+  .content-control-header { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .content-control-tabs { justify-content: flex-start; width: 100%; overflow-x: auto; padding-bottom: 3px; }
+  .content-control-tab { flex: 0 0 172px; }
+}
+
+@media (max-width: 520px) {
+  .content-control { gap: 20px; }
+  .content-control-tab { grid-template-columns: 28px auto; flex-basis: 154px; min-width: 154px; padding: 9px; }
+  .content-control-tab > i:first-child { width: 28px; height: 28px; }
+  .content-control-tab small { font-size: .69rem; }
+}

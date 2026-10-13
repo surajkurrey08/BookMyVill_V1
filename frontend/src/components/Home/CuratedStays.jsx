@@ -36,7 +36,7 @@ const StayCard = ({ stay, index, saved, onToggleSave, onMapView }) => {
     <article className="hp-stay-card hp-reveal" style={{ '--d': `${(index % 4) * 0.08}s` }}>
       <div className="hp-stay-media" onClick={openDetails}>
         <img src={stay.image} alt={stay.name} loading="lazy" style={stay.imagePosition ? { objectPosition: stay.imagePosition } : undefined} />
-        <span className="hp-stay-type">{stay.type}</span>
+        <span className="hp-stay-type">Entire villa</span>
         <button
           type="button"
           className={`hp-heart ${saved ? 'is-saved' : ''} ${bounce ? 'is-bouncing' : ''}`}
@@ -50,7 +50,7 @@ const StayCard = ({ stay, index, saved, onToggleSave, onMapView }) => {
 
       <div className="hp-stay-body">
         <div className="hp-stay-row">
-          <span className="hp-stay-price">{stay.price}<small> /night</small></span>
+          <span className="hp-stay-price"><strong>{stay.price}</strong><small>Whole villa / night</small></span>
           <span className="hp-stay-rating">
             <i className="fa-solid fa-star"></i> {stay.rating.toFixed(1)} <small>({stay.reviewsCount})</small>
           </span>
@@ -116,8 +116,7 @@ const CuratedStays = ({ filter, onFilterChange, onMapView, destinationFilter, on
       <div className="hp-container">
         <div className="hp-section-head hp-reveal">
           <div>
-            <span className="hp-eyebrow">Our Curated Collection</span>
-            <h2 className="hp-title">Explore <span className="hp-gold">Exceptional</span> Stays</h2>
+            <h2 className="hp-title">Explore <span className="hp-gold">Entire Villas</span></h2>
           </div>
           <div className="hp-stay-tools">
             <div className="hp-chips" role="tablist" aria-label="Filter stays">

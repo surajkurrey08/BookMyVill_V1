@@ -22,17 +22,44 @@ export const images = {
 
 export const TOWN_CENTER = [17.9237, 73.6586];
 
-// Hero quick-category circles. `action` decides where a click takes the guest.
+// Hero discovery stories. The CTA action decides where the guest continues.
 export const categories = [
-  { label: 'Hill Stations', image: lakeValley, action: { scroll: 'hp-destinations' } },
-  { label: 'Luxury Stays', image: heroVilla, action: { scroll: 'hp-stays', filter: 'All' } },
-  { label: 'Family Resorts', image: lakesideResort, action: { scroll: 'hp-stays', filter: 'Resort' } },
-  { label: 'Villas', image: hillChalet, action: { scroll: 'hp-stays', filter: 'Villa' } },
-  { label: 'Homestays', image: redCottage, action: { scroll: 'hp-stays', filter: 'Homestay' } },
-  { label: 'View Points', image: forestViewpoint, action: { scroll: 'hp-map', layer: 'viewpoints' } },
-  { label: 'Adventure', image: ridgeView, action: { scroll: 'hp-map', layer: 'attractions' } },
-  { label: 'Food & Dining', image: strawberries, action: { scroll: 'hp-map', layer: 'restaurants' } },
-  { label: 'Wellness', image: spa, action: { route: '/packages' } },
+  {
+    label: 'Hill Villas', image: lakeValley, action: { scroll: 'hp-destinations' },
+    story: { eyebrow: 'Mountain escape', title: 'Wake up above the valleys', description: 'Find complete villas near Mahabaleshwar and Panchgani, with cool mornings and scenic drives close by.', highlights: ['Entire villa privacy', 'Valley locations', 'Easy group stays'], cta: 'Explore hill locations' }
+  },
+  {
+    label: 'Luxury Villas', image: heroVilla, action: { scroll: 'hp-stays', filter: 'All' },
+    story: { eyebrow: 'Private luxury', title: 'The whole villa, made for your group', description: 'Enjoy spacious living areas, premium comforts and private time together without sharing the villa with other guests.', highlights: ['Complete villa booking', 'Premium amenities', 'Handpicked stays'], cta: 'View luxury villas' }
+  },
+  {
+    label: 'Family Escapes', image: lakesideResort, action: { scroll: 'hp-stays', filter: 'Resort' },
+    story: { eyebrow: 'Family time', title: 'More room for every generation', description: 'Choose welcoming villas with shared lounges, outdoor space and room for the whole family to stay together.', highlights: ['Family friendly spaces', 'Multiple bedrooms', 'Relaxed shared moments'], cta: 'Find family villas' }
+  },
+  {
+    label: 'Private Villas', image: hillChalet, action: { scroll: 'hp-stays', filter: 'Villa' },
+    story: { eyebrow: 'All yours', title: 'A private stay from check-in to checkout', description: 'Book the complete villa shown on the website. The displayed amount is for the whole villa for one night.', highlights: ['No shared rooms', 'One clear villa price', 'Private group stay'], cta: 'Browse private villas' }
+  },
+  {
+    label: 'Cozy Stays', image: redCottage, action: { scroll: 'hp-stays', filter: 'Homestay' },
+    story: { eyebrow: 'Warm and personal', title: 'Slow evenings in a home-style villa', description: 'Settle into peaceful spaces with local character, garden corners and everything your group needs to feel at home.', highlights: ['Quiet neighbourhoods', 'Comfortable common areas', 'Local character'], cta: 'See cozy stays' }
+  },
+  {
+    label: 'Scenic Views', image: forestViewpoint, action: { scroll: 'hp-map', layer: 'viewpoints' },
+    story: { eyebrow: 'Stay near the view', title: 'Plan sunrise and sunset around your villa', description: 'Discover viewpoints near your stay and spend less time planning routes during your Mahabaleshwar trip.', highlights: ['Nearby viewpoints', 'Simple map discovery', 'Perfect photo stops'], cta: 'Open viewpoint map' }
+  },
+  {
+    label: 'Adventure', image: ridgeView, action: { scroll: 'hp-map', layer: 'attractions' },
+    story: { eyebrow: 'Explore outside', title: 'Your villa base for every adventure', description: 'Keep the group together in one villa, then discover trails, boating, heritage places and family attractions nearby.', highlights: ['Group friendly base', 'Nearby attractions', 'Rest after exploring'], cta: 'Find nearby adventures' }
+  },
+  {
+    label: 'Local Flavours', image: strawberries, action: { scroll: 'hp-map', layer: 'restaurants' },
+    story: { eyebrow: 'Taste Mahabaleshwar', title: 'Local food, shared around one table', description: 'Find strawberry treats and popular dining spots, then return to the comfort and privacy of your complete villa.', highlights: ['Local favourites', 'Restaurant map', 'Easy group dining'], cta: 'Explore food nearby' }
+  },
+  {
+    label: 'Wellness', image: spa, action: { route: '/packages' },
+    story: { eyebrow: 'A slower stay', title: 'Space to pause, breathe and reconnect', description: 'Choose restful villa experiences made for unhurried mornings, peaceful evenings and quality time together.', highlights: ['Private relaxation', 'Nature-led experiences', 'Simple package booking'], cta: 'View wellness packages' }
+  },
 ];
 
 export const destinations = [

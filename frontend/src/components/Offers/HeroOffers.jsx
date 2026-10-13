@@ -9,7 +9,9 @@ const SLIDE_MS = 6000;
 export function useHeroOffers() {
   const [offers, setOffers] = useState([]);
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [paused, setPausedState] = useState(false);
+  const [open, setOpen] = useState(false);
+  const setPaused = setPausedState;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -22,16 +24,18 @@ export function useHeroOffers() {
 
   const count = offers.length;
   const go = useCallback(step => setIndex(current => (current + step + count) % count), [count]);
+  // A new slide always starts with its details closed.
+  useEffect(() => { setOpen(false); }, [index]);
 
   useEffect(() => {
-    if (count < 2 || paused || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+    if (count < 2 || paused || open || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
     const timer = setInterval(() => setIndex(current => (current + 1) % count), SLIDE_MS);
     return () => clearInterval(timer);
-  }, [count, paused, index]);
+  }, [count, paused, open, index]);
 
   useEffect(() => { if (index >= count && count) setIndex(0); }, [count, index]);
 
-  return { offers, index, setIndex, go, setPaused };
+  return { offers, index, setIndex, go, setPaused, open, setOpen };
 }
 
 // Full-bleed background pictures that cross-fade. Offers without a picture show the page's normal background.
@@ -54,23 +58,39 @@ function OfferButton({ offer }) {
     : <Link className="ho-cta" to={offer.ctaLink}>{offer.ctaLabel} →</Link>;
 }
 
-// The offer text, arrows and dots shown over the background.
-export function OfferBanner({ offers, index, setIndex, go, setPaused }) {
+const validTill = value => value ? new Date(value).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short' }) : '';
+
+// The offer shown as hero text over the photo. Details and the button open on click.
+export function OfferBanner({ offers, index, setIndex, go, setPaused, open, setOpen }) {
   if (!offers.length) return null;
   const offer = offers[index];
+  const many = offers.length > 1;
+  const hasMore = Boolean(offer.endsAt || (offer.ctaLabel && offer.ctaLink));
   return (
-    <div className="ho-banner" role="region" aria-roledescription="carousel" aria-label="Current offers" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}>
-      {offers.length > 1 && <button type="button" className="ho-arrow" onClick={() => go(-1)} aria-label="Previous offer">‹</button>}
-      <div className="ho-card" key={offer.id} aria-live="polite">
+    <div className="ho-banner" role="region" aria-roledescription="carousel" aria-label="Current offers" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <div className="ho-text" key={offer.id} aria-live="polite">
         {offer.badge && <span className="ho-badge">{offer.badge}</span>}
-        <strong className="ho-title">{offer.title}</strong>
-        {offer.subtitle && <span className="ho-sub">{offer.subtitle}</span>}
-        <OfferButton offer={offer} />
+        <h2 className="ho-title">{offer.title}</h2>
+        {offer.subtitle && <p className="ho-sub">{offer.subtitle}</p>}
+        {hasMore && (
+          <div className="ho-actions">
+            {!open
+              ? <button type="button" className="ho-toggle" aria-expanded="false" onClick={() => setOpen(true)}>View offer <span aria-hidden="true">▾</span></button>
+              : <>
+                  {offer.endsAt && <span className="ho-valid">Valid till {validTill(offer.endsAt)}</span>}
+                  <OfferButton offer={offer} />
+                  <button type="button" className="ho-close" aria-label="Hide offer details" onClick={() => setOpen(false)}>×</button>
+                </>}
+          </div>
+        )}
       </div>
-      {offers.length > 1 && <button type="button" className="ho-arrow" onClick={() => go(1)} aria-label="Next offer">›</button>}
-      {offers.length > 1 && (
-        <div className="ho-dots" role="tablist" aria-label="Choose offer">
-          {offers.map((item, i) => <button type="button" key={item.id} role="tab" aria-selected={i === index} aria-label={`Offer ${i + 1}: ${item.title}`} className={i === index ? 'is-active' : ''} onClick={() => setIndex(i)} />)}
+      {many && (
+        <div className="ho-controls">
+          <button type="button" className="ho-arrow" onClick={() => go(-1)} aria-label="Previous offer">‹</button>
+          <div className="ho-dots" role="tablist" aria-label="Choose offer">
+            {offers.map((item, i) => <button type="button" key={item.id} role="tab" aria-selected={i === index} aria-label={`Offer ${i + 1}: ${item.title}`} className={i === index ? 'is-active' : ''} onClick={() => setIndex(i)} />)}
+          </div>
+          <button type="button" className="ho-arrow" onClick={() => go(1)} aria-label="Next offer">›</button>
         </div>
       )}
     </div>

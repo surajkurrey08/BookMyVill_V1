@@ -3,10 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
 import { API_BASE_URL } from '../../config';
 import { readAdminSession, clearAdminSession } from '../../session';
-import HeroImageManager from '../HeroImageManager/HeroImageManager';
 import { managementLabel, staffName } from '../Console/config';
-import SocialMediaLinksManager from '../SocialMediaLinksManager/SocialMediaLinksManager';
-import OffersManager from '../OffersManager/OffersManager';
+import ContentControl from '../ContentControl/ContentControl';
 
 
 const AdminDashboard = () => {
@@ -244,7 +242,7 @@ const AdminDashboard = () => {
   }, [activeTab, navigate]);
 
   const fetchAdminData = async () => {
-    if (activeTab === 'hero-images' || activeTab === 'social-links' || activeTab === 'offers') {
+    if (activeTab === 'content-control') {
       setLoading(false);
       return;
     }
@@ -620,22 +618,10 @@ const AdminDashboard = () => {
                 Tourist Feedback
               </button>
               <button
-                className={`nav-item ${activeTab === 'hero-images' ? 'active' : ''}`}
-                onClick={() => handleTabSwitch('hero-images')}
+                className={`nav-item ${activeTab === 'content-control' ? 'active' : ''}`}
+                onClick={() => handleTabSwitch('content-control')}
               >
-                Hero Images
-              </button>
-
-              <button
-                className={`nav-item ${activeTab === 'offers' ? 'active' : ''}`}
-                onClick={() => handleTabSwitch('offers')}>
-                Hero Offers
-              </button>
-
-              <button
-                className={`nav-item ${activeTab === 'social-links' ? 'active' : ''}`}
-                onClick={()=> handleTabSwitch('social-links')}>
-                Social Media Links
+                Content Control
               </button>
             </nav>
 
@@ -667,9 +653,7 @@ const AdminDashboard = () => {
                 {activeTab === 'users' && 'System Users & Account Management'}
                 {activeTab === 'bookings' && 'Guest Reservations Master Log'}
                 {activeTab === 'feedback' && '💬 Tourist Stay Reviews & Feedback Center'}
-                {activeTab === 'hero-images' && 'Website Hero Images'}
-                {activeTab === 'social-links' && 'Social Media Links Management'}
-                {activeTab === 'offers' && 'Hero Offers'}
+                {activeTab === 'content-control' && 'Website Content Control'}
               </h1>
               <p className="header-subtitle">
                 {activeTab === 'owner-requests' && 'Centralized hub for receiving, evaluating, and taking action on property listing registrations & caretaker staff requests from hosts.'}
@@ -679,9 +663,7 @@ const AdminDashboard = () => {
                 {activeTab === 'users' && 'View all registered guest, host owner, caretaker and administrator accounts.'}
                 {activeTab === 'bookings' && 'Track check-ins, guest payments, and stay reservation statuses.'}
                 {activeTab === 'feedback' && 'Monitor, feature, and manage tourist review ratings and feedback submitted for Mahabaleshwar properties.'}
-                {activeTab === 'hero-images' && 'Upload and manage the cover image shown at the top of each website page.'}
-                {activeTab === 'social-links' && 'Manage the social media links displayed in the website footer.'}
-                {activeTab === 'offers' && 'Create, schedule and reorder the offers that slide on the website hero.'}
+                {activeTab === 'content-control' && 'Manage hero media, promotional offers, and public footer details from one place.'}
               </p>
             </div>
           </header>
@@ -710,11 +692,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {activeTab === 'hero-images' && <HeroImageManager />}
-
-            {activeTab === 'social-links' && <SocialMediaLinksManager />}
-
-            {activeTab === 'offers' && <OffersManager />}
+            {activeTab === 'content-control' && <ContentControl />}
 
             {/* Summary Metrics Bar - Rendered only on Main Dashboard page when Cards are not hidden */}
             {activeTab === 'owner-requests' && !isCardsHidden && (
@@ -758,8 +736,8 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* Hero Images and Social Links are standalone settings pages: no request table, search or filters */}
-          {activeTab === 'hero-images' || activeTab === 'social-links' || activeTab === 'offers' ? null : loading ? (
+          {/* Content Control is a standalone settings page: no request table, search or filters */}
+          {activeTab === 'content-control' ? null : loading ? (
             <div className="loading-state">
               <i className="fa-solid fa-spinner fa-spin"></i>
               <p>Retrieving property owner requests...</p>

@@ -139,7 +139,7 @@ export default function TripPage() {
           <span className={`trip-status ${booking.status === 'cancelled' ? 'muted' : booking.stayStatus === 'in_house' ? 'live' : 'ok'}`}><i className="fa-solid fa-circle" aria-hidden="true"></i> {statusLabel}</span>
           <h1>{property.name}</h1>
           <p className="trip-loc"><i className="fa-solid fa-location-dot" aria-hidden="true"></i> {property.location}</p>
-          <p className="trip-dates">{longDate(booking.checkIn)} → {longDate(booking.checkOut)} · {booking.nights} night{booking.nights === 1 ? '' : 's'} · {booking.guests} guest{booking.guests === 1 ? '' : 's'}{booking.roomLabel ? ` · ${booking.roomLabel}` : ''}</p>
+          <p className="trip-dates">{longDate(booking.checkIn)} → {longDate(booking.checkOut)} · {booking.nights} night{booking.nights === 1 ? '' : 's'} · {booking.guests} guest{booking.guests === 1 ? '' : 's'} · Entire villa</p>
         </div>
       </section>
 

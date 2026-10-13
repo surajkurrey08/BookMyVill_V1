@@ -8,6 +8,10 @@ const siteOfferSchema = new mongoose.Schema(
     badge: { type: String, trim: true, maxlength: 24, default: '' },
     ctaLabel: { type: String, trim: true, maxlength: 24, default: '' },
     ctaLink: { type: String, trim: true, maxlength: 300, default: '' },
+    discountType: { type: String, enum: ['none', 'percent', 'fixed'], default: 'none' },
+    discountValue: { type: Number, min: 0, default: 0 },
+    // Empty means every villa. Otherwise the offer applies only to these villas.
+    propertyIds: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }], default: [] },
     imageData: { type: String, default: '', select: false },
     imageVersion: { type: Number, default: 0 },
     startsAt: { type: Date, default: null },

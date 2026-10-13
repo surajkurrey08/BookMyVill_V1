@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { getJwtSecret } = require('../utils/jwtSecret');
 const { internalRequest } = require('./internal');
 const { getJson, setJson } = require('./cache');
 
@@ -29,7 +30,7 @@ async function verify(req) {
   const token = tokenFrom(req);
   if (!token) return { status: 401 };
   let claims;
-  try { claims = jwt.verify(token, process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026'); } catch { return { status: 401, expired: true }; }
+  try { claims = jwt.verify(token, getJwtSecret()); } catch { return { status: 401, expired: true }; }
   const id = claims.id || claims._id || claims.user?.id || claims.user?._id;
   if (!/^[a-f\d]{24}$/i.test(String(id || ''))) return { status: 401, expired: true };
   try { return { user: await identity(String(id)) }; }

@@ -37,6 +37,31 @@ const socialLinksSchema = new mongoose.Schema(
             type: String,
             trim: true,
             default: ''
+        },
+        footerDescription: {
+            type: String,
+            trim: true,
+            maxlength: 240,
+            default: 'Creating unforgettable experiences in the hills. Book your perfect stay and explore the beauty of Mahabaleshwar with us.'
+        },
+        contactPhone: {
+            type: String,
+            trim: true,
+            maxlength: 30,
+            default: '+91 98765 43210'
+        },
+        contactEmail: {
+            type: String,
+            trim: true,
+            lowercase: true,
+            maxlength: 120,
+            default: 'support@bookmyvilla.com'
+        },
+        contactLocation: {
+            type: String,
+            trim: true,
+            maxlength: 160,
+            default: 'Mahabaleshwar, Maharashtra, India'
         }
     },
     { timestamps: true }

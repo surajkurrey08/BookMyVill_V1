@@ -15,6 +15,8 @@ const { PUBLIC_LISTING } = require('../services/publicViews');
 const { guideOffer } = require('../services/guides');
 const { guestRuleFailure } = require('../services/promotions');
 const couponClient = require('../services/couponClient');
+const SiteOffer = require('../models/SiteOffer');
+const { promotionDiscount } = require('../services/quotePricing');
 const { validId, stayNights, indiaDate, cleanText, cleanMultiline, validEmail, validPhone, phoneKey, HttpError, sendError } = require('../utils/validate');
 
 const router = express.Router();
@@ -97,6 +99,20 @@ async function calculate({ hold, property, room, dates }, body, user, requestId)
       if (identifiers.length && await Booking.countDocuments({ promotion: promotion._id, paymentStatus: 'paid', $or: identifiers }) >= promotion.maxUsesPerGuest) throw new HttpError(400, `${promotion.code} has reached its per-guest usage limit.`);
     }
   }
+  const now = new Date();
+  const liveOffers = await SiteOffer.find({
+    active: true,
+    $and: [{ $or: [{ startsAt: null }, { startsAt: { $lte: now } }] }, { $or: [{ endsAt: null }, { endsAt: { $gte: now } }] }],
+    $or: [{ propertyIds: { $size: 0 } }, { propertyIds: property._id }]
+  }).sort({ order: 1, createdAt: -1 }).lean();
+  const siteOffer = liveOffers.find(item => item.propertyIds?.some(id => String(id) === String(property._id)))
+    || liveOffers.find(item => !item.propertyIds?.length);
+  const accommodation = room.baseRate * dates.length;
+  const autoDiscount = siteOffer?.discountType === 'percent'
+    ? Math.floor(accommodation * siteOffer.discountValue / 100)
+    : siteOffer?.discountType === 'fixed' ? Math.floor(siteOffer.discountValue || 0) : 0;
+  // Keep the automatic offer and a guest-entered promo code within the accommodation price.
+  const siteOfferDiscount = Math.max(0, Math.min(autoDiscount, accommodation - promotionDiscount(promotion, accommodation)));
   const paymentPlan = body.paymentPlan === 'advance' ? 'advance' : 'full';
   // Optional local guide, charged per day (1 day up to the number of nights).
   const offer = await guideOffer(property);
@@ -105,13 +121,15 @@ async function calculate({ hold, property, room, dates }, body, user, requestId)
   if (guideDays && !offer) throw new HttpError(409, 'A local guide is not available for this villa right now.');
   const guide = guideDays ? { days: guideDays, dailyRate: offer.dailyRate, amount: offer.dailyRate * guideDays } : null;
   const fees = guide ? [{ label: `Local guide · ${guideDays} day${guideDays === 1 ? '' : 's'}`, amount: guide.amount, taxRate: 0 }] : [];
-  const priced = priceQuote({ nights: dates.length, nightlyRate: room.baseRate, addOns, fees, promotion, taxMode: 'none', checkIn: hold.checkIn, today: indiaDate(), advancePercent: paymentPlan === 'advance' ? ADVANCE_PERCENT : 100 });
+  const priced = priceQuote({ nights: dates.length, nightlyRate: room.baseRate, addOns, fees, promotion, manualDiscount: siteOfferDiscount, taxMode: 'none', checkIn: hold.checkIn, today: indiaDate(), advancePercent: paymentPlan === 'advance' ? ADVANCE_PERCENT : 100 });
   return {
     nights: dates.length, nightlyRate: room.baseRate, addOns: priced.addOnLines,
     accommodation: priced.totals.accommodation, discount: priced.totals.discount,
     tax: priced.totals.tax, securityDeposit: 0, total: priced.totals.total,
     amountDueNow: priced.schedule.advanceAmount, balance: priced.schedule.balanceAmount,
     paymentPlan, advancePercent: ADVANCE_PERCENT,
+    siteOffer: siteOfferDiscount > 0 ? { id: siteOffer._id, title: siteOffer.title, amount: siteOfferDiscount } : null,
+    siteOfferDiscount,
     guide, guideOption: offer ? { dailyRate: offer.dailyRate, maxDays: dates.length } : null,
     promoCode: promotion?.code || '', promotionId: promotion?._id || null,
     cancellationPolicy: room.cancellationPolicy || 'Contact the property for its cancellation terms before paying.'
@@ -207,6 +225,7 @@ router.post('/holds/:id/price', async (req, res) => {
         addOns: (booking.lineItems || []).filter(item => item.kind === 'addon').map(item => ({ name: item.label, quantity: item.quantity, unitPrice: item.unitPrice, amount: item.amount })),
         accommodation: (booking.lineItems || []).find(item => item.kind === 'accommodation')?.amount || 0,
         discount: booking.discountAmount || 0, tax: booking.taxAmount || 0, securityDeposit: booking.securityDepositAmount || 0,
+        siteOffer: booking.appliedOffer?.amount ? booking.appliedOffer : null,
         total: booking.totalPrice, amountDueNow: booking.onlineAmount ?? booking.totalPrice, balance: booking.balanceDue || 0,
         paymentPlan: booking.paymentPlan || 'full', advancePercent: ADVANCE_PERCENT, cancellationPolicy: booking.cancellationPolicy,
         guide: booking.guide?.requested ? { days: booking.guide.days, dailyRate: booking.guide.dailyRate, amount: booking.guide.amount } : null, guideOption: null });
@@ -258,7 +277,10 @@ router.post('/holds/:id/pay', async (req, res) => {
       checkIn: new Date(`${context.hold.checkIn}T00:00:00.000Z`), checkOut: new Date(`${context.hold.checkOut}T00:00:00.000Z`),
       guests: context.hold.guests, totalPrice: pricing.total, paymentPlan: pricing.paymentPlan, onlineAmount: pricing.amountDueNow, balanceDue: pricing.balance, taxAmount: pricing.tax, discountAmount: pricing.discount,
       promotion: pricing.promotionId, securityDepositAmount: pricing.securityDeposit, cancellationPolicy: pricing.cancellationPolicy,
-      lineItems: [{ kind: 'accommodation', label: `${context.room.name} · ${pricing.nights} night${pricing.nights === 1 ? '' : 's'}`, quantity: pricing.nights, unitPrice: pricing.nightlyRate, amount: pricing.accommodation },
+      appliedOffer: pricing.siteOffer || undefined,
+      lineItems: [{ kind: 'accommodation', label: `Entire villa · ${pricing.nights} night${pricing.nights === 1 ? '' : 's'}`, quantity: pricing.nights, unitPrice: pricing.nightlyRate, amount: pricing.accommodation },
+        ...(pricing.siteOffer?.amount ? [{ kind: 'discount', label: `Offer: ${pricing.siteOffer.title}`, quantity: 1, unitPrice: -pricing.siteOffer.amount, amount: -pricing.siteOffer.amount }] : []),
+        ...(pricing.discount > (pricing.siteOffer?.amount || 0) ? [{ kind: 'discount', label: pricing.promoCode ? `Promo code: ${pricing.promoCode}` : 'Discount', quantity: 1, unitPrice: -(pricing.discount - (pricing.siteOffer?.amount || 0)), amount: -(pricing.discount - (pricing.siteOffer?.amount || 0)) }] : []),
         ...pricing.addOns.map(item => ({ kind: 'addon', label: item.name, quantity: item.quantity, unitPrice: item.unitPrice, amount: item.amount, taxRate: item.taxRate, tax: item.tax })),
         ...(pricing.guide ? [{ kind: 'fee', label: 'Local guide', quantity: pricing.guide.days, unitPrice: pricing.guide.dailyRate, amount: pricing.guide.amount }] : [])],
       ...(pricing.guide && { guide: { requested: true, days: pricing.guide.days, dailyRate: pricing.guide.dailyRate, amount: pricing.guide.amount } }),

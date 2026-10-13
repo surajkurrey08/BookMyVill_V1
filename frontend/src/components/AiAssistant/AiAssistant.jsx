@@ -13,7 +13,7 @@ const HOTEL_AND_LOCATION_DATABASE = [
       amenities: ['Private Infinity Pool', '4 King Bedrooms', '24/7 Chef & Caretaker', 'Lawn & Bonfire'],
       distance: '1.2 km from Sunset Point | 2.5 km from Main Market',
       bestFor: 'Couples, Luxury Seekers & Family Gatherings',
-      price: '₹5,500 - ₹8,500 / night',
+      price: '₹5,500 - ₹8,500 for the whole villa / night',
       guestReview: '"The view from the pool at sunset is unmatched. Caretaker Ramesh prepared delicious fresh Maharashtrian meals for us!" — Verified Guest'
     }
   },
@@ -27,7 +27,7 @@ const HOTEL_AND_LOCATION_DATABASE = [
       amenities: ['Private Strawberry Garden', 'Jacuzzi', 'Gazebo Dining', 'Home-cooked Meals'],
       distance: '3.0 km from Mapro Garden | 4.0 km from Panchgani Market',
       bestFor: 'Families with Kids & Nature Lovers',
-      price: '₹4,800 - ₹7,200 / night',
+      price: '₹4,800 - ₹7,200 for the whole villa / night',
       guestReview: '"Waking up to picking fresh strawberries right outside our bedroom was magical. 10/10 hospitality!" — Verified Guest'
     }
   },
@@ -41,7 +41,7 @@ const HOTEL_AND_LOCATION_DATABASE = [
       amenities: ['Lake View Balconies', '3 Deluxe BHK Suites', 'Barbecue & Bonfire', '24/7 Caretaker'],
       distance: '0.4 km from Venna Lake Boating Deck | 1.8 km from Market',
       bestFor: 'Lake Enthusiasts, Adventure Lovers & Group Outings',
-      price: '₹5,200 - ₹9,000 / night',
+      price: '₹5,200 - ₹9,000 for the whole villa / night',
       guestReview: '"Direct view of Venna Lake from the bed! We loved horse riding and boating just 5 mins away." — Verified Guest'
     }
   },
@@ -55,7 +55,7 @@ const HOTEL_AND_LOCATION_DATABASE = [
       amenities: ['Private Lawn', 'Table Land View Balcony', 'Barbecue Pit', 'Spacious Parking'],
       distance: '15 km from Mahabaleshwar Town | Close to Sydney Point & Table Land',
       bestFor: 'Weekenders, Corporate Retreats & Quiet Getaways',
-      price: '₹3,900 - ₹6,500 / night',
+      price: '₹3,900 - ₹6,500 for the whole villa / night',
       guestReview: '"Quiet retreat away from city noise. Great access to Table Land and local strawberry cafes."'
     }
   },
@@ -92,7 +92,7 @@ const HOTEL_AND_LOCATION_DATABASE = [
 const AI_KNOWLEDGE_BASE = [
   {
     keywords: ['book', 'reservation', 'price', 'rate', 'cost', 'pay', 'deposit'],
-    response: "📅 **How to Book a Stay:**\n1. Go to the **Explore Stays** section.\n2. Select your check-in and check-out dates.\n3. Choose your favorite luxury villa.\n4. Click **Book Now** to secure instant confirmation!\n\nAll bookings include 24/7 caretaker assistance & fresh welcome drinks."
+    response: "📅 **Book an Entire Villa:**\n1. Open **Explore Stays**.\n2. Choose dates and guests.\n3. Select a villa.\n4. Click **Book Entire Villa**.\n\nThe displayed nightly price covers the whole villa, not each guest or room."
   },
   {
     keywords: ['caretaker', 'staff', 'host', 'service', 'key', 'clean', 'food'],

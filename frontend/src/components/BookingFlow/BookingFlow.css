@@ -53,6 +53,11 @@
 .bf-rating { margin:7px 0!important; color:#efa910; font-size:.82rem; }
 .bf-rating strong { color:#0f1b24; }
 .bf-property-intro { margin:8px 0 18px!important; }
+.bf-whole-villa-note { display:flex; align-items:center; gap:10px; margin:12px 0 18px; padding:11px 12px; border:1px solid #cfe0d3; border-radius:10px; background:#f1f7f2; color:var(--bf-green); }
+.bf-whole-villa-note>i { font-size:1.05rem; }
+.bf-whole-villa-note span { display:grid; gap:1px; }
+.bf-whole-villa-note strong { font-size:.88rem; }
+.bf-whole-villa-note small { color:#405449; font-size:.74rem; }
 .bf-date-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
 .bf-date-fields label { display:flex; align-items:center; gap:10px; min-height:48px; padding:7px 10px; border:1px solid #dce4e2; border-radius:8px; min-width:0; color:#526071; cursor:pointer; }
 .bf-date-fields label > i { font-size:1rem; color:#162228; }
@@ -63,7 +68,7 @@
 .bf-price-action { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:17px 0 15px; }
 .bf-price-action strong { color:var(--bf-green); font-size:1.7rem; line-height:1; }
 .bf-price-action span { color:#4f5a67; font-size:.9rem; }
-.bf-price-action small { display:block; color:var(--bf-muted); font-size:.68rem; }
+.bf-price-action small { display:block; margin-top:3px; color:var(--bf-green); font-size:.7rem; font-weight:700; }
 .bf-trust-row { display:flex; justify-content:space-between; gap:10px; font-size:.69rem; color:#3f5260; }
 .bf-trust-row i { color:var(--bf-green); margin-right:4px; }
 .bf-tabs { display:flex; gap:5px; align-items:center; overflow:auto; background:#fff; border-radius:12px; margin:12px 0; padding:5px; box-shadow:var(--bf-shadow); white-space:nowrap; }
@@ -416,3 +421,41 @@
 .bf-viewer-top .bf-viewer-book:hover:not(:disabled) { background:#ffd066; }
 .bf-viewer-top .bf-viewer-book:disabled { opacity:.5; cursor:not-allowed; }
 @media(max-width:620px){ .bf-viewer-price { display:none; } .bf-viewer-top .bf-viewer-book { padding:0 16px; } }
+
+/* Booking card polish: one calendar icon per date, price above a full-width button */
+.bf-date-fields label { position: relative; }
+.bf-date-fields input[type=date]::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
+.bf-date-fields input[type=date] { cursor: pointer; }
+.bf-property-booking .bf-price-action { flex-direction: column; align-items: stretch; gap: 12px; margin: 18px 0 14px; }
+.bf-property-booking .bf-price-action > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+.bf-property-booking .bf-price-action strong { font-size: 1.9rem; }
+.bf-property-booking .bf-price-action small { margin: 0; font-size: .78rem; color: #4f5a67; font-weight: 600; }
+.bf-property-booking .bf-price-action .bf-primary { width: 100%; min-height: 50px; font-size: .98rem; border-radius: 10px; white-space: nowrap; }
+.bf-property-booking .bf-trust-row { gap: 8px; flex-wrap: wrap; justify-content: space-between; font-size: .72rem; }
+
+/* Location map is always on the page, below the info cards */
+.bf-location-panel { margin-top: 14px; scroll-margin-top: 90px; }
+.bf-location-panel .bf-location-head h2 { margin: 0; }
+
+/* Friendly notes where the host or guests have not provided data yet */
+.bf-info-grid p.bf-not-yet, .bf-about p .bf-not-yet, .bf-not-yet { display: flex; align-items: flex-start; gap: 8px; color: #6b7785; font-size: .82rem; line-height: 1.5; font-style: italic; }
+.bf-not-yet i { margin-top: 3px; color: #9aa6b2 !important; }
+.bf-location-empty { display: grid; justify-items: center; gap: 8px; padding: 36px 20px; border: 1px dashed #cfd8d3; border-radius: 12px; background: #f7f9f8; text-align: center; color: #5d6a63; }
+.bf-location-empty > i { font-size: 1.8rem; color: #9aa6b2; }
+.bf-location-empty strong { color: #17252b; font-size: 1rem; }
+.bf-location-empty span { max-width: 460px; font-size: .86rem; line-height: 1.55; }
+.bf-location-empty a { margin-top: 4px; font-size: .84rem; font-weight: 700; color: var(--bf-green); }
+
+/* Section flash after clicking a tab */
+[id^="bf-"] { scroll-margin-top: 96px; }
+.bf-flash { animation: bf-flash-ring 3.2s ease both; }
+.bf-flash .bf-not-yet { animation: bf-flash-note 3.2s ease both; border-radius: 6px; }
+@keyframes bf-flash-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(243, 167, 18, 0); }
+  8%, 70% { box-shadow: 0 0 0 3px #f3a712, 0 10px 28px rgba(243, 167, 18, .35); }
+}
+@keyframes bf-flash-note {
+  0%, 100% { background: transparent; }
+  8%, 70% { background: #fff2c4; color: #4a3a05; }
+}
+@media (prefers-reduced-motion: reduce) { .bf-flash, .bf-flash .bf-not-yet { animation-duration: .01s; } }

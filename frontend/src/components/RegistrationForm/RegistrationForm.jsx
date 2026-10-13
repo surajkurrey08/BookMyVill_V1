@@ -75,7 +75,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
         break;
       case 'price':
         if (!value || isNaN(value) || parseInt(value) <= 0) {
-          return 'Expected price per night must be a positive number (min ₹1).';
+          return 'The whole-villa price per night must be at least ₹1.';
         }
         break;
       case 'mapLink':
@@ -450,7 +450,7 @@ const RegistrationForm = ({ onClose, onSuccess }) => {
               {/* Row 3: Price & Live Location Link */}
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginTop: '14px' }}>
                 <div className="form-group">
-                  <label>Expected Price Per Night (₹) *</label>
+                  <label>Whole Villa Price Per Night (₹) *</label>
                   <input 
                     type="number" 
                     min="1"

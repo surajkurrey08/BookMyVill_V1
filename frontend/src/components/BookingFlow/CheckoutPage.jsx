@@ -42,56 +42,18 @@ export default function CheckoutPage() {
       sessionStorage.setItem('token', `guest-token-${Date.now()}`);
       sessionStorage.setItem('user', JSON.stringify({ name: 'Guest Traveler', email: 'guest@bookmyvilla.com', role: 'user' }));
     }
-    const localHoldStr = sessionStorage.getItem(`hold_${holdId}`);
-    const localPriceStr = sessionStorage.getItem(`price_${holdId}`);
-    if (localHoldStr) {
-      try {
-        const localHold = JSON.parse(localHoldStr);
-        const localPrice = localPriceStr ? JSON.parse(localPriceStr) : null;
-        setHold(localHold);
-        if (localPrice) setPrice(localPrice);
-        setLoading(false);
-        return undefined;
-      } catch (e) {}
-    }
     const controller = new AbortController();
     Promise.all([bookingApi(`/holds/${holdId}`, { auth: true, signal: controller.signal }), bookingApi(`/holds/${holdId}/price`, { method: 'POST', auth: true, body: {}, signal: controller.signal })])
       .then(async ([data, initialPrice]) => { setHold(data); setPrice(initialPrice); setGuideOption(initialPrice.guideOption); setGuideDays(initialPrice.guide?.days || 0); if (initialPrice.paymentPlan) setPlan(initialPrice.paymentPlan); setAddons(await bookingApi(`/properties/${data.property._id}/add-ons`, { signal: controller.signal }).catch(() => [])); setError(''); })
       .catch(err => {
-        if (err.name !== 'AbortError') {
-          const fallbackHold = {
-            property: { _id: holdId, name: 'Grand Sunset Luxury Villa', location: 'Mahabaleshwar', photos: fallbackPhotos },
-            room: { name: 'Entire Villa', photos: fallbackPhotos },
-            checkIn: today(),
-            checkOut: addDays(today(), 2),
-            guests: 2,
-            nights: 2,
-            status: 'hold_active',
-          };
-          const fallbackPrice = {
-            nightlyRate: 7500,
-            nights: 2,
-            accommodation: 15000,
-            addOns: [],
-            discount: 0,
-            tax: 1800,
-            securityDeposit: 2000,
-            total: 18800,
-            amountDueNow: 18800,
-            balance: 0,
-            cancellationPolicy: '100% full refund if cancelled 48 hours prior to check-in.',
-          };
-          setHold(fallbackHold);
-          setPrice(fallbackPrice);
-          setError('');
-        }
+        if (err.name !== 'AbortError') setError(err.status === 401 ? 'Please sign in again to continue with this booking.' : err.status === 404 ? 'This villa hold has expired or does not exist. Please choose your dates again.' : 'We could not load your booking right now. Please check your connection and try again.');
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, [holdId, navigate]);
 
   useEffect(() => {
-    if (!hold || holdId.startsWith('hold-')) return undefined;
+    if (!hold) return undefined;
     const controller = new AbortController();
     setPricing(true);
     bookingApi(`/holds/${holdId}/price`, { method: 'POST', auth: true, body: { addOns: selected, promoCode, paymentPlan: plan, guideDays }, signal: controller.signal })
@@ -117,19 +79,15 @@ export default function CheckoutPage() {
         onError: err => { setError(err.message); setBusy(false); },
         onDismiss: () => setBusy(false) });
     } catch (err) {
-      if (err.status === 401) {
-        navigate('/signin', { state: { from: `/booking/checkout/${holdId}` } });
-      } else {
-        const mockBookingId = `BMV-${Date.now().toString().slice(-6)}`;
-        navigate(`/booking/${mockBookingId}/confirmed`, { replace: true });
-      }
+      if (err.status === 401) navigate('/signin', { state: { from: `/booking/checkout/${holdId}` } });
+      else setError(err.message || 'Payment could not be started. You have not been charged. Please try again.');
     } finally {
       setBusy(false);
     }
   };
 
   return <FlowShell><Breadcrumb items={[{ label: 'Explore Stays', to: '/explore' }, { label: hold?.property?.name || 'Property', to: hold ? `/property/${hold.property._id}` : undefined }, { label: 'Checkout' }]} />
-    <div className="bf-checkout-head"><h1>Complete Your Booking</h1><p>Fill in your details, choose add-ons and make a secure payment to confirm your stay.</p></div>
+    <div className="bf-checkout-head"><h1>Book the Entire Villa</h1><p>Confirm your details and payment. The villa is private for your group.</p></div>
     {error && <Notice tone="error">{error}</Notice>}
     {loading ? <div className="bf-panel bf-loading">Loading your villa hold…</div> : !hold ? <div className="bf-panel bf-empty"><h2>This villa hold is unavailable</h2><p>Choose available dates for your villa to continue.</p><Link to="/explore">Explore stays</Link></div> : <form className="bf-checkout-layout" onSubmit={pay}><div className="bf-checkout-main">
       <section className="bf-panel bf-form-panel"><div className="bf-card-heading"><span>{icon('user')}</span><h2>Guest Details</h2><small>All fields are required unless marked optional</small></div><div className="bf-form-grid bf-three"><label>Full Name<input required autoComplete="name" value={guest.name} onChange={e => setField('name', e.target.value)} placeholder="Enter your full name" /></label><label>Mobile Number<input required type="tel" autoComplete="tel" value={guest.phone} onChange={e => setField('phone', e.target.value)} placeholder="+91 98765 43210" /></label><label>Email Address<input required type="email" autoComplete="email" value={guest.email} onChange={e => setField('email', e.target.value)} placeholder="you@example.com" /></label></div><div className="bf-form-grid bf-two"><label>Additional Guests<input readOnly value={`${Math.max(0, hold.guests - 1)} additional guest${hold.guests === 2 ? '' : 's'} · ${hold.guests} total`} /><small>Includes the primary guest.</small></label><label>Expected Arrival Time<input type="time" value={guest.arrivalTime} onChange={e => setField('arrivalTime', e.target.value)} /><small>Helps the property prepare for your arrival.</small></label></div><div className="bf-form-grid bf-id-grid"><label>Government ID Proof<select value={guest.idType} onChange={e => setField('idType', e.target.value)}><option>Aadhaar Card</option><option>Passport</option><option>Driving Licence</option><option>Voter ID</option></select></label><label className="bf-id-number">ID Number<input required value={guest.idNumber} onChange={e => setField('idNumber', e.target.value)} placeholder="Enter ID number" /><small>Only the last four characters are saved. Bring your ID at check-in.</small></label></div><label className="bf-wide-field">Special Requests <span>(Optional)</span><textarea maxLength={500} rows={2} value={guest.specialRequests} onChange={e => setField('specialRequests', e.target.value)} placeholder="e.g. early check-in, high floor, dietary preferences…" /><small>{guest.specialRequests.length}/500</small></label></section>
@@ -141,7 +99,7 @@ export default function CheckoutPage() {
         <p className="bf-muted">Your villa team arranges the guide after booking.{hold.status === 'payment_pending' ? ' Your guide choice is locked for this payment order.' : ''}</p>
       </section>}
       <section className="bf-panel bf-payment"><div className="bf-card-heading"><span>{icon('lock')}</span><h2>Payment Method</h2><small>Choose a secure payment method at checkout.</small></div><div className="bf-payment-tabs" role="group" aria-label="Preferred payment method">{['UPI', 'Card', 'Net Banking', 'Wallet'].map(item => <button key={item} type="button" className={method === item ? 'is-active' : ''} onClick={() => setMethod(item)}>{icon(item === 'UPI' ? 'qrcode' : item === 'Card' ? 'credit-card' : item === 'Net Banking' ? 'building-columns' : 'wallet')} {item}</button>)}</div><div className="bf-payment-hint">{icon('shield-halved')} Your payment details are entered securely in Razorpay. Select {method} in the payment window.</div></section>
-    </div><aside className="bf-panel bf-checkout-summary"><div className="bf-card-heading"><span>{icon('calendar-check')}</span><h2>Booking Summary</h2></div><div className="bf-summary-property"><img src={photoUrl(hold.property.photos?.[0])} alt="" onError={e => { e.currentTarget.src = fallbackPhotos[0]; }} /><div><strong>{hold.property.name}</strong><span>{icon('location-dot')} {hold.property.location}</span></div></div><div className="bf-summary-room"><img src={photoUrl(hold.room.photos?.[0] || hold.property.photos?.[1] || hold.property.photos?.[0])} alt="" onError={e => { e.currentTarget.src = fallbackPhotos[1] || fallbackPhotos[0]; }} /><div><strong>Entire villa</strong><span>{icon('house')} Private stay</span><span>{icon('user')} {hold.guests} Guests</span></div><Link to={`/property/${hold.property._id}?checkIn=${hold.checkIn}&checkOut=${hold.checkOut}&guests=${hold.guests}`}>Change Dates</Link></div><div className="bf-summary-dates"><span>{icon('calendar-days')}<strong>{longDate(hold.checkIn)}</strong></span><span>{icon('arrow-right')}</span><span><strong>{longDate(hold.checkOut)}</strong></span><strong>{hold.nights} Nights</strong></div>{price ? <><div className="bf-price-lines"><div><span>Villa Rate <small>{rupees(price.nightlyRate)} × {price.nights} night{price.nights === 1 ? '' : 's'}</small></span><strong>{rupees(price.accommodation)}</strong></div>{price.addOns.map(item => <div key={item.addOnId || item.name}><span>{item.name}<small>{item.quantity} × {rupees(item.unitPrice)}</small></span><strong>{rupees(item.amount)}</strong></div>)}{price.guide && <div><span>Local guide<small>{price.guide.days} day{price.guide.days === 1 ? '' : 's'} × {rupees(price.guide.dailyRate)}</small></span><strong>{rupees(price.guide.amount)}</strong></div>}{price.discount > 0 && <div><span>Discount {price.promoCode && `(${price.promoCode})`}</span><strong>−{rupees(price.discount)}</strong></div>}{price.tax > 0 && <div><span>Taxes</span><strong>{rupees(price.tax)}</strong></div>}{price.securityDeposit > 0 && <div><span>Refundable Security Deposit</span><strong>{rupees(price.securityDeposit)}</strong></div>}</div><div className="bf-total-line"><strong>Total Amount</strong><strong>{rupees(price.total)}</strong></div><PaymentPlan price={price} plan={plan} setPlan={setPlan} locked={hold.status === 'payment_pending'} /><div className="bf-due-now"><span><strong>Amount Due Now</strong><small>{plan === 'advance' ? `${price.advancePercent || 30}% advance confirms your booking` : 'Pay now to confirm your booking'}</small></span><strong>{rupees(price.amountDueNow)}</strong></div>{price.balance > 0 && <div className="bf-due-later"><span>{icon('house')} Pay at the villa on arrival</span><strong>{rupees(price.balance)}</strong></div>}</> : <p>Calculating the final amount…</p>}<div className="bf-promo"><label htmlFor="bf-promo-input">{icon('tag')} Have a Promo Code?</label><div><input id="bf-promo-input" value={promoInput} disabled={hold.status === 'payment_pending'} onChange={e => setPromoInput(e.target.value)} placeholder="Enter promo code" /><button type="button" disabled={hold.status === 'payment_pending'} onClick={applyPromo}>Apply</button></div></div><div className="bf-policy"><strong>{icon('shield-halved')} Cancellation Policy</strong><p>{price?.cancellationPolicy || 'Confirm the cancellation policy before paying.'}</p></div><button type="submit" className="bf-primary bf-full" disabled={busy || pricing || !price}>{busy ? 'Opening secure payment…' : pricing ? 'Updating total…' : hold.status === 'payment_pending' ? 'Resume Secure Payment' : 'Pay & Confirm Booking'} {icon('arrow-right')}</button><div className="bf-trust-row"><span>{icon('shield-halved')} Secure Payment</span><span>{icon('check-circle')} Verified Confirmation</span></div></aside></form>}
+    </div><aside className="bf-panel bf-checkout-summary"><div className="bf-card-heading"><span>{icon('calendar-check')}</span><h2>Booking Summary</h2></div><div className="bf-summary-property"><img src={photoUrl(hold.property.photos?.[0])} alt="" onError={e => { e.currentTarget.src = fallbackPhotos[0]; }} /><div><strong>{hold.property.name}</strong><span>{icon('location-dot')} {hold.property.location}</span></div></div><div className="bf-summary-room"><img src={photoUrl(hold.room.photos?.[0] || hold.property.photos?.[1] || hold.property.photos?.[0])} alt="" onError={e => { e.currentTarget.src = fallbackPhotos[1] || fallbackPhotos[0]; }} /><div><strong>Entire villa</strong><span>{icon('house')} Private stay</span><span>{icon('user')} {hold.guests} Guests</span></div><Link to={`/property/${hold.property._id}?checkIn=${hold.checkIn}&checkOut=${hold.checkOut}&guests=${hold.guests}`}>Change Dates</Link></div><div className="bf-summary-dates"><span>{icon('calendar-days')}<strong>{longDate(hold.checkIn)}</strong></span><span>{icon('arrow-right')}</span><span><strong>{longDate(hold.checkOut)}</strong></span><strong>{hold.nights} Nights</strong></div>{price ? <><div className="bf-price-lines"><div><span>Entire villa rate <small>{rupees(price.nightlyRate)} × {price.nights} night{price.nights === 1 ? '' : 's'}</small></span><strong>{rupees(price.accommodation)}</strong></div>{price.addOns.map(item => <div key={item.addOnId || item.name}><span>{item.name}<small>{item.quantity} × {rupees(item.unitPrice)}</small></span><strong>{rupees(item.amount)}</strong></div>)}{price.guide && <div><span>Local guide<small>{price.guide.days} day{price.guide.days === 1 ? '' : 's'} × {rupees(price.guide.dailyRate)}</small></span><strong>{rupees(price.guide.amount)}</strong></div>}{price.siteOffer?.amount > 0 && <div><span>Offer: {price.siteOffer.title}</span><strong>-{rupees(price.siteOffer.amount)}</strong></div>}{price.discount - (price.siteOffer?.amount || 0) > 0 && <div><span>Promo code discount</span><strong>-{rupees(price.discount - (price.siteOffer?.amount || 0))}</strong></div>}{price.tax > 0 && <div><span>Taxes</span><strong>{rupees(price.tax)}</strong></div>}{price.securityDeposit > 0 && <div><span>Refundable Security Deposit</span><strong>{rupees(price.securityDeposit)}</strong></div>}</div><div className="bf-total-line"><strong>Total for entire villa</strong><strong>{rupees(price.total)}</strong></div><PaymentPlan price={price} plan={plan} setPlan={setPlan} locked={hold.status === 'payment_pending'} /><div className="bf-due-now"><span><strong>Amount Due Now</strong><small>{plan === 'advance' ? `${price.advancePercent || 30}% advance confirms your booking` : 'Pay now to confirm your booking'}</small></span><strong>{rupees(price.amountDueNow)}</strong></div>{price.balance > 0 && <div className="bf-due-later"><span>{icon('house')} Pay at the villa on arrival</span><strong>{rupees(price.balance)}</strong></div>}</> : <p>Calculating the final amount…</p>}<div className="bf-promo"><label htmlFor="bf-promo-input">{icon('tag')} Have a Promo Code?</label><div><input id="bf-promo-input" value={promoInput} disabled={hold.status === 'payment_pending'} onChange={e => setPromoInput(e.target.value)} placeholder="Enter promo code" /><button type="button" disabled={hold.status === 'payment_pending'} onClick={applyPromo}>Apply</button></div></div><div className="bf-policy"><strong>{icon('shield-halved')} Cancellation Policy</strong><p>{price?.cancellationPolicy || 'Confirm the cancellation policy before paying.'}</p></div><button type="submit" className="bf-primary bf-full" disabled={busy || pricing || !price}>{busy ? 'Opening secure payment…' : pricing ? 'Updating total…' : hold.status === 'payment_pending' ? 'Resume Secure Payment' : 'Pay & Confirm Booking'} {icon('arrow-right')}</button><div className="bf-trust-row"><span>{icon('shield-halved')} Secure Payment</span><span>{icon('check-circle')} Verified Confirmation</span></div></aside></form>}
 
   </FlowShell>;
 }

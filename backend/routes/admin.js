@@ -333,6 +333,42 @@ const emptySocialLinks = () =>
 const pickSocialLinks = settings =>
   Object.fromEntries(Social_Fields.map(field => [field, settings[field] || '']));
 
+const Footer_Defaults = {
+  footerDescription: 'Creating unforgettable experiences in the hills. Book your perfect stay and explore the beauty of Mahabaleshwar with us.',
+  contactPhone: '+91 98765 43210',
+  contactEmail: 'support@bookmyvilla.com',
+  contactLocation: 'Mahabaleshwar, Maharashtra, India'
+};
+
+const pickFooterContent = settings =>
+  Object.fromEntries(Object.keys(Footer_Defaults).map(field => [field, settings?.[field] || Footer_Defaults[field]]));
+
+function validateFooterContent(body) {
+  const footer = {};
+  const errors = {};
+  const limits = { footerDescription: 240, contactPhone: 30, contactEmail: 120, contactLocation: 160 };
+
+  for (const field of Object.keys(Footer_Defaults)) {
+    const value = typeof body[field] === 'string' ? body[field].trim() : '';
+    if (!value) {
+      errors[field] = 'This field is required.';
+    } else if (value.length > limits[field]) {
+      errors[field] = `Use ${limits[field]} characters or fewer.`;
+    } else {
+      footer[field] = value;
+    }
+  }
+
+  if (footer.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(footer.contactEmail)) {
+    errors.contactEmail = 'Enter a valid email address.';
+  }
+  if (footer.contactPhone && !/^[+()\d\s-]{7,30}$/.test(footer.contactPhone)) {
+    errors.contactPhone = 'Use a valid phone number with digits, spaces, +, - or brackets.';
+  }
+
+  return { footer, errors };
+}
+
 function validateSocialLinks(body){
   const links = {};
   const errors = {};
@@ -394,14 +430,14 @@ router.get('/social-links/public', async (req,res) => {
     const settings = await SocialLinks.findOne({ key: 'footer'}).lean();
 
     const links = settings ? pickSocialLinks(settings) : emptySocialLinks();
+    const footer = pickFooterContent(settings);
 
     res.set('Cache-Control', 'no-store');
-    return res.json({links});
+    return res.json({ links, footer });
   }catch(err){
     console.error('public social links error:', err);
     return res.status(500).json({
-      msg: 'Could not load social links',
-      error: err.message
+      msg: 'Could not load social links'
     });
   }
 });
@@ -415,7 +451,8 @@ router.get('/social-links',
                 const settings = await SocialLinks.findOne({key: 'footer'}).lean();
 
                 return res.json({
-                  links: settings ? pickSocialLinks(settings) : emptySocialLinks()
+                  links: settings ? pickSocialLinks(settings) : emptySocialLinks(),
+                  footer: pickFooterContent(settings)
                 });
               }catch(err){
                 console.error('Admin social links read error:', err);
@@ -431,15 +468,21 @@ router.put(
   adminConsoleAuth,
   async (req, res) =>{
     try{
-      const { links, error, errors } = validateSocialLinks(req.body || {});
+      const { links, error, errors: linkErrors } = validateSocialLinks(req.body || {});
+      const { footer, errors: footerErrors } = validateFooterContent(req.body || {});
+      const errors = { ...(linkErrors || {}), ...footerErrors };
 
-      if (error){
-        return res.status(400).json({ msg: error, errors });
+      if (error || Object.keys(footerErrors).length){
+        const count = Object.keys(errors).length;
+        return res.status(400).json({
+          msg: count === 1 ? 'One field needs fixing before saving.' : `${count} fields need fixing before saving.`,
+          errors
+        });
       }
 
       const settings = await SocialLinks.findOneAndUpdate(
         { key: 'footer'},
-        { $set: links, $setOnInsert: {key: 'footer'} },
+        { $set: { ...links, ...footer }, $setOnInsert: {key: 'footer'} },
         {
           new: true,
           upsert: true,
@@ -449,8 +492,9 @@ router.put(
       ).lean();
 
       return res.json({
-        msg: 'Saved. The website footer now shows these links.',
+        msg: 'Saved. The website footer now shows the updated content.',
         links: pickSocialLinks(settings),
+        footer: pickFooterContent(settings)
       });
 
     }catch(err){
@@ -466,6 +510,8 @@ const MAX_OFFER_IMAGE_CHARS = 2 * 1024 * 1024;
 const publicOffer = o => ({
   id: String(o._id), title: o.title, subtitle: o.subtitle, badge: o.badge,
   ctaLabel: o.ctaLabel, ctaLink: o.ctaLink, endsAt: o.endsAt,
+  discountType: o.discountType || 'none', discountValue: o.discountValue || 0,
+  propertyIds: (o.propertyIds || []).map(String),
   imageUrl: o.imageVersion ? `/api/admin/offers/${o._id}/image?v=${o.imageVersion}` : ''
 });
 const adminOffer = o => ({ ...publicOffer(o), active: o.active, startsAt: o.startsAt, order: o.order });
@@ -496,13 +542,33 @@ function validateOffer(body, { partial = false } = {}) {
   const date = key => {
     if (body[key] === undefined) return;
     if (!body[key]) { out[key] = null; return; }
-    const d = new Date(body[key]);
+    // A plain date means the whole day in India: it starts at 00:00 and ends at 23:59 IST.
+    const raw = String(body[key]);
+    const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T${key === 'endsAt' ? '23:59:59.999' : '00:00:00'}+05:30` : raw);
     if (Number.isNaN(d.getTime())) errors[key] = 'This date is not valid.'; else out[key] = d;
   };
   date('startsAt'); date('endsAt');
   if (out.startsAt && out.endsAt && out.endsAt < out.startsAt) errors.endsAt = 'The end date must be after the start date.';
   if (body.active !== undefined) out.active = Boolean(body.active);
+  if (body.discountType !== undefined || body.discountValue !== undefined || !partial) {
+    const type = body.discountType === undefined ? 'none' : body.discountType;
+    const value = body.discountValue === undefined ? 0 : Number(body.discountValue);
+    if (!['none', 'percent', 'fixed'].includes(type)) errors.discountType = 'Choose no discount, percentage, or fixed amount.';
+    else if (!Number.isFinite(value) || value < 0 || value > 10000000 || (type === 'percent' && value > 100) || (type !== 'none' && value === 0)) errors.discountValue = 'Enter a discount above zero (percentage up to 100).';
+    else { out.discountType = type; out.discountValue = type === 'none' ? 0 : Math.floor(value); }
+  }
+  if (body.propertyIds !== undefined || !partial) {
+    const ids = body.propertyIds === undefined ? [] : body.propertyIds;
+    if (!Array.isArray(ids) || ids.length > 500 || ids.some(id => !mongoose.isValidObjectId(id))) errors.propertyIds = 'Choose valid villas for this offer.';
+    else out.propertyIds = [...new Set(ids.map(String))];
+  }
   if (!errors.ctaLink && (body.ctaLabel || '').trim() && !(body.ctaLink || '').trim()) errors.ctaLink = 'Add where the button should go.';
+
+  if (out.propertyIds?.length && out.propertyIds.length !== (body.propertyIds || []).length) errors.propertyIds = 'A villa was selected more than once.';
+  if (out.propertyIds?.length) {
+    // Validate IDs so deleted or mistyped villas cannot silently receive an offer.
+    // The actual lookup runs in the route where Property is available.
+  }
 
   if (typeof body.image === 'string' && body.image) {
     if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(body.image)) errors.image = 'Use a JPG, PNG or WebP picture.';
@@ -525,6 +591,16 @@ router.get('/offers/public', async (req, res) => {
   } catch (err) {
     console.error('public offers error:', err);
     res.status(500).json({ msg: 'Could not load offers.' });
+  }
+});
+
+router.get('/offers/villas', adminConsoleAuth, requirePermission('properties.view'), async (req, res) => {
+  try {
+    const villas = await Property.find({ status: 'approved' }).select('_id name location').sort({ name: 1 }).lean();
+    res.json({ villas: villas.map(villa => ({ id: String(villa._id), name: villa.name, location: villa.location || '' })) });
+  } catch (err) {
+    console.error('offer villa list error:', err);
+    res.status(500).json({ msg: 'Could not load villas. Please try again.' });
   }
 });
 
@@ -555,6 +631,7 @@ router.post('/offers', adminConsoleAuth, async (req, res) => {
   try {
     const { data, error, errors } = validateOffer(req.body || {});
     if (error) return res.status(400).json({ msg: error, errors });
+    if (data.propertyIds?.length && await Property.countDocuments({ _id: { $in: data.propertyIds }, status: 'approved' }) !== data.propertyIds.length) return res.status(400).json({ msg: 'One or more selected villas are unavailable.', errors: { propertyIds: 'Refresh the villa list and choose available villas.' } });
     if (await SiteOffer.countDocuments() >= 20) return res.status(400).json({ msg: 'You can keep up to 20 offers. Delete one you no longer need first.' });
     const last = await SiteOffer.findOne().sort({ order: -1 }).select('order').lean();
     const offer = await SiteOffer.create({ ...data, order: (last?.order ?? -1) + 1 });
@@ -570,6 +647,7 @@ router.put('/offers/:id', adminConsoleAuth, async (req, res) => {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ msg: 'This offer no longer exists. Refresh the page.' });
     const { data, error, errors } = validateOffer(req.body || {}, { partial: true });
     if (error) return res.status(400).json({ msg: error, errors });
+    if (data.propertyIds?.length && await Property.countDocuments({ _id: { $in: data.propertyIds }, status: 'approved' }) !== data.propertyIds.length) return res.status(400).json({ msg: 'One or more selected villas are unavailable.', errors: { propertyIds: 'Refresh the villa list and choose available villas.' } });
     const offer = await SiteOffer.findByIdAndUpdate(req.params.id, { $set: data }, { new: true });
     if (!offer) return res.status(404).json({ msg: 'This offer no longer exists. Refresh the page.' });
     res.json({ msg: 'Offer saved.', offer: adminOffer(offer) });

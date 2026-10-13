@@ -538,7 +538,7 @@ const UserDashboard = () => {
               {/* COL 3: PRICE SUMMARY & FULL-WIDTH ACTION BUTTONS */}
               <div className="booking-list-right">
                 <div className="total-price-box">
-                  <span className="price-label">TOTAL STAY PRICE</span>
+                  <span className="price-label">TOTAL FOR ENTIRE VILLA</span>
                   <strong className="price-amount">₹{booking.totalPrice}</strong>
                   <span className="payment-tag">{booking.paymentStatus === 'paid' ? 'PAID ✅' : 'PENDING 🟡'}</span>
                 </div>

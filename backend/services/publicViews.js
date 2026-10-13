@@ -33,7 +33,7 @@ function publicProperty(property) {
 
 function customerBooking(booking) {
   const raw = booking.toObject ? booking.toObject() : booking;
-  const fields = ['_id','property','room','guest','guestDetails','checkIn','checkOut','stayType','guests','adults','children','infants','pets','status','paymentStatus','stayStatus','actualCheckIn','actualCheckOut','totalPrice','securityDepositAmount','lineItems','taxAmount','discountAmount','cancellationPolicy','refundStatus','refundAmount','paymentMode','paymentSource','paidAt','paymentPlan','onlineAmount','balanceDue','balanceCollectedAt','guide','razorpayPaymentId','razorpayOrderId','source','createdAt'];
+  const fields = ['_id','property','room','guest','guestDetails','checkIn','checkOut','stayType','guests','adults','children','infants','pets','status','paymentStatus','stayStatus','actualCheckIn','actualCheckOut','totalPrice','securityDepositAmount','lineItems','taxAmount','discountAmount','appliedOffer','cancellationPolicy','refundStatus','refundAmount','paymentMode','paymentSource','paidAt','paymentPlan','onlineAmount','balanceDue','balanceCollectedAt','guide','razorpayPaymentId','razorpayOrderId','source','createdAt'];
   const b = Object.fromEntries(fields.map(key => [key,raw[key]]));
   if (b.guest) b.guest = { name:b.guest.name, phone:b.guest.phone, email:b.guest.email };
   if (b.property && typeof b.property === 'object' && b.property.name) b.property = publicProperty(b.property);

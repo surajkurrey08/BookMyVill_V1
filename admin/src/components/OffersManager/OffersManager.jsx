@@ -3,9 +3,11 @@ import { API_BASE_URL } from '../../config';
 import { readAdminSession } from '../../session';
 import './OffersManager.css';
 
-const emptyForm = { title: '', subtitle: '', badge: '', ctaLabel: '', ctaLink: '', startsAt: '', endsAt: '', active: true, image: undefined };
-const toInput = value => (value ? new Date(value).toISOString().slice(0, 10) : '');
-const prettyDate = value => new Date(value).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+const emptyForm = { title: '', subtitle: '', badge: '', ctaLabel: '', ctaLink: '', startsAt: '', endsAt: '', active: true, discountType: 'none', discountValue: '', propertyIds: [], image: undefined };
+// Dates are whole days in India (IST), matching how the website applies them.
+const IST_MS = 5.5 * 3600 * 1000;
+const toInput = value => (value ? new Date(new Date(value).getTime() + IST_MS).toISOString().slice(0, 10) : '');
+const prettyDate = value => new Date(value).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' });
 
 // Shrinks a chosen picture in the browser so uploads stay small and the site stays fast.
 const shrinkImage = file => new Promise((resolve, reject) => {
@@ -29,7 +31,7 @@ const statusOf = offer => {
   const now = Date.now();
   if (!offer.active) return { key: 'off', label: 'Hidden' };
   if (offer.startsAt && new Date(offer.startsAt) > now) return { key: 'soon', label: `Starts ${prettyDate(offer.startsAt)}` };
-  if (offer.endsAt && new Date(offer.endsAt).getTime() + 86399999 < now) return { key: 'ended', label: 'Ended' };
+  if (offer.endsAt && new Date(offer.endsAt).getTime() < now) return { key: 'ended', label: 'Ended' };
   return { key: 'live', label: 'Live on website' };
 };
 
@@ -51,6 +53,7 @@ async function api(path, options = {}) {
 
 export default function OffersManager() {
   const [offers, setOffers] = useState([]);
+  const [villas, setVillas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [editing, setEditing] = useState(null); // null | 'new' | offer id
@@ -59,10 +62,18 @@ export default function OffersManager() {
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState('');
   const [notice, setNotice] = useState({ type: '', message: '' });
+  const [villaMode, setVillaMode] = useState('all');
+  const [villaSearch, setVillaSearch] = useState('');
+  const [villaLocation, setVillaLocation] = useState('all');
+  const [showSelectedVillas, setShowSelectedVillas] = useState(false);
 
   const load = async () => {
     setLoading(true); setLoadError('');
-    try { setOffers((await api('')).offers); } catch (err) { setLoadError(err.msg); } finally { setLoading(false); }
+    try {
+      const [offerResult, villaResult] = await Promise.all([api(''), api('/villas')]);
+      setOffers(offerResult.offers);
+      setVillas(villaResult.villas || []);
+    } catch (err) { setLoadError(err.msg); } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
@@ -70,16 +81,23 @@ export default function OffersManager() {
 
   const openForm = offer => {
     setErrors({}); setNotice({ type: '', message: '' });
+    setVillaSearch(''); setVillaLocation('all'); setShowSelectedVillas(false);
     if (offer) {
       setEditing(offer.id);
-      setForm({ ...emptyForm, title: offer.title, subtitle: offer.subtitle, badge: offer.badge, ctaLabel: offer.ctaLabel, ctaLink: offer.ctaLink, startsAt: toInput(offer.startsAt), endsAt: toInput(offer.endsAt), active: offer.active });
+      setForm({ ...emptyForm, title: offer.title, subtitle: offer.subtitle, badge: offer.badge, ctaLabel: offer.ctaLabel, ctaLink: offer.ctaLink, startsAt: toInput(offer.startsAt), endsAt: toInput(offer.endsAt), active: offer.active, discountType: offer.discountType || 'none', discountValue: offer.discountValue || '', propertyIds: offer.propertyIds || [] });
+      setVillaMode(offer.propertyIds?.length ? 'selected' : 'all');
       setPreview(offer.imageUrl ? `${API_BASE_URL}${offer.imageUrl}` : '');
     } else {
-      setEditing('new'); setForm(emptyForm); setPreview('');
+      setEditing('new'); setForm(emptyForm); setPreview(''); setVillaMode('all');
     }
   };
   const closeForm = () => { setEditing(null); setErrors({}); };
   const change = (key, value) => { setForm(f => ({ ...f, [key]: value })); setErrors(e => ({ ...e, [key]: '' })); };
+  const toggleVilla = id => change('propertyIds', form.propertyIds.includes(id) ? form.propertyIds.filter(item => item !== id) : [...form.propertyIds, id]);
+  const chooseVillaMode = mode => {
+    setVillaMode(mode);
+    setErrors(current => ({ ...current, propertyIds: '' }));
+  };
 
   const pickImage = async event => {
     const file = event.target.files?.[0];
@@ -94,8 +112,14 @@ export default function OffersManager() {
 
   const save = async event => {
     event.preventDefault();
-    setBusy('save'); setNotice({ type: '', message: '' });
-    const body = { ...form };
+    setNotice({ type: '', message: '' });
+    if (villaMode === 'selected' && !form.propertyIds.length) {
+      setErrors(current => ({ ...current, propertyIds: 'Select at least one villa, or choose All villas.' }));
+      document.getElementById('offer-villa-search')?.focus();
+      return;
+    }
+    setBusy('save');
+    const body = { ...form, propertyIds: villaMode === 'all' ? [] : form.propertyIds };
     if (body.image === undefined) delete body.image;
     try {
       const isNew = editing === 'new';
@@ -124,12 +148,30 @@ export default function OffersManager() {
     </label>
   );
 
+  const villaLocations = [...new Set(villas.map(villa => villa.location).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const normalizedVillaSearch = villaSearch.trim().toLowerCase();
+  const visibleVillas = villas.filter(villa => {
+    const matchesSearch = !normalizedVillaSearch || `${villa.name || ''} ${villa.location || ''}`.toLowerCase().includes(normalizedVillaSearch);
+    const matchesLocation = villaLocation === 'all' || villa.location === villaLocation;
+    const matchesSelection = !showSelectedVillas || form.propertyIds.includes(villa.id);
+    return matchesSearch && matchesLocation && matchesSelection;
+  });
+  const visibleVillaIds = visibleVillas.map(villa => villa.id);
+  const allVisibleSelected = visibleVillaIds.length > 0 && visibleVillaIds.every(id => form.propertyIds.includes(id));
+  const toggleVisibleVillas = () => {
+    if (allVisibleSelected) {
+      change('propertyIds', form.propertyIds.filter(id => !visibleVillaIds.includes(id)));
+    } else {
+      change('propertyIds', [...new Set([...form.propertyIds, ...visibleVillaIds])]);
+    }
+  };
+
   return (
     <div className="offers-manager">
       <div className="offers-intro">
         <div>
           <h2>Hero Offers</h2>
-          <p>Offers slide across the top of the Explore Stays page. Add a picture, a short headline and a button.</p>
+          <p>Create a timed offer card and choose the villas it covers. Discounts selected here are applied automatically at checkout and shown on the booking bill.</p>
         </div>
         {!editing && <button type="button" className="offers-btn primary" onClick={() => openForm(null)}><i className="fa-solid fa-plus"></i> Add offer</button>}
       </div>
@@ -155,6 +197,87 @@ export default function OffersManager() {
               <div className="offers-row">
                 {field('startsAt', 'Starts on (optional)', { type: 'date' })}
                 {field('endsAt', 'Ends on (optional)', { type: 'date' })}
+              </div>
+              <div className="offers-row">
+                <label className="offers-field"><span>Booking discount</span><select value={form.discountType} onChange={e => change('discountType', e.target.value)}><option value="none">No price discount</option><option value="percent">Percentage off</option><option value="fixed">Fixed rupees off</option></select></label>
+                <label className={`offers-field ${errors.discountValue ? 'has-error' : ''}`}><span>{form.discountType === 'percent' ? 'Percent off' : 'Rupees off'}</span><input type="number" min="0" max={form.discountType === 'percent' ? 100 : 10000000} step="1" value={form.discountValue} disabled={form.discountType === 'none'} onChange={e => change('discountValue', e.target.value)} placeholder="e.g. 15" />{errors.discountValue && <em>{errors.discountValue}</em>}</label>
+              </div>
+              <div className={`offers-field offers-villa-field ${errors.propertyIds ? 'has-error' : ''}`}>
+                <div className="offers-villa-heading">
+                  <div>
+                    <span>Villa coverage</span>
+                    <p className="offers-hint">Choose where this offer can be booked.</p>
+                  </div>
+                  <strong className="offers-villa-count">
+                    {villaMode === 'all' ? `All ${villas.length} villas` : `${form.propertyIds.length} of ${villas.length} selected`}
+                  </strong>
+                </div>
+
+                <div className="offers-villa-mode" role="group" aria-label="Offer villa coverage">
+                  <button type="button" className={villaMode === 'all' ? 'active' : ''} aria-pressed={villaMode === 'all'} onClick={() => chooseVillaMode('all')}>
+                    <i className="fa-solid fa-earth-asia" aria-hidden="true"></i>
+                    <span><strong>All villas</strong><small>Includes current and newly approved villas</small></span>
+                  </button>
+                  <button type="button" className={villaMode === 'selected' ? 'active' : ''} aria-pressed={villaMode === 'selected'} onClick={() => chooseVillaMode('selected')}>
+                    <i className="fa-solid fa-list-check" aria-hidden="true"></i>
+                    <span><strong>Choose villas</strong><small>Apply only to villas you select</small></span>
+                  </button>
+                </div>
+
+                {villaMode === 'selected' && (
+                  <div className="offers-villa-picker">
+                    <div className="offers-villa-filters">
+                      <label className="offers-villa-search" htmlFor="offer-villa-search">
+                        <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <input
+                          id="offer-villa-search"
+                          type="search"
+                          value={villaSearch}
+                          onChange={event => setVillaSearch(event.target.value)}
+                          placeholder="Search villa or location"
+                        />
+                      </label>
+                      <label className="offers-villa-location">
+                        <span className="sr-only">Filter villas by location</span>
+                        <select value={villaLocation} onChange={event => setVillaLocation(event.target.value)} aria-label="Filter villas by location">
+                          <option value="all">All locations</option>
+                          {villaLocations.map(location => <option key={location} value={location}>{location}</option>)}
+                        </select>
+                      </label>
+                    </div>
+
+                    <div className="offers-villa-toolbar">
+                      <span>{visibleVillas.length} villa{visibleVillas.length === 1 ? '' : 's'} in view</span>
+                      <div>
+                        <button type="button" className={`offers-villa-text-btn ${showSelectedVillas ? 'active' : ''}`} onClick={() => setShowSelectedVillas(current => !current)}>
+                          {showSelectedVillas ? 'Show all results' : 'View selected'}
+                        </button>
+                        <button type="button" className="offers-villa-text-btn" disabled={!visibleVillas.length} onClick={toggleVisibleVillas}>
+                          {allVisibleSelected ? 'Clear visible' : 'Select visible'}
+                        </button>
+                        <button type="button" className="offers-villa-text-btn" disabled={!form.propertyIds.length} onClick={() => change('propertyIds', [])}>Clear all</button>
+                      </div>
+                    </div>
+
+                    <div className="offers-villa-list" aria-label="Select villas for this offer">
+                      {visibleVillas.map(villa => (
+                        <label key={villa.id} className={form.propertyIds.includes(villa.id) ? 'selected' : ''}>
+                          <input type="checkbox" checked={form.propertyIds.includes(villa.id)} onChange={() => toggleVilla(villa.id)} />
+                          <span><strong>{villa.name}</strong><small><i className="fa-solid fa-location-dot" aria-hidden="true"></i> {villa.location || 'Location not added'}</small></span>
+                          {form.propertyIds.includes(villa.id) && <i className="fa-solid fa-circle-check offers-villa-selected-icon" aria-hidden="true"></i>}
+                        </label>
+                      ))}
+                      {!visibleVillas.length && (
+                        <div className="offers-villa-empty">
+                          <i className={`fa-solid ${showSelectedVillas ? 'fa-list-check' : 'fa-magnifying-glass'}`} aria-hidden="true"></i>
+                          <strong>{showSelectedVillas ? 'No selected villas in view' : 'No villas found'}</strong>
+                          <span>{showSelectedVillas ? 'Show all results and select the villas you need.' : 'Change the search or location filter.'}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {errors.propertyIds && <em>{errors.propertyIds}</em>}
               </div>
               <label className="offers-check"><input type="checkbox" checked={form.active} onChange={e => change('active', e.target.checked)} /> Show this offer on the website</label>
             </div>
@@ -201,6 +324,8 @@ export default function OffersManager() {
                 {offer.subtitle && <p>{offer.subtitle}</p>}
                 <small>
                   {offer.badge && <>Tag: {offer.badge} · </>}
+                  {offer.discountType === 'percent' ? `${offer.discountValue}% off; ` : offer.discountType === 'fixed' ? `Rs ${Number(offer.discountValue).toLocaleString('en-IN')} off; ` : ''}
+                  {offer.propertyIds?.length ? `Selected villas: ${offer.propertyIds.length}; ` : 'All villas; '}
                   {offer.ctaLabel ? `Button: ${offer.ctaLabel} → ${offer.ctaLink}` : 'No button'}
                   {(offer.startsAt || offer.endsAt) && <> · {offer.startsAt ? prettyDate(offer.startsAt) : 'Now'} – {offer.endsAt ? prettyDate(offer.endsAt) : 'No end date'}</>}
                 </small>

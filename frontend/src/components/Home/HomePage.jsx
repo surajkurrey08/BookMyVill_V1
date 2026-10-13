@@ -8,6 +8,7 @@ import LocationsMap from './LocationsMap';
 import ExperienceBanner from './ExperienceBanner';
 import Testimonials from './Testimonials';
 import HomeFooter from './HomeFooter';
+import OfferSplash from '../Offers/OfferSplash';
 import { scrollToId } from './scroll';
 import './Home.css';
 
@@ -97,6 +98,7 @@ const HomePage = () => {
 
   return (
     <div className="hp-root" ref={rootRef}>
+      <OfferSplash />
       <HomeHeader onOpenFavourites={() => { setStayFilter('Favourites'); scrollToId('hp-stays'); }} />
       <main>
         <HomeHero onCategory={handleCategory} />

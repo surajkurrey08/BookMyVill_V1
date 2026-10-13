@@ -1,4 +1,5 @@
 const express = require('express');
+const { getJwtSecret } = require('../utils/jwtSecret');
 const fs = require('fs/promises');
 const path = require('path');
 const crypto = require('crypto');
@@ -42,7 +43,7 @@ const requireAdmin = async (req, res, next) => {
   const rawToken = req.header('x-auth-token') || req.header('Authorization') || '';
   const token = rawToken.replace(/^Bearer\s+/i, '').trim();
   try {
-    const identity = jwt.verify(token, process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026');
+    const identity = jwt.verify(token, getJwtSecret());
     if (identity.role !== 'admin' || !identity.id) return res.status(403).json({ msg: 'Admin access required.' });
     if (mongoose.connection.readyState === 1) {
       const admin = await User.findById(identity.id).select('role');

@@ -485,3 +485,23 @@
   .packages-dialog { max-height: calc(100vh - 28px); }
   .packages-dialog-body { padding: 22px; }
 }
+
+/* Coming soon */
+.packages-soon { padding: 56px 0 72px; background: #faf9f5; }
+.packages-soon-card { display: grid; justify-items: center; gap: 12px; max-width: 720px; margin: 0 auto; padding: 44px 32px; border: 1px solid #efeee8; border-radius: 22px; background: #fff; box-shadow: 0 12px 36px rgba(22, 40, 32, .08); text-align: center; }
+.packages-soon-icon { display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; background: #fdf3d6; color: #b8860b; font-size: 1.9rem; }
+.packages-soon-tag { padding: 5px 16px; border-radius: 999px; background: linear-gradient(135deg, #ffd46b, #f3a712); color: #17261f; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.packages-soon-card h2 { margin: 4px 0 0; color: #14201b; font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1.2; }
+.packages-soon-card p { max-width: 520px; margin: 0; color: #5d6a63; font-size: 1rem; line-height: 1.65; }
+.packages-soon-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 12px; }
+.packages-soon-primary, .packages-soon-secondary { padding: 12px 26px; border-radius: 12px; font-weight: 800; font-size: .95rem; text-decoration: none; }
+.packages-soon-primary { background: #073f30; color: #fff; }
+.packages-soon-primary:hover { background: #062a21; color: #fff; }
+.packages-soon-secondary { border: 1.5px solid #cfd8d3; color: #073f30; background: #fff; }
+.packages-soon-secondary:hover { border-color: #073f30; color: #073f30; }
+.packages-soon-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; max-width: 920px; margin: 28px auto 0; }
+.packages-soon-item { display: grid; justify-items: center; gap: 6px; padding: 22px 18px; border: 1px solid #efeee8; border-radius: 16px; background: #fff; text-align: center; }
+.packages-soon-item-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: #eef5f1; color: #073f30; font-size: 1.1rem; }
+.packages-soon-item h3 { margin: 6px 0 0; color: #14201b; font-size: 1rem; }
+.packages-soon-item p { margin: 0; color: #66736b; font-size: .88rem; line-height: 1.5; }
+@media (max-width: 760px) { .packages-soon-grid { grid-template-columns: 1fr; } .packages-soon-card { padding: 32px 20px; } }

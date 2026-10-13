@@ -1,5 +1,10 @@
 const express = require('express');
+const { getJwtSecret } = require('../utils/jwtSecret');
 const router = express.Router();
+
+// Slow down password / OTP guessing: at most 40 attempts per IP every 15 minutes on these endpoints.
+const authLimiter = require('../middleware/rateLimit')({ windowMs: 15 * 60000, max: 40, keyPrefix: 'auth', message: 'Too many attempts. Please wait 15 minutes and try again.' });
+router.use(['/login', '/register', '/owner-setup', '/request-otp', '/forgot-password', '/phone'], (req, res, next) => (req.method === 'GET' ? next() : authLimiter(req, res, next)));
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -30,7 +35,7 @@ router.post('/register', async (req, res) => {
     const user = new User({ name, email: cleanEmail, phone: phone || '', password, role: 'user' });
     await user.save();
 
-    const secret = process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026';
+    const secret = getJwtSecret();
     const token = jwt.sign({ id: user._id, role: user.role }, secret, { expiresIn: '7d' });
     console.log('Token generated successfully');
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
@@ -39,7 +44,7 @@ router.post('/register', async (req, res) => {
     console.error('Error Name:', err.name);
     console.error('Error Message:', err.message);
     console.error('Stack Trace:', err.stack);
-    res.status(500).json({ msg: 'Server error', error: err.message });
+    res.status(500).json({ msg: 'Something went wrong. Please try again.' });
   }
 });
 
@@ -145,12 +150,12 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    const secret = process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026';
+    const secret = getJwtSecret();
     const token = jwt.sign({ id: user._id, role: user.role }, secret, { expiresIn: '7d' });
     return res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     console.error('Login error:', err);
-    return res.status(500).json({ msg: 'Server error during authentication: ' + err.message, error: err.message });
+    return res.status(500).json({ msg: 'Could not sign you in right now. Please try again.' });
   }
 });
 
@@ -197,7 +202,7 @@ router.post('/request-otp', async (req, res) => {
     });
   } catch (err) {
     console.error('Error generating reset OTP:', err);
-    res.status(500).json({ msg: 'Server error generating verification code.', error: err.message });
+    res.status(500).json({ msg: 'Server error generating verification code.' });
   }
 });
 
@@ -248,7 +253,7 @@ router.post('/forgot-password', async (req, res) => {
     res.json({ success: true, msg: 'Password verified & reset successfully! You can now log in.' });
   } catch (err) {
     console.error('Error resetting password:', err);
-    res.status(500).json({ msg: 'Server error while resetting password.', error: err.message });
+    res.status(500).json({ msg: 'Server error while resetting password.' });
   }
 });
 
@@ -285,7 +290,7 @@ const checkPhoneOtp = async (phone, purpose, otp) => {
 };
 
 const signGuestToken = (user) => {
-  const secret = process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026';
+  const secret = getJwtSecret();
   return jwt.sign({ id: user._id, role: user.role }, secret, { expiresIn: '7d' });
 };
 

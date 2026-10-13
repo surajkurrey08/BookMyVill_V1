@@ -34,6 +34,11 @@ const BookingSchema = new mongoose.Schema({
     idProof: { type: String, default: '', maxlength: 2000000 }
   },
   promotion: { type: mongoose.Schema.Types.ObjectId, ref: 'Promotion', default: null },
+  appliedOffer: {
+    id: { type: mongoose.Schema.Types.ObjectId, ref: 'SiteOffer', default: null },
+    title: { type: String, default: '', maxlength: 80 },
+    amount: { type: Number, default: 0, min: 0 }
+  },
   source: { type: String, enum: ['website', 'quotation', 'walk_in', 'phone', 'whatsapp', 'agent', 'ota', 'other'], default: 'website' },
   quotation: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation', default: null },
   inquiry: { type: mongoose.Schema.Types.ObjectId, ref: 'Inquiry', default: null },

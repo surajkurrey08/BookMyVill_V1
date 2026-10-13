@@ -12,9 +12,21 @@ const platforms = [
   { key: 'linkedin', label: 'LinkedIn', icon: 'fa-brands fa-linkedin-in', hosts: ['linkedin.com'], example: 'https://linkedin.com/company/your-page' }
 ];
 
-const emptyLinks = Object.fromEntries(platforms.map(platform => [platform.key, '']));
+const footerFields = [
+  { key: 'footerDescription', label: 'Short description', type: 'textarea', limit: 240, hint: 'A short message shown below the BookMyVilla logo.' },
+  { key: 'contactPhone', label: 'Phone number', type: 'tel', limit: 30, icon: 'fa-solid fa-phone', placeholder: '+91 98765 43210' },
+  { key: 'contactEmail', label: 'Email address', type: 'email', limit: 120, icon: 'fa-solid fa-envelope', placeholder: 'support@bookmyvilla.com' },
+  { key: 'contactLocation', label: 'Location', type: 'text', limit: 160, icon: 'fa-solid fa-location-dot', placeholder: 'Mahabaleshwar, Maharashtra, India' }
+];
 
-// Same checks as the server, so the admin sees problems before pressing Save.
+const defaultContent = {
+  facebook: '', instagram: '', x: '', youtube: '', whatsapp: '', linkedin: '',
+  footerDescription: 'Creating unforgettable experiences in the hills. Book your perfect stay and explore the beauty of Mahabaleshwar with us.',
+  contactPhone: '+91 98765 43210',
+  contactEmail: 'support@bookmyvilla.com',
+  contactLocation: 'Mahabaleshwar, Maharashtra, India'
+};
+
 const checkLink = (platform, rawValue) => {
   let value = rawValue.trim();
   if (!value) return '';
@@ -39,6 +51,15 @@ const checkLink = (platform, rawValue) => {
   return '';
 };
 
+const checkFooterField = (field, rawValue) => {
+  const value = rawValue.trim();
+  if (!value) return 'This field is required.';
+  if (value.length > field.limit) return `Use ${field.limit} characters or fewer.`;
+  if (field.key === 'contactEmail' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Enter a valid email address.';
+  if (field.key === 'contactPhone' && !/^[+()\d\s-]{7,30}$/.test(value)) return 'Use a valid phone number with digits, spaces, +, - or brackets.';
+  return '';
+};
+
 const readError = async (response, fallback) => {
   if (response.status === 401 || response.status === 403) {
     return { msg: 'Your login has expired. Please log out and log in again.' };
@@ -48,15 +69,15 @@ const readError = async (response, fallback) => {
 };
 
 export default function SocialLinksManager() {
-  const [links, setLinks] = useState(emptyLinks);
-  const [savedLinks, setSavedLinks] = useState(emptyLinks);
+  const [content, setContent] = useState(defaultContent);
+  const [savedContent, setSavedContent] = useState(defaultContent);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState({ type: '', message: '' });
 
-  const loadLinks = async () => {
+  const loadContent = async () => {
     setLoading(true);
     setLoadError('');
     try {
@@ -64,13 +85,13 @@ export default function SocialLinksManager() {
         headers: { 'x-auth-token': readAdminSession()?.token }
       });
       if (!response.ok) {
-        const { msg } = await readError(response, 'Could not load the saved links. Please refresh the page.');
+        const { msg } = await readError(response, 'Could not load the footer content. Please refresh the page.');
         throw new Error(msg);
       }
       const result = await response.json();
-      const loaded = { ...emptyLinks, ...(result.links || {}) };
-      setLinks(loaded);
-      setSavedLinks(loaded);
+      const loaded = { ...defaultContent, ...(result.footer || {}), ...(result.links || {}) };
+      setContent(loaded);
+      setSavedContent(loaded);
     } catch (error) {
       setLoadError(error.name === 'TypeError'
         ? 'Cannot reach the server. Check your internet connection and try again.'
@@ -81,36 +102,32 @@ export default function SocialLinksManager() {
   };
 
   useEffect(() => {
-    loadLinks();
+    loadContent();
   }, []);
 
-  const hasChanges = platforms.some(platform => links[platform.key].trim() !== savedLinks[platform.key]);
+  const hasChanges = Object.keys(defaultContent).some(key => content[key].trim() !== savedContent[key].trim());
 
-  const updateLink = (key, value) => {
-    setLinks(current => ({ ...current, [key]: value }));
+  const updateField = (key, value) => {
+    setContent(current => ({ ...current, [key]: value }));
     setErrors(current => ({ ...current, [key]: '' }));
     setNotice({ type: '', message: '' });
   };
 
-  const validateField = platform => {
-    setErrors(current => ({ ...current, [platform.key]: checkLink(platform, links[platform.key]) }));
-  };
-
-  const saveLinks = async event => {
+  const saveContent = async event => {
     event.preventDefault();
     setNotice({ type: '', message: '' });
 
-    const nextErrors = Object.fromEntries(platforms.map(platform => [platform.key, checkLink(platform, links[platform.key])]));
-    const badFields = platforms.filter(platform => nextErrors[platform.key]);
+    const nextErrors = {};
+    platforms.forEach(platform => { nextErrors[platform.key] = checkLink(platform, content[platform.key]); });
+    footerFields.forEach(field => { nextErrors[field.key] = checkFooterField(field, content[field.key]); });
+    const badFields = Object.keys(nextErrors).filter(key => nextErrors[key]);
     setErrors(nextErrors);
     if (badFields.length) {
       setNotice({
         type: 'error',
-        message: badFields.length === 1
-          ? `Please fix the ${badFields[0].label} link before saving.`
-          : `Please fix the ${badFields.length} links marked in red before saving.`
+        message: badFields.length === 1 ? 'Please fix the field marked in red before saving.' : `Please fix the ${badFields.length} fields marked in red before saving.`
       });
-      document.getElementById(`social-${badFields[0].key}`)?.focus();
+      document.getElementById(`footer-${badFields[0]}`)?.focus();
       return;
     }
 
@@ -122,7 +139,7 @@ export default function SocialLinksManager() {
           'Content-Type': 'application/json',
           'x-auth-token': readAdminSession()?.token
         },
-        body: JSON.stringify(links)
+        body: JSON.stringify(content)
       });
 
       if (!response.ok) {
@@ -133,10 +150,10 @@ export default function SocialLinksManager() {
       }
 
       const result = await response.json();
-      const saved = { ...emptyLinks, ...(result.links || {}) };
-      setLinks(saved);
-      setSavedLinks(saved);
-      setNotice({ type: 'success', message: result.msg || 'Saved. The website footer now shows these links.' });
+      const saved = { ...defaultContent, ...(result.footer || {}), ...(result.links || {}) };
+      setContent(saved);
+      setSavedContent(saved);
+      setNotice({ type: 'success', message: result.msg || 'Saved. The website footer now shows the updated content.' });
     } catch {
       setNotice({ type: 'error', message: 'Cannot reach the server. Check your internet connection and try again.' });
     } finally {
@@ -145,100 +162,140 @@ export default function SocialLinksManager() {
   };
 
   if (loading) {
-    return <p className="social-manager-loading"><i className="fa-solid fa-spinner fa-spin"></i> Loading saved links...</p>;
+    return <p className="social-manager-loading"><i className="fa-solid fa-spinner fa-spin"></i> Loading footer content...</p>;
   }
 
   if (loadError) {
     return (
       <div className="social-manager-notice error" role="alert">
         <span><i className="fa-solid fa-circle-exclamation"></i> {loadError}</span>
-        <button type="button" className="social-manager-retry" onClick={loadLinks}>Try again</button>
+        <button type="button" className="social-manager-retry" onClick={loadContent}>Try again</button>
       </div>
     );
   }
 
-  const activeCount = platforms.filter(platform => savedLinks[platform.key]).length;
+  const activeCount = platforms.filter(platform => savedContent[platform.key]).length;
 
   return (
     <div className="social-manager">
       <div className="social-manager-intro">
         <div>
-          <h2>Footer Social Links</h2>
-          <p>Paste the link to each page. Leave a box empty to hide that icon from the website.</p>
+          <h2>Footer &amp; Social Links</h2>
+          <p>Edit the contact details and links shown in the public website footer.</p>
         </div>
-        <span className="social-manager-count">{activeCount} of {platforms.length} shown</span>
       </div>
 
-      <form className="social-manager-card" onSubmit={saveLinks} noValidate>
-        {platforms.map(platform => {
-          const value = links[platform.key];
-          const error = errors[platform.key];
-          const isLive = Boolean(savedLinks[platform.key]);
-
-          return (
-            <div key={platform.key} className={`social-manager-row ${error ? 'has-error' : ''}`}>
-              <label htmlFor={`social-${platform.key}`} className="social-manager-label">
-                <span className="social-manager-icon"><i className={platform.icon}></i></span>
-                {platform.label}
-                <span className={`social-manager-status ${isLive ? 'live' : ''}`}>
-                  {isLive ? 'Shown on website' : 'Hidden'}
-                </span>
-              </label>
-
-              <div className="social-manager-input-wrap">
-                <input
-                  id={`social-${platform.key}`}
-                  type="url"
-                  inputMode="url"
-                  value={value}
-                  onChange={event => updateLink(platform.key, event.target.value)}
-                  onBlur={() => validateField(platform)}
-                  placeholder={platform.example}
-                  autoComplete="off"
-                  spellCheck="false"
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={error ? `social-${platform.key}-error` : undefined}
-                />
-                {value && (
-                  <button
-                    type="button"
-                    className="social-manager-clear"
-                    onClick={() => updateLink(platform.key, '')}
-                    aria-label={`Clear ${platform.label} link`}
-                    title="Clear"
-                  >
-                    <i className="fa-solid fa-xmark"></i>
-                  </button>
-                )}
-              </div>
-
-              {error && (
-                <p id={`social-${platform.key}-error`} className="social-manager-error">
-                  <i className="fa-solid fa-circle-exclamation"></i> {error}
-                </p>
-              )}
+      <form className="social-manager-card" onSubmit={saveContent} noValidate>
+        <section className="social-manager-section" aria-labelledby="footer-contact-title">
+          <div className="social-manager-section-heading">
+            <div>
+              <h3 id="footer-contact-title">Footer contact details</h3>
+              <p>Visitors use these details to contact BookMyVilla.</p>
             </div>
-          );
-        })}
+          </div>
+
+          <div className="social-manager-fields">
+            {footerFields.map(field => {
+              const error = errors[field.key];
+              const inputId = `footer-${field.key}`;
+              return (
+                <div key={field.key} className={`social-manager-field ${field.type === 'textarea' || field.key === 'contactLocation' ? 'wide' : ''} ${error ? 'has-error' : ''}`}>
+                  <label htmlFor={inputId}>
+                    {field.icon && <i className={field.icon}></i>}
+                    {field.label}
+                  </label>
+                  {field.type === 'textarea' ? (
+                    <textarea
+                      id={inputId}
+                      rows="3"
+                      maxLength={field.limit}
+                      value={content[field.key]}
+                      onChange={event => updateField(field.key, event.target.value)}
+                      onBlur={() => setErrors(current => ({ ...current, [field.key]: checkFooterField(field, content[field.key]) }))}
+                      aria-invalid={Boolean(error)}
+                      aria-describedby={error ? `${inputId}-error` : `${inputId}-hint`}
+                    />
+                  ) : (
+                    <input
+                      id={inputId}
+                      type={field.type}
+                      maxLength={field.limit}
+                      value={content[field.key]}
+                      placeholder={field.placeholder}
+                      onChange={event => updateField(field.key, event.target.value)}
+                      onBlur={() => setErrors(current => ({ ...current, [field.key]: checkFooterField(field, content[field.key]) }))}
+                      aria-invalid={Boolean(error)}
+                      aria-describedby={error ? `${inputId}-error` : undefined}
+                    />
+                  )}
+                  {field.hint && !error && <p id={`${inputId}-hint`} className="social-manager-help">{field.hint} <span>{content[field.key].length}/{field.limit}</span></p>}
+                  {error && <p id={`${inputId}-error`} className="social-manager-error"><i className="fa-solid fa-circle-exclamation"></i> {error}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="social-manager-section" aria-labelledby="footer-social-title">
+          <div className="social-manager-section-heading">
+            <div>
+              <h3 id="footer-social-title">Social media links</h3>
+              <p>Leave a field empty to hide its icon from the website.</p>
+            </div>
+            <span className="social-manager-count">{activeCount} of {platforms.length} shown</span>
+          </div>
+
+          {platforms.map(platform => {
+            const value = content[platform.key];
+            const error = errors[platform.key];
+            const isLive = Boolean(savedContent[platform.key]);
+            const inputId = `footer-${platform.key}`;
+
+            return (
+              <div key={platform.key} className={`social-manager-row ${error ? 'has-error' : ''}`}>
+                <label htmlFor={inputId} className="social-manager-label">
+                  <span className="social-manager-icon"><i className={platform.icon}></i></span>
+                  {platform.label}
+                  <span className={`social-manager-status ${isLive ? 'live' : ''}`}>{isLive ? 'Shown on website' : 'Hidden'}</span>
+                </label>
+                <div className="social-manager-input-wrap">
+                  <input
+                    id={inputId}
+                    type="url"
+                    inputMode="url"
+                    value={value}
+                    onChange={event => updateField(platform.key, event.target.value)}
+                    onBlur={() => setErrors(current => ({ ...current, [platform.key]: checkLink(platform, content[platform.key]) }))}
+                    placeholder={platform.example}
+                    autoComplete="off"
+                    spellCheck="false"
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? `${inputId}-error` : undefined}
+                  />
+                  {value && (
+                    <button type="button" className="social-manager-clear" onClick={() => updateField(platform.key, '')} aria-label={`Clear ${platform.label} link`} title="Clear">
+                      <i className="fa-solid fa-xmark"></i>
+                    </button>
+                  )}
+                </div>
+                {error && <p id={`${inputId}-error`} className="social-manager-error"><i className="fa-solid fa-circle-exclamation"></i> {error}</p>}
+              </div>
+            );
+          })}
+        </section>
 
         {notice.message && (
           <div className={`social-manager-notice ${notice.type}`} role={notice.type === 'error' ? 'alert' : 'status'}>
-            <span>
-              <i className={`fa-solid ${notice.type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}`}></i> {notice.message}
-            </span>
+            <span><i className={`fa-solid ${notice.type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}`}></i> {notice.message}</span>
           </div>
         )}
 
         <div className="social-manager-actions">
           <button className="social-manager-save" type="submit" disabled={saving || !hasChanges}>
-            {saving ? <><i className="fa-solid fa-spinner fa-spin"></i> Saving...</> : 'Save Changes'}
+            {saving ? <><i className="fa-solid fa-spinner fa-spin"></i> Saving...</> : 'Save Footer Content'}
           </button>
           {hasChanges && !saving && (
-            <button
-              type="button"
-              className="social-manager-undo"
-              onClick={() => { setLinks(savedLinks); setErrors({}); setNotice({ type: '', message: '' }); }}
-            >
+            <button type="button" className="social-manager-undo" onClick={() => { setContent(savedContent); setErrors({}); setNotice({ type: '', message: '' }); }}>
               Undo changes
             </button>
           )}

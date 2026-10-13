@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { getJwtSecret } = require('../utils/jwtSecret');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 
@@ -8,7 +9,7 @@ module.exports = async function accountAuth(req, res, next) {
   if (!token) return res.status(401).json({ msg: 'Please sign in.' });
   if (mongoose.connection.readyState !== 1) return res.status(503).json({ msg: 'Database is unavailable.' });
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mahabaleshwar_secret_key_2026');
+    const decoded = jwt.verify(token, getJwtSecret());
     const id = decoded.id || decoded._id || decoded.user?.id || decoded.user?._id;
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(401).json({ msg: 'Invalid session.' });
     const user = await User.findById(id).select('_id role status adminRole adminPermissions');
