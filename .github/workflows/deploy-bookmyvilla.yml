@@ -99,6 +99,10 @@ jobs:
         env:
           BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
           ATLAS_MONGODB_URI: ${{ secrets.ATLAS_MONGODB_URI }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          REQUIRE_CLOUDINARY: 'true'
         run: |
           set -euo pipefail
           npm ci --omit=dev --no-audit --no-fund --prefix backend
@@ -293,6 +297,10 @@ jobs:
         env:
           BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
           ATLAS_MONGODB_URI: ${{ secrets.ATLAS_MONGODB_URI }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          REQUIRE_CLOUDINARY: 'true'
         run: |
           set -euo pipefail
 
@@ -568,6 +576,13 @@ jobs:
                 exit 1
               fi
               echo "$app: production build is present"
+            done
+            for route in explore about-us join-us; do
+              if [[ ! -s "frontend/dist/$route/index.html" ]]; then
+                echo "ERROR: Missing prerendered SEO page frontend/dist/$route/index.html"
+                exit 1
+              fi
+              echo "frontend/$route: prerendered SEO page is present"
             done
           REMOTE
 
