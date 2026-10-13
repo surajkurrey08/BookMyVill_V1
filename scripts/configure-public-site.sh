@@ -200,6 +200,31 @@ if ! docker exec "$gateway" wget -q -O /dev/null --header 'Host: bookmyvilla.onl
   exit 1
 fi
 
+# Confirm that whatever listens on :8090 really runs the site file installed above.
+# The new file marks private pages with an X-Robots-Tag header; an older config does not.
+serves_current_config() {
+  curl -s -o /dev/null -D - --max-time 5 -H 'Host: bookmyvilla.online' http://127.0.0.1:8090/dashboard \
+    | grep -qi '^x-robots-tag:'
+}
+if command -v curl >/dev/null && ! serves_current_config; then
+  echo "::warning::Host Nginx on :8090 still serves an older BookMyVilla config after reload; restarting it once."
+  systemctl restart nginx || true
+  sleep 2
+  if ! serves_current_config; then
+    echo "::warning::Host Nginx on :8090 is not using $site. SEO headers and the live sitemap stay inactive until this is fixed. Diagnostics follow."
+    echo '--- Nginx warnings (look for "conflicting server name"):'
+    nginx -t 2>&1 | grep -iE 'warn|conflict' || echo '(none)'
+    echo '--- Config files defining BookMyVilla or port 8090:'
+    nginx -T 2>/dev/null | grep -nE '^# configuration file|server_name .*bookmyvilla\.online|listen .*8090' || true
+    echo '--- Process listening on :8090:'
+    ss -H -ltnp '( sport = :8090 )' || true
+    echo '--- Includes in /etc/nginx/nginx.conf:'
+    grep -n 'include' /etc/nginx/nginx.conf || true
+  else
+    echo 'Host Nginx now serves the current BookMyVilla config.'
+  fi
+fi
+
 # ------------------------------------------------------------------
 # 2. Certificate (issued on the host, served by the gateway).
 # ------------------------------------------------------------------
