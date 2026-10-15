@@ -81,8 +81,7 @@ for (const [name, def] of Object.entries(SERVICES)) {
     // (unset = the shared MONGODB_URI database, i.e. today's data).
     ...(def.database ? [`      # Own database: ${def.database.key}_MONGODB_URI / ${def.database.key}_DB_NAME in backend/.env (target: ${def.database.target})`] : []),
     ...(name === 'auth-service' ? [
-      '      # TEMPORARY for live testing: the sign-up/login OTP is shown on screen',
-      '      # instead of sent by SMS. Delete this line before real users sign up.',
+      '      # Non-production password-reset fallback only. Phone OTP uses SMS.',
       '      ALLOW_DEMO_OTP: "true"'
     ] : []),
     ...healthcheck(def.port),

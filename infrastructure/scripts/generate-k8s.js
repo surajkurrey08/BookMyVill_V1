@@ -202,7 +202,7 @@ fs.writeFileSync(path.join(OUT, 'config', 'secret.example.yaml'), [
   '# Required keys: MONGODB_URI, JWT_SECRET, INTERNAL_SERVICE_TOKEN (shared secret for /internal calls).',
   '# Optional: RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET; per-service databases <KEY>_MONGODB_URI for',
   `#   ${Object.values(SERVICES).filter(d => d.database).map(d => d.database.key).join(', ')} (their <KEY>_DB_NAME go in the ConfigMap);`,
-  '# ALLOW_DEMO_OTP (testing only), CORS_ORIGINS, SMTP_*/SMS_* when providers are added.',
+  '# ALLOW_DEMO_OTP (password-reset testing only), CORS_ORIGINS, SMTP_* and SMS_* provider credentials.',
   'apiVersion: v1', 'kind: Secret', 'metadata:', '  name: bookmyvilla-backend-secrets', '  namespace: bookmyvilla', 'type: Opaque', 'stringData:',
   '  MONGODB_URI: "<mongodb+srv://...>"', '  JWT_SECRET: "<long random string>"', '  INTERNAL_SERVICE_TOKEN: "<long random string>"', '  RAZORPAY_KEY_ID: ""', '  RAZORPAY_KEY_SECRET: ""', ''
 ].join('\n'));

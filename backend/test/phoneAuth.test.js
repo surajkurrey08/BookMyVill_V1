@@ -1,4 +1,4 @@
-process.env.NODE_ENV = 'test'; // demo OTP is returned in the response under test
+process.env.NODE_ENV = 'test'; // test OTP is returned in the response under test
 
 const test = require('node:test');
 const assert = require('node:assert/strict');

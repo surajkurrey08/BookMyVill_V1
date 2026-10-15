@@ -209,30 +209,22 @@
   text-decoration: underline;
 }
 
-.hp-modal-dev-otp {
+.hp-modal-otp-sent {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
   gap: 12px;
-  background: rgba(217, 165, 32, 0.12);
-  border: 1px dashed var(--hp-gold, #d9a520);
+  background: rgba(31, 77, 54, 0.08);
+  border: 1px solid rgba(31, 77, 54, 0.18);
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 0.8rem;
-  color: var(--hp-ink-2, #3b3b37);
+  color: var(--hp-green-800, #1a3a2a);
   line-height: 1.4;
 }
 
-.hp-modal-dev-otp i {
-  color: var(--hp-gold-deep, #b9861a);
-  margin-right: 4px;
-}
-
-.hp-modal-dev-otp strong {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 1.35rem;
-  letter-spacing: 4px;
-  color: var(--hp-green-800, #1a3a2a);
+.hp-modal-otp-sent i {
+  color: var(--hp-green-700, #1f4d36);
+  margin-top: 2px;
 }
 
 .hp-modal-otp-input {

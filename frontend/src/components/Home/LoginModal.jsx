@@ -94,14 +94,12 @@ const useCooldown = () => {
   return [cooldown, () => setCooldown(RESEND_COOLDOWN)];
 };
 
-// No SMS gateway yet: the backend returns the code and we show it here so the
-// guest can type it in.
-const DemoOtpNotice = ({ otp }) => (otp ? (
-  <div className="hp-modal-dev-otp" role="status">
-    <span><i className="fa-solid fa-circle-info"></i> Demo OTP (SMS not set up yet)</span>
-    <strong>{otp}</strong>
+const OtpSentNotice = ({ phone }) => (
+  <div className="hp-modal-otp-sent" role="status">
+    <i className="fa-solid fa-message"></i>
+    <span>We sent a 6-digit OTP to +91 {phone}. It expires in 5 minutes.</span>
   </div>
-) : null);
+);
 
 const OtpField = ({ value, onChange, autoFocus }) => (
   <label className="hp-modal-field">
@@ -143,7 +141,6 @@ const LoginTab = ({ onSuccess, onSwitchToRegister }) => {
   const [password, setPassword] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
-  const [devOtp, setDevOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [cooldown, startCooldown] = useCooldown();
@@ -151,7 +148,6 @@ const LoginTab = ({ onSuccess, onSwitchToRegister }) => {
   const resetOtp = () => {
     setOtpSent(false);
     setOtp('');
-    setDevOtp('');
   };
 
   const switchMethod = (next) => {
@@ -173,7 +169,6 @@ const LoginTab = ({ onSuccess, onSwitchToRegister }) => {
     try {
       const { ok, data } = await postAuth('send-otp', { phone, purpose: 'login' });
       if (!ok) return setError(data.msg || 'Could not send OTP. Please try again.');
-      setDevOtp(data.otp || '');
       setOtp('');
       setOtpSent(true);
       startCooldown();
@@ -228,7 +223,7 @@ const LoginTab = ({ onSuccess, onSwitchToRegister }) => {
 
       {method === 'otp' && otpSent && (
         <>
-          <DemoOtpNotice otp={devOtp} />
+          <OtpSentNotice phone={phone} />
           <OtpField value={otp} onChange={setOtp} autoFocus />
           <ResendButton cooldown={cooldown} loading={loading} onClick={sendOtp} />
         </>
@@ -253,7 +248,6 @@ const RegisterTab = ({ onSuccess, onSwitchToLogin }) => {
   const [step, setStep] = useState('phone');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
-  const [devOtp, setDevOtp] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -270,7 +264,6 @@ const RegisterTab = ({ onSuccess, onSwitchToLogin }) => {
     try {
       const { ok, data } = await postAuth('send-otp', { phone, purpose: 'register' });
       if (!ok) return setError(data.msg || 'Could not send OTP. Please try again.');
-      setDevOtp(data.otp || '');
       setOtp('');
       setStep('otp');
       startCooldown();
@@ -300,7 +293,6 @@ const RegisterTab = ({ onSuccess, onSwitchToLogin }) => {
   const changeNumber = () => {
     setStep('phone');
     setOtp('');
-    setDevOtp('');
     setError('');
   };
 
@@ -361,7 +353,7 @@ const RegisterTab = ({ onSuccess, onSwitchToLogin }) => {
       <form className="hp-modal-form" onSubmit={verifyOtp}>
         {stepper}
         <PhoneChip phone={phone} onChange={changeNumber} />
-        <DemoOtpNotice otp={devOtp} />
+        <OtpSentNotice phone={phone} />
         <OtpField value={otp} onChange={setOtp} autoFocus />
         <ResendButton cooldown={cooldown} loading={loading} onClick={sendOtp} />
         {error && <p className="hp-modal-error">{error}</p>}

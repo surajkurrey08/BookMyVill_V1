@@ -11,6 +11,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const User = require('../models/User');
 const PartnerApplication = require('../models/PartnerApplication');
+const { sendPhoneOtp } = require('../services/sms');
 
 // Register
 router.post('/register', async (req, res) => {
@@ -259,9 +260,6 @@ router.post('/forgot-password', async (req, res) => {
 
 // ---------------------------------------------------------------------------
 // Mobile number (OTP) login/registration — Guest/Traveler quick sign-up.
-// NOTE: OTP delivery is dev-mode only for now (no SMS gateway configured):
-// the generated code is returned in the API response / logged to the
-// server console instead of being sent as a real text message.
 // ---------------------------------------------------------------------------
 
 const PhoneOtp = require('../models/PhoneOtp');
@@ -270,7 +268,7 @@ const cleanPhoneNumber = (phone) => (phone || '').toString().replace(/\D/g, '').
 const isValidIndianMobile = (phone) => /^[6-9]\d{9}$/.test(phone);
 
 const INACTIVE_STATUSES = ['pending', 'rejected', 'suspended'];
-const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_TTL_MS = 5 * 60 * 1000;
 const OTP_RESEND_COOLDOWN_MS = 30 * 1000;
 const MAX_OTP_ATTEMPTS = 5;
 
@@ -299,9 +297,6 @@ const guestPayload = (user) => ({ id: user._id, name: user.name, email: user.ema
 // Step 1: Request a 6-digit OTP — `purpose: 'register'` (default) for a new
 // number, `purpose: 'login'` for an existing account signing in without a password.
 router.post('/phone/send-otp', async (req, res) => {
-  // TEMPORARY (owner-requested for live testing): demo OTP is controlled only by
-  // ALLOW_DEMO_OTP, including in production. Remove before real users sign up.
-  if (process.env.NODE_ENV !== 'test' && process.env.ALLOW_DEMO_OTP !== 'true') return res.status(503).json({ msg: 'OTP delivery is not configured. Use password sign in or contact Admin.' });
   try {
     const cleanPhone = cleanPhoneNumber(req.body.phone);
     const purpose = req.body.purpose === 'login' ? 'login' : 'register';
@@ -322,8 +317,19 @@ router.post('/phone/send-otp', async (req, res) => {
       return res.status(429).json({ msg: 'Please wait a few seconds before requesting another OTP.' });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + OTP_TTL_MS);
+
+    // Tests use the returned code to exercise verification; real requests must
+    // be accepted by the SMS provider before an OTP becomes valid.
+    if (process.env.NODE_ENV !== 'test') {
+      try {
+        await sendPhoneOtp({ phone: cleanPhone, otp });
+      } catch (err) {
+        console.error('SMS OTP delivery failed:', err.message);
+        return res.status(502).json({ msg: 'We could not send your OTP right now. Please try again shortly.' });
+      }
+    }
 
     await PhoneOtp.findOneAndUpdate(
       { phone: cleanPhone, purpose },
@@ -331,12 +337,10 @@ router.post('/phone/send-otp', async (req, res) => {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    console.log(`🔑 [DEV OTP] ${purpose === 'login' ? 'Login' : 'Registration'} OTP for +91${cleanPhone}: [ ${otp} ] (expires in 10 mins)`);
-
     res.json({
       success: true,
-      msg: `Dev Mode: SMS gateway is not configured yet, so here is your OTP directly — ${otp}`,
-      otp, // returned only because no real SMS provider is wired up yet
+      msg: 'OTP sent to your mobile number. It is valid for 5 minutes.',
+      ...(process.env.NODE_ENV === 'test' ? { otp } : {}),
       phone: cleanPhone
     });
   } catch (err) {

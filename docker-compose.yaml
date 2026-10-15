@@ -62,8 +62,7 @@ services:
       <<: *backend-env
       SERVICE_NAME: auth-service
       PORT: "2101"
-      # TEMPORARY for live testing: the sign-up/login OTP is shown on screen
-      # instead of sent by SMS. Delete this line before real users sign up.
+      # Non-production password-reset fallback only. Phone OTP uses SMS.
       ALLOW_DEMO_OTP: "true"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:2101/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
