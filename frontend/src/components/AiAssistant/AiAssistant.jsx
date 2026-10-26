@@ -7,6 +7,7 @@ const HOTEL_AND_LOCATION_DATABASE = [
     names: ['sunset', 'grand sunset', 'sunset villa'],
     title: '👑 Grand Sunset Villa & Resort',
     location: 'Sunset Point Road, Mahabaleshwar',
+    
     perspective: {
       rating: '4.9/5 ⭐ (Guest Favorite)',
       stayVibe: 'Panoramic valley view, serene foggy evenings & quiet luxury experience',

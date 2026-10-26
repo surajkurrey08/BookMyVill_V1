@@ -4,7 +4,9 @@ import './BrandLogo.css';
 // Shared wordmark used by both the redesigned Home page header/footer and
 // the site-wide Navbar/Footer, so the brand looks identical everywhere.
 const BrandLogo = () => (
+
   <span className="bmv-logo">
+    <div></div>
     <span className="bmv-logo-row">
       <span className="bmv-logo-name">BookMyVilla</span>
       <svg className="bmv-logo-peaks" viewBox="0 0 48 22" aria-hidden="true">
