@@ -167,7 +167,9 @@ router.get('/login', (req, res) => {
 
 // Step 1: Request 6-Digit OTP for Secure Password Reset
 router.post('/request-otp', async (req, res) => {
-  if (process.env.NODE_ENV !== 'test' && !(process.env.NODE_ENV !== 'production' && process.env.ALLOW_DEMO_OTP === 'true')) return res.status(503).json({ msg: 'OTP delivery is not configured. Use password sign in or contact Admin.' });
+  if (process.env.NODE_ENV !== 'test') {
+    return res.status(503).json({ msg: 'Email password reset is not available yet. Please contact support.' });
+  }
   try {
     const { email } = req.body;
     if (!email) {
@@ -187,18 +189,17 @@ router.post('/request-otp', async (req, res) => {
     }
 
     // Generate secure 6-digit OTP code
-    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    const generatedOtp = crypto.randomInt(100000, 1000000).toString();
     const expiryTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes validity
 
     user.resetOtp = generatedOtp;
     user.resetOtpExpires = expiryTime;
     await user.save();
 
-    console.log(`🔑 [SECURITY OTP GENERATED] For ${cleanEmail}: OTP is [ ${generatedOtp} ] (Expires in 15 mins)`);
 
     res.json({
       success: true,
-      msg: `Verification OTP generated for ${cleanEmail}! Use OTP: ${generatedOtp}`,
+      msg: 'Verification code generated.',
       otp: generatedOtp
     });
   } catch (err) {
@@ -271,6 +272,7 @@ const INACTIVE_STATUSES = ['pending', 'rejected', 'suspended'];
 const OTP_TTL_MS = 5 * 60 * 1000;
 const OTP_RESEND_COOLDOWN_MS = 30 * 1000;
 const MAX_OTP_ATTEMPTS = 5;
+const hashPhoneOtp = (otp) => crypto.createHmac('sha256', getJwtSecret()).update(String(otp || '').trim()).digest('hex');
 
 // Checks a submitted OTP. Wrong guesses are counted on the record so a code
 // can't be brute-forced; after MAX_OTP_ATTEMPTS a new OTP must be requested.
@@ -279,7 +281,10 @@ const checkPhoneOtp = async (phone, purpose, otp) => {
   if (!record) return { error: 'Please request an OTP first.' };
   if (new Date() > new Date(record.expiresAt)) return { error: 'OTP has expired. Please request a new one.' };
   if (record.attempts >= MAX_OTP_ATTEMPTS) return { error: 'Too many wrong attempts. Please request a new OTP.' };
-  if (record.otp !== (otp || '').toString().trim()) {
+  const submittedHash = Buffer.from(hashPhoneOtp(otp), 'hex');
+  const storedHash = Buffer.from(record.otp, 'hex');
+  const matches = submittedHash.length === storedHash.length && crypto.timingSafeEqual(submittedHash, storedHash);
+  if (!matches) {
     record.attempts += 1;
     await record.save();
     return { error: 'Invalid OTP. Please check the code and try again.' };
@@ -320,8 +325,8 @@ router.post('/phone/send-otp', async (req, res) => {
     const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + OTP_TTL_MS);
 
-    // Tests use the returned code to exercise verification; real requests must
-    // be accepted by the SMS provider before an OTP becomes valid.
+    // Tests can receive the generated code; all other requests must be
+    // accepted by the configured SMS provider before an OTP becomes valid.
     if (process.env.NODE_ENV !== 'test') {
       try {
         await sendPhoneOtp({ phone: cleanPhone, otp });
@@ -333,7 +338,7 @@ router.post('/phone/send-otp', async (req, res) => {
 
     await PhoneOtp.findOneAndUpdate(
       { phone: cleanPhone, purpose },
-      { otp, expiresAt, attempts: 0, createdAt: new Date() },
+      { otp: hashPhoneOtp(otp), expiresAt, attempts: 0, createdAt: new Date() },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
@@ -519,6 +524,75 @@ router.put('/profile', auth, async (req, res) => {
   } catch (err) {
     console.error('Profile update error:', err.message);
     res.status(500).json({ msg: 'Server error updating profile' });
+  }
+});
+
+// Self Account Deletion (Google Play Data Safety & Privacy Policy Compliance)
+router.delete('/delete-account', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ msg: 'Account not found.' });
+
+    // Protect administrative accounts
+    if (user.role === 'admin') {
+      return res.status(403).json({ msg: 'Administrative accounts cannot be deleted directly from the mobile app.' });
+    }
+
+    // Guard: active or upcoming confirmed reservations must be resolved first
+    try {
+      const Booking = require('../models/Booking');
+      const now = new Date();
+      const activeBooking = await Booking.findOne({
+        user: user._id,
+        status: { $in: ['confirmed', 'payment_pending'] },
+        checkOut: { $gte: now }
+      });
+      if (activeBooking) {
+        return res.status(409).json({
+          msg: 'You have an active or upcoming villa reservation. Please cancel or complete your reservation before deleting your account.'
+        });
+      }
+    } catch (bookingErr) {
+      console.warn('Booking guard check notice on self-delete:', bookingErr.message);
+    }
+
+    // Record audit trail in AdminAudit so Admin Console displays this event
+    try {
+      const AdminAudit = require('../models/AdminAudit');
+      await AdminAudit.create({
+        actor: user._id,
+        actorName: user.name || user.email || 'Mobile User',
+        action: 'customer.self_delete',
+        entityType: 'customer',
+        entityId: user._id,
+        entityLabel: (user.name || 'Customer') + ' (' + (user.phone || user.email || '') + ')',
+        reason: 'User self-deleted account from BookMyVilla mobile app (Google Play Data Safety compliance)',
+        before: { status: user.status, name: user.name, email: user.email, phone: user.phone },
+        after: { status: 'deleted' },
+        ip: req.ip || ''
+      });
+    } catch (auditErr) {
+      console.error('Audit record error on self-delete:', auditErr.message);
+    }
+
+    // Clean up associated temporary verification OTPs
+    if (user.phone) {
+      try {
+        const PhoneOtp = require('../models/PhoneOtp');
+        await PhoneOtp.deleteMany({ phone: user.phone });
+      } catch (otpErr) {
+        // non-blocking
+      }
+    }
+
+    // Permanently remove user record
+    await User.findByIdAndDelete(userId);
+
+    res.json({ success: true, msg: 'Account and associated personal data deleted successfully.' });
+  } catch (err) {
+    console.error('Account deletion error:', err.message);
+    res.status(500).json({ msg: 'Server error while deleting account.' });
   }
 });
 

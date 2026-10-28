@@ -5,10 +5,10 @@ const mongoose = require('mongoose');
 // time there is no User document yet.
 const PhoneOtpSchema = new mongoose.Schema({
   phone: { type: String, required: true, index: true },
-  otp: { type: String, required: true },
+  otp: { type: String, required: true }, // SHA-256 hash; the plain code is only sent by SMS.
   purpose: { type: String, enum: ['register', 'login'], default: 'register' },
   attempts: { type: Number, default: 0 }, // wrong guesses against this code
-  expiresAt: { type: Date, required: true },
+  expiresAt: { type: Date, required: true, index: { expires: 0 } },
   createdAt: { type: Date, default: Date.now }
 });
 

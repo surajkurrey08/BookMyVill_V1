@@ -24,7 +24,8 @@ test('invalid database configuration stays an error and cannot silently select a
 
 test('deployment validates secrets before rollout and overrides only Atlas URI and backend port', () => {
   const script = path.resolve(__dirname, '../../scripts/validate-backend-env.js');
-  const env = { ...process.env, BACKEND_ENV: 'MONGODB_URI=invalid-value\nJWT_SECRET=existing-production-signing-secret\nRAZORPAY_KEY_SECRET=existing-payment-secret\nPORT=5000\n', ATLAS_MONGODB_URI: uri };
+  const validBackendEnv = 'MONGODB_URI=invalid-value\nJWT_SECRET=existing-production-signing-secret\nRAZORPAY_KEY_SECRET=existing-payment-secret\nSMS_API_URL=https://sms-provider.test/send\nSMS_USERNAME=provider-user\nSMS_PASSWORD=provider-password\nSMS_SENDER_ID=BKMYVA\nSMS_TEMPLATE_ID=1777179206833227479\nPORT=5000\n';
+  const env = { ...process.env, BACKEND_ENV: validBackendEnv, ATLAS_MONGODB_URI: uri };
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bmv-env-'));
   const file = path.join(dir, 'backend.env');
   try {
@@ -38,5 +39,9 @@ test('deployment validates secrets before rollout and overrides only Atlas URI a
     assert.equal(invalid.status, 1); assert.match(invalid.stderr, /MONGODB_URI is invalid/); assert.ok(!invalid.stderr.includes('invalid-value'));
     const noJwt = spawnSync(process.execPath, [script], { env: { ...env, BACKEND_ENV: `MONGODB_URI=${uri}\n` }, encoding: 'utf8' });
     assert.equal(noJwt.status, 1); assert.match(noJwt.stderr, /JWT_SECRET is missing/);
+    const insecureSms = spawnSync(process.execPath, [script], { env: { ...env, BACKEND_ENV: validBackendEnv.replace('https://sms-provider.test', 'http://sms-provider.test') }, encoding: 'utf8' });
+    assert.equal(insecureSms.status, 1); assert.match(insecureSms.stderr, /valid HTTPS SMS provider endpoint/);
+    const noSms = spawnSync(process.execPath, [script], { env: { ...env, BACKEND_ENV: validBackendEnv.replace(/SMS_[^\n]+\n/g, '') }, encoding: 'utf8' });
+    assert.equal(noSms.status, 1); assert.match(noSms.stderr, /Live OTP delivery requires/);
   } finally { if (fs.existsSync(file)) fs.unlinkSync(file); fs.rmdirSync(dir); }
 });

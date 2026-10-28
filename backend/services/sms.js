@@ -4,8 +4,8 @@ const getSmsConfig = () => {
   const apiUrl = process.env.SMS_API_URL;
   const username = process.env.SMS_USERNAME;
   const password = process.env.SMS_PASSWORD || process.env.SMS_API_KEY;
-  const senderId = process.env.SMS_SENDER_ID || 'BKMYVA';
-  const templateId = process.env.SMS_TEMPLATE_ID || '1777179206833227479';
+  const senderId = process.env.SMS_SENDER_ID;
+  const templateId = process.env.SMS_TEMPLATE_ID;
 
   if (!apiUrl || !username || !password || !senderId || !templateId) {
     throw new Error('SMS gateway is not configured.');
@@ -19,6 +19,9 @@ const getSmsConfig = () => {
   }
   if (!['http:', 'https:'].includes(endpoint.protocol)) {
     throw new Error('SMS gateway URL must use HTTP or HTTPS.');
+  }
+  if (process.env.NODE_ENV === 'production' && endpoint.protocol !== 'https:') {
+    throw new Error('SMS gateway URL must use HTTPS in production.');
   }
 
   return { endpoint, username, password, senderId, templateId };
@@ -73,5 +76,9 @@ const sendPhoneOtp = async ({ phone, otp }) => {
     clearTimeout(timeout);
   }
 };
+
+// Fail during boot when production cannot deliver securely, rather than
+// leaving sign-in to fail only after a guest requests an OTP.
+if (process.env.NODE_ENV === 'production') getSmsConfig();
 
 module.exports = { sendPhoneOtp };

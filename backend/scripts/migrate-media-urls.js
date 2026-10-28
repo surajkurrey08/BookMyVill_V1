@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 
 async function run() {
-  await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://bookmyvilla:surajkurrey2001@cluster0.u6bu1qi.mongodb.net/bookmyvilla?retryWrites=true&w=majority&appName=Cluster0');
+  if (!process.env.MONGODB_URI) {
+    throw new Error('MONGODB_URI must be provided through the environment.');
+  }
+  await mongoose.connect(process.env.MONGODB_URI);
   const collection = mongoose.connection.collection('properties');
   const properties = await collection.find({}).toArray();
 

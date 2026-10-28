@@ -570,6 +570,52 @@ router.post('/customers/:id/status', requirePermission('customers.manage'), asyn
   } catch (err) { fail(res, err); }
 });
 
+router.delete('/customers/:id', requirePermission('customers.manage'), async (req, res) => {
+  try {
+    if (!validId(req.params.id)) throw new HttpError(400, 'Invalid customer ID.');
+    const customer = await User.findOne({ _id: req.params.id, role: 'user' });
+    if (!customer) throw new HttpError(404, 'Customer account not found.');
+
+    // Guard: active or upcoming confirmed bookings must be resolved first
+    const now = new Date();
+    const activeBooking = await Booking.findOne({
+      user: customer._id,
+      status: { $in: ['confirmed', 'payment_pending'] },
+      checkOut: { $gte: now }
+    });
+    if (activeBooking) {
+      throw new HttpError(409, 'Cannot delete customer account with active or upcoming reservations. Cancel or complete them first, or suspend the account.');
+    }
+
+    const reason = cleanText(req.body?.reason, 500) || 'Deleted by Administrator';
+
+    // Record audit trail in AdminAudit
+    await recordAudit(req.admin, {
+      action: 'customer.admin_delete',
+      entityType: 'customer',
+      entityId: customer._id,
+      entityLabel: customer.name + ' (' + (customer.phone || customer.email) + ')',
+      before: { status: customer.status, name: customer.name, email: customer.email, phone: customer.phone },
+      after: { status: 'deleted' },
+      reason,
+      ip: req.ip
+    });
+
+    // Clean up temporary OTP records
+    if (customer.phone) {
+      try {
+        const PhoneOtp = require('../models/PhoneOtp');
+        await PhoneOtp.deleteMany({ phone: customer.phone });
+      } catch (e) {}
+    }
+
+    // Permanently remove customer
+    await User.findByIdAndDelete(customer._id);
+
+    res.json({ success: true, msg: 'Customer account deleted successfully.' });
+  } catch (err) { fail(res, err); }
+});
+
 // --------------------------------------------------------------------- audit
 router.get('/audit', requirePermission('audit.view'), async (req, res) => {
   try {
