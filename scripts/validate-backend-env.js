@@ -23,6 +23,20 @@ try {
   if (process.env.ATLAS_MONGODB_URI?.trim()) env.MONGODB_URI = process.env.ATLAS_MONGODB_URI;
   const uri = resolveMongoUri(env);
   if (!env.JWT_SECRET?.trim()) throw new Error('JWT_SECRET is missing from BACKEND_ENV.');
+  const smsCredentials = [
+    env.SMS_USERNAME,
+    env.SMS_PASSWORD || env.SMS_API_KEY,
+    env.SMS_SENDER_ID,
+    env.SMS_TEMPLATE_ID,
+  ];
+  if (!smsCredentials.every(value => value?.trim() && !/^your_/i.test(value.trim()))) {
+    throw new Error('Live OTP delivery requires SMS_USERNAME, SMS_PASSWORD (or SMS_API_KEY), SMS_SENDER_ID and SMS_TEMPLATE_ID in BACKEND_ENV.');
+  }
+  let smsEndpoint;
+  try { smsEndpoint = new URL(env.SMS_API_URL); } catch {}
+  if (!smsEndpoint || smsEndpoint.protocol !== 'https:' || /\.example$/i.test(smsEndpoint.hostname)) {
+    throw new Error('SMS_API_URL must be a valid HTTPS SMS provider endpoint.');
+  }
   if (output) {
     // Single quotes preserve literal dollar signs in Docker Compose env files.
     const outputSource = cloudinaryConfigured

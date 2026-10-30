@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "BookMyVilla",
+    "slug": "bookmyvilla-mobile",
+    "version": "1.0.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FCFDF8"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "buildNumber": "2",
+       "bundleIdentifier": "com.bookmyvilla.app"
+    },
+    "android": {
+      "package": "com.bookmyvilla.app",
+      "versionCode": 2,
+      "permissions": [
+        "INTERNET"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#FCFDF8",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "97b8ac44-e29d-416a-8eb4-fe922c21fd93"
+      }
+    }
+  }
+}

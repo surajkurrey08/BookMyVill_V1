@@ -14,7 +14,7 @@ import '../Home/Home.css';
 import './ExploreStaysPage.css';
 
 const PAGE_SIZE = 6;
-const PRICE_LIMIT = 25000;
+const PRICE_LIMIT = 100000;
 const emptyFilters = () => ({ types: [], amenities: [], idealFor: [], rating: 0, maxPrice: PRICE_LIMIT });
 const typeOptions = [
   ['Villas', 'Villa'], ['Resorts', 'Resort'], ['Cottages', 'Cottage'],
@@ -59,7 +59,7 @@ const contains = (value, term) => String(value || '').toLowerCase().includes(ter
 const hasAmenity = (property, selected) => {
   const terms = {
     'Swimming Pool': ['pool'], 'Breakfast Included': ['breakfast'], WiFi: ['wifi', 'wi-fi'],
-    Parking: ['parking'], 'AC Rooms': ['ac rooms', 'air conditioning'], 'Pet Friendly': ['pet'],
+    Parking: ['parking'], 'AC Rooms': ['ac', 'ac rooms', 'air conditioning'], 'Pet Friendly': ['pet'],
     Bonfire: ['bonfire'], 'Mountain View': ['mountain', 'valley view', 'forest view', 'lake view'],
   }[selected];
   return terms.some((term) => property.amenities.some((amenity) => contains(amenity, term)));
@@ -209,8 +209,8 @@ const ExploreStaysPage = () => {
   }, [params]);
 
   const allProperties = useMemo(() => {
-    const names = new Set(databaseProperties.map((item) => item.name.trim().toLowerCase()));
-    return [...databaseProperties, ...localProperties.filter((item) => !names.has(item.name.trim().toLowerCase()))];
+    if (databaseProperties.length > 0) return databaseProperties;
+    return localProperties;
   }, [databaseProperties]);
   const filtered = useMemo(() => {
     const lat = params.get('lat') ? Number(params.get('lat')) : null;

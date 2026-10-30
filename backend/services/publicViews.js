@@ -22,7 +22,9 @@ function publicProperty(property) {
     view.videos = view.videos.map(url => normalizeMediaUrl(url));
   }
   // Listing details guests may see; address, Wi-Fi and contacts stay private.
-  const details = pick(p.listingData?.details, ['guestCapacity', 'bedrooms', 'bathrooms', 'floors', 'shortDescription', 'description', 'highlights']);
+  const sourceDetails = p.listingData?.details || p.listingData || {};
+  const details = pick(sourceDetails, ['guestCapacity', 'maxGuests', 'bedrooms', 'bathrooms', 'floors', 'shortDescription', 'description', 'highlights']);
+  if (sourceDetails.maxGuests && !details.guestCapacity) details.guestCapacity = sourceDetails.maxGuests;
   if (Object.keys(details).length) view.details = details;
   if (details.description) view.description = details.description;
   // Named 'arrival' (not stayInfo): the full stayInfo also holds Wi-Fi details.

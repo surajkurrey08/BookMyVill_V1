@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 
-concurrency:
+concurrency: 
   group: bookmyvilla-production
   cancel-in-progress: false
 

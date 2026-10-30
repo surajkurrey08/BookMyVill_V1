@@ -56,7 +56,21 @@ function CustomerDrawer({ id, can, onClose, onChanged }) {
 
   async function act(action) {
     setBusy(true); setError('');
-    try { await adminApi(`/customers/${id}/status`, { method: 'POST', body: { action, reason } }); setConfirm(null); setReason(''); await load(); onChanged(); }
+    try {
+      if (action === 'delete') {
+        await adminApi(`/customers/${id}`, { method: 'DELETE', body: { reason } });
+        setConfirm(null);
+        setReason('');
+        onClose();
+        onChanged();
+      } else {
+        await adminApi(`/customers/${id}/status`, { method: 'POST', body: { action, reason } });
+        setConfirm(null);
+        setReason('');
+        await load();
+        onChanged();
+      }
+    }
     catch (err) { setError(err.message); }
     finally { setBusy(false); }
   }
@@ -66,6 +80,7 @@ function CustomerDrawer({ id, can, onClose, onChanged }) {
       {c.status !== 'suspended' && <button type="button" className="ac-btn bad" onClick={() => { setReason(''); setConfirm('suspend'); }}>Suspend</button>}
       {c.status !== 'restricted' && c.status !== 'suspended' && <button type="button" className="ac-btn warn" onClick={() => { setReason(''); setConfirm('restrict'); }}>Restrict</button>}
       {['suspended', 'restricted'].includes(c.status) && <button type="button" className="ac-btn good" onClick={() => { setReason(''); setConfirm('activate'); }}>Reactivate</button>}
+      <button type="button" className="ac-btn bad" onClick={() => { setReason(''); setConfirm('delete'); }} style={{ marginLeft: 8 }}>Delete Account</button>
     </div>}>
     <Alert onClose={() => setError('')}>{error}</Alert>
     {!data ? <p className="ac-muted">Loading…</p> : <>
@@ -73,8 +88,8 @@ function CustomerDrawer({ id, can, onClose, onChanged }) {
       <section className="ac-sub"><h4>Bookings</h4>{data.bookings.length === 0 ? <p className="ac-muted">None.</p> : <ul className="ac-mini-list">{data.bookings.map(b => <li key={b._id}><div><strong>{b.property?.name || 'Property'}</strong><small>{shortDate(b.checkIn)} → {shortDate(b.checkOut)}</small></div><span>{rupees(b.totalPrice)} · <StatusBadge meta={BOOKING_STATUS[b.status]} fallback={b.status} /></span></li>)}</ul>}</section>
       <section className="ac-sub"><h4>Admin history</h4><AuditTimeline entries={data.audit} /></section>
     </>}
-    {confirm && <ConfirmDialog title={`${confirm === 'activate' ? 'Reactivate' : confirm === 'restrict' ? 'Restrict' : 'Suspend'} ${c.name}?`} tone={confirm === 'activate' ? 'good' : confirm === 'suspend' ? 'bad' : 'warn'} confirmLabel={confirm === 'activate' ? 'Reactivate' : confirm === 'restrict' ? 'Restrict' : 'Suspend'} busy={busy} onClose={() => setConfirm(null)} onConfirm={() => act(confirm)} reason={reason} setReason={setReason} reasonRequired={confirm !== 'activate'}>
-      <p>{confirm === 'suspend' ? 'The customer is locked out of their account immediately.' : confirm === 'restrict' ? 'The account is flagged as restricted for review.' : 'The account returns to active.'}</p>
+    {confirm && <ConfirmDialog title={confirm === 'delete' ? `Delete ${c.name}'s Account?` : `${confirm === 'activate' ? 'Reactivate' : confirm === 'restrict' ? 'Restrict' : 'Suspend'} ${c.name}?`} tone={confirm === 'activate' ? 'good' : 'bad'} confirmLabel={confirm === 'delete' ? 'Delete Permanently' : confirm === 'activate' ? 'Reactivate' : confirm === 'restrict' ? 'Restrict' : 'Suspend'} busy={busy} onClose={() => setConfirm(null)} onConfirm={() => act(confirm)} reason={reason} setReason={setReason} reasonRequired={confirm !== 'activate'}>
+      <p>{confirm === 'delete' ? 'This permanently purges this customer account and personal data from BookMyVilla in compliance with data privacy policies. This action cannot be undone.' : confirm === 'suspend' ? 'The customer is locked out of their account immediately.' : confirm === 'restrict' ? 'The account is flagged as restricted for review.' : 'The account returns to active.'}</p>
     </ConfirmDialog>}
   </Drawer>;
 }

@@ -1,0 +1,1599 @@
+[
+  {
+    "_id": "6ac38e3bf78cec8c9e9d3102",
+    "owner": "6ac38660037b61e7f4a6f525",
+    "managementMode": "SELF_MANAGED",
+    "assignedVillaManager": null,
+    "assignedDataEntryUser": null,
+    "name": "Royal Villa",
+    "type": "Villa",
+    "location": "Lonavala",
+    "price": 8000,
+    "mapLink": "https://maps.app.goo.gl/NHoedYLmPkwvuJiq6",
+    "amenities": [
+      "Private Swimming Pool",
+      "Mountain & Valley View",
+      "Air Conditioning (AC)",
+      "BBQ & Grilling Setup",
+      "Free High-Speed Wi-Fi",
+      "Complimentary Breakfast",
+      "Free Private Parking",
+      "Lawn & Private Garden",
+      "Night Bonfire & Campfire",
+      "Equipped Kitchen",
+      "Pet Friendly Stay",
+      "CCTV Security",
+      "Indoor Games & Carrom",
+      "24/7 Hot Water",
+      "Personal Chef / Caretaker",
+      "24/7 Power Backup"
+    ],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/2e958cc0-c7af-4fcb-bcbc-55f5be2b5b86.png",
+      "https://api.bookmyvilla.online/api/properties/media/48681245-9d5d-4015-9e17-b48a45919a02.png",
+      "https://api.bookmyvilla.online/api/properties/media/28b271ed-e30a-4cf0-bb7d-c3e45341093d.png",
+      "https://api.bookmyvilla.online/api/properties/media/83e22692-bca8-431b-bc0d-8ea39c8e724e.png",
+      "https://api.bookmyvilla.online/api/properties/media/96305d25-eaad-4893-a2a6-338b83aeef5d.png",
+      "https://api.bookmyvilla.online/api/properties/media/04e7f43e-14bf-4211-8c53-1555bd5725c9.png",
+      "https://api.bookmyvilla.online/api/properties/media/a719153a-0a74-4d92-9c0b-fc6a2ce783ea.png"
+    ],
+    "videos": [
+      "http://localhost:2001/api/properties/media/006906de-cae8-4a63-acf9-19607a59556e.mp4"
+    ],
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-05T11:47:07.601Z"
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "suraj",
+      "wifiPassword": "suraj2001",
+      "houseRules": [
+        "no rule just fun"
+      ],
+      "arrivalNotes": "no",
+      "foodInfo": "no"
+    },
+    "status": "approved",
+    "createdAt": "2026-10-05T11:47:07.601Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ac47f31162c05cfc71efd16",
+    "owner": "6ac47f31162c05cfc71efd14",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "handover": {
+      "keyLocation": "12",
+      "caretakerName": "ramu",
+      "caretakerPhone": "8901234567",
+      "notes": "hello"
+    },
+    "assignedVillaManager": "6ac39823f80c73bc8bcec569",
+    "assignedDataEntryUser": null,
+    "name": "Rahul Villa",
+    "type": "Villa",
+    "location": "Lonavala",
+    "price": 10000,
+    "mapLink": "https://maps.app.goo.gl/NKh6o7Yg5vFvnfjZ9",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/3c9c3ced-a0f3-4717-b237-6a5c7f36991f.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/94a763bb-3b83-405c-9c24-4ff15015c4b5.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/4d518416-852c-4368-b417-456110c2b778.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/759105f0-4193-48a7-abfb-b63f40f90a88.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/c702ca9d-9ca5-44c5-98fd-b4804e83987b.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/eae30117-5749-4a0f-89b9-711ced255563.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/24a0414c-7804-40bf-a47a-ec4cf63ff5ab.jpg"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 15,
+        "bedrooms": 5,
+        "bathrooms": 6,
+        "address": "lonavala , MH",
+        "checkInTime": "1:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-06T04:55:13.891Z"
+    },
+    "stayInfo": {
+      "checkInTime": "1:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "Rahul villa",
+      "wifiPassword": "Nopassword",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-06T04:55:13.891Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ac4becfdc8b9cdf2db5b717",
+    "owner": "6ac4beccdc8b9cdf2db5b715",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "12",
+      "caretakerName": "ramu",
+      "caretakerPhone": "1234567899",
+      "notes": "hello"
+    },
+    "assignedVillaManager": "6ac39823f80c73bc8bcec569",
+    "assignedDataEntryUser": "6ac4860da0d570c86ff8c2a8",
+    "name": "Gupta villa",
+    "type": "Villa",
+    "location": "lonavala",
+    "price": 12000,
+    "mapLink": "https://maps.app.goo.gl/uYcerhmvmMvNCSxz7",
+    "amenities": [
+      "poot",
+      "wifi",
+      "parking"
+    ],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/69ff0ea6-1c3a-4e9b-ab91-acbd055faf98.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/56bd82fc-f665-41f6-9319-81873f670311.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/ffa3f07c-e243-41d2-be70-b405d3c7cc6d.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/b53ca19b-5207-45c1-b55c-a4fc1f7d320b.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/a26b7dfb-2fc9-4619-920e-06735de62f11.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/c29fa903-1ab2-47cc-ba56-f57b3e46a3f7.jpg"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 14,
+        "bedrooms": 5,
+        "bathrooms": 6,
+        "address": "Hinjewadi",
+        "description": "hello",
+        "checkInTime": "1:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "CHANGES_REQUIRED",
+    "dataEntryReviewReason": "changes needed",
+    "dataEntryRevision": 2,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": "2026-10-12T07:22:01.152Z",
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-06T09:26:39.931Z"
+    },
+    "stayInfo": {
+      "checkInTime": "1:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "raj",
+      "wifiPassword": "raj2001",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "under_review",
+    "createdAt": "2026-10-06T09:26:39.931Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ac4bf79dc8b9cdf2db5b7b3",
+    "owner": "6ac4beccdc8b9cdf2db5b715",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "12",
+      "caretakerName": "ramu",
+      "caretakerPhone": "1234567899",
+      "notes": "hello"
+    },
+    "assignedVillaManager": "6ac39823f80c73bc8bcec569",
+    "assignedDataEntryUser": null,
+    "name": "gupta villa",
+    "type": "Villa",
+    "location": "lonavala",
+    "price": 12000,
+    "mapLink": "https://maps.app.goo.gl/uYcerhmvmMvNCSxz7",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/e0cdd210-4c15-4720-96aa-fcc011d499ce.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/5024601f-805a-41e0-aff4-29db02c267a7.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/4102717e-1082-432b-b73a-6028fbd652c4.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/9ea1ac8e-0cf3-4c3d-bc74-717211fab754.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/34368759-e1ef-47b7-b5d4-ee61a6b6ea67.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/56404492-4381-49b4-b33f-7f2bc280e67f.jpg"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 15,
+        "bedrooms": 5,
+        "bathrooms": 6,
+        "address": "lonavala",
+        "checkInTime": "1:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-06T09:29:29.040Z"
+    },
+    "stayInfo": {
+      "checkInTime": "1:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "raj",
+      "wifiPassword": "raj2001",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-06T09:29:29.040Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ac5e50e356a32a2c3858a61",
+    "owner": "6ac5e50e356a32a2c3858a5f",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "12",
+      "caretakerName": "raju",
+      "caretakerPhone": "1234567890",
+      "notes": "hello"
+    },
+    "assignedVillaManager": "6ac39823f80c73bc8bcec569",
+    "assignedDataEntryUser": null,
+    "name": "GAURAV SWEET VILLA",
+    "type": "Villa",
+    "location": "lonavala",
+    "price": 11000,
+    "mapLink": "https://maps.app.goo.gl/NPWAaPhiPy7FAfqL9",
+    "amenities": [
+      "pool wifi"
+    ],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/52b6e0b8-c92c-487d-a846-1a5b33eb145f.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/426db1a9-c275-48a9-8e13-f48f16a87911.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/012a8ea7-7a3a-4553-9aee-952eb6dc5f91.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/3934d64c-6633-4721-8610-810b0eeb57f0.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/5c49124e-0627-4397-b60b-e39d97171a45.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/7d6913e6-ea34-4f87-8061-4aee11d92236.jpg"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 15,
+        "bedrooms": 5,
+        "bathrooms": 4,
+        "address": "lonavala",
+        "description": "hello",
+        "checkInTime": "11:00 AM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-07T06:22:06.253Z"
+    },
+    "stayInfo": {
+      "checkInTime": "11:00 AM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "raju2001",
+      "wifiPassword": "1234fghj",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-07T06:22:06.253Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ac5f5ed53eed482f4f67201",
+    "owner": "6ac5f45a53eed482f4f6710b",
+    "managementMode": "SELF_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "assignedVillaManager": null,
+    "assignedDataEntryUser": null,
+    "name": "Shyam",
+    "type": "Cabin",
+    "location": "Akurdi",
+    "price": 1500,
+    "mapLink": "https://maps.app.goo.gl/BuaK69LZYKTLDbRR9",
+    "amenities": [
+      "Private Swimming Pool",
+      "Free High-Speed Wi-Fi",
+      "Equipped Kitchen",
+      "Lawn & Private Garden"
+    ],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/3e6224a0-d32e-43ad-bad5-f7bb4829d3da.png",
+      "https://api.bookmyvilla.online/api/properties/media/f4570551-896a-4db8-95b9-94bbf50a388b.png",
+      "https://api.bookmyvilla.online/api/properties/media/456e49e5-402f-4a64-b82e-1b9d644d6a14.png",
+      "https://api.bookmyvilla.online/api/properties/media/20e270fc-dc30-40be-9c16-352d8811e483.png",
+      "https://api.bookmyvilla.online/api/properties/media/65b706bd-7c2f-427d-8fb2-c3ba740670e5.png"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 6
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-07T07:34:05.632Z"
+    },
+    "stayInfo": {
+      "checkInTime": "6",
+      "checkOutTime": "11",
+      "wifiName": "Gaurav Villa",
+      "wifiPassword": "Gk123456",
+      "houseRules": [
+        "No loud music after 12 in night"
+      ],
+      "arrivalNotes": "",
+      "foodInfo": "please arrive on time to breakfast , lunch and dinner"
+    },
+    "status": "approved",
+    "createdAt": "2026-10-07T07:34:05.632Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ac6277753eed482f4f67777",
+    "owner": "6ac6277653eed482f4f67775",
+    "managementMode": "SELF_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": null,
+    "assignedDataEntryUser": "6ac61b4253eed482f4f67527",
+    "name": "van vihar",
+    "type": "Villa",
+    "location": "Shirdi",
+    "price": 800,
+    "mapLink": "https://maps.app.goo.gl/2L2UQDCFiBK4j7veA",
+    "amenities": [
+      "pool"
+    ],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/82bfbcf8-957e-4014-b5cd-2968025b8bfa.jpg"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 12,
+        "bedrooms": 3,
+        "bathrooms": 4,
+        "address": "Ward no. 3 Shree Krishna Mandir",
+        "checkInTime": "1:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "COMPLETED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 1,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": "2026-10-07T11:09:09.823Z",
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-07T11:05:27.231Z"
+    },
+    "stayInfo": {
+      "checkInTime": "1:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-07T11:05:27.231Z",
+    "__v": 0
+  },
+  {
+    "_id": "6ac9dbef312c6422e7f870ad",
+    "owner": "6ac9d983fc76086318eabbdf",
+    "managementMode": "SELF_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "assignedVillaManager": null,
+    "assignedDataEntryUser": null,
+    "name": "Weekend Villa",
+    "type": "Villa",
+    "location": "Mahabaleshwar",
+    "price": 20000,
+    "mapLink": "https://maps.app.goo.gl/QdjjHFw8pW5wFDq87",
+    "amenities": [
+      "Private Swimming Pool",
+      "Free High-Speed Wi-Fi",
+      "Complimentary Breakfast",
+      "Free Private Parking",
+      "24/7 Power Backup",
+      "BBQ & Grilling Setup",
+      "Air Conditioning (AC)",
+      "Mountain & Valley View",
+      "Lawn & Private Garden",
+      "Night Bonfire & Campfire",
+      "Equipped Kitchen",
+      "Pet Friendly Stay",
+      "CCTV Security",
+      "Indoor Games & Carrom",
+      "24/7 Hot Water",
+      "Personal Chef / Caretaker",
+      "Jacuzzi"
+    ],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/57b54109-8545-4b87-a7fc-7bf1dcff5bc3.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/3a850e4d-72b7-479a-b035-22655bccd48f.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/4febb0cc-0659-47f5-9271-96bde866146a.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/b51fae39-93f5-408b-b852-ae3caa93ada0.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/a84287bd-542d-40b4-87e1-2797d01affee.png",
+      "https://api.bookmyvilla.online/api/properties/media/6f94a54f-64d8-4fb0-9fb8-ddc4192a6d4b.png"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 2
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-10T06:32:15.526Z"
+    },
+    "stayInfo": {
+      "checkInTime": "11:00 PM",
+      "checkOutTime": "8:00 AM",
+      "wifiName": "weekend-5G",
+      "wifiPassword": "Weekend@123",
+      "houseRules": [
+        "dszfxgjhklmnkmbjvhcgfxdzsaZSDfxghvk"
+      ],
+      "arrivalNotes": "afsdzxgcjhkbnmlkbvcxzxdfgc",
+      "foodInfo": "sdfzxgchjkn,bvjcghfxd"
+    },
+    "status": "approved",
+    "createdAt": "2026-10-10T06:32:15.526Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acb5e1f312c6422e7f875dd",
+    "owner": "6acb5e1c312c6422e7f875db",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acb5bf8fc76086318eac6c3",
+    "assignedDataEntryUser": null,
+    "name": "Gaurav Villa",
+    "type": "Villa",
+    "location": "akurdi",
+    "price": 400,
+    "mapLink": "https://maps.app.goo.gl/x3bYvA8cRSooZrq5A",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/613ad069-9917-4038-989f-4b36d9be6e49.jpg"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 7,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "address": "gurudwara chowk",
+        "checkInTime": "1:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-11T09:59:59.521Z"
+    },
+    "stayInfo": {
+      "checkInTime": "1:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-11T09:59:59.521Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc6b29312c6422e7f878e2",
+    "owner": "6acb5e1c312c6422e7f875db",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acb5bf8fc76086318eac6c3",
+    "assignedDataEntryUser": null,
+    "name": "Nilgiri Villa with Swimming Pool",
+    "type": "Villa",
+    "location": "Mahabaleshwar",
+    "price": 7470,
+    "mapLink": "https://maps.app.goo.gl/hSEQYZGgdTm2hY1L9",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/287269112.jpg?k=54901188b8bb72558890c124b9a3ee667bb70f6db741f6d72e910cdc65840919&o=&s=1024x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/287269114.jpg?k=e0b8ee170a3e6b578b9b4c41e160c9085e7a0c599864c70a5fd57688bd29b2a5&o=&s=1024x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/287269198.jpg?k=49c21da2b5d9e0d38d7edc23d3830a2439c27969b6b72a8cb2bfa91702985948&o=&s=1024x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/287269105.jpg?k=501d4e6dfa22e5380a31848ffb3cf1bbdbf68fba90fcbb95e4533f67379d3864&o=&s=1024x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/287269196.jpg?k=f408dffee7016e371dbe8696441d412e667dc242c2ddf54ff9bb35fcad9583a0&o=&s=1024x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/287269153.jpg?k=d46d8a2ac705156fbd5eaf7ccb29a5afc2bc189c2a553ab001ac6e487d1ef0e8&o=&s=1024x"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 14,
+        "bedrooms": 4,
+        "bathrooms": 4,
+        "address": "Near Mapro Garden, Mitha Estate ,Mahabaleshwar Near Pournima House, Gureghar, Mahabaleshwar, India, 412806",
+        "checkInTime": "1:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T05:07:53.650Z"
+    },
+    "stayInfo": {
+      "checkInTime": "1:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T05:07:53.650Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc7338312c6422e7f87ad1",
+    "owner": "6acc7338312c6422e7f87acf",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acc6e3dfc76086318eac97d",
+    "assignedDataEntryUser": null,
+    "name": "Lagoona",
+    "type": "Villa",
+    "location": "Lonavala",
+    "price": 5000,
+    "mapLink": "https://maps.app.goo.gl/LL2MJKvm2vCL84f29",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/c515bcca-cc9f-4009-8a54-e6ed27711951.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/69738168-1b4e-447f-b170-e4cff1c9ce55.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/518c0797-dda8-4884-b690-59f335b9e3f0.jpg"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 5,
+        "bedrooms": 20,
+        "bathrooms": 5,
+        "address": "Lonavala",
+        "checkInTime": "1:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T05:42:16.875Z"
+    },
+    "stayInfo": {
+      "checkInTime": "1:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T05:42:16.875Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc7674312c6422e7f87bec",
+    "owner": "6acc7338312c6422e7f87acf",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acc6e3dfc76086318eac97d",
+    "assignedDataEntryUser": null,
+    "name": "Sunrise Hill Resort",
+    "type": "Villa",
+    "location": "Lonavala",
+    "price": 3972,
+    "mapLink": "https://maps.app.goo.gl/LL2MJKvm2vCL84f29",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/836dacac-4d2c-483c-9630-64448b9540ca.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/94e1a54c-99ec-4702-a73e-7f46015ac9b7.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/53e7fda4-5492-407b-a11b-f4c4b2de3b42.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/565b031b-f8a7-4337-9b57-12f3f2b6f227.jpg",
+      "https://pix8.agoda.net/hotelImages/479311/0/c3d004a0905e12bb37e3b7672f91c45a.jpg?ce=2&s=1024x"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 2,
+        "bedrooms": 10,
+        "bathrooms": 8,
+        "address": "Lonavala",
+        "checkInTime": "11:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T05:56:04.146Z"
+    },
+    "stayInfo": {
+      "checkInTime": "11:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T05:56:04.146Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc7a67312c6422e7f87cf8",
+    "owner": "6acb5e1c312c6422e7f875db",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acb5bf8fc76086318eac6c3",
+    "assignedDataEntryUser": null,
+    "name": "The Grand Legacy Resort & Spa (Pure Vegetarian)",
+    "type": "Villa",
+    "location": "Panchghani Mahabaleshwar",
+    "price": 8560,
+    "mapLink": "https://maps.app.goo.gl/apJj9Diuy6QhdZYCA",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://pix8.agoda.net/hotelImages/611466/-1/9a2630bfeff0a8fe9abb6180d0bc9954.jpg?ca=28&ce=0&s=1024x",
+      "https://pix8.agoda.net/hotelImages/611466/-1/cabe72875df1b868c84af1a31a270395.jpg?ce=0&s=1024x",
+      "https://pix8.agoda.net/hotelImages/611466/-1/211e397cea5a5311c8b322bf4366f056.jpg?ca=26&ce=0&s=1024x",
+      "https://pix8.agoda.net/hotelImages/611466/-1/7d7cbdee5c69cc269e2b66752ca215b6.jpg?ca=26&ce=0&s=1024x",
+      "https://pix8.agoda.net/hotelImages/611466/-1/8da8f335be48a98b51eeb356bc816c1f.jpg?ce=0&s=1024x"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 12,
+        "bedrooms": 4,
+        "bathrooms": 4,
+        "address": "Panchgani-Mahabaleshwar Road,Post Met-Gutad, Metgutad, Mahabaleshwar, India, 412806",
+        "checkInTime": "2:00 AM",
+        "checkOutTime": ""
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T06:12:55.124Z"
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 AM",
+      "checkOutTime": "",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T06:12:55.124Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc7bf4312c6422e7f87d9b",
+    "owner": "6acc7338312c6422e7f87acf",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acc6e3dfc76086318eac97d",
+    "assignedDataEntryUser": null,
+    "name": "Triose Boutique Hotel Lonavala",
+    "type": "Villa",
+    "location": "Lonavala",
+    "price": 4568,
+    "mapLink": "https://maps.app.goo.gl/fEc7USu6fV3kFHJm6",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://api.bookmyvilla.online/api/properties/media/d81a4785-95b8-4075-a51b-073770c58722.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/85d3e259-3e83-408d-970b-28cfc72f5c81.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/a3553ab6-0800-4628-97d6-11160c877473.jpg",
+      "https://api.bookmyvilla.online/api/properties/media/a13f0547-0ae0-461a-b709-22dc9dfb476d.jpg",
+      "https://pix8.agoda.net/hotelImages/10697483/0/8ae618de5d17af2bfa6b27a9778dcea4.png?ce=3&s=1024x"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 2,
+        "bedrooms": 20,
+        "bathrooms": 25,
+        "address": "lonavala",
+        "checkInTime": "11:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T06:19:32.106Z"
+    },
+    "stayInfo": {
+      "checkInTime": "11:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T06:19:32.106Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc7dc7312c6422e7f87e3d",
+    "owner": "6acb5e1c312c6422e7f875db",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acb5bf8fc76086318eac6c3",
+    "assignedDataEntryUser": null,
+    "name": "StayVista's Amoda Villa - Near Venna Lake, Amidst Farmland with Jacuzzi and Indoor Activities",
+    "type": "Villa",
+    "location": "Mahabaleshwar",
+    "price": 24500,
+    "mapLink": "https://www.google.com/maps/dir/18.6472989,73.7638965/StayVista's+Amoda+Villa+-+Near+Venna+Lake,+Amidst+Farmland+with+Jacuzzi+and+Indoor+Activities+-+Villa/@18.2891882,73.3968679,10z/data=!3m1!4b1!4m9!4m8!1m1!4e1!1m4!2m2!1d73.6905471!2d17.9303408!4e1!3e3?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://pix8.agoda.net/hotelImages/38362646/0/827b16d2e68ddc0a61887757d0b22593.jpg?ce=3&s=1024x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/906051763.jpg?k=46567a0d08f01c5e5acddd5d61b564efdc97486fc6c946a8e34f7091d769beb9&o=&s=1024x",
+      "https://pix8.agoda.net/hotelImages/38362646/0/ee655fe026448c0eff35f5580cb39e69.jpg?ce=3&s=1024x",
+      "https://pix8.agoda.net/hotelImages/38362646/0/162e534e0e142a1f55724a6c120c468c.jpg?ce=3&s=1024x",
+      "https://pix8.agoda.net/hotelImages/38362646/0/31988eb7a4655b75e37adb74a30dd317.jpg?ce=3&s=1024x"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 16,
+        "bedrooms": 6,
+        "bathrooms": 7,
+        "address": "Nakinda, Mahabaleshwar, India",
+        "checkInTime": "1:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T06:27:19.318Z"
+    },
+    "stayInfo": {
+      "checkInTime": "1:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "under_review",
+    "createdAt": "2026-10-12T06:27:19.318Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc7def312c6422e7f87e5a",
+    "owner": "6acc7338312c6422e7f87acf",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acc6e3dfc76086318eac97d",
+    "assignedDataEntryUser": null,
+    "name": "Lake View Resort",
+    "type": "Villa",
+    "location": "Lonavala",
+    "price": 2983,
+    "mapLink": "https://maps.app.goo.gl/wBqbaqbw3xnSZwG3A",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://pix8.agoda.net/hotelImages/299406/0/fdc850333864d56b335ede0dc969f123.jpg?ce=3&s=1024x",
+      "https://pix8.agoda.net/hotelImages/299406/0/1ea84a28965ade83eac5eec8cf1acc31.jpg?ce=3&s=1024x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/309440252.jpg?k=a40375a0abd3f6feac60b1515ca59310cf0679f47ed626a836412c2aa69f6214&o=&s=1024x"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 2,
+        "bedrooms": 19,
+        "bathrooms": 10,
+        "address": "Plot No.4,Ryewood,Next to S.B.I. Holiday Home,Bushy Dam Road,OPP. Lonavala Monsoon Lake, Phone-02114-272141/278942, Lonavala Town, Lonavala, India, 410401",
+        "checkInTime": "11:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T06:27:59.130Z"
+    },
+    "stayInfo": {
+      "checkInTime": "11:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T06:27:59.130Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc7f40312c6422e7f87ec7",
+    "owner": "6acc7338312c6422e7f87acf",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acc6e3dfc76086318eac97d",
+    "assignedDataEntryUser": null,
+    "name": "Lake View Resort",
+    "type": "Villa",
+    "location": "Lonavala",
+    "price": 2983,
+    "mapLink": "",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://pix8.agoda.net/hotelImages/299406/0/fb8e98aa94a56703604b01171ae32c73.jpg?ce=3&s=1024x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/309440220.jpg?k=73670671e8058d38276b8025c5c5cdbed31161e058208c0f67de43c7e8d6184f&o=&s=1024x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/917251829.jpg?k=b3b81643c00e0c72c978e191c9363f55d345172081ee5601db284dcabe151052&o=&s=1024x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/309440218.jpg?k=cd05cfe6fe41fc2932b7e4070f2ec28de5bdf0ddb0173f96d61e6434dc594e61&o=&s=1024x"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 2,
+        "bedrooms": 20,
+        "bathrooms": 25,
+        "address": "Plot No.4,Ryewood,Next to S.B.I. Holiday Home,Bushy Dam Road,OPP. Lonavala Monsoon Lake, Phone-02114-272141/278942, Lonavala Town, Lonavala, India, 410401",
+        "checkInTime": "11:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T06:33:36.743Z"
+    },
+    "stayInfo": {
+      "checkInTime": "11:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T06:33:36.743Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc8390312c6422e7f87fa4",
+    "owner": "6acc7338312c6422e7f87acf",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acc6e3dfc76086318eac97d",
+    "assignedDataEntryUser": null,
+    "name": "The Orchid Lonavala",
+    "type": "Villa",
+    "location": "Lonaval",
+    "price": 4055,
+    "mapLink": "https://maps.app.goo.gl/9r9HbAeatysH9Mej9",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://pix8.agoda.net/property/19979248/0/2eeac45850ece61b6687e78b00acb797.jpeg?ce=2&s=1024x",
+      "https://pix8.agoda.net/hotelImages/19979248/-1/061b93297aad83a217656f42d1c69ad0.jpg?ca=16&ce=1&s=1024x",
+      "https://pix8.agoda.net/hotelImages/19979248/-1/0727f5980045120b189fb74e49996375.jpg?ca=16&ce=1&s=1024x"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 3,
+        "bedrooms": 26,
+        "bathrooms": 29,
+        "address": "10/1 , Swarajya , CTS 284 Old Mumbai-Pune Highway ,Valvan , Lonavala, Lonavala Town, Lonavala, India, 410401",
+        "checkInTime": "11:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T06:52:00.543Z"
+    },
+    "stayInfo": {
+      "checkInTime": "11:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T06:52:00.543Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc85a8312c6422e7f88066",
+    "owner": "6acc85a7312c6422e7f88064",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acc6e3dfc76086318eac97d",
+    "assignedDataEntryUser": null,
+    "name": "Lake view",
+    "type": "Villa",
+    "location": "lonavala",
+    "price": 4509,
+    "mapLink": "",
+    "amenities": [],
+    "facilities": [],
+    "photos": [],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 3,
+        "bedrooms": 20,
+        "bathrooms": 20,
+        "address": "Lonaval",
+        "checkInTime": "1:00 PM",
+        "checkOutTime": "11:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T07:00:56.040Z"
+    },
+    "stayInfo": {
+      "checkInTime": "1:00 PM",
+      "checkOutTime": "11:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T07:00:56.040Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc8658312c6422e7f880b7",
+    "owner": "6acc8657312c6422e7f880b5",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "Gate No. 551, Dhanvewadi, Darwali, Mulshi, Pune 412108",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acc727bfc76086318eac994",
+    "assignedDataEntryUser": "6acc715ffc76086318eac98b",
+    "name": "Mountain View Farmhouse",
+    "type": "Villa",
+    "location": "Dhanvewadi, Darwali, Mulshi · PIN 412108",
+    "price": 35000,
+    "mapLink": "https://maps.app.goo.gl/NjowmX3cfzci6Mf78",
+    "amenities": [
+      "Outdoor space/poolside",
+      "parking"
+    ],
+    "facilities": [],
+    "photos": [
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9S6gX4_3sPSYdWv_TeozxHHBCucrwUtnhsk67H9WTPlUFpWOEh3IVb1MvBcgtOKwW_-yPU3Oohw9VEu80ORrfWZ74T9YQH6fxszaCZ8VAFJXBORzQi6ko9AmkTMX1POJpYi5Q3r=w408-h306-k-no",
+      "https://images.openai.com/static-rsc-4/GlMnS58qIgRP4YklXsg4Fx8bBRTUGhvdpmGcZy3L-sRI2PYz8f_JTVJ82WVU59ZL6KwUXbk_VPxIAEWnSgKRhDhMdB5yslti283ff27mns2WKfWxQMHQBhxUG9vkJd07oWbr865qBwVXBiCxxa8ykuyM2ekvIR47EPrEc_nOGhl36f15DBfZoCYdyYIigH3O?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/Waao74A6K7pawEOQJIkBEqqbIJWZtrApEkBH4vWZ2FOAjv2CUKm7H_y49YTzQyatdFtbiZWoLHit2cG7OgVOgWLwZkoGfQCHNjXTBQC2XhzhAL0fgcIHHzfnceIr863vkWH_7osvokS55nYZv6B63-SMA1DIetaxixxy0PfQyvKmjPJddXGbj1lu7hihb7Ci?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/d2j7pvxLoFDaCfy9WcJMdasUTrd4HieEyIa7T-xDkCOQuaq80DL3egOSgEKswhXuPJSOwP-KoL-oqk24P30kE1dAgSc2ICVKHIsJt6u3rXzv88GxRkFfL0xcpJJ9iZhfvAM7Y5BaZ-r8A_tuOs5HR5MwsHchHZ5gdtPRC8XpPKJVgltEbXaUB6IM9_-2Qljz?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/c-jR_zYZ_kNE6mUXFQ4kQEXfVHsjPxGXWL90-WcmFBBwldD7UjJ-NnxkWVNl31XbO0mgTYEkZWSmaxS8AXTJqEfVuLTl1nr7o_T3UdEg-vznuwqNcjWdA-9i2jHOvE8WLCZn-aDoqGXmzWcfRWc6rRZHn0nsksXarQa3uylEk3Led8HPK7th10iykuhqf3Bn?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/PIY-wtzyOXD5qa0luHcdA895o3-VsbqqFP5-tumwuLq-7d5bydimdktfwGb7Eha1ttJjhpc1iYvQKg4tLeJCVl6iRt2bq4CEWN38QcLcwX8sGwxxQgCxJAGz63L-YPC00VK9STFkBO4xt08YbWXRSXsMjrv6zrrCzSB-DNZEgkyMhygeZ62QhT0CN-3sfR6K?purpose=fullsize"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 14,
+        "bedrooms": 3,
+        "bathrooms": 4,
+        "address": "Gate no 551, Near EMH crane company, Bramhakumari Aashram Dhanvewadi, Darwali, Tal, Mulshi, Pune, Maharashtra 412108",
+        "description": "Mountain View Farmhouse is a farmhouse rental and group-stay property in the Mulshi region near Pune, Maharashtra. It is known for its scenic mountain surroundings, private leisure spaces, and consistently positive guest feedback highlighting the peaceful setting and hospitality.",
+        "checkInTime": "12:00 PM",
+        "checkOutTime": "12:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "COMPLETED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 1,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": "2026-10-12T07:20:26.428Z",
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T07:03:52.336Z"
+    },
+    "stayInfo": {
+      "checkInTime": "12:00 PM",
+      "checkOutTime": "12:00 AM",
+      "wifiName": "",
+      "wifiPassword": "1234567890",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T07:03:52.336Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc8a19312c6422e7f88315",
+    "owner": "6acc8a18312c6422e7f88313",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": ""
+    },
+    "assignedVillaManager": "6acc727bfc76086318eac994",
+    "assignedDataEntryUser": null,
+    "name": "Club Woods Villa - Gaikwad's Woods Villa",
+    "type": "Villa",
+    "location": "Dewadi, Maharashtra 412301",
+    "price": 12000,
+    "mapLink": "https://share.google/0X64ps35LVIR1AwlB",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://images.openai.com/static-rsc-4/1nTaUgbNb-CjxyAzzb9-BuaGHgAqfYBf6iZ-muhBp6Bmb35MQusqcpjzpKOUCx0UFkE5InGWWI0FZcV9fgkXG0mCTP5zk_vUog6VynNKhrTjSKiqdC1xWpM6CZRUAZpEKyuBLZVXRi2Q17TqGfUopnHZ-_R2VdnXP0xfEaNkdJdl6LbpiSHF59bvGmTufnMPhNNTnQbNhuB1nm4NBwGEZg?purpose=preview",
+      "https://images.openai.com/static-rsc-4/vBcDNSHlqbgz0pO2Wzd004JGCrW-TTiULI8-CrcPQ6Dg8WpSJAwzuUCxPRXnDCPYL5zRSSeLaVgtBup0GC3A5Y8IkeiYu5o_ydfp_evdsXx5CD-GjVqHTx4M_MmysSOAhHz5rb1gn88FZKVlYCBe-KIaqxdnicaNPMrvow-bsNS1_UCT4QajETrYLHk0Eldz?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/-yqciLZL4cQxAEjPvB5bxRb76D4tXLw_VtCTG9kR2jieEaKiU88RZJpmHosopGRfgf00OxyNMC-9ErEUtnhU3LBj2FoCdxcLxU6wc4nhiB3yIFLVbg4FTEAaNQ3ViIRfm_Yrqmi6-QCZoOKLWvpcZXJriBNeUdl_j1Lw6iH64y8LEUMBbHsLRVK8fraNX-cj?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/yF4uk8NUBNAmJiHW_pe4QVhfnLiooga3_Vc4Dqz6CX9ZJXTInWQDU4-Gnu4BVO_CjHivbrV8JQuh2NoZg-HezycU4lIUJsHRrjjq3FEexpT0kbikGQDstT8NmbWG2eKEArOebixvYjhKnU6oqkAdA1Xf9YTj_w8ok37iDldM5oUrr3b33IewfFltsCcwggWW?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/IhmgcqJtU1VOBBuiebf1mjKoeE4HmpBpPPEuwQVbsNkNjeO6cy_-Fp4N0Npb7ufoJF1qQiGwSG3DWREp_-myNpUO43vVSnFYgdmcHlV_gF4Tnu_R78m8oLYejEPk3TYLIVnZSDOVUob_9jjqPzQN5cH9CJfZbzPz0q0vbhwRAFuurz54RsIt-Sw-E-dXeQaP?purpose=fullsize",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9SBANZ4zWuMqNS3322LsMr1IexQ6f42s43lgboEU3DsWrQbXCS_h-5zcUv9eewnysH1LhywrbYRSSTSDbMjPij_3lpAc-ZMZmwDYvfrZV32XtgjydV7LFDmeZduzMLxPpmvWQ1BeZHyJ3Ag=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9R4uCOc9iB6Q2s-gQ5FO10e53O5AdGxcgn2yZ1j9mJSP_j6M4uMQagFg2u82t7vbsB0l-jkk4PMAhuik1FqIt7w5IeI7F9omdOIDFIv5R0OaAvvBZfsqNJUVGImS6bSWCgaOY2J1xtFGFZ-=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9Qx-UbYepI4ElNvDiheEZ6ujNtgTUaNJz-4HtpZuSNOozUbPREBXrXjqaKGRlPRHkZGRRMf8imcue6xrwb5mGsYZtB26EwFFGXSSGkcUJctaFG6DlK7rooYY0PNJLnB_3j-H_7HtUoT-jc=s1360-w1360-h1020-rw"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 15,
+        "bedrooms": 5,
+        "bathrooms": 6,
+        "address": "Royal purandar, Royal Purandar, B12E, 12 E, Diwale-Narayanpur Rd, opposite The Ridges School, Narayanpur, Dewadi, Maharashtra 412301",
+        "checkInTime": "12:00 PM",
+        "checkOutTime": "12:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T07:19:53.052Z"
+    },
+    "stayInfo": {
+      "checkInTime": "12:00 PM",
+      "checkOutTime": "12:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-12T07:19:53.052Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc8cde312c6422e7f88652",
+    "owner": "6acc8a18312c6422e7f88313",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": "Heated pool, cook, meals, indoor games"
+    },
+    "assignedVillaManager": "6acc727bfc76086318eac994",
+    "assignedDataEntryUser": null,
+    "name": "Ardra Villa",
+    "type": "Villa",
+    "location": "Maale, Mulshi",
+    "price": 21000,
+    "mapLink": "https://maps.app.goo.gl/GZfMYn3JDhwhPJzD8",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://images.openai.com/static-rsc-4/zD0bSQ3CEFdxLtA-vkdLSuUuxTEIBC9Kl4gEqVX3Od0GGcnSGRyrA8ynyiLbmdaO0YDkfYcrET39i0a5J2jWjXdRhxqM4yeNO8WOSlx4cirSYRXThwJgzEmrrmdZs5eu3ocasaFVfs152ZgAY2VhxH3SaLxGrnkWcmlvJclSpCX_hxXaAsHepT4dDx8iVO8m?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/7SoO6bHjbbhEBdH7O5H0okn0SU78aKxobBC_L95hnFkE80ZmQ8Mu0AxM4sTRcFmnmp2AdPBfZpdXHfRQ6INONMOx0rCkz7OO3spZ-3Ma_ab4iffJsGKQDkuxqiEf1JqkHrsgdTZva3-pDkbSkEYAIUg4UaZ9jQbI3xJaYm_eBStOCtY35T49VUNFe7rD0ikQ?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/00N4g5Gx_NjTUcHP8a_O0DA3RmHHPSFKIdkBc3_W844CtY7UBlUO8tpIk6GLUsVz6MHQvMKLnPnq44f1olKb0zoqKnw5yPzM1DWbo-njCbago5OE8Oni8WSiVIcv49ytm_pSbYayKDbJH1og5mIp4RTujfqwq8UAy4053z1xV1OGpZ5nbnUkhccvhnbbrbTf?purpose=fullsize",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9Rsp3VPTQywYZSgz-GnS_Z4COGAYfzbrX2ZSkHFshDY4BcEq5TVfQyIOHw_XSDevExd7GBl6PWzQPrjWh3eJgu3lXHmchcdqMyqDzO6ZSfMVLk4W0ZKW7dCfTLuNLOI9sUndyU4mUcgOwIO=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9QnYBAtRfkO59w1f55ZMfczPcKSyqntjPwHkMKzpQ2Y_0tgQpn2BiDVk-T7V_XapJLZP8TDhpUsC7V3O1KWDAhD7I_P_SgJB1hiZxn596WBL6XuBmqbN79ij-TBLLAD3axHzFiKjeH-dtVL=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9QL74Rh2kS4SQ0j-7sVb3ioFWEkV59aoU3L_UA_DJLhm8AbZLhBd5hIo1tj58h-PpLGiIPT1vPsw7hMeMLoNrN2PKgga1xa8tA_-3eF2rJ2B8t8g1EfTm4sL_yYhcXHFShodE5bQWwjbv2d=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9RywfLvxrYCRMyqC_UwB4Vl4MmZGVc2urinPVbqqcC9_nWJbJTqEwrsXzy-_ea-G7Ud4PIWzWyn5xpCFXU7AD6ETFWc93OA31oY5S93nwJmcVecCY6RLFYLJM6BjuKpVZYbpiMXUADJ6DBk=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9RyLKciYz8oibwCMmVewFrbZHSASvvJPp3b1aLneGo8dTv-yjoTMr8T2o4mjsobk5iuHq41XYLgHdzUbOAcAYlosqBUodT7UK9i6gg8wJkV2RK7j2q4xOcqJ1Hi1mbDWx2vKObaUkSfVmdZ=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9RdcuHcsQec4iK2kZNvxZmj0y8ihaN22kAyh9vZZdd4xIT5XU0MRqx6kbUcCQFNXh7ZOcW9cummguN_uLKnxvEG1HQFEbb-1XLs7NbXvd9wPvonREn-LSzcr39mcBr1Pqv51c691TguG18H=s1360-w1360-h1020-rw"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 15,
+        "bedrooms": 4,
+        "bathrooms": 5,
+        "address": "Viilage, Maale, Mulshi, Maale, Maharashtra 412108",
+        "checkInTime": "12:00 PM",
+        "checkOutTime": "12:00 PM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T07:31:42.818Z"
+    },
+    "stayInfo": {
+      "checkInTime": "12:00 PM",
+      "checkOutTime": "12:00 PM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "pending",
+    "createdAt": "2026-10-12T07:31:42.820Z",
+    "__v": 0
+  },
+  {
+    "_id": "6acc9dfc312c6422e7f887a6",
+    "owner": "6acc8a18312c6422e7f88313",
+    "managementMode": "BOOKMYVILLA_MANAGED",
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "verification": {
+      "status": "none",
+      "note": "",
+      "requestedAt": null,
+      "reviewedAt": null,
+      "reviewNote": ""
+    },
+    "handover": {
+      "keyLocation": "",
+      "caretakerName": "",
+      "caretakerPhone": "",
+      "notes": "AC, Wi-Fi, TV, refrigerator, attached bathroom; listed packages mein meals"
+    },
+    "assignedVillaManager": "6acc727bfc76086318eac994",
+    "assignedDataEntryUser": null,
+    "name": "PRISTINE VILLA",
+    "type": "Villa",
+    "location": "Mulshi",
+    "price": 8000,
+    "mapLink": "https://share.google/02Nuq1EhlOrxaGxXl",
+    "amenities": [],
+    "facilities": [],
+    "photos": [
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9T5D9N_SJalCozG38uSPOtwFqQfdq9l_axsH6K5kMYcXYQQqQGAFyNj65jydZOW0hQ2DmhAYKl0t9Ugy0fO_sL8Ewgx468lo-NlQAQvaq5MNLdQ5H0flFQj492KS1waKXnoiwGoeQ=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9Sah6ZMPX4oNjDU3D8P3Eh_3xTKtOigYbr1_0MmSydehHCae__reGZKNGDBnmPmUhERMGlHj_7EPwyqNAqhvXoJJDvMj0qolXce2ucMqku5YYOs-IF4pj7BQfU_-n5A2Ai86MAmQA=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9QiAbRidCRoN-b63Ws0IUpR2TED-I3kdEdkJGaU-47pGdYj-13j2Bv_VGjAlXk0IUWUThOPOCdNATxGP5uvYtav873Y7hcUffn4s7y-wiQgD-7pXtBNcJHrSlzIswiJVRw2zuRR=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9QCTheBhtuuUC_LrqxUbEpQESq_K_iKlhYomd2g0ySKcB5L7LQhF3kB8Vx-k8AdUgEfmTKgmAPUKxpZUTg4juYIn0qhdPy_JX-ws2gc2keCSIvGy1e9Ik7mxjfnVrEi-grvRvFJ=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9RY44QE6ouOBY54fplJmHdBRTo64BD2qkQ2N_-27U0bdjMWKJQnVjm5yOCfwhIEHB_8kt7zvHDMfC3g6gCTDVykuE_rjKa57RCUTjqbyPOgnmhjD7LooK0qKUoIfF41E64St8UjTw=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9QkLQkMyINZlfRse7e5ONOJ0hxZmyHdvwqjx6sYfGKqPlZlAwnMDzzC5AinYzAkvbdkNy0K4VwhcYT3nk6Y9hgaGTZ-ZqH1ZP9_hAR-YUjWYifZLVrc6semLMqPmaaWwERzuWw=s1360-w1360-h1020-rw",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9RwFbUkZncCJrDIwNi5LIJg-gVLfgxJPL4eD8lfL1aDG2WypIFLRt_zt_S2abPA0ruCcDO1sPPgKA96h655jaEE0S4aQcMwYxq0A6Al2N9GFGD0HQ0Unj9dp83ynX0zoa-c4S9l=s1360-w1360-h1020-rw",
+      "https://images.openai.com/static-rsc-4/IeAoqgtZjZtihOzX_2nsKqjgHoQyV3KCj9fdmI9nAyV0ShF_Lz8S8lafIuiMD1ZjKOTWWPr6B4mnDeIgA-aBsWolHDKGTuoNURTbaxbaqRG2bgi_4TNbuRv4BVGoDKZLjLIg_rFySBr692zwKb3H4MiCpTdr9u6c-qq84X4t4WrvEJkbHco7H5XgE8O1GSyg?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/peKsnL_8pnf4teOYWRRJ2x12gg_WVHSTNWMtbqQgnrV0xb0C6KFUw_HcZdKDq4ut9ahqsuqiA3EOztxUPKXDz_PObYbHuiBJ6eYkFM_AaHKRfHtGxT1-_0zBXMEyzzx1aiDDik19Ca5eBndU7V5kHwe0BkPE-yu2gmSn_l0xMTVvCW6709ViLdsguQMmaxvj?purpose=fullsize",
+      "https://images.openai.com/static-rsc-4/MU2bOUlw8p_-lR9f4EXtsv9N3Q41tX2ITev2pJpSg-RbPbY8ybg2mCI9u8YC486V1OEC6z1cobphyDwCglEwvST_prZqEbx4GIrj8oq-1anwEHvD9ZXnA2o1y8FAyNXVUnyUkhf6FbJFO7kT8W_dmo-OikgS7dLXoRzCFtgL_yZOWbVVCuS0KeInU3kM59Ni?purpose=fullsize",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9TETFNN0x_YINvTSxBNU7MxdLQOOG8osL9VQ4cjKYDPWythxvvfjo8lmna0WE5CQ7v1M8iaXTWZ4AscXVOq5vI-Mp3akxWxMa25Dbr19Krq1RbzEnMCWINVwylY_YDkFnutjX6L=s1360-w1360-h1020-rw"
+    ],
+    "videos": [],
+    "listingData": {
+      "details": {
+        "guestCapacity": 8,
+        "bedrooms": 4,
+        "bathrooms": 4,
+        "address": "near Aatmanthan Resorts, Palse, Varak, Maharashtra 412108",
+        "checkInTime": "12:00 PM",
+        "checkOutTime": "12:00 AM"
+      }
+    },
+    "listingDraft": null,
+    "dataEntryStatus": "ASSIGNED",
+    "dataEntryReviewReason": "",
+    "dataEntryRevision": 0,
+    "dataEntryCompletion": null,
+    "dataEntryUpdatedAt": null,
+    "assignedCaretaker": {
+      "govtIdStatus": "Verified",
+      "assignedDate": "2026-10-12T08:44:44.356Z"
+    },
+    "stayInfo": {
+      "checkInTime": "12:00 PM",
+      "checkOutTime": "12:00 AM",
+      "wifiName": "",
+      "wifiPassword": "",
+      "houseRules": [],
+      "arrivalNotes": "",
+      "foodInfo": ""
+    },
+    "status": "pending",
+    "createdAt": "2026-10-12T08:44:44.356Z",
+    "__v": 0
+  }
+]
