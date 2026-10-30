@@ -34,8 +34,8 @@ try {
   }
   let smsEndpoint;
   try { smsEndpoint = new URL(env.SMS_API_URL); } catch {}
-  if (!smsEndpoint || smsEndpoint.protocol !== 'https:' || /\.example$/i.test(smsEndpoint.hostname)) {
-    throw new Error('SMS_API_URL must be a valid HTTPS SMS provider endpoint.');
+  if (!smsEndpoint || !['http:', 'https:'].includes(smsEndpoint.protocol) || /\.example$/i.test(smsEndpoint.hostname)) {
+    throw new Error('SMS_API_URL must be a valid HTTP or HTTPS SMS provider endpoint.');
   }
   if (output) {
     // Single quotes preserve literal dollar signs in Docker Compose env files.
@@ -52,3 +52,4 @@ try {
   console.error(`Backend environment validation failed: ${error.message}`);
   process.exitCode = 1;
 }
+

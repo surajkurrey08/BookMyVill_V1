@@ -20,8 +20,9 @@ const getSmsConfig = () => {
   if (!['http:', 'https:'].includes(endpoint.protocol)) {
     throw new Error('SMS gateway URL must use HTTP or HTTPS.');
   }
-  if (process.env.NODE_ENV === 'production' && endpoint.protocol !== 'https:') {
-    throw new Error('SMS gateway URL must use HTTPS in production.');
+  // HTTP or HTTPS are accepted for SMS providers
+  if (!['http:', 'https:'].includes(endpoint.protocol)) {
+    throw new Error('SMS gateway URL must use HTTP or HTTPS.');
   }
 
   return { endpoint, username, password, senderId, templateId };
