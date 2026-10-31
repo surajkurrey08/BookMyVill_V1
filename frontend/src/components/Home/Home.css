@@ -536,7 +536,18 @@
    category row to the bottom of the hero. */
 .hp-hero-search {
   margin: auto 0 0;
+  position: relative;
+  z-index: 50;
 }
+
+  /*Automatically hide the story circles whenever the calender dropdown is open */
+.hp-hero-search:has(.es-popover) + .hp-categories {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
 
 /* Category circles */
 

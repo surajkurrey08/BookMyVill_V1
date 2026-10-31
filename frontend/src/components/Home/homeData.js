@@ -79,56 +79,7 @@ const stay = (s) => ({
   mapLink: `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lon}`,
 });
 
-export const stays = [
-  stay({
-    id: 'hp-orchid', name: 'The Orchid Hotel Pune', location: 'Mahabaleshwar', type: 'Hotel', tag: 'Luxury',
-    priceValue: 5500, rating: 4.8, reviewsCount: 124, lat: 17.9265, lon: 73.6560,
-    image: heroVilla, photos: [heroVilla, suitePanorama, spa],
-    amenities: ['Infinity Pool', 'Valley View', 'Free Wi-Fi', 'Spa'],
-  }),
-  stay({
-    id: 'hp-regal-woods', name: 'Regal Woods Resort', location: 'Metgutad', type: 'Resort', tag: 'Cozy',
-    priceValue: 6200, rating: 4.7, reviewsCount: 98, lat: 17.9180, lon: 73.6760,
-    image: hillChalet, photos: [hillChalet, suiteBalcony, spa],
-    amenities: ['Fireplace Lounge', 'Garden Terrace', 'Free Wi-Fi', 'Restaurant'],
-  }),
-  stay({
-    id: 'hp-elysium', name: 'Elysium Nature Stay', location: 'Old Mahabaleshwar', type: 'Hotel', tag: 'Boutique',
-    priceValue: 4800, rating: 4.6, reviewsCount: 86, lat: 17.9390, lon: 73.6420,
-    image: suiteBalcony, photos: [suiteBalcony, suitePanorama, forestViewpoint],
-    amenities: ['Private Balcony', 'Forest View', 'Free Wi-Fi', 'Breakfast'],
-  }),
-  stay({
-    id: 'hp-tranquil-valley', name: 'Tranquil Valley Resort', location: 'Bhilar', type: 'Resort', tag: 'Premium',
-    priceValue: 7200, rating: 4.9, reviewsCount: 143, lat: 17.9180, lon: 73.7590,
-    image: lakesideResort, photos: [lakesideResort, suitePanorama, spa],
-    amenities: ['Infinity Pool', 'Lake View', 'Spa', 'Free Wi-Fi'],
-  }),
-  stay({
-    id: 'hp-sunrise-hills', name: 'Sunrise Hills Villa', location: 'Panchgani', type: 'Villa', tag: 'Villa',
-    priceValue: 5000, rating: 4.5, reviewsCount: 72, lat: 17.9245, lon: 73.8010,
-    image: suitePanorama, photos: [suitePanorama, suiteBalcony, cliffValley],
-    amenities: ['Sunrise Deck', 'Bathtub', 'Free Wi-Fi', 'Kitchen'],
-  }),
-  stay({
-    id: 'hp-forest-glen', name: 'Forest Glen Resort', location: 'Tapola Road', type: 'Resort', tag: 'Nature',
-    priceValue: 8500, rating: 4.8, reviewsCount: 101, lat: 17.9050, lon: 73.6550,
-    image: heroVilla, imagePosition: '78% center', photos: [heroVilla, suiteBalcony, spa],
-    amenities: ['Pool Deck', 'Forest View', 'Spa', 'Free Wi-Fi'],
-  }),
-  stay({
-    id: 'hp-mountain-bliss', name: 'Mountain Bliss Stay', location: 'Mahabaleshwar', type: 'Villa', tag: 'Premium',
-    priceValue: 6900, rating: 4.6, reviewsCount: 67, lat: 17.9215, lon: 73.6620,
-    image: lakesideResort, imagePosition: '85% center', photos: [lakesideResort, suitePanorama, lakeValley],
-    amenities: ['Private Pool', 'Lake View', 'Free Wi-Fi', 'Butler'],
-  }),
-  stay({
-    id: 'hp-valley-view', name: 'Valley View Homestay', location: 'Lingmala', type: 'Homestay', tag: 'Homely',
-    priceValue: 4300, rating: 4.4, reviewsCount: 53, lat: 17.9095, lon: 73.6800,
-    image: redCottage, photos: [redCottage, suiteBalcony, waterfallValley],
-    amenities: ['Home-cooked Meals', 'Valley View', 'Free Wi-Fi', 'Garden'],
-  }),
-];
+export const stays = [];
 
 export const stayFilters = [
   { key: 'All', label: 'All', icon: 'fa-house' },

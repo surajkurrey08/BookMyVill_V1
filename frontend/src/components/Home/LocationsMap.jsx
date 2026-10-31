@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mapLayers, mapPlaces, stays, TOWN_CENTER } from './homeData';
+import { API_BASE_URL } from '../../config';
 
 const layerIcons = {
   hotels: 'fa-hotel',
@@ -29,11 +30,39 @@ const LocationsMap = ({ focus }) => {
   const mapRef = useRef(null);
   const markersRef = useRef(null);
   const [layer, setLayer] = useState('hotels');
-  const [selectedId, setSelectedId] = useState(stays[0].id);
+  const [liveHotels,setLiveHotels]= useState([]);
+  const [selectedId, setSelectedId] = useState(null);
   const [mapFailed, setMapFailed] = useState(false);
+ 
+  //Fetch real villas from database
+  useEffect(()=>{
+    fetch(`${API_BASE_URL}/api/properties/all`)
+    .then((res)=>res.json())
+    .then((data)=>{
+      if(Array.isArray(data) && data.length>0 ){
+        const formatted = data.map((v)=>({
+          id: v._id || v.id,
+          name: v.name,
+          location: v.location,
+          lat: v.coordinates?.lat || 18.6525,
+          lon: v.coordinates?.lng || 73.4935,
+          rating: Number(v.rating) || 4.9,
+          reviewsCount: Number(v.reviewsCount || v.reviewCount) || 85,
+          image: v.photos?.[0] || '',
+        }));
 
-  const items = useMemo(() => (layer === 'hotels' ? stays : mapPlaces[layer]), [layer]);
-  const selected = items.find((i) => i.id === selectedId) || items[0];
+        setLiveHotels(formatted);
+        setSelectedId((prev)=>prev || formatted[0]?.id || null);
+
+      }
+    })
+    .catch((err)=> console.log('LocationsMap live stays error:', err));
+
+  },[])
+
+
+  const items = useMemo(() =>  (layer === 'hotels' ? liveHotels : (mapPlaces[layer] || [])), [layer, liveHotels]);
+  const selected = items.find((i) => i.id === selectedId) || items[0]|| null;
 
   // Create the map once.
   useEffect(() => {
@@ -133,10 +162,12 @@ const LocationsMap = ({ focus }) => {
 
   const switchLayer = (key) => {
     setLayer(key);
-    setSelectedId(key === 'hotels' ? stays[0].id : mapPlaces[key][0].id);
+    setSelectedId(key === 'hotels' ? (liveHotels[0]?.id || null) : (mapPlaces[key]?.[0]?.id || null));
   };
 
-  const openDetails = () => navigate(`/property/${selected.id}`, { state: { property: selected } });
+  const openDetails = () => {
+    if (selected?.id) navigate(`/property/${selected.id}`, { state: { property: selected } });
+  };
 
   return (
     <div className="hp-map-panel hp-reveal" id="hp-map">

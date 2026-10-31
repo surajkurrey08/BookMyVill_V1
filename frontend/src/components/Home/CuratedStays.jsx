@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { stayFilters, stays } from './homeData';
+import { stayFilters } from './homeData';
+import { API_BASE_URL } from '../../config';
 
 const WISHLIST_KEY = 'hp-wishlist';
 
@@ -73,11 +74,38 @@ const StayCard = ({ stay, index, saved, onToggleSave, onMapView }) => {
 const CuratedStays = ({ filter, onFilterChange, onMapView, destinationFilter, onClearDestination }) => {
   const [sort, setSort] = useState('popular');
   const [wishlist, setWishlist] = useState(loadWishlist);
+  const [liveStays, setLiveStays]= useState([]);
+
+  //Fetch real villas from database
+  useEffect(()=>{
+    fetch(`${API_BASE_URL}/api/properties/all`)
+    .then((res)=>res.json())
+    .then((data)=>{
+      if(Array.isArray(data)&& data.length >0){
+        const formatted = data.map((v)=>({
+          id: v._id || v.id,
+          name: v.name,
+          location: v.location,
+          type: v.type || 'Villa',
+          priceValue: v.price || 25000,
+          price: `₹${Number(v.price || 25000).toLocaleString(`en-IN`)}`,
+          rating: Number(v.rating) || 4.9,
+          reviewsCount: Number(v.reviewsCount || v.reviewCount ) || 85,
+          image: v.photos?.[0]|| '',
+          photos: v.photos || [],
+          amenities: v.amenities || [],
+        }));
+        setLiveStays(formatted);
+      }
+    })
+    .catch((err)=>console.log('Live stays fetch error:',err));
+  },[]);
+
 
   const favCount = useMemo(() => Object.values(wishlist).filter(Boolean).length, [wishlist]);
 
   const visible = useMemo(() => {
-    let list = stays;
+    let list = liveStays;
     if (filter === 'Favourites') {
       list = list.filter((s) => wishlist[s.id]);
     } else if (filter !== 'All') {
@@ -97,7 +125,7 @@ const CuratedStays = ({ filter, onFilterChange, onMapView, destinationFilter, on
     }
 
     return [...list].sort(sorters[sort]);
-  }, [filter, sort, wishlist, destinationFilter]);
+  }, [liveStays, filter, sort, wishlist, destinationFilter]);
 
   const toggleSave = (id) => {
     setWishlist((prev) => {

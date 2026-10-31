@@ -22,7 +22,7 @@ const typeOptions = [
 ];
 const amenityOptions = ['Swimming Pool', 'Breakfast Included', 'WiFi', 'Parking', 'AC Rooms', 'Pet Friendly', 'Bonfire', 'Mountain View'];
 const idealOptions = ['Family', 'Couples', 'Group', 'Solo'];
-const curatedImages = [stays[3].image, stays[2].image, stays[1].image, stays[4].image, stays[2].image, stays[0].image, stays[6].image, stays[7].image];
+const curatedImages = [defaultHeroImage];
 const Icon = ({ name }) => <i className={`fa-solid fa-${name}`} aria-hidden="true" />;
 const numberPrice = (value) => typeof value === 'number' ? value : Number(String(value ?? '').replace(/[^\d]/g, '')) || 0;
 const priceLabel = (value) => `₹${value.toLocaleString('en-IN')}`;

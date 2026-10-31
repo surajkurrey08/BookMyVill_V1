@@ -33,68 +33,7 @@ const TAG_ICONS = {
   'Under ₹20k': 'pricetag-outline',
 };
 
-const CURATED_EXPLORE_FALLBACKS = [
-  {
-    _id: 'curated-resort-1',
-    name: 'Skyline Luxury Resort & Spa',
-    type: 'Resort',
-    location: { city: 'Ooty, India' },
-    rating: 4.9,
-    reviewsCount: 142,
-    pricing: { basePrice: 18000 },
-    amenities: ['Pool', 'WiFi', 'AC', 'Spa'],
-    bedrooms: 4,
-    maxGuests: 8,
-  },
-  {
-    _id: 'curated-resort-2',
-    name: 'Serene Hills Resort',
-    type: 'Resort',
-    location: { city: 'Udaipur, India' },
-    rating: 4.85,
-    reviewsCount: 96,
-    pricing: { basePrice: 22500 },
-    amenities: ['Pool', 'WiFi', 'AC', 'Breakfast'],
-    bedrooms: 5,
-    maxGuests: 10,
-  },
-  {
-    _id: 'curated-homestay-1',
-    name: 'The Heritage Estate Homestay',
-    type: 'Homestay',
-    location: { city: 'Coorg, India' },
-    rating: 4.8,
-    reviewsCount: 88,
-    pricing: { basePrice: 9500 },
-    amenities: ['WiFi', 'Kitchen', 'Breakfast'],
-    bedrooms: 3,
-    maxGuests: 6,
-  },
-  {
-    _id: 'curated-homestay-2',
-    name: 'Whispering Pines Homestay',
-    type: 'Homestay',
-    location: { city: 'Manali, India' },
-    rating: 4.9,
-    reviewsCount: 112,
-    pricing: { basePrice: 11000 },
-    amenities: ['WiFi', 'AC', 'Mountain View'],
-    bedrooms: 3,
-    maxGuests: 7,
-  },
-  {
-    _id: 'curated-beach-1',
-    name: 'Azure Sands Beachfront Villa',
-    type: 'Beachfront',
-    location: { city: 'Goa, India' },
-    rating: 4.95,
-    reviewsCount: 138,
-    pricing: { basePrice: 24000 },
-    amenities: ['Beach', 'Pool', 'WiFi', 'AC'],
-    bedrooms: 4,
-    maxGuests: 8,
-  },
-];
+const CURATED_EXPLORE_FALLBACKS = [];
 
 export default function SearchScreen({ navigation, route }) {
   const { colors: COLORS, mode } = useAppTheme();

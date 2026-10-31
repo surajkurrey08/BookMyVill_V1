@@ -79,63 +79,7 @@ export default function HomeScreen({ navigation }) {
   // 2. Fallback villas matching the exact luxury theme
   // Curated category stays so that each tab (Villas, Resorts, Homestays, Beachfront)
   // always has luxury stays ready to view even if the backend only has a few entries
-  const CURATED_CATEGORY_STAYS = useMemo(() => [
-    {
-      _id: 'curated-resort-1',
-      name: 'Skyline Luxury Resort & Spa',
-      type: 'Resort',
-      location: { city: 'Ooty, India' },
-      rating: 4.9,
-      reviewsCount: 142,
-      pricing: { basePrice: 18000 },
-      bedrooms: 4,
-      maxGuests: 8,
-    },
-    {
-      _id: 'curated-resort-2',
-      name: 'Serene Hills Resort',
-      type: 'Resort',
-      location: { city: 'Udaipur, India' },
-      rating: 4.85,
-      reviewsCount: 96,
-      pricing: { basePrice: 22500 },
-      bedrooms: 5,
-      maxGuests: 10,
-    },
-    {
-      _id: 'curated-homestay-1',
-      name: 'The Heritage Estate Homestay',
-      type: 'Homestay',
-      location: { city: 'Coorg, India' },
-      rating: 4.8,
-      reviewsCount: 88,
-      pricing: { basePrice: 9500 },
-      bedrooms: 3,
-      maxGuests: 6,
-    },
-    {
-      _id: 'curated-homestay-2',
-      name: 'Whispering Pines Homestay',
-      type: 'Homestay',
-      location: { city: 'Manali, India' },
-      rating: 4.9,
-      reviewsCount: 112,
-      pricing: { basePrice: 11000 },
-      bedrooms: 3,
-      maxGuests: 7,
-    },
-    {
-      _id: 'curated-beach-1',
-      name: 'Azure Sands Beachfront Villa',
-      type: 'Beachfront',
-      location: { city: 'Goa, India' },
-      rating: 4.95,
-      reviewsCount: 138,
-      pricing: { basePrice: 24000 },
-      bedrooms: 4,
-      maxGuests: 8,
-    },
-  ], []);
+  const CURATED_CATEGORY_STAYS = useMemo(() => [], []);
 
   // 3. Fetch properties from backend
   useEffect(() => {
