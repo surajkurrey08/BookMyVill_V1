@@ -1,7 +1,7 @@
 import { useAppTheme } from '../../context/ThemeContext';
 import React, { useState, useMemo } from 'react' ;
 import { 
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Share, Alert
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Share, Alert, Linking
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
@@ -216,8 +216,8 @@ export default function StayDetailsScreen({ route, navigation }) {
           </View>
 
           <View style={styles.roomPriceCol}>
-            <Text style={styles.roomPrice}>₹ {Number(pricePerNight).toLocaleString('en-IN')}</Text>
-            <Text style={styles.perNightLabel}>per night</Text>
+            <Text style={styles.roomPrice}>On Request</Text>
+            <Text style={styles.perNightLabel}>entire villa</Text>
             <View style={[styles.radioCircle, styles.radioCircleActive]}>
               <Ionicons name="checkmark" size={12} color={COLORS.goldPrimary} />
             </View>
@@ -242,26 +242,21 @@ export default function StayDetailsScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Price Breakdown */}
+        {/* Enquiry Card */}
         <View style={styles.breakdownCard}>
           <View style={styles.breakdownHeader}>
-            <Ionicons name="receipt-outline" size={16} color={COLORS.goldPrimary} />
-            <Text style={styles.breakdownTitle}>Price Breakdown</Text>
+            <Ionicons name="chatbubbles-outline" size={16} color={COLORS.goldPrimary} />
+            <Text style={styles.breakdownTitle}>Tariff & Reservation</Text>
           </View>
 
           <View style={styles.priceRow}>
-            <Text style={styles.priceItemText}>Complete Villa (₹ {Number(pricePerNight).toLocaleString('en-IN')} × {nights} nights)</Text>
-            <Text style={styles.priceValText}>₹ {baseTotal.toLocaleString('en-IN')}</Text>
-          </View>
-
-          <View style={styles.priceRow}>
-            <Text style={styles.priceItemText}>Taxes & Service Fees (12%)</Text>
-            <Text style={styles.priceValText}>₹ {taxes.toLocaleString('en-IN')}</Text>
+            <Text style={styles.priceItemText}>Complete Villa Stay ({nights} nights)</Text>
+            <Text style={styles.priceValText}>Tariff on Request</Text>
           </View>
 
           <View style={[styles.priceRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalVal}>₹ {grandTotal.toLocaleString('en-IN')}</Text>
+            <Text style={styles.totalLabel}>Booking Model</Text>
+            <Text style={styles.totalVal}>Direct Enquiry</Text>
           </View>
         </View>
 
@@ -273,23 +268,21 @@ export default function StayDetailsScreen({ route, navigation }) {
           style={styles.bookBtn} 
           activeOpacity={0.88}
           onPress={() => {
-            navigation.navigate('GuestDetails', {
-              villa,
-              room: completeVillaOption,
-              grandTotal,
-              nights,
-              checkIn,
-              checkOut,
+            const villaName = villa?.name || 'Luxury Villa';
+            const location = villa?.location?.city || villa?.location || 'Maharashtra';
+            const text = encodeURIComponent(`Hi BookMyVilla, I would like to enquire about ${villaName} in ${location} for ${nights} nights (${checkIn} to ${checkOut}). Please share available packages and tariff details.`);
+            Linking.openURL(`https://wa.me/919876543210?text=${text}`).catch(() => {
+              Alert.alert('Enquiry', 'Please contact our reservations desk at +91 98765 43210 or enquiry@bookmyvilla.online');
             });
           }}
         >
-          <Text style={styles.bookBtnText}>Book This Stay</Text>
-          <Ionicons name="arrow-forward" size={18} color={COLORS.actionText} style={{ marginLeft: 6 }} />
+          <Text style={styles.bookBtnText}>Send Villa Enquiry</Text>
+          <Ionicons name="logo-whatsapp" size={18} color={COLORS.actionText} style={{ marginLeft: 6 }} />
         </TouchableOpacity>
 
         <View style={styles.secureBadge}>
-          <Ionicons name="lock-closed-outline" size={12} color={COLORS.textMuted} />
-          <Text style={styles.secureText}>Secure booking with encrypted payments</Text>
+          <Ionicons name="chatbubbles-outline" size={12} color={COLORS.textMuted} />
+          <Text style={styles.secureText}>Direct reservations enquiry · No booking fees</Text>
         </View>
       </View>
     </View>

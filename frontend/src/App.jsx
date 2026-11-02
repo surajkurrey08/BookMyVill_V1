@@ -265,8 +265,8 @@ function App() {
           <Route path="/owner-dashboard" element={<OwnerRedirect />} />
           <Route path="/property/:id" element={<Suspense fallback={null}><PropertyPage /></Suspense>} />
           <Route path="/property/:id/rooms" element={<Suspense fallback={null}><LegacyVillaRoute /></Suspense>} />
-          <Route path="/booking/checkout/:holdId" element={<Suspense fallback={null}><CheckoutPage /></Suspense>} />
-          <Route path="/booking/:bookingId/confirmed" element={<Suspense fallback={null}><ConfirmedPage /></Suspense>} />
+          <Route path="/booking/checkout/:holdId" element={<Navigate to="/explore" replace />} />
+          <Route path="/booking/:bookingId/confirmed" element={<Navigate to="/explore" replace />} />
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/caretaker-apply" element={<CaretakerApply />} />

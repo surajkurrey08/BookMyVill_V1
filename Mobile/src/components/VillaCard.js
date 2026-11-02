@@ -148,15 +148,14 @@ export default function VillaCard({ villa, onPress }) {
         {/* Footer Pricing & CTA */}
         <View style={styles.footerRow}>
           <View>
-            <Text style={styles.pricePrefix}>STARTING FROM</Text>
+            <Text style={styles.pricePrefix}>CUSTOM TARIFF</Text>
             <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-              <Text style={styles.priceAmount}>₹{Number(price).toLocaleString('en-IN')}</Text>
-              <Text style={styles.perNight}> / night</Text>
+              <Text style={styles.priceAmount}>On Request</Text>
             </View>
           </View>
 
           <View style={styles.reservePill}>
-            <Text style={styles.reservePillText}>Reserve</Text>
+            <Text style={styles.reservePillText}>Enquire</Text>
             <Ionicons name="arrow-forward" size={12} color={COLORS.actionText} />
           </View>
         </View>

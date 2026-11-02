@@ -51,7 +51,7 @@ const StayCard = ({ stay, index, saved, onToggleSave, onMapView }) => {
 
       <div className="hp-stay-body">
         <div className="hp-stay-row">
-          <span className="hp-stay-price"><strong>{stay.price}</strong><small>Whole villa / night</small></span>
+          <span className="hp-stay-price"><strong>Tariff on Request</strong><small>Whole villa stay</small></span>
           <span className="hp-stay-rating">
             <i className="fa-solid fa-star"></i> {stay.rating.toFixed(1)} <small>({stay.reviewsCount})</small>
           </span>
@@ -60,7 +60,7 @@ const StayCard = ({ stay, index, saved, onToggleSave, onMapView }) => {
         <p className="hp-stay-loc"><i className="fa-solid fa-location-dot"></i> {stay.location}</p>
         <div className="hp-stay-actions">
           <button type="button" className="hp-btn-dark" onClick={openDetails}>
-            <i className="fa-regular fa-eye"></i> View Details
+            <i className="fa-regular fa-envelope"></i> Enquire Now
           </button>
           <button type="button" className="hp-btn-ghost" onClick={() => onMapView(stay.id)}>
             <i className="fa-regular fa-map"></i> Map View
@@ -88,7 +88,7 @@ const CuratedStays = ({ filter, onFilterChange, onMapView, destinationFilter, on
           location: v.location,
           type: v.type || 'Villa',
           priceValue: v.price || 25000,
-          price: `₹${Number(v.price || 25000).toLocaleString(`en-IN`)}`,
+          price: 'Tariff on Request',
           rating: Number(v.rating) || 4.9,
           reviewsCount: Number(v.reviewsCount || v.reviewCount ) || 85,
           image: v.photos?.[0]|| '',
