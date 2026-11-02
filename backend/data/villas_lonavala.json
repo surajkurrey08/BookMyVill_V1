@@ -1,0 +1,778 @@
+[
+  {
+    "name": "The Glasshouse Lonavala",
+    "type": "Villa",
+    "location": "Tungarli, Lonavala, Maharashtra",
+    "price": 38000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7615, "lng": 73.4112 },
+    "mapLink": "https://maps.google.com/?q=18.7615,73.4112",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Music System", "Gazebo", "Sun Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Modern Glass Villa with Private Pool & Sahyadri Views",
+      "description": "Perched on the serene heights of Tungarli, The Glasshouse features floor-to-ceiling panoramic glass walls overlooking misty hilltops, a private heated pool, and plush designer living spaces.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Glasshouse_Lonavala",
+      "houseRules": ["Government ID required at check-in", "No outdoor music after 10:00 PM", "Pool timings: 7 AM - 9 PM"],
+      "arrivalNotes": "Located 3 km from Lonavala Station via Tungarli Lake Road.",
+      "foodInfo": "In-house cook available for fresh North Indian and Maharashtrian meals."
+    }
+  },
+  {
+    "name": "Woodland Mountain Manor",
+    "type": "Villa",
+    "location": "Gold Valley, Sector D, Lonavala, Maharashtra",
+    "price": 42000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7428, "lng": 73.4158 },
+    "mapLink": "https://maps.google.com/?q=18.7428,73.4158",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Indoor Games", "Music System", "Outdoor Dining"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Luxury Estate with Infinity Pool in Gold Valley",
+      "description": "A spacious 5-bedroom luxury estate featuring manicured lawns, private infinity pool, dedicated games room with pool table, and scenic Sahyadri mountain backdrops.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Woodland_Manor_5G",
+      "houseRules": ["Valid ID proof required", "Smoking permitted only in garden area", "No glassware in pool"],
+      "arrivalNotes": "Enter Gold Valley Sector D from Expressway junction.",
+      "foodInfo": "Custom chef service on-site for barbecue dinners and home-cooked meals."
+    }
+  },
+  {
+    "name": "Casa Blanca Luxury Villa",
+    "type": "Villa",
+    "location": "Khandala Hills, Lonavala, Maharashtra",
+    "price": 48000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7512, "lng": 73.3768 },
+    "mapLink": "https://maps.google.com/?q=18.7512,73.3768",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Greek-Inspired Whitewashed Villa with Sunset Jacuzzi",
+      "description": "Casa Blanca brings Santorini charm to the Khandala Ghats. Whitewashed walls, arched corridors, an infinity pool overlooking the valley, and a sunset jacuzzi deck.",
+      "bedrooms": 5, "bathrooms": 6, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CasaBlanca_Guest",
+      "houseRules": ["Government ID required", "Music allowed indoors after 10 PM", "Pool depth 4.5 ft"],
+      "arrivalNotes": "Located on Old Khandala Road near Duke's Nose viewpoint.",
+      "foodInfo": "Gourmet dining options with full kitchen team. Special barbecue setups."
+    }
+  },
+  {
+    "name": "Pawna Lakefront Palms Villa",
+    "type": "Villa",
+    "location": "Pawna Dam Road, Lonavala, Maharashtra",
+    "price": 32000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6875, "lng": 73.4832 },
+    "mapLink": "https://maps.google.com/?q=18.6875,73.4832",
+    "amenities": ["Private Pool", "WiFi", "AC", "Lake View", "Lawn", "BBQ", "Bonfire", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Outdoor Dining", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Lakefront Pool Villa with Sunset Deck & Bonfire",
+      "description": "Right on the water's edge of Pawna Dam with panoramic views of Tung and Tikona forts. Features a private pool facing the lake, lush lawns, and evening bonfire pits.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 15
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "PawnaPalms_WiFi",
+      "houseRules": ["Government ID required", "Swimming in lake strictly prohibited", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Scenic lakeside road via Kamshet. Gate security at entrance.",
+      "foodInfo": "Authentic Maharashtrian country-style food and fresh barbecue on request."
+    }
+  },
+  {
+    "name": "Bougainvillea Villa Khandala",
+    "type": "Villa",
+    "location": "Duke's Nose Road, Khandala, Lonavala, Maharashtra",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7395, "lng": 73.3685 },
+    "mapLink": "https://maps.google.com/?q=18.7395,73.3685",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Heritage Style Villa surrounded by Bougainvillea Blooms",
+      "description": "Covered in vibrant bougainvillea flowers, this Khandala residence combines colonial stone arches with modern resort amenities, a stone-deck pool, and lush gardens.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Bougainvillea_Guest",
+      "houseRules": ["Valid ID mandatory", "Pets allowed with prior consent", "Pool timings: 7 AM - 9 PM"],
+      "arrivalNotes": "Follow signs towards Duke's Nose scenic trail in Khandala.",
+      "foodInfo": "In-house culinary staff prepares custom meals. Traditional Parsi & Indian dishes."
+    }
+  },
+  {
+    "name": "Cloud 9 Luxury Villa",
+    "type": "Villa",
+    "location": "Ryewood Park Colony, Lonavala, Maharashtra",
+    "price": 28000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7495, "lng": 73.4065 },
+    "mapLink": "https://maps.google.com/?q=18.7495,73.4065",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Music System", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Elegant Villa near Ryewood Park with Plunge Pool",
+      "description": "Centrally located yet secluded in the green Ryewood residential enclave. Walking distance to cedar groves, featuring a courtyard plunge pool and wooden patio.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Cloud9_Lonavala",
+      "houseRules": ["Government ID required", "No late night loud noise outdoors", "Family groups preferred"],
+      "arrivalNotes": "5 minutes from Lonavala market near Ryewood Church.",
+      "foodInfo": "Cook service available for homely breakfast and thali dinners."
+    }
+  },
+  {
+    "name": "Sierra Vista Pawna Villa",
+    "type": "Villa",
+    "location": "Amarja Hills, Pawna Dam, Lonavala, Maharashtra",
+    "price": 31000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6528, "lng": 73.4938 },
+    "mapLink": "https://maps.google.com/?q=18.6528,73.4938",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Scenic Hill Villa inside Amarja Hills Gated Community",
+      "description": "Set inside the premier Amarja Hills private community. Breathtaking views of the Western Ghat valleys, infinity swimming pool, and pristine hillside breezes.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SierraVista_WiFi",
+      "houseRules": ["Government ID required", "Gated society rules apply", "Pool rules must be obeyed"],
+      "arrivalNotes": "Enter Amarja Hills security gate on Pawna Dam Road.",
+      "foodInfo": "Cook can prepare fresh vegetarian and non-vegetarian barbecue meals."
+    }
+  },
+  {
+    "name": "The Misty Peak Villa",
+    "type": "Villa",
+    "location": "Bushy Dam Road, Lonavala, Maharashtra",
+    "price": 34000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7280, "lng": 73.4020 },
+    "mapLink": "https://maps.google.com/?q=18.7280,73.4020",
+    "amenities": ["Private Pool", "WiFi", "AC", "Waterfall View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Indoor Games", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Waterfall View Villa near Bushy Dam",
+      "description": "Located along the famous Bushy Dam route, this villa is surrounded by seasonal waterfalls, verdant green cliffs, and misty mountain air.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "MistyPeak_5G",
+      "houseRules": ["Government ID mandatory", "Monsoon safety guidelines apply", "No loud outdoor music after 10 PM"],
+      "arrivalNotes": "Along Bushy Dam Road, 10 minutes past INS Shivaji.",
+      "foodInfo": "Local chef cooks hot pakodas, chai, and full authentic Indian menus."
+    }
+  },
+  {
+    "name": "Villa Serenity Valvan",
+    "type": "Villa",
+    "location": "Valvan, Lonavala, Maharashtra",
+    "price": 27000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7585, "lng": 73.4250 },
+    "mapLink": "https://maps.google.com/?q=18.7585,73.4250",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Peaceful Garden Villa with Swimming Pool in Valvan",
+      "description": "A calm, gated property in Valvan close to Valvan Dam and the Expressway. Features private pool, manicured lawn, and large sunlit bedrooms.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Serenity_Valvan",
+      "houseRules": ["Government ID required", "No smoking indoors", "Respect residential neighbors"],
+      "arrivalNotes": "Take Valvan exit off the Mumbai-Pune Expressway.",
+      "foodInfo": "Homely vegetarian & non-vegetarian thalis prepared by local cook."
+    }
+  },
+  {
+    "name": "Khandala Horizon Villa",
+    "type": "Villa",
+    "location": "Old Khandala Road, Lonavala, Maharashtra",
+    "price": 44000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7562, "lng": 73.3654 },
+    "mapLink": "https://maps.google.com/?q=18.7562,73.3654",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sunset View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Sunset Horizon Villa overlooking Khandala Canyon",
+      "description": "Showcasing dramatic cliffside views across the Bhor Ghats. Complete with cantilevered infinity pool, wide sunset viewing deck, and double-height living room.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Horizon_Khandala",
+      "houseRules": ["Government ID mandatory", "No pool diving", "Music outdoors stops at 10 PM"],
+      "arrivalNotes": "Turn off near Khandala toll plaza towards Rajmachi viewpoint.",
+      "foodInfo": "Full catering packages available with dedicated chef and helper."
+    }
+  },
+  {
+    "name": "The Amber Stone Villa",
+    "type": "Villa",
+    "location": "Karla, Lonavala, Maharashtra",
+    "price": 29000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7750, "lng": 73.4720 },
+    "mapLink": "https://maps.google.com/?q=18.7750,73.4720",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Natural Stone Villa near Karla Caves",
+      "description": "Constructed from natural basalt stone with wooden pitched ceilings. Private pool, gazebo seating, and easy access to Karla Caves and Ekvira Temple.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "AmberStone_Karla",
+      "houseRules": ["Government ID required", "Smoking outside only", "Pool hours: 7 AM - 9 PM"],
+      "arrivalNotes": "Take Karla Caves road off the Old Mumbai-Pune Highway.",
+      "foodInfo": "Homely vegetarian meals and local Konkani delicacies on order."
+    }
+  },
+  {
+    "name": "Villa 99 The Grand Lonavala",
+    "type": "Villa",
+    "location": "Frichley Hill, Tungarli, Lonavala, Maharashtra",
+    "price": 52000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7645, "lng": 73.4180 },
+    "mapLink": "https://maps.google.com/?q=18.7645,73.4180",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Pool Table", "Home Theatre"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "6 BHK Ultra Luxury Mansion with Heated Pool & Home Theatre",
+      "description": "A palatial 6-bedroom holiday mansion situated atop Frichley Hill. Boasts a climate-controlled heated pool, 12-seat home theatre room, full-size pool table, and expansive lawn.",
+      "bedrooms": 6, "bathrooms": 6, "maxGuests": 22
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "GrandVilla99_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "Music outdoors off at 10 PM", "Security deposit at check-in"],
+      "arrivalNotes": "Gated access up Frichley Hill road near Fariyas resort.",
+      "foodInfo": "Professional kitchen staff with custom multi-cuisine buffet menus."
+    }
+  },
+  {
+    "name": "The Pine Crest Chalet",
+    "type": "Villa",
+    "location": "Kamshet Hills, Lonavala, Maharashtra",
+    "price": 26000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7320, "lng": 73.5350 },
+    "mapLink": "https://maps.google.com/?q=18.7320,73.5350",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Bonfire", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Swiss Chalet with Mountain View in Kamshet",
+      "description": "Wooden A-frame chalet overlooking paragliding peaks in Kamshet. Cozy interiors, private plunge pool, outdoor bonfire circle, and pine-clad verandas.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "PineCrest_Guest",
+      "houseRules": ["Government ID required", "No open flames inside wooden chalet", "Quiet hours after 10 PM"],
+      "arrivalNotes": "15 minutes east of Lonavala via Old Highway towards Kamshet.",
+      "foodInfo": "Village style organic cooking, woodfire barbecue, and hot morning breakfasts."
+    }
+  },
+  {
+    "name": "Villa Whispering Palms",
+    "type": "Villa",
+    "location": "Varsoli Road, Lonavala, Maharashtra",
+    "price": 30000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7520, "lng": 73.4310 },
+    "mapLink": "https://maps.google.com/?q=18.7520,73.4310",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Tropical Garden Villa with Pool & Open Gazebo",
+      "description": "Fringed by royal palm trees and manicured lawns, Whispering Palms offers a private resort experience with spacious bedrooms and outdoor lounging.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "WhisperingPalms_5G",
+      "houseRules": ["Government ID mandatory", "Pets welcome with prior consent", "Pool timings 7 AM - 9 PM"],
+      "arrivalNotes": "Take Varsoli toll bypass towards Lonavala inner circle.",
+      "foodInfo": "Local cook prepares both vegetarian and non-vegetarian menus."
+    }
+  },
+  {
+    "name": "The Royal Manor Khandala",
+    "type": "Villa",
+    "location": "Near Khandala Lake, Lonavala, Maharashtra",
+    "price": 45000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7525, "lng": 73.3720 },
+    "mapLink": "https://maps.google.com/?q=18.7525,73.3720",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Music System", "Gazebo", "Outdoor Bar"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Colonial Luxury Estate with Pool & Valley Balconies",
+      "description": "A stately property reminiscent of British colonial architecture with grand porticos, vintage chandelier lighting, private swimming pool, and sweeping valley balconies.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "RoyalManor_Guest",
+      "houseRules": ["Government ID required", "No loud outdoor speakers after 10 PM", "Strict no-smoking in bedrooms"],
+      "arrivalNotes": "Near Khandala Lake on heritage estate lane.",
+      "foodInfo": "Private cook and butler on site to handle custom catering."
+    }
+  },
+  {
+    "name": "Sunset Edge Pool Villa",
+    "type": "Villa",
+    "location": "Lion's Point Road, Lonavala, Maharashtra",
+    "price": 39000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7180, "lng": 73.3950 },
+    "mapLink": "https://maps.google.com/?q=18.7180,73.3950",
+    "amenities": ["Private Pool", "WiFi", "AC", "Cliff View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Music System", "Sun Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Cliffside Villa with Unmatched Sunset Views near Lion's Point",
+      "description": "Set right on the ridge leading to Lion's Point. Watch fog roll through the canyon directly from your infinity pool and enjoy cool mountain breezes all year round.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SunsetEdge_WiFi",
+      "houseRules": ["Government ID required", "Cliff barrier rules must be respected", "Music indoors after 10 PM"],
+      "arrivalNotes": "Take Aamby Valley road past INS Shivaji towards Lion's Point.",
+      "foodInfo": "Homestyle cooking and evening barbecue arrangements on the sun deck."
+    }
+  },
+  {
+    "name": "Villa 108 Sierra Vista",
+    "type": "Villa",
+    "location": "Pawna Dam Road, Lonavala, Maharashtra",
+    "price": 27000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6525, "lng": 73.4935 },
+    "mapLink": "https://maps.google.com/?q=18.6525,73.4935",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Music System", "Indoor Games", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Luxury Pool Villa with Scenic Hill Views",
+      "description": "Part of the Amarja Hills collection near Pawna Dam. Premium group getaway with spacious interiors, private pool, and outdoor gardens.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 15
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SierraVista_Guest",
+      "houseRules": ["Government ID required", "No loud music outdoors after 10 PM", "Pool timings: 7 AM - 9 PM"],
+      "arrivalNotes": "Located in Amarja Hills villa collection on Pawna Dam Road.",
+      "foodInfo": "In-house cook available for fresh vegetarian and non-vegetarian meals."
+    }
+  },
+  {
+    "name": "Villa 199 Sunset Retreat",
+    "type": "Villa",
+    "location": "Pawna Dam Road, Lonavala, Maharashtra",
+    "price": 40000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6530, "lng": 73.4940 },
+    "mapLink": "https://maps.google.com/?q=18.6530,73.4940",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Music System", "Indoor Games", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "6 BHK Luxury Villa for Groups and Family Getaways",
+      "description": "A massive 6-bedroom villa designed for family reunions and large gatherings near Pawna Dam, complete with expansive swimming pool and game lawns.",
+      "bedrooms": 6, "bathrooms": 6, "maxGuests": 20
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SunsetRetreat_WiFi",
+      "houseRules": ["Government ID required", "No outdoor music after 10 PM", "Smoking outdoors only"],
+      "arrivalNotes": "Pawna Dam Road in Amarja Hills collection.",
+      "foodInfo": "Custom chef service for group meals and barbecue buffets."
+    }
+  },
+  {
+    "name": "Villa 27 The Mountain Crest",
+    "type": "Villa",
+    "location": "Pawna Dam Road, Lonavala, Maharashtra",
+    "price": 35000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6535, "lng": 73.4945 },
+    "mapLink": "https://maps.google.com/?q=18.6535,73.4945",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Music System", "Indoor Games", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Luxury Mountain Retreat with Private Pool",
+      "description": "Features 4 spacious air-conditioned suites, a sparkling pool, green lawn, and panoramic Sahyadri views.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "MountainCrest_5G",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "Pool timings 7 AM - 9 PM"],
+      "arrivalNotes": "Amarja Hills development on Pawna Dam road.",
+      "foodInfo": "Fresh meals prepared on site on advance request."
+    }
+  },
+  {
+    "name": "Aura Luxury Villa",
+    "type": "Villa",
+    "location": "Gold Valley, Lonavala, Maharashtra",
+    "price": 31000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7440, "lng": 73.4180 },
+    "mapLink": "https://maps.google.com/?q=18.7440,73.4180",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Modern Pool Villa in Gold Valley Sector C",
+      "description": "Chic interior design with mood lighting, private courtyard swimming pool, comfortable beds, and lush lawns.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "AuraVilla_Guest",
+      "houseRules": ["Government ID required", "No outdoor music after 10 PM", "Pool safety rules apply"],
+      "arrivalNotes": "Turn into Gold Valley Sector C from main road.",
+      "foodInfo": "Local cook available for breakfast, lunch, and dinner."
+    }
+  },
+  {
+    "name": "The Grand Oak Villa",
+    "type": "Villa",
+    "location": "Valvan Village, Lonavala, Maharashtra",
+    "price": 25000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7600, "lng": 73.4280 },
+    "mapLink": "https://maps.google.com/?q=18.7600,73.4280",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Indoor Games", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Budget Luxury Villa with Private Pool in Valvan",
+      "description": "Budget-friendly luxury stay with clean swimming pool, spacious living hall, and private parking in Valvan.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "GrandOak_WiFi",
+      "houseRules": ["Government ID mandatory", "Family groups welcomed", "No smoking indoors"],
+      "arrivalNotes": "Easily accessible from Valvan bridge and Expressway exit.",
+      "foodInfo": "Cook on demand for hot homestyle thalis."
+    }
+  },
+  {
+    "name": "Khandala Valley Mist Villa",
+    "type": "Villa",
+    "location": "Khandala Ghats, Lonavala, Maharashtra",
+    "price": 37000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7480, "lng": 73.3710 },
+    "mapLink": "https://maps.google.com/?q=18.7480,73.3710",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Cliffside Villa with Glass Balconies in Khandala",
+      "description": "Enjoy the famous Khandala fog and monsoon waterfalls from transparent glass balconies and outdoor plunge pool.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "ValleyMist_WiFi",
+      "houseRules": ["Government ID required", "No loud outdoor noise after 10 PM", "Pool rules apply"],
+      "arrivalNotes": "Take Old Khandala hill road.",
+      "foodInfo": "Local chef cooks tasty snacks, barbecue, and meals."
+    }
+  },
+  {
+    "name": "Elysium Waters Pawna",
+    "type": "Villa",
+    "location": "Pawna Lake South Bank, Lonavala, Maharashtra",
+    "price": 33000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6650, "lng": 73.4780 },
+    "mapLink": "https://maps.google.com/?q=18.6650,73.4780",
+    "amenities": ["Private Pool", "WiFi", "AC", "Lake View", "Lawn", "BBQ", "Bonfire", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Outdoor Dining"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Waterfront Villa with Infinity Pool on Pawna Lake",
+      "description": "Wake up to calm lake waters right outside your bedroom window. Infinity pool merges with lake views, accompanied by a bonfire lawn.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "ElysiumWaters_Pawna",
+      "houseRules": ["Government ID required", "Strictly no swimming in lake", "Outdoor music cutoff 10 PM"],
+      "arrivalNotes": "Follow lakeside path from Kamshet turnoff.",
+      "foodInfo": "Authentic rural Maharashtrian dishes and barbecue prepared on order."
+    }
+  },
+  {
+    "name": "Villa Nirvana Tungarli",
+    "type": "Villa",
+    "location": "Near Tungarli Dam, Lonavala, Maharashtra",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7670, "lng": 73.4140 },
+    "mapLink": "https://maps.google.com/?q=18.7670,73.4140",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Quiet Hill Retreat with Pool near Tungarli Dam",
+      "description": "Nestled near Tungarli Dam woods, Villa Nirvana offers cool breezes, chirping birds, private pool, and expansive green terrace.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Nirvana_Guest_WiFi",
+      "houseRules": ["Government ID required", "No loud parties outdoors after 10 PM", "Smoking outdoors only"],
+      "arrivalNotes": "Take Tungarli Dam road from main market square.",
+      "foodInfo": "Homely chef meals available upon request."
+    }
+  },
+  {
+    "name": "The Highland Crest Estate",
+    "type": "Villa",
+    "location": "Ryewood, Lonavala, Maharashtra",
+    "price": 46000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7510, "lng": 73.4080 },
+    "mapLink": "https://maps.google.com/?q=18.7510,73.4080",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Pool Table", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Grand Villa with Private Pool & Billiards Room",
+      "description": "An aristocratic private estate featuring large suites, private outdoor pool, jacuzzi deck, pool table, and landscaped gardens in Ryewood.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "HighlandCrest_Guest",
+      "houseRules": ["Government ID mandatory", "Pool rules must be followed", "Music inside after 10 PM"],
+      "arrivalNotes": "5 minutes from Lonavala railway station in prime Ryewood neighborhood.",
+      "foodInfo": "Dedicated cook on site. Customizable multi-course meal packages."
+    }
+  }
+]
+

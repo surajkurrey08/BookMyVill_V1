@@ -1,0 +1,778 @@
+[
+  {
+    "name": "The Strawberry Valley Estate",
+    "type": "Villa",
+    "location": "Metgutad, Mahabaleshwar, Maharashtra",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9185, "lng": 73.6765 },
+    "mapLink": "https://maps.google.com/?q=17.9185,73.6765",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System", "Strawberry Farm Walk"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Scenic Valley Villa surrounded by Strawberry Farms in Metgutad",
+      "description": "Perched on the hill slopes of Metgutad between Panchgani and Mahabaleshwar. Overlooks private strawberry fields, featuring a heated outdoor pool, fireplace lounge, and panoramic mountain balconies.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "StrawberryValley_WiFi",
+      "houseRules": ["Government ID required at check-in", "No loud music outdoors after 10:00 PM", "Complimentary strawberry plucking in season"],
+      "arrivalNotes": "Take Metgutad turnoff along main Panchgani-Mahabaleshwar Road.",
+      "foodInfo": "Local chef cooks fresh Mahabaleshwar thalis, wood-fired barbecue, and strawberry cream desserts."
+    }
+  },
+  {
+    "name": "Venna Lake Mist Villa",
+    "type": "Villa",
+    "location": "Near Venna Lake, Mahabaleshwar, Maharashtra",
+    "price": 42000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9315, "lng": 73.6592 },
+    "mapLink": "https://maps.google.com/?q=17.9315,73.6592",
+    "amenities": ["Private Pool", "WiFi", "AC", "Lake View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Fireplace", "Indoor Games", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Grand Villa overlooking Venna Lake with Private Pool",
+      "description": "Within walking distance to historic Venna Lake. Watch morning mist drift across the water from your private pool deck and enjoy cool alpine evenings by the wood fireplace.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "VennaMist_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "No outdoor music after 10 PM", "Smoking outdoors only"],
+      "arrivalNotes": "Take lake promenade road, private gated entry 400m past boating club.",
+      "foodInfo": "In-house culinary staff prepares custom multi-cuisine meals and campfire snacks."
+    }
+  },
+  {
+    "name": "Kate's Cliff Villa",
+    "type": "Villa",
+    "location": "Kate's Point Road, Mahabaleshwar, Maharashtra",
+    "price": 38000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9210, "lng": 73.6445 },
+    "mapLink": "https://maps.google.com/?q=17.9210,73.6445",
+    "amenities": ["Private Pool", "WiFi", "AC", "Cliff View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Sun Deck", "Music System", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Cliffside Villa with Cantilevered Pool over Krishna Valley",
+      "description": "Perched on the rim of Krishna Valley near Kate's Point and Elephant's Head. Features glass infinity pool, sprawling sunset deck, and stone fireplaces.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "KatesCliff_Guest",
+      "houseRules": ["Government ID required", "Cliff barrier guidelines must be respected", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Duchess Road toward Kate's Point.",
+      "foodInfo": "Local chef cooks hot snacks, soups, barbecue, and traditional Maharashtrian dishes."
+    }
+  },
+  {
+    "name": "Old Mahabaleshwar Forest Lodge",
+    "type": "Villa",
+    "location": "Old Mahabaleshwar, Maharashtra",
+    "price": 34000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9395, "lng": 73.6425 },
+    "mapLink": "https://maps.google.com/?q=17.9395,73.6425",
+    "amenities": ["Private Pool", "WiFi", "AC", "Forest View", "Lawn", "BBQ", "Bonfire", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Indoor Games", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Heritage Stone Villa near Panchganga Temple",
+      "description": "Constructed with antique black basalt stone and Burma teakwood near sacred Panchganga Temple. Shaded by ancient cedar forest with secluded plunge pool.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "ForestLodge_Guest",
+      "houseRules": ["Government ID required", "Respect temple heritage neighborhood", "Smoking outdoors only"],
+      "arrivalNotes": "5 km north of Mahabaleshwar bus station towards Old Kshetra Mahabaleshwar.",
+      "foodInfo": "Authentic Satvik vegetarian thalis and local cuisine prepared with cold-pressed oils."
+    }
+  },
+  {
+    "name": "Lingmala Waterfall Chalet",
+    "type": "Villa",
+    "location": "Lingmala, Mahabaleshwar, Maharashtra",
+    "price": 31000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9098, "lng": 73.6805 },
+    "mapLink": "https://maps.google.com/?q=17.9098,73.6805",
+    "amenities": ["Private Pool", "WiFi", "AC", "Waterfall Sound", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Wooden Chalet nestled beside Lingmala Waterfall Forest",
+      "description": "Hear the soothing roar of Lingmala Falls from your wooden balcony. Natural timber construction, private pool, and outdoor barbecue terrace.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "LingmalaChalet_5G",
+      "houseRules": ["Government ID required", "No open flames inside wooden chalet", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Lingmala forest trail road off the Mahabaleshwar-Panchgani Highway.",
+      "foodInfo": "Homely local food, steaming hot bhakri, and country chicken / paneer curries."
+    }
+  },
+  {
+    "name": "Sydney Heights Villa Panchgani",
+    "type": "Villa",
+    "location": "Sydney Point, Panchgani, Maharashtra",
+    "price": 40000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9250, "lng": 73.8015 },
+    "mapLink": "https://maps.google.com/?q=17.9250,73.8015",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Sunset Pool Villa overlooking Dhom Dam at Sydney Point",
+      "description": "Perched on the cliff at Sydney Point, this modern 5-bedroom villa offers 270-degree views of Dhom Dam waters and Wai valley. Features infinity pool and sunset jacuzzi.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SydneyHeights_VIP",
+      "houseRules": ["Government ID mandatory", "No pool diving", "Music indoors after 10 PM"],
+      "arrivalNotes": "Take Sydney Point approach road from Panchgani toll plaza.",
+      "foodInfo": "Dedicated chef on-site. Barbecue buffets and custom family dining."
+    }
+  },
+  {
+    "name": "The Table Land Manor",
+    "type": "Villa",
+    "location": "Godavali, Panchgani, Maharashtra",
+    "price": 35000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9280, "lng": 73.8120 },
+    "mapLink": "https://maps.google.com/?q=17.9280,73.8120",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Indoor Games", "Gazebo", "Pool Table"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Parsi-Colonial Villa with Billiards & Pool near Table Land",
+      "description": "High ceilings, stained glass windows, sprawling lawn, pool table, and private swimming pool just minutes from Asia's second largest volcanic plateau.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "TableLandManor_Guest",
+      "houseRules": ["Government ID required", "Family groups welcomed", "No smoking inside bedrooms"],
+      "arrivalNotes": "Take Godavali road 5 minutes from Panchgani town square.",
+      "foodInfo": "Authentic Parsi and Maharashtrian dishes cooked fresh by resident staff."
+    }
+  },
+  {
+    "name": "Tapola Lakefront Nirvana",
+    "type": "Villa",
+    "location": "Tapola Road, Mahabaleshwar, Maharashtra",
+    "price": 33000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9055, "lng": 73.6555 },
+    "mapLink": "https://maps.google.com/?q=17.9055,73.6555",
+    "amenities": ["Private Pool", "WiFi", "AC", "Lake View", "Lawn", "BBQ", "Bonfire", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Kayaking Access"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Waterfront Villa overlooking Koyna Backwaters in Tapola",
+      "description": "Known as 'Mini Kashmir', Tapola offers deep blue lake waters and dense valleys. Infinity pool facing the Koyna reservoir with evening bonfire circle.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "TapolaLakefront_WiFi",
+      "houseRules": ["Government ID required", "No swimming in Koyna waters without lifejacket", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take scenic Tapola ghat road 25 minutes south of Mahabaleshwar.",
+      "foodInfo": "Local village-style fish and mutton curries, jowar bhakris, and barbecue."
+    }
+  },
+  {
+    "name": "Bhilar Book & Bloom Villa",
+    "type": "Villa",
+    "location": "Bhilar Village, Mahabaleshwar, Maharashtra",
+    "price": 28000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9182, "lng": 73.7595 },
+    "mapLink": "https://maps.google.com/?q=17.9182,73.7595",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Reading Library", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Literary Villa with Private Pool in India's 'Village of Books'",
+      "description": "Situated in Bhilar, India's famous village of books. Features a curated 1,000-book reading den, secluded garden pool, and strawberry garden verandas.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "BhilarBloom_Guest",
+      "houseRules": ["Government ID required", "Handle library books with care", "No smoking indoors"],
+      "arrivalNotes": "Take Bhilar bypass between Panchgani and Mahabaleshwar.",
+      "foodInfo": "Homestyle vegetarian and non-vegetarian meals cooked with local seasonal produce."
+    }
+  },
+  {
+    "name": "Wilson Sunrise Crest Villa",
+    "type": "Villa",
+    "location": "Wilson Point Road, Mahabaleshwar, Maharashtra",
+    "price": 44000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9288, "lng": 73.6635 },
+    "mapLink": "https://maps.google.com/?q=17.9288,73.6635",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sunrise View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Sunrise Villa near Highest Peak (Wilson Point) in Mahabaleshwar",
+      "description": "Located right below Wilson Point, the highest peak in Mahabaleshwar at 4,710 ft. Watch magnificent sunrises from your heated pool and private rooftop terrace.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "WilsonSunrise_VIP",
+      "houseRules": ["Government ID mandatory", "Pool rules apply", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Wilson Point road 1 km east of Mahabaleshwar market.",
+      "foodInfo": "Custom chef service on site. Special winter hotpot and barbecue dinners."
+    }
+  },
+  {
+    "name": "Khingar Valley View Retreat",
+    "type": "Villa",
+    "location": "Khingar, Panchgani, Maharashtra",
+    "price": 32000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9150, "lng": 73.8180 },
+    "mapLink": "https://maps.google.com/?q=17.9150,73.8180",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Outdoor Dining"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Quiet Valley Villa with Pool in Khingar",
+      "description": "Nestled in the quiet rural orchards of Khingar. Offers panoramic views across the deep valleys, private pool, and green lawns away from highway traffic.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "KhingarValley_Guest",
+      "houseRules": ["Government ID required", "Respect natural tranquility", "Smoking outdoors only"],
+      "arrivalNotes": "Take Khingar village lane from Panchgani market.",
+      "foodInfo": "Homely meals cooked by caretaker family with organic valley ingredients."
+    }
+  },
+  {
+    "name": "Villa 108 Silver Oak",
+    "type": "Villa",
+    "location": "Panchgani Road, Mahabaleshwar, Maharashtra",
+    "price": 37000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9220, "lng": 73.7150 },
+    "mapLink": "https://maps.google.com/?q=17.9220,73.7150",
+    "amenities": ["Private Pool", "WiFi", "AC", "Pine Forest View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Forest Villa surrounded by Silver Oak Trees",
+      "description": "Standing amidst tall silver oak and eucalyptus trees, this villa offers private swimming pool, bonfire deck, and crisp mountain breezes.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SilverOak_108",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "Pool timings 7 AM - 9 PM"],
+      "arrivalNotes": "Located midway between Panchgani and Mahabaleshwar along the main road.",
+      "foodInfo": "Homestyle barbecue, hot soups, and Maharashtrian cuisine prepared fresh."
+    }
+  },
+  {
+    "name": "Arthur's Seat Panorama Villa",
+    "type": "Villa",
+    "location": "Arthur's Seat Road, Mahabaleshwar, Maharashtra",
+    "price": 46000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9850, "lng": 73.6150 },
+    "mapLink": "https://maps.google.com/?q=17.9850,73.6150",
+    "amenities": ["Private Pool", "WiFi", "AC", "Savannah Canyon View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Ultra-Luxury Villa on Arthur's Seat Ridge with Infinity Pool",
+      "description": "Dramatic cliffside architecture overlooking Savitri River gorge and Konkan coastal plains. Cantilevered heated pool and glass observation decks.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "ArthursSeat_VIP",
+      "houseRules": ["Government ID mandatory", "Safety fences must not be crossed", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take northern scenic route past Tiger Spring to Arthur's Seat ridge.",
+      "foodInfo": "Private chef on-site. Multi-course gourmet meals and sunset barbecue."
+    }
+  },
+  {
+    "name": "Ruighar Valley Palms",
+    "type": "Villa",
+    "location": "Ruighar, Panchgani, Maharashtra",
+    "price": 29000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9120, "lng": 73.7850 },
+    "mapLink": "https://maps.google.com/?q=17.9120,73.7850",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Valley-Facing Pool Villa in Ruighar",
+      "description": "Perched on the rim of the Ruighar mountain ridge. Features private swimming pool, terrace garden, and quiet strawberry farm views.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "RuigharPalms_Guest",
+      "houseRules": ["Government ID required", "Pets welcome with advance notification", "No smoking indoors"],
+      "arrivalNotes": "Take Ruighar village branch off the Panchgani ghat.",
+      "foodInfo": "Homestyle hot meals and village chicken curry prepared fresh."
+    }
+  },
+  {
+    "name": "The Cloud Valley Mansion",
+    "type": "Villa",
+    "location": "Panchgani Market Road, Maharashtra",
+    "price": 48000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9240, "lng": 73.8050 },
+    "mapLink": "https://maps.google.com/?q=17.9240,73.8050",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Home Cinema", "Pool Table"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "6 BHK Palatial Hill Mansion with Heated Pool & Cinema in Panchgani",
+      "description": "Grand 6-bedroom estate with private indoor heated pool, 10-seater mini cinema, private snooker lounge, and manicured terrace lawns.",
+      "bedrooms": 6, "bathrooms": 6, "maxGuests": 22
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CloudValley_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "Music indoors after 10 PM", "Security deposit at check-in"],
+      "arrivalNotes": "Gated access behind Panchgani main heritage market square.",
+      "foodInfo": "Professional chef team for custom buffets, tandoor grills, and kids menus."
+    }
+  },
+  {
+    "name": "Kumbhroshi Highland Villa",
+    "type": "Villa",
+    "location": "Kumbhroshi Village, Mahabaleshwar, Maharashtra",
+    "price": 30000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9300, "lng": 73.6120 },
+    "mapLink": "https://maps.google.com/?q=17.9300,73.6120",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Scenic Mountain Retreat in Kumbhroshi",
+      "description": "Surrounded by rolling green Sahyadri hills in peaceful Kumbhroshi village. Features private swimming pool, strawberry garden patio, and fresh valley breezes.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Kumbhroshi_Guest",
+      "houseRules": ["Government ID required", "No loud music outdoors after 10 PM", "Pool timings 7 AM - 9 PM"],
+      "arrivalNotes": "Located along Pratapgad road near Kumbhroshi village signpost.",
+      "foodInfo": "Authentic rural Maharashtrian dishes and freshly picked strawberry platters."
+    }
+  },
+  {
+    "name": "The Heritage Pines Mahabaleshwar",
+    "type": "Villa",
+    "location": "Tiger Path Road, Mahabaleshwar, Maharashtra",
+    "price": 39000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9255, "lng": 73.6520 },
+    "mapLink": "https://maps.google.com/?q=17.9255,73.6520",
+    "amenities": ["Private Pool", "WiFi", "AC", "Pine Forest View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Fireplace", "Gazebo", "Sun Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK British-Era Stone Bungalow with Pool & Fireplace",
+      "description": "Restored 19th-century colonial stone residence shaded by century-old pine trees. Stone fireplace, wooden floorboards, private pool, and expansive verandahs.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "HeritagePines_Guest",
+      "houseRules": ["Government ID required", "Preserve vintage furniture", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take historic Tiger Path road 2 minutes from town library.",
+      "foodInfo": "Resident butler and cook serve English breakfast and classic Indian feasts."
+    }
+  },
+  {
+    "name": "Pratapgad View Pool Villa",
+    "type": "Villa",
+    "location": "Poladpur Road, Mahabaleshwar, Maharashtra",
+    "price": 33000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9280, "lng": 73.5850 },
+    "mapLink": "https://maps.google.com/?q=17.9280,73.5850",
+    "amenities": ["Private Pool", "WiFi", "AC", "Fort View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Outdoor Dining"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Hilltop Villa with Unobstructed Pratapgad Fort Views",
+      "description": "Gaze out at the bastions of historic Pratapgad Fort right from your infinity swimming pool. Surrounded by lush Western Ghat greenery and sunset hills.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "PratapgadView_WiFi",
+      "houseRules": ["Government ID required", "No loud music outdoors after 10 PM", "Smoking outdoors only"],
+      "arrivalNotes": "Take scenic Poladpur ghat route towards Pratapgad Fort.",
+      "foodInfo": "Freshly cooked local Maratha-style chicken and vegetarian spreads."
+    }
+  },
+  {
+    "name": "Villa Bellavista Panchgani",
+    "type": "Villa",
+    "location": "Harrison's Folly, Panchgani, Maharashtra",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9225, "lng": 73.8250 },
+    "mapLink": "https://maps.google.com/?q=17.9225,73.8250",
+    "amenities": ["Private Pool", "WiFi", "AC", "Plateau View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Panoramic Villa near Harrison's Folly with Infinity Pool",
+      "description": "Uninterrupted vistas across the low-lying Wai river valley. Modern cantilever pool, wide sun lounge deck, and spacious living hall.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Bellavista_5G",
+      "houseRules": ["Government ID required", "Pool rules apply", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Harrison's Folly road near Panchgani main entry gate.",
+      "foodInfo": "Homestyle cooking and evening barbecue arrangements on the sun deck."
+    }
+  },
+  {
+    "name": "Strawberry Country Chalet",
+    "type": "Villa",
+    "location": "Avakali, Mahabaleshwar, Maharashtra",
+    "price": 27000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9215, "lng": 73.6950 },
+    "mapLink": "https://maps.google.com/?q=17.9215,73.6950",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Strawberry Field Tour"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Country Chalet with Pool in Strawberry Village of Avakali",
+      "description": "Cozy countryside stone cottage surrounded by strawberry beds. Features plunge pool, open lawn for badminton, and wood-paneled bedrooms.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "StrawberryCountry_WiFi",
+      "houseRules": ["Government ID required", "Pets allowed", "No smoking inside"],
+      "arrivalNotes": "Take Avakali village turn off Mahabaleshwar-Panchgani road.",
+      "foodInfo": "Homely vegetarian meals and freshly churned strawberry ice cream."
+    }
+  },
+  {
+    "name": "Sunset Point Vista Villa",
+    "type": "Villa",
+    "location": "Bombay Point Road, Mahabaleshwar, Maharashtra",
+    "price": 41000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9220, "lng": 73.6380 },
+    "mapLink": "https://maps.google.com/?q=17.9220,73.6380",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sunset View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Sunset Vista Villa near Bombay Point",
+      "description": "Catch Maharashtra's most famous sunset colors from your private infinity pool. Panoramic western horizon views, outdoor barbecue lawn, and stone patio.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SunsetPoint_Guest",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "Pool rules apply"],
+      "arrivalNotes": "Take Bombay Point road 2 km west of Mahabaleshwar market.",
+      "foodInfo": "Custom chef service available for sunset barbecue and family meals."
+    }
+  },
+  {
+    "name": "The Glass Pavilions Panchgani",
+    "type": "Villa",
+    "location": "Ring Road, Panchgani, Maharashtra",
+    "price": 45000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9270, "lng": 73.8080 },
+    "mapLink": "https://maps.google.com/?q=17.9270,73.8080",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Home Cinema", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Glass Pavilion Villa with Heated Pool in Panchgani",
+      "description": "Floor-to-ceiling glass pavilions that make you feel like floating above the valleys. Climate-controlled heated pool, home cinema room, and fireplace lounge.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "GlassPavilions_VIP",
+      "houseRules": ["Government ID mandatory", "Pool rules apply", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Panchgani ring road towards Sanjeewan school campus.",
+      "foodInfo": "Full culinary service on site for gourmet North Indian and continental dining."
+    }
+  },
+  {
+    "name": "Lodwick Forest Retreat",
+    "type": "Villa",
+    "location": "Lodwick Point Road, Mahabaleshwar, Maharashtra",
+    "price": 35000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9350, "lng": 73.6320 },
+    "mapLink": "https://maps.google.com/?q=17.9350,73.6320",
+    "amenities": ["Private Pool", "WiFi", "AC", "Forest View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Fireplace", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Forest Hideaway with Private Pool near Lodwick Point",
+      "description": "Surrounded by ancient jamun and pine forests. Cozy living room with brick fireplace, private plunge pool, and morning birdsong verandas.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "LodwickForest_Guest",
+      "houseRules": ["Government ID required", "No open fire in forest zone", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Lodwick Point road past golf course.",
+      "foodInfo": "Homestyle Mahabaleshwar meals cooked with local seasonal spices."
+    }
+  },
+  {
+    "name": "Strawberry Blossom Villa Bhilar",
+    "type": "Villa",
+    "location": "Bhilar Road, Mahabaleshwar, Maharashtra",
+    "price": 26000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9200, "lng": 73.7550 },
+    "mapLink": "https://maps.google.com/?q=17.9200,73.7550",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Budget Luxury Villa with Pool amidst Strawberry Fields",
+      "description": "Enjoy peaceful farm views, clean private swimming pool, and comfortable family bedrooms in the heart of Bhilar's strawberry country.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "StrawberryBlossom_WiFi",
+      "houseRules": ["Government ID required", "Family groups welcomed", "No smoking indoors"],
+      "arrivalNotes": "Take Bhilar main village road.",
+      "foodInfo": "Homely vegetarian meals and freshly picked strawberries served daily."
+    }
+  },
+  {
+    "name": "The Sahyadri Peak Manor",
+    "type": "Villa",
+    "location": "Panchgani-Mahabaleshwar Road, Maharashtra",
+    "price": 47000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 17.9210, "lng": 73.7300 },
+    "mapLink": "https://maps.google.com/?q=17.9210,73.7300",
+    "amenities": ["Private Pool", "WiFi", "AC", "Panoramic Valley View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Gazebo", "Billiards", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Grand Luxury Estate with Valley Infinity Pool & Billiards",
+      "description": "An imposing luxury estate midway between Panchgani and Mahabaleshwar. Features double-height glass hall, heated infinity pool with Sahyadri panorama, jacuzzi, and billiards lounge.",
+      "bedrooms": 5, "bathrooms": 6, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SahyadriPeak_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "Pool safety rules apply", "Quiet hours outdoors after 10 PM"],
+      "arrivalNotes": "Gated grand entrance directly off main highway.",
+      "foodInfo": "Dedicated chef and kitchen team for multi-course meals, tandoor grills, and hot breakfasts."
+    }
+  }
+]
+

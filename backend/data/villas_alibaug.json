@@ -1,0 +1,778 @@
+[
+  {
+    "name": "Casa Frangipani Coastal Estate",
+    "type": "Villa",
+    "location": "Awas Beach Road, Mandwa, Alibaug, Maharashtra",
+    "price": 38000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7612, "lng": 72.8754 },
+    "mapLink": "https://maps.google.com/?q=18.7612,72.8754",
+    "amenities": ["Private Pool", "WiFi", "AC", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Music System", "Gazebo", "Outdoor Dining"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Coastal Luxury Villa with Private Pool near Mandwa Jetty",
+      "description": "Shaded by mature plumeria trees and coconut palms, Casa Frangipani features double-height living spaces, open-to-sky courtyard dining, and a sparkling private pool 10 minutes from Mandwa Jetty.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Frangipani_Guest",
+      "houseRules": ["Government ID required at check-in", "No outdoor music after 10:00 PM", "Pool timings: 7:00 AM to 9:30 PM"],
+      "arrivalNotes": "Located 10 minutes from Mandwa RORO Jetty along Awas Beach Road.",
+      "foodInfo": "Dedicated local in-house cook prepares authentic Konkani seafood and fresh vegetarian thalis."
+    }
+  },
+  {
+    "name": "The Glasshouse Palms Estate",
+    "type": "Villa",
+    "location": "Kihim Beach, Alibaug, Maharashtra",
+    "price": 45000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7215, "lng": 72.8831 },
+    "mapLink": "https://maps.google.com/?q=18.7215,72.8831",
+    "amenities": ["Private Pool", "WiFi", "AC", "Lawn", "BBQ", "Power Backup", "Caretaker", "Music System"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Sun Deck", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Ultra-Modern Glass Villa with L-Shaped Pool & Lawn",
+      "description": "Surrounded by a private coconut grove, The Glasshouse combines minimalist glass architecture with coastal tranquility. Floor-to-ceiling panoramic windows and L-shaped private pool.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Glasshouse_HighSpeed",
+      "houseRules": ["Valid government ID mandatory for all guests", "Pool safety rules apply", "Quiet hours after 10:00 PM"],
+      "arrivalNotes": "Take Chondi-Kihim road towards Kihim beachfront. Gated private entry.",
+      "foodInfo": "Custom gourmet chef packages available for breakfast, lunch, high-tea, and barbecue evenings."
+    }
+  },
+  {
+    "name": "Zirad Orchard Retreat Villa",
+    "type": "Villa",
+    "location": "Zirad, Alibaug, Maharashtra",
+    "price": 32000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7292, "lng": 72.9125 },
+    "mapLink": "https://maps.google.com/?q=18.7292,72.9125",
+    "amenities": ["Private Pool", "WiFi", "AC", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System", "Outdoor Dining"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Colonial Pool Villa nestled in Mango Orchards",
+      "description": "Constructed in colonial verandah style inside a 1-acre mango and chiku plantation. Total privacy, temperature-controlled swimming pool, and stargazing patio setups.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Orchard_Retreat_5G",
+      "houseRules": ["Government ID verification at check-in", "Pets welcome with advance notice", "Smoking in garden only"],
+      "arrivalNotes": "Located along the scenic Zirad-Alibaug bypass near leading art cafes.",
+      "foodInfo": "In-house cook prepares home-style meals, freshly caught fish curries, and organic vegetable dishes."
+    }
+  },
+  {
+    "name": "Nagaon Coastal Palms Villa",
+    "type": "Villa",
+    "location": "Nagaon Beach Road, Alibaug, Maharashtra",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6180, "lng": 72.9050 },
+    "mapLink": "https://maps.google.com/?q=18.6180,72.9050",
+    "amenities": ["Private Pool", "WiFi", "AC", "Lawn", "BBQ", "Power Backup", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System", "Outdoor Bar"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Beachfront Villa with Tropical Swimming Pool at Nagaon",
+      "description": "Just 200 meters from Nagaon's water sports beach, this tropical retreat offers an open-air swimming pool surrounded by betel nut groves and sandy lawns.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "NagaonPalms_WiFi",
+      "houseRules": ["Government ID required", "Rinse off beach sand before entering the pool", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Directly accessible via Nagaon High School lane towards water-sports beachfront.",
+      "foodInfo": "Authentic Surmai fry, Prawn curry, and Maharashtrian vegetarian meals prepared by local cooks."
+    }
+  },
+  {
+    "name": "Nine Palms Villa Mandwa",
+    "type": "Villa",
+    "location": "Sasawane, Mandwa, Alibaug, Maharashtra",
+    "price": 50000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7750, "lng": 72.8620 },
+    "mapLink": "https://maps.google.com/?q=18.7750,72.8620",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Tennis Court", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Grand Sea-Breeze Estate with Private Pool & Tennis Court",
+      "description": "An opulent 2-acre estate overlooking the Arabian Sea near Sasawane. Boasts a full-size swimming pool, floodlit tennis/pickleball court, and expansive palm tree gardens.",
+      "bedrooms": 5, "bathrooms": 6, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "NinePalms_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "No outdoor sound system after 10 PM", "Smoking outdoors only"],
+      "arrivalNotes": "5 minutes from Mandwa Jetty along Sasawane seaside road.",
+      "foodInfo": "Private culinary staff on-site. Multi-course coastal dining and barbecue arrangements."
+    }
+  },
+  {
+    "name": "Varsoli Azure Beach Villa",
+    "type": "Villa",
+    "location": "Varsoli Beach, Alibaug, Maharashtra",
+    "price": 34000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6655, "lng": 72.8725 },
+    "mapLink": "https://maps.google.com/?q=18.6655,72.8725",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Whitewashed Coastal Villa with Pool near Varsoli Beach",
+      "description": "Walking distance to Varsoli's white sand beach, this modern villa features cool terrazzo flooring, wide verandahs, and a sun-soaked private swimming pool.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "VarsoliAzure_Guest",
+      "houseRules": ["Government ID required", "Family groups preferred", "Pool timings: 7 AM - 9 PM"],
+      "arrivalNotes": "Take Varsoli beach access road from Alibaug town center.",
+      "foodInfo": "Local caretaker prepares fresh coastal meals, fried fish, and vegetarian menus."
+    }
+  },
+  {
+    "name": "Villa Balinese Mandwa",
+    "type": "Villa",
+    "location": "Awas, Mandwa, Alibaug, Maharashtra",
+    "price": 42000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7580, "lng": 72.8710 },
+    "mapLink": "https://maps.google.com/?q=18.7580,72.8710",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Outdoor Rain Shower", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Bali-Inspired Open-Air Villa with Stone Pool & Lotus Pond",
+      "description": "Designed with Balinese thatched accents, natural slate stone, open-air living pavilions, outdoor rain showers, and an emerald green swimming pool.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "BaliMandwa_WiFi",
+      "houseRules": ["Government ID required", "No glassware around stone pool deck", "Quiet hours after 10 PM"],
+      "arrivalNotes": "7 minutes drive from Mandwa Jetty on Awas interior lane.",
+      "foodInfo": "In-house culinary staff prepares Asian delicacies, fresh seafood, and Indian regional cuisine."
+    }
+  },
+  {
+    "name": "The Mango Tree Estate Kihim",
+    "type": "Villa",
+    "location": "Kihim Village, Alibaug, Maharashtra",
+    "price": 31000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7250, "lng": 72.8880 },
+    "mapLink": "https://maps.google.com/?q=18.7250,72.8880",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Rustic Luxury Farm Villa under 100-Year-Old Mango Trees",
+      "description": "Surrounded by heritage mango trees, this tranquil farmhouse offers private pool relaxation, open grassy play areas, and quiet birdwatching patios.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "MangoTree_Guest",
+      "houseRules": ["Government ID required", "Pets allowed with prior consent", "No smoking indoors"],
+      "arrivalNotes": "Take Chondi market turnoff towards Kihim rural road.",
+      "foodInfo": "Homestyle vegetarian and non-vegetarian meals cooked fresh with local village spices."
+    }
+  },
+  {
+    "name": "Casa Solarium Thal Beach",
+    "type": "Villa",
+    "location": "Thal Beach, Alibaug, Maharashtra",
+    "price": 39000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6920, "lng": 72.8680 },
+    "mapLink": "https://maps.google.com/?q=18.6920,72.8680",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Sunlit Beachfront Villa with Deck overlooking Khanderi Fort",
+      "description": "Perched along quiet Thal Beach with views across the water to historic Khanderi Sea Fort. Features an oceanfront pool deck and open glass living lounge.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CasaSolarium_Thal",
+      "houseRules": ["Government ID mandatory", "No late night outdoor noise", "Pool depth 4.5 ft"],
+      "arrivalNotes": "Take Thal coastal road 15 minutes north of Alibaug town.",
+      "foodInfo": "Fresh ocean fish catch prepared daily by the resident seafood chef."
+    }
+  },
+  {
+    "name": "Villa Royale Revdanda",
+    "type": "Villa",
+    "location": "Revdanda Beach, Alibaug, Maharashtra",
+    "price": 35000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.5580, "lng": 72.9250 },
+    "mapLink": "https://maps.google.com/?q=18.5580,72.9250",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System", "Bonfire"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Portuguese-Style Villa near Historic Revdanda Fort",
+      "description": "Portuguese-colonial arches, high wood ceilings, a secluded swimming pool, and immediate proximity to the black sands of Revdanda Beach.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "RoyaleRevdanda_WiFi",
+      "houseRules": ["Government ID required", "Pool rules apply", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Located near Revdanda bridge off the coastal highway.",
+      "foodInfo": "Local Konkan kitchen team prepares authentic home-cooked meals."
+    }
+  },
+  {
+    "name": "The White Haven Akshi",
+    "type": "Villa",
+    "location": "Akshi Beach, Alibaug, Maharashtra",
+    "price": 33000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6320, "lng": 72.8950 },
+    "mapLink": "https://maps.google.com/?q=18.6320,72.8950",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Outdoor Dining"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Minimalist White Villa with Private Pool near Akshi Beach",
+      "description": "Surrounded by casuarina groves and beetle nut plantations, this minimalist white retreat offers peaceful beach walks and private pool seclusion.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "WhiteHaven_Akshi",
+      "houseRules": ["Government ID mandatory", "Family groups welcomed", "No smoking indoors"],
+      "arrivalNotes": "Take Akshi beachfront access lane 10 minutes south of Alibaug.",
+      "foodInfo": "Homely local Maharashtrian and coastal food on advance order."
+    }
+  },
+  {
+    "name": "Villa Bellisima Zirad",
+    "type": "Villa",
+    "location": "Zirad Valley, Alibaug, Maharashtra",
+    "price": 48000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7350, "lng": 72.9080 },
+    "mapLink": "https://maps.google.com/?q=18.7350,72.9080",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Gazebo", "Billiards"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Italian-Style Country Villa with Pool & Jacuzzi in Zirad",
+      "description": "Styled after Tuscan country homes with exposed terracotta tiles, private pool, jacuzzi, pool table, and manicured hedge gardens.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Bellisima_VIP",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "Security deposit at check-in"],
+      "arrivalNotes": "Enter Zirad valley road near leading artisan ceramic studios.",
+      "foodInfo": "Private chef on-site. Barbecue dinners and custom Italian/Indian menus."
+    }
+  },
+  {
+    "name": "Coconut Grove Mandwa",
+    "type": "Villa",
+    "location": "Mandwa Jetty Road, Alibaug, Maharashtra",
+    "price": 37000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7820, "lng": 72.8590 },
+    "mapLink": "https://maps.google.com/?q=18.7820,72.8590",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea Breeze", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Tropical Villa 3 Minutes from Mandwa Ferry Jetty",
+      "description": "Step off the ferry and arrive at your private retreat within minutes. Features a sparkling swimming pool, shaded coconut grove lawns, and large verandahs.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CoconutGrove_Mandwa",
+      "houseRules": ["Government ID required", "No outdoor sound after 10 PM", "Pool timings 7 AM - 9 PM"],
+      "arrivalNotes": "Only 1.2 km from Mandwa speed boat and RORO ferry arrival point.",
+      "foodInfo": "Homely coastal cooking and breakfast served daily by resident caretakers."
+    }
+  },
+  {
+    "name": "Kihim Serene Palms Villa",
+    "type": "Villa",
+    "location": "Kihim Beach, Alibaug, Maharashtra",
+    "price": 35000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7230, "lng": 72.8810 },
+    "mapLink": "https://maps.google.com/?q=18.7230,72.8810",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Quiet Garden Retreat with Pool near Kihim Beach",
+      "description": "Hidden in the quiet lanes of Kihim village, this peaceful home features open grass lawns, outdoor swimming pool, and comfortable sun loungers.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SerenePalms_Kihim",
+      "houseRules": ["Government ID required", "Respect neighbor peace after 10 PM", "No pets allowed"],
+      "arrivalNotes": "Take Kihim main road, right turn at village post office.",
+      "foodInfo": "Caretaker prepares authentic Alibaug coastal seafood and vegetarian thalis."
+    }
+  },
+  {
+    "name": "Awas Beachfront Palms",
+    "type": "Villa",
+    "location": "Awas Beach, Mandwa, Alibaug, Maharashtra",
+    "price": 46000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7660, "lng": 72.8720 },
+    "mapLink": "https://maps.google.com/?q=18.7660,72.8720",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Direct Beachfront Pool Villa on Awas Shoreline",
+      "description": "Walk directly from your lawn onto the tranquil sands of Awas Beach. Private lap pool, sunset patio, and panoramic sea views.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "AwasBeach_Guest",
+      "houseRules": ["Government ID required", "Beach access gate locked at 11 PM", "No loud music outdoors after 10 PM"],
+      "arrivalNotes": "Located directly on Awas beachfront road.",
+      "foodInfo": "Private chef cooks fresh catch of the day, tandoor grills, and family feasts."
+    }
+  },
+  {
+    "name": "Villa Casa De Palms",
+    "type": "Villa",
+    "location": "Sasawane Beach Road, Alibaug, Maharashtra",
+    "price": 40000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7720, "lng": 72.8650 },
+    "mapLink": "https://maps.google.com/?q=18.7720,72.8650",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea Breeze", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Outdoor Bar"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Portuguese Villa with Pool near Karmarkar Museum",
+      "description": "Historical charm meets seaside luxury in Sasawane. High wooden rafters, open verandahs, private swimming pool, and lush gardens.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CasaDePalms_Guest",
+      "houseRules": ["Government ID required", "Quiet hours after 10 PM", "Smoking permitted in garden only"],
+      "arrivalNotes": "Follow Sasawane road towards Karmarkar sculpture museum.",
+      "foodInfo": "Authentic local cook prepares Konkani fish curries and vegetarian feasts."
+    }
+  },
+  {
+    "name": "Nagaon Sand Castle Villa",
+    "type": "Villa",
+    "location": "Nagaon Beach, Alibaug, Maharashtra",
+    "price": 32000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6210, "lng": 72.9020 },
+    "mapLink": "https://maps.google.com/?q=18.6210,72.9020",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Cosy Beach Cottage with Pool at Nagaon",
+      "description": "An intimate holiday cottage set amidst betel nut wadis. Features clean swimming pool, peaceful garden seating, and quick access to Nagaon shore.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SandCastle_Nagaon",
+      "houseRules": ["Government ID required", "Family groups welcomed", "No loud music after 10 PM"],
+      "arrivalNotes": "Take Bandar road towards Nagaon beach.",
+      "foodInfo": "Home-style Konkani food cooked fresh by caretaker."
+    }
+  },
+  {
+    "name": "The Plantation House Alibaug",
+    "type": "Villa",
+    "location": "Poynad, Alibaug, Maharashtra",
+    "price": 29000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7050, "lng": 73.0120 },
+    "mapLink": "https://maps.google.com/?q=18.7050,73.0120",
+    "amenities": ["Private Pool", "WiFi", "AC", "Farm View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Organic Farm Walk", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Farmhouse with Private Pool inside 3-Acre Organic Orchard",
+      "description": "Escape completely into nature. Organic mango, coconut, and spice plantations, temperature-regulated pool, and open farm skies.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "PlantationHouse_5G",
+      "houseRules": ["Government ID required", "Pets welcome", "No smoking inside farmhouse"],
+      "arrivalNotes": "Accessible from Mumbai-Goa highway via Poynad bypass.",
+      "foodInfo": "Farm-to-table organic meals prepared using vegetables harvested on-site."
+    }
+  },
+  {
+    "name": "Villa Sunset Boulevard Kihim",
+    "type": "Villa",
+    "location": "Kihim Beach Road, Alibaug, Maharashtra",
+    "price": 38000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7200, "lng": 72.8850 },
+    "mapLink": "https://maps.google.com/?q=18.7200,72.8850",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Contemporary Villa with Swimming Pool in Kihim",
+      "description": "Modern architecture with expansive glass sliders opening onto an azure swimming pool, sundowner deck, and lush tropical grass.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SunsetBoulevard_Kihim",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "Pool rules apply"],
+      "arrivalNotes": "Along main Kihim beach road, 3 minutes from the sand.",
+      "foodInfo": "Dedicated cook on site. Barbecue setups and fresh coastal menus."
+    }
+  },
+  {
+    "name": "Kashid Beach Palms Estate",
+    "type": "Villa",
+    "location": "Kashid Beach Road, Alibaug Region, Maharashtra",
+    "price": 44000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.4550, "lng": 72.9050 },
+    "mapLink": "https://maps.google.com/?q=18.4550,72.9050",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Cliffside Pool Villa overlooking Kashid White Sand Beach",
+      "description": "Perched on the hill overlooking famous Kashid Beach. Spectacular ocean sunsets, infinity pool, wide sundeck, and breeze-filled rooms.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "KashidPalms_WiFi",
+      "houseRules": ["Government ID mandatory", "Pool rules apply", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take scenic Alibaug-Murud coastal highway to Kashid beach.",
+      "foodInfo": "Gourmet seafood, North Indian, and Maharashtrian dishes prepared by full kitchen staff."
+    }
+  },
+  {
+    "name": "Villa Mariposa Zirad",
+    "type": "Villa",
+    "location": "Zirad, Alibaug, Maharashtra",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7310, "lng": 72.9100 },
+    "mapLink": "https://maps.google.com/?q=18.7310,72.9100",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Spanish-Style Courtyard Villa with Pool in Zirad",
+      "description": "Spanish arches and central sunlit courtyard featuring private plunge pool, lush floral garden, and quiet verandahs for morning coffee.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Mariposa_Guest",
+      "houseRules": ["Government ID required", "No outdoor music after 10 PM", "Smoking outdoors only"],
+      "arrivalNotes": "Located in Zirad near local pottery studios.",
+      "foodInfo": "Homely local food and barbecue setups prepared on site."
+    }
+  },
+  {
+    "name": "Akshi Palm Grove Villa",
+    "type": "Villa",
+    "location": "Akshi Shore, Alibaug, Maharashtra",
+    "price": 31000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6350, "lng": 72.8920 },
+    "mapLink": "https://maps.google.com/?q=18.6350,72.8920",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Serene Beachside Villa with Private Pool at Akshi",
+      "description": "Quietly situated amidst coastal coconut groves. Features clean private pool, open garden lawn, and direct pathway to Akshi beach.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "PalmGrove_Akshi",
+      "houseRules": ["Government ID required", "Family groups preferred", "Pool timings 7 AM - 9 PM"],
+      "arrivalNotes": "Take Akshi village turn off coastal road.",
+      "foodInfo": "Homely coastal cooking and fresh seafood options available on order."
+    }
+  },
+  {
+    "name": "Casa De La Mer Varsoli",
+    "type": "Villa",
+    "location": "Varsoli Shoreline, Alibaug, Maharashtra",
+    "price": 41000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.6680, "lng": 72.8700 },
+    "mapLink": "https://maps.google.com/?q=18.6680,72.8700",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Direct Ocean View Villa with Heated Pool in Varsoli",
+      "description": "Unobstructed views of the Arabian Sea and Kolaba Fort. Features climate-controlled heated pool, beachfront sun loungers, and sea-breeze living rooms.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CasaMer_Varsoli",
+      "houseRules": ["Government ID required", "No outdoor sound after 10 PM", "Smoking outside only"],
+      "arrivalNotes": "Follow Varsoli beach path to the northern shore.",
+      "foodInfo": "Dedicated culinary team prepares gourmet seafood and custom menus."
+    }
+  },
+  {
+    "name": "The Bohemian Villa Mandwa",
+    "type": "Villa",
+    "location": "Awas Road, Mandwa, Alibaug, Maharashtra",
+    "price": 37000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7690, "lng": 72.8690 },
+    "mapLink": "https://maps.google.com/?q=18.7690,72.8690",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System", "Hammocks"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Boho Chic Pool Villa with Lush Lawn & Hammocks",
+      "description": "Macrame accents, natural cane furniture, open-air sun deck, private swimming pool, and swaying hammocks under mango trees near Mandwa.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "BohoVilla_Mandwa",
+      "houseRules": ["Government ID required", "Pets welcome with prior notice", "Music inside after 10 PM"],
+      "arrivalNotes": "5 minutes from Mandwa RORO jetty on Awas road.",
+      "foodInfo": "In-house cook for fresh breakfast spreads and evening barbecues."
+    }
+  },
+  {
+    "name": "Villa 108 Alibaug Palms",
+    "type": "Villa",
+    "location": "Chondi, Kihim Road, Alibaug, Maharashtra",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.7180, "lng": 72.8910 },
+    "mapLink": "https://maps.google.com/?q=18.7180,72.8910",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Modern Family Pool Villa near Chondi Market",
+      "description": "Centrally positioned near Chondi's popular cafes and grocery markets while remaining secluded in a private gated palm grove with swimming pool.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "AlibaugPalms_108",
+      "houseRules": ["Government ID required", "Family groups preferred", "Pool timings 7 AM - 9 PM"],
+      "arrivalNotes": "Take Chondi junction towards Kihim beach road.",
+      "foodInfo": "Homestyle cooking and breakfast prepared fresh by caretaker."
+    }
+  }
+]
+

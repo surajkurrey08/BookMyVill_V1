@@ -1,0 +1,778 @@
+[
+  {
+    "name": "The Riverstone Estate Karjat",
+    "type": "Villa",
+    "location": "Pej Riverbank, Karjat, Maharashtra",
+    "price": 38000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.9102, "lng": 73.3235 },
+    "mapLink": "https://maps.google.com/?q=18.9102,73.3235",
+    "amenities": ["Private Pool", "WiFi", "AC", "River View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System", "River Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Riverfront Luxury Villa with Swimming Pool in Karjat",
+      "description": "Just 90 minutes drive from Mumbai. Situated directly on the banks of the Pej River with a river-facing infinity pool, sprawling 1-acre manicured lawn, and mountain backdrops.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Riverstone_Karjat",
+      "houseRules": ["Government ID required at check-in", "No loud music outdoors after 10:00 PM", "Pool timings: 7:00 AM to 9:30 PM"],
+      "arrivalNotes": "Take Karjat-Murbad road via Kashele. Concrete private driveway leads to villa gates.",
+      "foodInfo": "In-house cook prepares authentic Maharashtrian meals, tandoori grills, and kid-friendly snacks."
+    }
+  },
+  {
+    "name": "Karnala Birdsong Sanctuary",
+    "type": "Villa",
+    "location": "Karnala Sanctuary Foothills, Panvel, Maharashtra",
+    "price": 32000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.8850, "lng": 73.1180 },
+    "mapLink": "https://maps.google.com/?q=18.8850,73.1180",
+    "amenities": ["Private Pool", "WiFi", "AC", "Forest View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games", "Birdwatching Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Eco-Luxury Forest Retreat near Karnala Bird Sanctuary",
+      "description": "Only 45 minutes from Navi Mumbai. Bordering the Karnala Bird Sanctuary forest, guests enjoy natural plunge pool, private orchards, and peaceful birdwatching verandahs.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Birdsong_Karnala",
+      "houseRules": ["Government ID required", "Preserve forest silence; no outdoor speakers", "Smoking outdoors only"],
+      "arrivalNotes": "Take Mumbai-Goa highway towards Karnala, 10 minutes past Panvel.",
+      "foodInfo": "Homely Agri-style chicken curry, fresh bhakri, and organic vegetarian platters."
+    }
+  },
+  {
+    "name": "Igatpuri Fog Valley Villa",
+    "type": "Villa",
+    "location": "Bhavali Dam Road, Igatpuri, Maharashtra",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.6850, "lng": 73.5480 },
+    "mapLink": "https://maps.google.com/?q=19.6850,73.5480",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Misty Valley Villa with Infinity Pool in Igatpuri",
+      "description": "Perched on the green slopes of Igatpuri overlooking Bhavali Dam and cascading waterfalls. Private infinity swimming pool and mountain-facing sunset balconies.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "FogValley_Igatpuri",
+      "houseRules": ["Government ID mandatory", "Monsoon safety rules apply", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Mumbai-Nashik highway past Kasara Ghat to Bhavali Dam road.",
+      "foodInfo": "Local chef prepares hot pakodas, piping chai, Maharashtrian misal, and barbecue."
+    }
+  },
+  {
+    "name": "Manor Vaitarna Riverside Villa",
+    "type": "Villa",
+    "location": "Vaitarna Riverfront, Manor, Palghar, Maharashtra",
+    "price": 34000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.7420, "lng": 72.9150 },
+    "mapLink": "https://maps.google.com/?q=19.7420,72.9150",
+    "amenities": ["Private Pool", "WiFi", "AC", "River View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Fishing Deck", "Kayaks"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Riverfront Farm Villa with Pool on Vaitarna River in Manor",
+      "description": "Just 1 hour drive from Dahisar toll on the Mumbai-Ahmedabad highway. Unhindered Vaitarna river views, private swimming pool, chiku orchard walks, and river fishing deck.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "VaitarnaRiverside_Guest",
+      "houseRules": ["Government ID required", "Lifejackets mandatory near water", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Manor exit on NH48 towards Wada-Manor road.",
+      "foodInfo": "Freshly caught river fish, village-style organic chicken, and home-cooked thalis."
+    }
+  },
+  {
+    "name": "Villa Casablanca Karjat",
+    "type": "Villa",
+    "location": "Kashele Hills, Karjat, Maharashtra",
+    "price": 42000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.9650, "lng": 73.4120 },
+    "mapLink": "https://maps.google.com/?q=18.9650,73.4120",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Spanish Modern Villa with Heated Pool in Karjat",
+      "description": "Elegant whitewashed Spanish architecture with terracotta tiled roof, private heated pool, jacuzzi patio, and panoramic view of Bhimashankar mountain range.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Casablanca_Karjat_5G",
+      "houseRules": ["Government ID required", "No outdoor sound after 10 PM", "Smoking outdoors only"],
+      "arrivalNotes": "Take Kashele-Bhimashankar road 15 minutes past Karjat station.",
+      "foodInfo": "Private chef on site. Custom barbecue platters, continental breakfasts, and Indian curries."
+    }
+  },
+  {
+    "name": "The Glasshouse Shahapur",
+    "type": "Villa",
+    "location": "Near Bhatsa Dam, Shahapur, Maharashtra",
+    "price": 31000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.4520, "lng": 73.3450 },
+    "mapLink": "https://maps.google.com/?q=19.4520,73.3450",
+    "amenities": ["Private Pool", "WiFi", "AC", "Valley View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Minimalist Glass Villa with Pool near Bhatsa Lake",
+      "description": "Surrounded by water bodies and hill ranges of Shahapur. Modern glass walls, clear water pool, and lush grass lawns only 1 hour from Thane.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Glasshouse_Shahapur",
+      "houseRules": ["Government ID required", "Family groups welcomed", "No smoking indoors"],
+      "arrivalNotes": "Take Mumbai-Nashik highway past Asangaon towards Shahapur.",
+      "foodInfo": "Homely vegetarian and non-vegetarian meals prepared fresh by caretaker."
+    }
+  },
+  {
+    "name": "Matheran Foothills Chalet",
+    "type": "Villa",
+    "location": "Neral, Foothills of Matheran, Maharashtra",
+    "price": 28000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.0350, "lng": 73.3180 },
+    "mapLink": "https://maps.google.com/?q=19.0350,73.3180",
+    "amenities": ["Private Pool", "WiFi", "AC", "Hill View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Toy Train Trail Walk"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Wooden Chalet at Base of Matheran Toy Train Route in Neral",
+      "description": "Resting right at the green foot of Matheran hill station. Wooden pitched ceilings, private swimming pool, and direct access to hiking trails and waterfalls.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "MatheranFoothills_Guest",
+      "houseRules": ["Government ID required", "No open fires near wooden chalet", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Neral station bypass road towards Matheran ghat road.",
+      "foodInfo": "Country-style hot meals, breakfast, and evening barbecue prepared on request."
+    }
+  },
+  {
+    "name": "The Mango Orchards Palghar",
+    "type": "Villa",
+    "location": "Kelve Beach Road, Palghar, Maharashtra",
+    "price": 29000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.6250, "lng": 72.7480 },
+    "mapLink": "https://maps.google.com/?q=19.6250,72.7480",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Farm Walk"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Farm Villa with Pool inside 2-Acre Mango Farm near Kelve Beach",
+      "description": "Tranquil coastal farmland retreat 90 minutes from Mumbai. Private swimming pool, hundreds of Alphonso mango trees, and short drive to Kelve Beach.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "MangoOrchards_Guest",
+      "houseRules": ["Government ID required", "Pets allowed", "No smoking indoors"],
+      "arrivalNotes": "Take Palghar-Manor road towards Kelve beach lane.",
+      "foodInfo": "Authentic coastal Maharashtrian seafood, solkadhi, and organic farm meals."
+    }
+  },
+  {
+    "name": "Villa Grandeur Karjat",
+    "type": "Villa",
+    "location": "Tata Power Road, Bhivpuri, Karjat, Maharashtra",
+    "price": 48000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.9450, "lng": 73.3550 },
+    "mapLink": "https://maps.google.com/?q=18.9450,73.3550",
+    "amenities": ["Private Pool", "WiFi", "AC", "Waterfall View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Pool Table", "Home Theatre"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "6 BHK Palatial Mansion with Waterfall Views & Home Theatre in Karjat",
+      "description": "Massive 6-bedroom estate facing seasonal Bhivpuri waterfalls. Heated outdoor pool, 12-seater private cinema, pool table, and huge party lawn.",
+      "bedrooms": 6, "bathrooms": 6, "maxGuests": 22
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Grandeur_Karjat_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "Pool rules apply", "Security deposit at check-in"],
+      "arrivalNotes": "Take Bhivpuri road off Karjat highway.",
+      "foodInfo": "Full-time chef and kitchen staff prepare gourmet multi-course buffets and barbecue."
+    }
+  },
+  {
+    "name": "Bhatsa River Retreat",
+    "type": "Villa",
+    "location": "Bhatsa Riverfront, Khardi, Maharashtra",
+    "price": 35000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.5580, "lng": 73.4120 },
+    "mapLink": "https://maps.google.com/?q=19.5580,73.4120",
+    "amenities": ["Private Pool", "WiFi", "AC", "River View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System", "River Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Riverfront Pool Villa on Bhatsa River near Kasara",
+      "description": "Right on the pristine Bhatsa riverbanks before the Kasara ghats. Complete privacy, natural rocky swimming spots, infinity pool, and cool mountain air.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "BhatsaRetreat_WiFi",
+      "houseRules": ["Government ID required", "Lifejackets mandatory for river dipping", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Khardi exit off Mumbai-Nashik highway.",
+      "foodInfo": "Homestyle cooking, freshly grilled barbecue, and local village delicacies."
+    }
+  },
+  {
+    "name": "Kashid Gateway Villa",
+    "type": "Villa",
+    "location": "Revdanda-Murud Coastal Road, Alibaug Gateway, Maharashtra",
+    "price": 38000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.4720, "lng": 72.9120 },
+    "mapLink": "https://maps.google.com/?q=18.4720,72.9120",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Coastal Villa overlooking Arabian Sea near Mumbai Gateway",
+      "description": "Easily accessible from Mumbai via Mandwa RORO ferry. Features cliffside pool facing the sea, outdoor sundeck, and quick access to Kashid's white sands.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "KashidGateway_WiFi",
+      "houseRules": ["Government ID required", "Pool rules apply", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Mandwa RORO ferry with car, drive south through scenic coastal road.",
+      "foodInfo": "Authentic coastal fish curry, fried surmai, and Maharashtrian vegetarian meals."
+    }
+  },
+  {
+    "name": "Panvel Valley View Manor",
+    "type": "Villa",
+    "location": "Gadeshwar Dam Road, Panvel, Maharashtra",
+    "price": 33000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.9850, "lng": 73.1850 },
+    "mapLink": "https://maps.google.com/?q=18.9850,73.1850",
+    "amenities": ["Private Pool", "WiFi", "AC", "Lake & Hill View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Mountain View Villa near Gadeshwar Dam in Panvel",
+      "description": "Quick 40-minute drive from Navi Mumbai. Overlooking the water reservoir and Prabalmachi hills. Features swimming pool, outdoor dining, and mountain air.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "PanvelValley_Guest",
+      "houseRules": ["Government ID required", "Family groups preferred", "No smoking inside"],
+      "arrivalNotes": "Take Old Panvel road towards Gadeshwar lake.",
+      "foodInfo": "Homely Agri and North Indian food cooked fresh on order."
+    }
+  },
+  {
+    "name": "The Palms Villa Karjat",
+    "type": "Villa",
+    "location": "Kashele-Khandas Road, Karjat, Maharashtra",
+    "price": 31000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.9880, "lng": 73.4450 },
+    "mapLink": "https://maps.google.com/?q=18.9880,73.4450",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Outdoor Bar"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Tropical Palm Pool Villa near Bhimashankar Trek Trail",
+      "description": "Fringed by date and coconut palms. Features a sparkling swimming pool, lawn for outdoor games, and direct access to trekking trails in Karjat.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "PalmsKarjat_Guest",
+      "houseRules": ["Government ID required", "Pets welcome with advance notification", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Kashele turnoff towards Khandas village.",
+      "foodInfo": "Delicious home-style meals, barbecue setups, and farm fresh breakfasts."
+    }
+  },
+  {
+    "name": "Igatpuri Mountain Crest",
+    "type": "Villa",
+    "location": "Near Camel Valley, Igatpuri, Maharashtra",
+    "price": 41000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.7020, "lng": 73.5650 },
+    "mapLink": "https://maps.google.com/?q=19.7020,73.5650",
+    "amenities": ["Private Pool", "WiFi", "AC", "Canyon View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Cliffside Villa with Pool overlooking Camel Valley Canyon",
+      "description": "Stunning location over Camel Valley's deep drop and cascading 1,000-ft monsoon waterfalls. Private pool, cliff-edge jacuzzi deck, and crisp cool climate.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "MountainCrest_Igatpuri",
+      "houseRules": ["Government ID mandatory", "Safety fencing must not be crossed", "Music indoors after 10 PM"],
+      "arrivalNotes": "Take Camel Valley viewpoint branch off NH160.",
+      "foodInfo": "Custom culinary staff on site prepares hot soups, barbecue, and family dinners."
+    }
+  },
+  {
+    "name": "Manor Country Greens Villa",
+    "type": "Villa",
+    "location": "Chilhar Road, Manor, Maharashtra",
+    "price": 27000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.7280, "lng": 72.9320 },
+    "mapLink": "https://maps.google.com/?q=19.7280,72.9320",
+    "amenities": ["Private Pool", "WiFi", "AC", "Farm View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Badminton Lawn"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Budget Luxury Farmstay with Pool in Green Manor",
+      "description": "Quiet countryside escape with private swimming pool, green lawn for cricket/badminton, and peaceful village surroundings just 90 minutes from Mumbai.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CountryGreens_Guest",
+      "houseRules": ["Government ID required", "Family groups welcomed", "No smoking indoors"],
+      "arrivalNotes": "Take Chilhar phata exit from NH48 near Manor.",
+      "foodInfo": "Homestyle country cooking, chicken curry, and fresh vegetarian meals."
+    }
+  },
+  {
+    "name": "Villa Nirvana Karjat",
+    "type": "Villa",
+    "location": "Near Kondana Caves, Karjat, Maharashtra",
+    "price": 37000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.8680, "lng": 73.3750 },
+    "mapLink": "https://maps.google.com/?q=18.8680,73.3750",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System", "Trekking Trail"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Mountain Pool Villa near Ancient Kondana Caves",
+      "description": "Set right at the base of Kondana Caves and Ulhas river stream. Features private pool, mountain-view barbecue deck, and natural water streams during monsoons.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "NirvanaKarjat_WiFi",
+      "houseRules": ["Government ID required", "Respect natural biodiversity", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Kondivade village road from Karjat town.",
+      "foodInfo": "Delicious local food cooked fresh by resident caretaker team."
+    }
+  },
+  {
+    "name": "Shahapur Lakeview Estate",
+    "type": "Villa",
+    "location": "Tansa Lake Road, Shahapur, Maharashtra",
+    "price": 34000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.5120, "lng": 73.2850 },
+    "mapLink": "https://maps.google.com/?q=19.5120,73.2850",
+    "amenities": ["Private Pool", "WiFi", "AC", "Lake View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Serene Lakeview Villa with Pool near Tansa Wildlife Sanctuary",
+      "description": "Overlooking the tranquil waters of Tansa catchment lake. Complete seclusion, clear swimming pool, lush lawn, and panoramic open skies.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "ShahapurLake_Guest",
+      "houseRules": ["Government ID required", "No loud music outdoors after 10 PM", "Smoking outdoors only"],
+      "arrivalNotes": "Take Shahapur-Wada road near Tansa lake dam road.",
+      "foodInfo": "Homestyle vegetarian and non-vegetarian food prepared by on-site cooks."
+    }
+  },
+  {
+    "name": "Arnala Beach Palms Villa",
+    "type": "Villa",
+    "location": "Arnala Beach Road, Virar West, Maharashtra",
+    "price": 26000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.4580, "lng": 72.7480 },
+    "mapLink": "https://maps.google.com/?q=19.4580,72.7480",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea Breeze", "Lawn", "BBQ", "Power Backup", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Coastal Beach Villa with Pool in Arnala, Virar",
+      "description": "Right in Mumbai's backyard. Just 10 minutes from Virar station, this palm-fringed villa offers private pool, coconut grove lawns, and quick walk to Arnala beach.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "ArnalaPalms_Guest",
+      "houseRules": ["Government ID required", "Family groups welcomed", "No smoking indoors"],
+      "arrivalNotes": "Take Arnala coastal road from Virar West.",
+      "foodInfo": "Authentic Vasai-Koli seafood cuisine, fresh bombil fry, and local vegetarian meals."
+    }
+  },
+  {
+    "name": "The Highland Haven Igatpuri",
+    "type": "Villa",
+    "location": "Old Agra Road, Igatpuri, Maharashtra",
+    "price": 39000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.6920, "lng": 73.5550 },
+    "mapLink": "https://maps.google.com/?q=19.6920,73.5550",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Hilltop Villa with Heated Pool & Deck in Igatpuri",
+      "description": "Sweeping views of Kalsubai and Ghatandevi peaks. Features climate-controlled heated pool, wide stargazing deck, and modern bedrooms.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "HighlandHaven_Igatpuri",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "Pool rules apply"],
+      "arrivalNotes": "Take Old Agra Road exit near Igatpuri toll plaza.",
+      "foodInfo": "Custom chef service on site. Special hotpot dinners and barbecue arrangements."
+    }
+  },
+  {
+    "name": "Casa De Waterfall Karjat",
+    "type": "Villa",
+    "location": "Khandas Trail Road, Karjat, Maharashtra",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.9920, "lng": 73.4580 },
+    "mapLink": "https://maps.google.com/?q=18.9920,73.4580",
+    "amenities": ["Private Pool", "WiFi", "AC", "Waterfall View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Natural Stream Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Villa with Private Pool & Monsoon Waterfalls in Karjat",
+      "description": "Private natural mountain stream flows right beside the property during monsoons. Features outdoor swimming pool, stone sundeck, and lush green garden.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CasaWaterfall_Guest",
+      "houseRules": ["Government ID required", "Caution near stream banks in monsoons", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Khandas trek road from Kashele junction.",
+      "foodInfo": "Homely local food prepared fresh by resident caretaker team."
+    }
+  },
+  {
+    "name": "The Royal Palms Panvel",
+    "type": "Villa",
+    "location": "Apta-Panvel Road, Maharashtra",
+    "price": 35000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.8950, "lng": 73.1550 },
+    "mapLink": "https://maps.google.com/?q=18.8950,73.1550",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Palm Estate with Swimming Pool in Peaceful Panvel Greenbelt",
+      "description": "A secluded private estate framed by royal palms. Private pool, gazebo dining, and large air-conditioned bedrooms within 1 hour of South Mumbai via Atal Setu.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "RoyalPalms_Panvel",
+      "houseRules": ["Government ID required", "No loud music outdoors after 10 PM", "Pool timings 7 AM - 9 PM"],
+      "arrivalNotes": "Take Atal Setu (MTHL) to Panvel, head south on Apta road.",
+      "foodInfo": "Homestyle cooking and breakfast served daily by caretaker."
+    }
+  },
+  {
+    "name": "Kelve Coconut Cove",
+    "type": "Villa",
+    "location": "Kelve Beach, Palghar, Maharashtra",
+    "price": 28000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.6180, "lng": 72.7350 },
+    "mapLink": "https://maps.google.com/?q=19.6180,72.7350",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea Breeze", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Hammocks"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Coastal Cottage with Pool 200m from Kelve Beach",
+      "description": "Quiet beach getaway with private swimming pool, shady coconut trees, hammocks, and walking distance to Kelve's wide shoreline.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "KelveCove_Guest",
+      "houseRules": ["Government ID required", "Pets allowed", "No smoking indoors"],
+      "arrivalNotes": "Take Kelve beach road from Palghar station.",
+      "foodInfo": "Freshly caught coastal fish curry, fried prawns, and vegetarian home meals."
+    }
+  },
+  {
+    "name": "Bhimashankar Ridge Villa",
+    "type": "Villa",
+    "location": "Khandas-Bhimashankar Road, Karjat, Maharashtra",
+    "price": 38000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.0150, "lng": 73.4850 },
+    "mapLink": "https://maps.google.com/?q=19.0150,73.4850",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Mountain Ridge Pool Villa facing Bhimashankar Wildlife Sanctuary",
+      "description": "Perched on the eastern ridge of Karjat facing protected forests. Private pool, mountain-view barbecue deck, and starry night skies.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "BhimashankarRidge_WiFi",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "Pool rules apply"],
+      "arrivalNotes": "Take Khandas approach road to eastern ridge path.",
+      "foodInfo": "Country-style hot meals, barbecue setups, and breakfast prepared on order."
+    }
+  },
+  {
+    "name": "The Zen Garden Manor Neral",
+    "type": "Villa",
+    "location": "Neral-Badlapur Road, Maharashtra",
+    "price": 32000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 19.0650, "lng": 73.3050 },
+    "mapLink": "https://maps.google.com/?q=19.0650,73.3050",
+    "amenities": ["Private Pool", "WiFi", "AC", "Hill View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Zen Rock Garden", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Japanese Zen-Style Villa with Pool in Neral",
+      "description": "Minimalist Japanese zen aesthetic with bamboo water spouts, private swimming pool, gravel contemplation garden, and mountain views.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "ZenManor_Neral",
+      "houseRules": ["Government ID required", "Preserve garden peace", "No smoking indoors"],
+      "arrivalNotes": "Take Badlapur-Neral road 10 minutes before Neral station.",
+      "foodInfo": "Homestyle vegetarian and non-vegetarian food cooked fresh by resident chef."
+    }
+  },
+  {
+    "name": "The Grand Oasis Manor",
+    "type": "Villa",
+    "location": "Chowk-Karjat Road, Karjat, Maharashtra",
+    "price": 50000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 18.9250, "lng": 73.2850 },
+    "mapLink": "https://maps.google.com/?q=18.9250,73.2850",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mountain View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Billiards", "Home Theatre"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Grand Luxury Estate with Heated Pool & Theatre in Karjat",
+      "description": "Premium 5-bedroom luxury estate right off the Mumbai-Pune Expressway at Chowk. Climate-controlled heated pool, home theatre, and full-size snooker table.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "GrandOasis_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "Pool rules apply", "Security deposit at check-in"],
+      "arrivalNotes": "Take Chowk exit from Mumbai-Pune Expressway, 5 minutes to villa gates.",
+      "foodInfo": "Dedicated professional chef team prepares custom multi-cuisine feasts."
+    }
+  }
+]
+

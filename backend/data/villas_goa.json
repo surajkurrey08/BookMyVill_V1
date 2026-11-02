@@ -1,0 +1,778 @@
+[
+  {
+    "name": "Casa De Flores Assagao",
+    "type": "Villa",
+    "location": "Badem Road, Assagao, North Goa",
+    "price": 45000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.5925, "lng": 73.7650 },
+    "mapLink": "https://maps.google.com/?q=15.5925,73.7650",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Balcao Verandah", "Music System", "Outdoor Dining"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Restored Portuguese Estate with Pool in Chic Assagao",
+      "description": "Nestled in Goa's trendiest village of Assagao. Features high vaulted ceilings, authentic mother-of-pearl window insets, a private turquoise pool, and a sprawling bougainvillea balcao.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CasaFlores_Assagao",
+      "houseRules": ["Government ID required at check-in", "No loud music outdoors after 10:00 PM", "Pool timings: 7:00 AM to 9:30 PM"],
+      "arrivalNotes": "Located on Badem Road, 5 minutes from leading Assagao restaurants like Gunpowder and Jamun.",
+      "foodInfo": "In-house culinary staff prepares authentic Goan prawn balchao, poee, and custom continental breakfasts."
+    }
+  },
+  {
+    "name": "The Cliffside Anjuna Villa",
+    "type": "Villa",
+    "location": "South Anjuna Beach Cliff, North Goa",
+    "price": 52000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.5780, "lng": 73.7420 },
+    "mapLink": "https://maps.google.com/?q=15.5780,73.7420",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Sunset Deck", "Music System", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Dramatic Cliffside Pool Villa overlooking Anjuna Cove",
+      "description": "Perched on the red laterite cliffs of Anjuna with direct views of crashing Arabian Sea waves. Features an infinity pool right on the cliff edge and sunset cocktail terraces.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "AnjunaCliff_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "Cliff barrier rules must be respected", "Music indoors after 10 PM"],
+      "arrivalNotes": "Take South Anjuna beach cliff lane near Guru Bar.",
+      "foodInfo": "Dedicated private chef on-site. Specializes in fresh seafood grills, sushi platters, and Mediterranean dining."
+    }
+  },
+  {
+    "name": "Villa Siolim Riverfront",
+    "type": "Villa",
+    "location": "Chapora Riverfront, Siolim, North Goa",
+    "price": 42000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.6210, "lng": 73.7680 },
+    "mapLink": "https://maps.google.com/?q=15.6210,73.7680",
+    "amenities": ["Private Pool", "WiFi", "AC", "River View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Private Jetty Deck", "Gazebo", "Kayaks"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Riverfront Luxury Villa with Private Boat Jetty in Siolim",
+      "description": "Right on the tranquil banks of the Chapora River. Watch traditional Goan fishing canoes pass by from your pool loungers, or hop on kayaks directly from the villa's private wooden deck.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "SiolimRiver_Guest",
+      "houseRules": ["Government ID required", "Lifejackets mandatory for kayaking", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take riverside road near Siolim bridge heading towards Morjim.",
+      "foodInfo": "Local chef prepares authentic Goan fish thali, freshly baked bread, and barbecue evenings."
+    }
+  },
+  {
+    "name": "Ashwem Palms Beachfront",
+    "type": "Villa",
+    "location": "Ashwem Beach Road, Mandrem, North Goa",
+    "price": 48000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.6620, "lng": 73.7150 },
+    "mapLink": "https://maps.google.com/?q=15.6620,73.7150",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Sun Deck", "Music System", "Outdoor Shower"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Direct Beachfront Luxury Villa on Pristine Ashwem Beach",
+      "description": "Step directly from your emerald lawn onto the powdery white sands of Ashwem. Features open-air tropical living spaces, private beachfront pool, and shaded coconut palms.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "AshwemPalms_WiFi",
+      "houseRules": ["Government ID required", "Rinse off beach sand before entering the pool", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Located along quiet Ashwem beach stretch near La Plage restaurant.",
+      "foodInfo": "Custom chef service on site for healthy smoothie bowls, wood-fired seafood, and multi-cuisine feasts."
+    }
+  },
+  {
+    "name": "Casa Candolim Heritage Estate",
+    "type": "Villa",
+    "location": "Pintor Vaddo, Candolim, North Goa",
+    "price": 39000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.5180, "lng": 73.7680 },
+    "mapLink": "https://maps.google.com/?q=15.5180,73.7680",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Portuguese Villa with Pool 5 Mins from Candolim Beach",
+      "description": "Centrally located in quiet Pintor Vaddo, Candolim. A blend of colonial heritage and contemporary comforts featuring a central swimming pool and sun-drenched gardens.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CasaCandolim_Guest",
+      "houseRules": ["Government ID required", "Family groups welcomed", "No smoking inside bedrooms"],
+      "arrivalNotes": "Take Fort Aguada Road, turn into Pintor Vaddo lane.",
+      "foodInfo": "Homestyle Goan curries, pork vindaloo, chicken xacuti, and continental breakfasts."
+    }
+  },
+  {
+    "name": "The Vagator Sunset Manor",
+    "type": "Villa",
+    "location": "Ozran Beach Road, Little Vagator, North Goa",
+    "price": 55000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.5980, "lng": 73.7380 },
+    "mapLink": "https://maps.google.com/?q=15.5980,73.7380",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Sun Deck", "Music System", "Bar Lounge"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Party Villa with Infinity Pool & Jacuzzi near Little Vagator",
+      "description": "Right above Little Vagator Beach. Dramatic sunset views over the Arabian Sea, large infinity pool with submerged bar stools, outdoor sound setup, and luxury suites.",
+      "bedrooms": 5, "bathrooms": 6, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "VagatorSunset_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "Pool safety rules apply", "Quiet hours outdoors after 10 PM"],
+      "arrivalNotes": "Take Ozran beach cliff lane near Thalassa restaurant.",
+      "foodInfo": "Private chef on-site. Gourmet Mediterranean tapas, fresh seafood barbecue, and bespoke cocktail service."
+    }
+  },
+  {
+    "name": "Benaulim White Sands Villa",
+    "type": "Villa",
+    "location": "Benaulim Beach Road, South Goa",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.2580, "lng": 73.9220 },
+    "mapLink": "https://maps.google.com/?q=15.2580,73.9220",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea Breeze", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games", "Bicycles"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Peaceful Beach Villa with Private Pool in South Goa",
+      "description": "Escape to the tranquil white sands of South Goa. Features private pool, verdant coconut lawns, complimentary bicycles for beach rides, and airy coastal rooms.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "WhiteSands_Benaulim",
+      "houseRules": ["Government ID required", "Pets welcome with prior consent", "Smoking outdoors only"],
+      "arrivalNotes": "Take Benaulim beach approach road 10 minutes from Margao railway station.",
+      "foodInfo": "Authentic South Goan catholic cooking: Kingfish recheado, crab curry, and fresh poee."
+    }
+  },
+  {
+    "name": "Aldona Backwater Sanctuary",
+    "type": "Villa",
+    "location": "Quitla, Aldona, North Goa",
+    "price": 38000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.5880, "lng": 73.8750 },
+    "mapLink": "https://maps.google.com/?q=15.5880,73.8750",
+    "amenities": ["Private Pool", "WiFi", "AC", "Backwater View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Birdwatching Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Heritage Riverbank Manor in Picturesque Aldona Village",
+      "description": "Located in one of Goa's most scenic historic villages. Set on the backwaters of the Mapusa River with lush infinity pool, heritage teak arches, and peaceful bird habitats.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "AldonaSanctuary_WiFi",
+      "houseRules": ["Government ID required", "Respect village heritage surroundings", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Corjuem bridge road into Quitla, Aldona.",
+      "foodInfo": "Homely local food prepared by resident Goan family chef with farm-fresh organic produce."
+    }
+  },
+  {
+    "name": "Morjim Turtle Beach Villa",
+    "type": "Villa",
+    "location": "Morjim Beach Road, North Goa",
+    "price": 44000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.6320, "lng": 73.7310 },
+    "mapLink": "https://maps.google.com/?q=15.6320,73.7310",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Bohemian Beachfront Pool Villa in Morjim",
+      "description": "Just 100 meters from the famous Olive Ridley turtle nesting beach. Boho-chic open pavilions, private lap pool, and sandy outdoor garden.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "MorjimTurtle_Guest",
+      "houseRules": ["Government ID required", "Follow turtle conservation lighting guidelines", "No outdoor speakers after 10 PM"],
+      "arrivalNotes": "Take Morjim beach approach road from Siolim bridge.",
+      "foodInfo": "Russian, continental, and coastal Goan menus prepared on request."
+    }
+  },
+  {
+    "name": "Cavelossim River & Ocean Estate",
+    "type": "Villa",
+    "location": "Cavelossim Beach, South Goa",
+    "price": 49000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.1750, "lng": 73.9450 },
+    "mapLink": "https://maps.google.com/?q=15.1750,73.9450",
+    "amenities": ["Private Pool", "WiFi", "AC", "River & Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Gazebo", "Private Boat Tour Access"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Luxury Estate between Sal River and Cavelossim Beach",
+      "description": "Unique location sandwiched between the gentle Sal River and white Cavelossim Beach. Features heated swimming pool, sunset jacuzzi, and private boat pick-up dock.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CavelossimRiver_VIP",
+      "houseRules": ["Government ID mandatory", "Pool rules apply", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Mobor road in Cavelossim near luxury resort row.",
+      "foodInfo": "Private chef cooks fresh lobster, tiger prawns, and custom international cuisine."
+    }
+  },
+  {
+    "name": "Villa Alenteho Calangute",
+    "type": "Villa",
+    "location": "Holiday Street, Calangute, North Goa",
+    "price": 37000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.5350, "lng": 73.7620 },
+    "mapLink": "https://maps.google.com/?q=15.5350,73.7620",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Portuguese Villa with Swimming Pool on Holiday Street",
+      "description": "Right in the heart of Calangute yet completely private behind high compound walls. Features secluded pool, outdoor dining gazebo, and air-conditioned suites.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "VillaAlenteho_Guest",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "No pets allowed"],
+      "arrivalNotes": "Take Holiday Street 300 meters from Calangute beach circle.",
+      "foodInfo": "Homestyle cooking and breakfast served daily by caretaker team."
+    }
+  },
+  {
+    "name": "Palolem Coconut Grove Villa",
+    "type": "Villa",
+    "location": "Palolem Beach, Canacona, South Goa",
+    "price": 31000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.0100, "lng": 74.0230 },
+    "mapLink": "https://maps.google.com/?q=15.0100,74.0230",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Hammocks"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Tropical Eco Villa with Pool near Crescent Palolem Bay",
+      "description": "Nestled in a lush grove of coconut trees just 3 minutes walk from scenic Palolem Bay. Features private plunge pool, open-air living deck, and yoga pavilion.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "PalolemGrove_5G",
+      "houseRules": ["Government ID required", "Eco-friendly guidelines apply", "Smoking outdoors only"],
+      "arrivalNotes": "Take Palolem beach road from Canacona junction.",
+      "foodInfo": "Fresh tropical fruit platters, vegan bowls, and authentic South Goan fish curries."
+    }
+  },
+  {
+    "name": "Casa Solarium Vagator",
+    "type": "Villa",
+    "location": "Vagator Hilltop, North Goa",
+    "price": 46000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.6020, "lng": 73.7440 },
+    "mapLink": "https://maps.google.com/?q=15.6020,73.7440",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Sun Deck", "Music System", "Gazebo"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Sun-Drenched Modern Villa with Heated Pool in Vagator",
+      "description": "Floor-to-ceiling glass architecture with views towards Chapora Fort and Vagator Sea. Climate-controlled private pool and expansive rooftop party terrace.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CasaSolarium_Vagator",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "Pool depth 4.5 ft"],
+      "arrivalNotes": "Take Vagator hilltop road near Chapora Fort junction.",
+      "foodInfo": "Culinary team provides breakfast spreads, barbecue evenings, and multi-cuisine dinners."
+    }
+  },
+  {
+    "name": "The Goan Heritage Manor Moira",
+    "type": "Villa",
+    "location": "Moira Village, Bardez, North Goa",
+    "price": 38000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.6110, "lng": 73.8120 },
+    "mapLink": "https://maps.google.com/?q=15.6110,73.8120",
+    "amenities": ["Private Pool", "WiFi", "AC", "Village View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Courtyard", "Indoor Games", "Library"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Century-Old Heritage Portuguese Mansion with Courtyard Pool",
+      "description": "Constructed in 1892 in the artisan village of Moira. Hand-painted Portuguese tiles, central courtyard pool, high ceilings, and antique rosewood furniture.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "HeritageManor_Moira",
+      "houseRules": ["Government ID required", "Preserve vintage woodwork", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Mapusa-Moira main road to Moira church square.",
+      "foodInfo": "Authentic Goan feast prepared by resident family cook with fresh local fish and meats."
+    }
+  },
+  {
+    "name": "Mandrem Beachfront Haven",
+    "type": "Villa",
+    "location": "Junawaddo, Mandrem Beach, North Goa",
+    "price": 46000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.6720, "lng": 73.7080 },
+    "mapLink": "https://maps.google.com/?q=15.6720,73.7080",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Direct Beach Access Villa with Ocean Pool in Mandrem",
+      "description": "Cross a wooden bridge over a tidal creek directly to Mandrem Beach. Features oceanfront swimming pool, sunset deck, and tranquil coastal bedrooms.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "MandremHaven_WiFi",
+      "houseRules": ["Government ID required", "Pool rules apply", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Mandrem beach road near Junawaddo creek.",
+      "foodInfo": "Custom chef service on site for healthy salads, fresh fish grills, and family dinners."
+    }
+  },
+  {
+    "name": "Villa Royale Dona Paula",
+    "type": "Villa",
+    "location": "Dona Paula Jetty Road, Panaji, Goa",
+    "price": 60000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.4520, "lng": 73.8050 },
+    "mapLink": "https://maps.google.com/?q=15.4520,73.8050",
+    "amenities": ["Private Pool", "WiFi", "AC", "Panoramic Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Home Cinema", "Elevator"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Ultra-Luxury Sea View Mansion with Elevator in Dona Paula",
+      "description": "Overlooking the confluence of the Zuari River and Arabian Sea. Private infinity pool, rooftop jacuzzi, in-house cinema, and elevator access across 3 floors.",
+      "bedrooms": 5, "bathrooms": 6, "maxGuests": 18
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "DonaPaula_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "Music indoors after 10 PM", "Security deposit at check-in"],
+      "arrivalNotes": "Take Dona Paula ridge road 10 minutes from Panaji city center.",
+      "foodInfo": "Dedicated professional chef team prepares gourmet coastal and international banquets."
+    }
+  },
+  {
+    "name": "Colva Sun & Sand Villa",
+    "type": "Villa",
+    "location": "Colva Beach Road, South Goa",
+    "price": 33000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.2780, "lng": 73.9180 },
+    "mapLink": "https://maps.google.com/?q=15.2780,73.9180",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Family Pool Villa 500m from Colva Beach in South Goa",
+      "description": "Spacious family holiday villa in quiet residential Colva. Private swimming pool, outdoor dining gazebo, and walking distance to beachfront shacks.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "ColvaSunSand_WiFi",
+      "houseRules": ["Government ID required", "Family groups preferred", "Pool timings 7 AM - 9 PM"],
+      "arrivalNotes": "Take Colva beachfront road from Margao.",
+      "foodInfo": "Homely coastal cooking and fresh seafood options available on order."
+    }
+  },
+  {
+    "name": "The Glasshouse Assagao",
+    "type": "Villa",
+    "location": "Boutique Lane, Assagao, North Goa",
+    "price": 50000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.5910, "lng": 73.7680 },
+    "mapLink": "https://maps.google.com/?q=15.5910,73.7680",
+    "amenities": ["Private Pool", "WiFi", "AC", "Forest View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Architectural Glass Villa with Heated Lap Pool in Assagao",
+      "description": "Modern minimalist masterpiece surrounded by lush jungle foliage. Climate-controlled heated lap pool, double-height living hall, and private yoga deck.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "Glasshouse_Assagao_5G",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "No smoking indoors"],
+      "arrivalNotes": "Take central boutique lane near Gunpowder restaurant.",
+      "foodInfo": "Gourmet culinary staff prepares bespoke breakfast, lunch, and dinner menus."
+    }
+  },
+  {
+    "name": "Agonda Coastal Cove Villa",
+    "type": "Villa",
+    "location": "Agonda Beach, Canacona, South Goa",
+    "price": 34000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.0450, "lng": 73.9880 },
+    "mapLink": "https://maps.google.com/?q=15.0450,73.9880",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker", "Beach Access"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Sun Deck"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "3 BHK Secluded Beach Villa with Pool in Serene Agonda",
+      "description": "Experience total peace on Agonda Beach, voted one of Asia's cleanest shorelines. Private pool, direct footpath to the sand, and sunset verandas.",
+      "bedrooms": 3, "bathrooms": 3, "maxGuests": 10
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "AgondaCove_WiFi",
+      "houseRules": ["Government ID required", "Quiet sanctuary area; strictly no loud parties", "Smoking outdoors only"],
+      "arrivalNotes": "Take Agonda beach road 15 minutes north of Palolem.",
+      "foodInfo": "Local chef cooks healthy fresh fish, coconut curries, and organic continental breakfasts."
+    }
+  },
+  {
+    "name": "Casa De Reis Magos",
+    "type": "Villa",
+    "location": "Reis Magos Fort Road, Nerul, North Goa",
+    "price": 54000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.5020, "lng": 73.8080 },
+    "mapLink": "https://maps.google.com/?q=15.5020,73.8080",
+    "amenities": ["Private Pool", "WiFi", "AC", "Mandovi River & Sea View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "5 BHK Cliffside Villa overlooking Mandovi River & Panaji Skyline",
+      "description": "Perched above the historic Reis Magos Fort with panoramic views across the Mandovi estuary to Panaji. Features cliff-edge infinity pool and expansive sunset terrace.",
+      "bedrooms": 5, "bathrooms": 5, "maxGuests": 16
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "ReisMagos_VIP",
+      "houseRules": ["Government ID mandatory", "Safety fences must be respected", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take scenic Verem-Reis Magos road along the riverfront.",
+      "foodInfo": "Dedicated private chef prepares gourmet Goan, continental, and barbecue dinners."
+    }
+  },
+  {
+    "name": "Villa Arpora Palms",
+    "type": "Villa",
+    "location": "Near Arpora Saturday Night Market, North Goa",
+    "price": 35000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.5680, "lng": 73.7650 },
+    "mapLink": "https://maps.google.com/?q=15.5680,73.7650",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Pool Villa near Arpora Night Market with Green Lawns",
+      "description": "Centrally located between Baga and Anjuna. Gated private retreat with refreshing swimming pool, open party lawn, and modern bedrooms.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "ArporaPalms_WiFi",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "Pool timings 7 AM - 9 PM"],
+      "arrivalNotes": "Take Arpora main road near night market ground.",
+      "foodInfo": "Homely cooking and breakfast served daily by caretaker."
+    }
+  },
+  {
+    "name": "The Majorda Coconut Estate",
+    "type": "Villa",
+    "location": "Majorda Beach Road, South Goa",
+    "price": 36000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.3120, "lng": 73.9150 },
+    "mapLink": "https://maps.google.com/?q=15.3120,73.9150",
+    "amenities": ["Private Pool", "WiFi", "AC", "Garden View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Indoor Games"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Heritage Villa with Private Pool near Majorda Beach",
+      "description": "Known as the birthplace of Goan toddy and European-style bread. Enjoy peaceful plantation gardens, private swimming pool, and quiet beaches.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "MajordaEstate_Guest",
+      "houseRules": ["Government ID required", "Respect heritage property", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Majorda railway crossing towards beach road.",
+      "foodInfo": "Traditional Goan bakery breakfasts and seafood thalis cooked fresh."
+    }
+  },
+  {
+    "name": "Villa Nirvana Chapora",
+    "type": "Villa",
+    "location": "Chapora Fort Road, Vagator, North Goa",
+    "price": 43000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.6050, "lng": 73.7390 },
+    "mapLink": "https://maps.google.com/?q=15.6050,73.7390",
+    "amenities": ["Private Pool", "WiFi", "AC", "Sea & River View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Sun Deck", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Modern Pool Villa overlooking Chapora Fort & Bay",
+      "description": "Right below iconic 'Dil Chahta Hai' Chapora Fort. Watch boats enter the Chapora estuary from your infinity pool and enjoy cool evening breezes.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 14
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "NirvanaChapora_WiFi",
+      "houseRules": ["Government ID required", "Music indoors after 10 PM", "Pool safety rules apply"],
+      "arrivalNotes": "Take Chapora jetty road towards the fort trail.",
+      "foodInfo": "Local seafood chef cooks fresh fish caught directly from Chapora jetty."
+    }
+  },
+  {
+    "name": "Casa De Amor Salvador Do Mundo",
+    "type": "Villa",
+    "location": "Salvador do Mundo, Bardez, North Goa",
+    "price": 41000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.5450, "lng": 73.8450 },
+    "mapLink": "https://maps.google.com/?q=15.5450,73.8450",
+    "amenities": ["Private Pool", "WiFi", "AC", "Backwater View", "Lawn", "BBQ", "Power Backup", "Pet Friendly", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Gazebo", "Outdoor Bar"],
+    "photos": [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "4 BHK Portuguese Villa with Pool in Historic Salvador do Mundo",
+      "description": "Surrounded by lush backwater marshes and quiet village chapels. Restored Portuguese architecture with private swimming pool and expansive tropical garden.",
+      "bedrooms": 4, "bathrooms": 4, "maxGuests": 12
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "CasaAmor_Goa",
+      "houseRules": ["Government ID required", "Pets welcome with prior consent", "Quiet hours after 10 PM"],
+      "arrivalNotes": "Take Chogm road from Porvorim towards Salvador do Mundo.",
+      "foodInfo": "Homely Goan and North Indian culinary options prepared on site."
+    }
+  },
+  {
+    "name": "The Grand Palms Siolim",
+    "type": "Villa",
+    "location": "Tello Vaddo, Siolim, North Goa",
+    "price": 58000,
+    "bookingMode": "ENTIRE",
+    "websiteVisible": true,
+    "status": "approved",
+    "coordinates": { "lat": 15.6180, "lng": 73.7650 },
+    "mapLink": "https://maps.google.com/?q=15.6180,73.7650",
+    "amenities": ["Private Pool", "WiFi", "AC", "Paddy Field View", "Lawn", "BBQ", "Power Backup", "Caretaker"],
+    "facilities": ["Private Parking", "Equipped Kitchen", "Jacuzzi", "Billiards", "Music System"],
+    "photos": [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "listingData": {
+      "title": "6 BHK Palatial Estate with Pool overlooking Siolim Paddy Fields",
+      "description": "A magnificent 6-bedroom holiday estate with panoramic views over emerald green paddy fields. Heated swimming pool, private billiards lounge, and butler service.",
+      "bedrooms": 6, "bathrooms": 6, "maxGuests": 20
+    },
+    "stayInfo": {
+      "checkInTime": "2:00 PM", "checkOutTime": "11:00 AM", "wifiName": "GrandPalms_VIP",
+      "houseRules": ["Government ID mandatory for all guests", "Pool safety rules apply", "Security deposit at check-in"],
+      "arrivalNotes": "Take Tello Vaddo road in Siolim near St. Anthony's Church.",
+      "foodInfo": "Full in-house chef and butler service for multi-course dinners and poolside grills."
+    }
+  }
+]
+
