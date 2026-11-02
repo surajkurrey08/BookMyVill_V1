@@ -65,6 +65,13 @@
 .bf-date-fields label:nth-child(3) { grid-column:1 / -1; }
 .bf-date-fields input,.bf-date-fields select { width:100%; border:0; background:transparent; color:#17252b; font-size:.8rem; font-weight:700; min-width:0; padding:0; outline:0; }
 .bf-date-fields input::-webkit-calendar-picker-indicator { opacity:.6; }
+.bf-property-booking .bf-date-fields.is-compact { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:4px 0 6px; }
+.bf-property-booking .bf-date-fields.is-compact label { min-height:40px; padding:4px 7px; gap:6px; border-radius:6px; }
+.bf-property-booking .bf-date-fields.is-compact label > i { font-size:0.82rem; }
+.bf-property-booking .bf-date-fields.is-compact label > span { font-size:0.62rem; }
+.bf-property-booking .bf-date-fields.is-compact input,
+.bf-property-booking .bf-date-fields.is-compact select { font-size:0.75rem; }
+.bf-property-booking .bf-date-fields.is-compact label:nth-child(3) { grid-column:auto; }
 .bf-price-action { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:17px 0 15px; }
 .bf-price-action strong { color:var(--bf-green); font-size:1.7rem; line-height:1; }
 .bf-price-action span { color:#4f5a67; font-size:.9rem; }

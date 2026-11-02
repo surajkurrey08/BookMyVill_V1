@@ -222,9 +222,9 @@ export default function PropertyPage() {
               )}
             </div>
 
-            <aside className="bf-panel bf-property-booking">
+            <aside className="bf-panel bf-property-booking" style={{ padding: '14px 16px', maxHeight: 'calc(100vh - 85px)', overflowY: 'auto' }}>
               <div className="bf-title-actions">
-                <h1>{property.name}{property.verified && <VerifiedTick />}</h1>
+                <h1 style={{ fontSize: '1.25rem', margin: 0, lineHeight: 1.25 }}>{property.name}{property.verified && <VerifiedTick />}</h1>
                 <div>
                   <button type="button" onClick={toggleSaved} aria-label={saved ? 'Remove saved stay' : 'Save stay'}>
                     {icon('heart')} <span>{saved ? 'Saved' : 'Save'}</span>
@@ -235,86 +235,87 @@ export default function PropertyPage() {
                 </div>
               </div>
 
-              <p className="bf-location">{icon('location-dot')}{property.location || 'Maharashtra'}</p>
-              {property.rating && (
-                <p className="bf-rating">
-                  ★ <strong>{Number(property.rating).toFixed(1)}</strong> {property.reviewsCount ? `(${property.reviewsCount} reviews)` : ''}
-                </p>
-              )}
-
-              <p className="bf-whole-villa-note">
-                {icon('house')}
-                <span>
-                  <strong>Entire Villa Enquiry</strong>
-                  <small>Private stay for your group · Tariff quoted on request</small>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px', margin: '6px 0 8px' }}>
+                <p className="bf-location" style={{ margin: 0, fontSize: '0.8rem' }}>{icon('location-dot')} {property.location || 'Maharashtra'}</p>
+                {property.rating && (
+                  <p className="bf-rating" style={{ margin: 0, fontSize: '0.8rem' }}>
+                    ★ <strong>{Number(property.rating).toFixed(1)}</strong> {property.reviewsCount ? `(${property.reviewsCount})` : ''}
+                  </p>
+                )}
+                <span style={{ fontSize: '0.7rem', background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '2px 7px', borderRadius: '5px', fontWeight: 600 }}>
+                  Whole Villa Stay
                 </span>
-              </p>
+              </div>
 
-              <DateGuestFields {...search} onChange={setSearch} />
+              <DateGuestFields {...search} onChange={setSearch} compact={true} />
 
               {enquirySuccess ? (
-                <div style={{ background: '#ecfdf5', border: '1px solid #10b981', borderRadius: '12px', padding: '1.25rem', marginTop: '1rem', color: '#065f46' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                    <span style={{ fontSize: '1.3rem' }}>✓</span>
-                    <strong style={{ fontSize: '1.05rem' }}>Enquiry Received!</strong>
+                <div style={{ background: '#ecfdf5', border: '1px solid #10b981', borderRadius: '10px', padding: '1rem', marginTop: '0.65rem', color: '#065f46' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
+                    <span style={{ fontSize: '1.2rem' }}>✓</span>
+                    <strong style={{ fontSize: '1rem' }}>Enquiry Received!</strong>
                   </div>
-                  <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.45', color: '#047857' }}>
-                    Thank you <strong>{enquiryName}</strong>. Our villa reservations team will contact you via WhatsApp / Phone shortly with availability and customized package rates.
+                  <p style={{ margin: 0, fontSize: '0.84rem', lineHeight: '1.4', color: '#047857' }}>
+                    Thank you <strong>{enquiryName}</strong>. Our villa reservations team will contact you via WhatsApp / Phone shortly with dates availability and customized package tariffs.
                   </p>
                   <button
                     type="button"
                     onClick={() => { setEnquirySuccess(false); setEnquiryMessage(''); }}
-                    style={{ marginTop: '0.85rem', background: '#059669', color: '#fff', border: 'none', padding: '0.45rem 0.85rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                    style={{ marginTop: '0.65rem', background: '#059669', color: '#fff', border: 'none', padding: '0.4rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
                   >
                     Send Another Request
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSendEnquiry} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151' }}>Your Name *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Rahul Sharma"
-                      value={enquiryName}
-                      onChange={e => setEnquiryName(e.target.value)}
-                      style={{ padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '0.95rem' }}
-                    />
+                <form onSubmit={handleSendEnquiry} style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.55rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.45rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 600, color: '#374151' }}>Your Name *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Rahul Sharma"
+                        value={enquiryName}
+                        onChange={e => setEnquiryName(e.target.value)}
+                        style={{ padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 600, color: '#374151' }}>WhatsApp / Mobile *</label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="e.g. 9876543210"
+                        value={enquiryPhone}
+                        onChange={e => setEnquiryPhone(e.target.value)}
+                        style={{ padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem' }}
+                      />
+                    </div>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151' }}>WhatsApp / Mobile *</label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="e.g. 9876543210"
-                      value={enquiryPhone}
-                      onChange={e => setEnquiryPhone(e.target.value)}
-                      style={{ padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '0.95rem' }}
-                    />
-                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.45rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 600, color: '#374151' }}>Email (Optional)</label>
+                      <input
+                        type="email"
+                        placeholder="e.g. rahul@gmail.com"
+                        value={enquiryEmail}
+                        onChange={e => setEnquiryEmail(e.target.value)}
+                        style={{ padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem' }}
+                      />
+                    </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151' }}>Email (Optional)</label>
-                    <input
-                      type="email"
-                      placeholder="e.g. rahul@gmail.com"
-                      value={enquiryEmail}
-                      onChange={e => setEnquiryEmail(e.target.value)}
-                      style={{ padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '0.95rem' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151' }}>Special Requests / Requirements</label>
-                    <textarea
-                      rows={2}
-                      placeholder="Cook needed, private pool, family get-together, etc."
-                      value={enquiryMessage}
-                      onChange={e => setEnquiryMessage(e.target.value)}
-                      style={{ padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '0.95rem', resize: 'vertical' }}
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <label style={{ fontSize: '0.74rem', fontWeight: 600, color: '#374151' }}>Special Request</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Cook, Pool party"
+                        value={enquiryMessage}
+                        onChange={e => setEnquiryMessage(e.target.value)}
+                        style={{ padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem' }}
+                      />
+                    </div>
                   </div>
 
                   {enquiryError && <Notice tone="error">{enquiryError}</Notice>}
@@ -323,16 +324,16 @@ export default function PropertyPage() {
                     type="submit"
                     disabled={enquirySending}
                     className="bf-primary"
-                    style={{ width: '100%', padding: '0.85rem', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', marginTop: '0.35rem' }}
+                    style={{ width: '100%', padding: '0.6rem 1rem', fontSize: '0.92rem', fontWeight: 600, cursor: 'pointer', marginTop: '0.2rem', borderRadius: '8px' }}
                   >
                     {enquirySending ? 'Sending Enquiry…' : 'Send Enquiry Now'}
                   </button>
                 </form>
               )}
 
-              <div className="bf-trust-row" style={{ marginTop: '1rem' }}>
+              <div className="bf-trust-row" style={{ marginTop: '0.5rem', fontSize: '0.68rem', opacity: 0.85 }}>
                 <span>{icon('shield-halved')} Verified Villa</span>
-                <span>{icon('calendar-days')} Quick WhatsApp Reply</span>
+                <span>{icon('calendar-days')} Fast WhatsApp Reply</span>
                 <span>{icon('headset')} Direct Management</span>
               </div>
             </aside>
