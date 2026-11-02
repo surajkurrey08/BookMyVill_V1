@@ -4,6 +4,7 @@ import { setStructuredData, updateSeoMetadata } from '../../utils/seoMetadata';
 import Gallery from './Gallery';
 import PropertyMap from './PropertyMap';
 import { Amenity, Breadcrumb, DateGuestFields, FlowShell, Notice, addDays, bookingApi, icon, propertyPhotos, queryFor, today, useProperty } from './shared';
+import { API_BASE_URL } from '../../config';
 
 // Blue tick: verified by BookMyVilla (managed villas, or owners Admin has verified).
 export function VerifiedTick() {
@@ -123,7 +124,8 @@ export default function PropertyPage() {
     try {
       const summaryMsg = `Customer Enquiry for ${property?.name || 'Villa'} (${property?.location || 'Maharashtra'}). Stay: ${nights} night(s) (Check-in: ${search.checkIn}, Check-out: ${search.checkOut}) for ${search.guests} guest(s). ${enquiryMessage ? 'Requirements: ' + enquiryMessage : ''}`.trim();
 
-      const res = await fetch('/api/partner/inquiry', {
+      const targetUrl = API_BASE_URL ? `${API_BASE_URL}/api/partner/inquiry` : '/api/partner/inquiry';
+      const res = await fetch(targetUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -136,7 +138,15 @@ export default function PropertyPage() {
         })
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get('content-type') || '';
+      let data = {};
+      if (contentType.includes('application/json')) {
+        data = await res.json().catch(() => ({}));
+      } else {
+        const text = await res.text().catch(() => '');
+        throw new Error(text && !text.startsWith('<') ? text : 'Could not reach backend server. Please verify backend is running on port 2001.');
+      }
+
       if (!res.ok) throw new Error(data.msg || 'Could not submit enquiry.');
       setEnquirySuccess(true);
     } catch (err) {
