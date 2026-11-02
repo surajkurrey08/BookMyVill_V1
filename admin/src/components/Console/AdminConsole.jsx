@@ -7,7 +7,7 @@ import { Icon, MetricCard, Alert, StatusBadge, EmptyState, Drawer } from './ui';
 import OwnersSection from './OwnersSection';
 import PartnerRequests from './PartnerRequests';
 import PropertiesSection from './PropertiesSection';
-import BookingsSection from './BookingsSection';
+import EnquiriesSection from './EnquiriesSection';
 import CustomersSection from './CustomersSection';
 import AuditSection from './AuditSection';
 import TeamSection from './TeamSection';
@@ -15,10 +15,11 @@ import './Console.css';
 
 const NAV = [
   { id: 'dashboard', label: 'Control Center', icon: 'fa-gauge-high', perm: 'dashboard.view' },
+  { id: 'enquiries', label: 'Customer Enquiries', icon: 'fa-comments', perm: 'owners.view' },
   { id: 'owners', label: 'Owners', icon: 'fa-user-tie', perm: 'owners.view' },
-  { id: 'owner-requests', label: 'Owner Requests', icon: 'fa-envelope', perm: 'owners.view' },
+  { id: 'owner-requests', label: 'Owner Applications', icon: 'fa-envelope', perm: 'owners.view' },
   { id: 'properties', label: 'Properties', icon: 'fa-building', perm: 'properties.view' },
-  { id: 'bookings', label: 'Bookings', icon: 'fa-calendar-check', perm: 'bookings.view' },
+
   { id: 'customers', label: 'Customers', icon: 'fa-users', perm: 'customers.view' },
   { id: 'audit', label: 'Audit Log', icon: 'fa-clock-rotate-left', perm: 'audit.view' },
   { id: 'team', label: 'Team & Access', icon: 'fa-user-shield', perm: 'team.manage' }
@@ -92,7 +93,7 @@ export default function AdminConsole() {
       {section === 'owners' && can('owners.view') && <OwnersSection can={can} focus={focus?.type === 'owner' ? focus : null} />}
       {section === 'owner-requests' && can('owners.view') && <PartnerRequests can={can} />}
       {section === 'properties' && can('properties.view') && <PropertiesSection can={can} focus={focus?.type === 'property' ? focus : null} />}
-      {section === 'bookings' && can('bookings.view') && <BookingsSection can={can} focus={focus?.type === 'booking' ? focus : null} />}
+      {section === 'enquiries' && can('owners.view') && <EnquiriesSection can={can} />}
       {section === 'customers' && can('customers.view') && <CustomersSection can={can} focus={focus?.type === 'customer' ? focus : null} />}
       {section === 'audit' && can('audit.view') && <AuditSection />}
       {section === 'team' && can('team.manage') && <TeamSection meId={me.id} />}
@@ -115,12 +116,13 @@ function Dashboard({ onGo, onSection }) {
   const attentionTarget = type => {
     if (type === 'property_review' || type === 'unassigned_operations') onSection('properties');
     else if (type === 'issues') adminApi('/operations-issues').then(setInterventions).catch(err => setError(err.message));
-    else if (['refund_review', 'unpaid'].includes(type)) onSection('bookings');
-    else if (type === 'applications' || type === 'partner_inquiries') onSection('owner-requests');
+    else if (type === 'partner_inquiries' || type === 'inquiries') onSection('enquiries');
+    else if (type === 'applications') onSection('owner-requests');
   };
   if (error) return <Alert>{error}</Alert>;
   if (!data) return <p className="ac-muted">Loading platform metrics…</p>;
   const k = data.kpis;
+  const attentionList = (data.attention || []).filter(a => !['refund_review', 'unpaid'].includes(a.link?.type));
   return <div className="ac-stack">
     <div className="ac-section-head">
       <div><h2>What's happening across BookMyVilla</h2><p>Live platform metrics, compared with the previous {days} days.</p></div>
@@ -128,12 +130,12 @@ function Dashboard({ onGo, onSection }) {
     </div>
 
     <section className="ac-metrics">
-      <MetricCard label="GMV" value={compactRupees(k.gmv.value)} changePct={k.gmv.changePct} sub="vs previous" />
-      <MetricCard label="Est. platform revenue" value={compactRupees(k.estimatedPlatformRevenue.value)} sub={`est. ${k.estimatedPlatformRevenue.rate * 100}%`} />
-      <MetricCard label="Bookings" value={k.bookings.value.toLocaleString('en-IN')} changePct={k.bookings.changePct} sub="created" />
-      <MetricCard label="Paid bookings" value={k.paidBookings.value.toLocaleString('en-IN')} changePct={k.paidBookings.changePct} sub="captured" />
-      <MetricCard label="Active stays" value={k.activeStays.value} sub="in house now" />
-      <MetricCard label="Upcoming confirmed" value={k.confirmedUpcoming.value} sub="future stays" />
+      <MetricCard label="Customer Enquiries" value={k.openRequests?.value ?? '0'} attention={true} sub="direct guest inquiries" onClick={() => onSection('enquiries')} />
+
+
+
+
+
       <MetricCard label="Live properties" value={k.activeProperties.value} sub={`${k.suspendedProperties.value} suspended`} onClick={() => onSection('properties')} />
       <MetricCard label="Active owners" value={k.activeOwners.value} onClick={() => onSection('owners')} />
       <MetricCard label="Customers" value={k.totalCustomers.value.toLocaleString('en-IN')} onClick={() => onSection('customers')} />
@@ -141,14 +143,14 @@ function Dashboard({ onGo, onSection }) {
       <MetricCard label="Self Managed Properties" value={k.selfManagedProperties?.value ?? '—'} sub="property management" />
       <MetricCard label="BookMyVilla Managed" value={k.companyManagedProperties?.value ?? '—'} sub="property management" />
       <MetricCard label="Unassigned Managed Properties" value={k.unassignedManagedProperties?.value ?? '—'} sub="Villa Manager needed" attention={(k.unassignedManagedProperties?.value || 0) > 0} />
-      <MetricCard label="Unpaid bookings" value={k.pendingPayments.value} sub={rupees(k.pendingPayments.amount)} onClick={() => onSection('bookings')} />
-      <MetricCard label="Refund reviews" value={k.refundReviews.value} attention={k.refundReviews.value > 0} sub={rupees(k.refundReviews.amount)} onClick={() => onSection('bookings')} />
+      <MetricCard label="Owner Applications" value={k.pendingApplications?.value ?? 0} sub="onboarding queue" onClick={() => onSection('owner-requests')} />
+
     </section>
 
     <section className="ac-card">
-      <div className="ac-card-head"><div><h3>Needs attention</h3><p>Exceptions that need platform intervention — act on these first.</p></div><span className="ac-count">{data.attention.length}</span></div>
-      {data.attention.length === 0 ? <EmptyState icon="fa-mug-hot" title="Nothing needs intervention right now">New applications, property reviews, refund exceptions and guest issues will surface here.</EmptyState>
-        : <ul className="ac-attention">{data.attention.map((a, i) => <li key={i} className={a.severity}>
+      <div className="ac-card-head"><div><h3>Needs attention</h3><p>Exceptions that need platform intervention — act on these first.</p></div><span className="ac-count">{attentionList.length}</span></div>
+      {attentionList.length === 0 ? <EmptyState icon="fa-mug-hot" title="Nothing needs intervention right now">New applications, property reviews and guest enquiries will surface here.</EmptyState>
+        : <ul className="ac-attention">{attentionList.map((a, i) => <li key={i} className={a.severity}>
           <StatusBadge meta={SEVERITY[a.severity]} />
           <div><strong>{a.title}</strong><small>{a.detail}</small></div>
           <button type="button" className="ac-btn ghost sm" onClick={() => attentionTarget(a.link.type)}>Open</button>

@@ -155,14 +155,14 @@ router.get('/overview', requirePermission('dashboard.view'), async (req, res) =>
 
     const attention = [];
     if (safetyIssues > 0) attention.push({ severity: 'critical', title: `${safetyIssues} open safety issue${safetyIssues === 1 ? '' : 's'} reported by guests`, detail: 'Guest-reported safety concerns need immediate review.', link: { type: 'issues' } });
-    if (refunds.count > 0) attention.push({ severity: 'critical', title: `₹${refunds.value.toLocaleString('en-IN')} across ${refunds.count} cancelled paid booking${refunds.count === 1 ? '' : 's'} need refund review`, detail: 'These bookings were cancelled after payment and have not been marked refunded.', link: { type: 'refund_review' } });
+
     if (pendingReviews > 0) attention.push({ severity: 'high', title: `${pendingReviews} propert${pendingReviews === 1 ? 'y' : 'ies'} awaiting review`, detail: 'New or edited listings cannot go live until approved.', link: { type: 'property_review' } });
     if (pendingApplications > 0) attention.push({ severity: 'high', title: `${pendingApplications} owner application${pendingApplications === 1 ? '' : 's'} pending`, detail: 'Partner applications waiting for onboarding review.', link: { type: 'applications' } });
-    if (newPartnerInquiries > 0) attention.push({ severity: 'medium', title: `${newPartnerInquiries} new partnership inquir${newPartnerInquiries === 1 ? 'y' : 'ies'}`, detail: 'Owners have questions about joining BookMyVilla.', link: { type: 'partner_inquiries' } });
+    if (newPartnerInquiries > 0) attention.push({ severity: 'high', title: `${newPartnerInquiries} new customer villa inquir${newPartnerInquiries === 1 ? 'y' : 'ies'}`, detail: 'Guests have submitted villa stay enquiries awaiting WhatsApp quote.', link: { type: 'partner_inquiries' } });
     const unassigned = managementRows.find(row => row._id === 'BOOKMYVILLA_MANAGED')?.unassigned || 0;
     if (unassigned) attention.push({ severity: 'high', title: `${unassigned} managed properties need a Villa Manager`, detail: 'Open operational work is retained in the unassigned operations queue.', link: { type: 'unassigned_operations' } });
     if (openIssues > safetyIssues) attention.push({ severity: 'high', title: `${openIssues} open guest issue${openIssues === 1 ? '' : 's'}`, detail: 'Guests have reported problems that are not yet resolved.', link: { type: 'issues' } });
-    if (pendingPay.count > 0) attention.push({ severity: 'medium', title: `₹${pendingPay.value.toLocaleString('en-IN')} across ${pendingPay.count} unpaid booking${pendingPay.count === 1 ? '' : 's'}`, detail: 'Bookings awaiting payment.', link: { type: 'unpaid' } });
+
 
     res.json({
       period: { days, from: windowStart, to: now },
