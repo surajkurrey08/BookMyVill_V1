@@ -466,3 +466,224 @@
   8%, 70% { background: #fff2c4; color: #4a3a05; }
 }
 @media (prefers-reduced-motion: reduce) { .bf-flash, .bf-flash .bf-not-yet { animation-duration: .01s; } }
+
+/* ==========================================================================
+   Luxury Private Villa Experience Section
+   ========================================================================== */
+.bf-choose.bf-experience-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #ffffff;
+  border-radius: 14px;
+}
+
+.bf-experience-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  border-bottom: 1px solid var(--bf-line);
+  padding-bottom: 14px;
+}
+
+.bf-experience-head h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--bf-ink, #0E2922);
+  margin: 0;
+}
+
+.bf-experience-head p {
+  font-size: 0.82rem;
+  color: var(--bf-muted, #556961);
+  margin: 4px 0 0;
+}
+
+.bf-exclusive-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(14, 41, 34, 0.08);
+  color: var(--bf-green, #0E2922);
+  border: 1px solid rgba(14, 41, 34, 0.18);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.bf-experience-photos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bf-exp-photo-card {
+  position: relative;
+  height: 120px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.bf-exp-photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.bf-exp-photo-card:hover img {
+  transform: scale(1.05);
+}
+
+.bf-exp-photo-label {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+  background: rgba(7, 21, 17, 0.78);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bf-experience-features {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bf-exp-feature-box {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #f8faf9;
+  border: 1px solid var(--bf-line);
+  border-radius: 10px;
+  padding: 12px;
+  transition: all 0.2s ease;
+}
+
+.bf-exp-feature-box:hover {
+  background: #ffffff;
+  border-color: #bcd6cc;
+  box-shadow: 0 4px 12px rgba(14, 41, 34, 0.06);
+}
+
+.bf-exp-feature-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(14, 41, 34, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bf-green, #0E2922);
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.bf-exp-feature-text h4 {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #17252b;
+}
+
+.bf-exp-feature-text p {
+  margin: 3px 0 0;
+  font-size: 0.72rem;
+  color: #556961;
+  line-height: 1.4;
+}
+
+.bf-experience-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, #f4f8f6 0%, #eef5f2 100%);
+  border: 1px solid #dbeae3;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 4px;
+}
+
+.bf-exp-guarantee {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: #1c3d33;
+  font-weight: 600;
+}
+
+.bf-exp-guarantee i {
+  color: #0E2922;
+  font-size: 1rem;
+}
+
+.bf-exp-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bf-exp-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #25D366;
+  color: #ffffff !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.bf-exp-whatsapp-btn:hover {
+  background: #1eb956;
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+}
+
+.bf-exp-enquire-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bf-green, #0E2922);
+  color: #ffffff !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bf-exp-enquire-btn:hover {
+  background: #081a15;
+}
+
+@media (max-width: 900px) {
+  .bf-experience-features {
+    grid-template-columns: 1fr;
+  }
+  .bf-experience-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

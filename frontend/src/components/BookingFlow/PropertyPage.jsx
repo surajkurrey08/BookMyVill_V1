@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { setStructuredData, updateSeoMetadata } from '../../utils/seoMetadata';
 import Gallery from './Gallery';
 import PropertyMap from './PropertyMap';
-import { Amenity, Breadcrumb, DateGuestFields, FlowShell, Notice, addDays, bookingApi, icon, propertyPhotos, queryFor, today, useProperty } from './shared';
+import { Amenity, Breadcrumb, DateGuestFields, FlowShell, Notice, addDays, bookingApi, fallbackPhotos, icon, propertyPhotos, queryFor, today, useProperty } from './shared';
 import { API_BASE_URL } from '../../config';
 
 // Blue tick: verified by BookMyVilla (managed villas, or owners Admin has verified).
@@ -387,37 +387,92 @@ export default function PropertyPage() {
               </div>
             </section>
 
-            <section className="bf-panel bf-choose" id="bf-rooms">
-              <div className="bf-section-head">
+            <section className="bf-panel bf-choose bf-experience-panel" id="bf-rooms">
+              <div className="bf-experience-head">
                 <div>
-                  <h2>The Whole Villa Is Yours</h2>
-                  <p>Private for your group. No shared rooms.</p>
+                  <h2>Exclusive Private Villa Experience</h2>
+                  <p>Entire luxury estate & grounds reserved 100% for your private group</p>
+                </div>
+                <div className="bf-exclusive-pill">
+                  {icon('crown')} <span>Exclusive Reservation</span>
                 </div>
               </div>
-              {roomError && <Notice tone="error">{roomError}</Notice>}
-              {unit ? (
-                <article className="bf-teaser bf-villa-unit">
-                  <img src={photos[1 % photos.length]} alt={property.name} />
-                  <div>
-                    <h3>Entire {String(property.type || 'villa').toLowerCase()}</h3>
-                    <p>{icon('users')} Up to {unit.capacity} guests <span>{icon('house')} Private stay</span></p>
-                    <div className="bf-teaser-bottom">
-                      <strong>Entire Private Villa<small> 100% Privacy</small></strong>
-                      <button
-                        type="button"
-                        className="bf-primary"
-                        onClick={scrollToEnquiry}
-                      >
-                        Enquire Now {icon('arrow-right')}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ) : (
-                <div className="bf-empty-inline">
-                  {bookable ? 'Villa details are ready for inquiries.' : 'Direct inquiries are open for this stay.'}
+
+              {/* Visual Spaces Showcase Strip */}
+              <div className="bf-experience-photos">
+                <div className="bf-exp-photo-card">
+                  <img src={photos[0] || fallbackPhotos[0]} alt="Private Pool & Deck" />
+                  <span className="bf-exp-photo-label">{icon('water')} Private Swimming Pool</span>
                 </div>
-              )}
+                <div className="bf-exp-photo-card">
+                  <img src={photos[1 % photos.length] || fallbackPhotos[1]} alt="Living Lounge" />
+                  <span className="bf-exp-photo-label">{icon('couch')} Living Lounge & Dining</span>
+                </div>
+                <div className="bf-exp-photo-card">
+                  <img src={photos[2 % photos.length] || fallbackPhotos[2]} alt="Master Suites" />
+                  <span className="bf-exp-photo-label">{icon('bed')} {property.details?.bedrooms || 4} Master Suites</span>
+                </div>
+              </div>
+
+              {/* 4 Feature Inclusions Grid */}
+              <div className="bf-experience-features">
+                <div className="bf-exp-feature-box">
+                  <div className="bf-exp-feature-icon">{icon('house-chimney-window')}</div>
+                  <div className="bf-exp-feature-text">
+                    <h4>100% Private Access</h4>
+                    <p>Exclusive use of entire villa, private pool, gardens, and terraces. No other guests on property.</p>
+                  </div>
+                </div>
+
+                <div className="bf-exp-feature-box">
+                  <div className="bf-exp-feature-icon">{icon('utensils')}</div>
+                  <div className="bf-exp-feature-text">
+                    <h4>Private Chef on Request</h4>
+                    <p>Cook-on-demand for home-cooked meals, authentic local specialties, and evening barbecues.</p>
+                  </div>
+                </div>
+
+                <div className="bf-exp-feature-box">
+                  <div className="bf-exp-feature-icon">{icon('user-tie')}</div>
+                  <div className="bf-exp-feature-text">
+                    <h4>Dedicated Caretaker</h4>
+                    <p>On-site caretaker assistance for smooth check-in, daily housekeeping, luggage, and bonfire setup.</p>
+                  </div>
+                </div>
+
+                <div className="bf-exp-feature-box">
+                  <div className="bf-exp-feature-icon">{icon('shield-halved')}</div>
+                  <div className="bf-exp-feature-text">
+                    <h4>Premium Inclusions</h4>
+                    <p>High-speed Wi-Fi, 100% power backup, fresh linens, sanitized pool, and direct concierge service.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Quick-Action Bar */}
+              <div className="bf-experience-footer">
+                <div className="bf-exp-guarantee">
+                  {icon('circle-check')}
+                  <span>Verified Villa · Direct Host Management · Best Tariff Guarantee</span>
+                </div>
+                <div className="bf-exp-actions">
+                  <a
+                    href={`https://wa.me/919876543210?text=${encodeURIComponent(`Hi BookMyVilla, I'm interested in enquiring about ${property?.name || 'Villa'} in ${property?.location || 'Maharashtra'}. Please share customized package and availability details.`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bf-exp-whatsapp-btn"
+                  >
+                    <i className="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                  </a>
+                  <button
+                    type="button"
+                    className="bf-exp-enquire-btn"
+                    onClick={scrollToEnquiry}
+                  >
+                    Send Enquiry {icon('arrow-right')}
+                  </button>
+                </div>
+              </div>
             </section>
           </div>
 
