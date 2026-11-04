@@ -50,13 +50,15 @@ const StayCard = ({ stay, index, saved, onToggleSave, onMapView }) => {
       </div>
 
       <div className="hp-stay-body">
-        <div className="hp-stay-row">
-          <span className="hp-stay-price"><strong>Tariff on Request</strong><small>Whole villa stay</small></span>
+        <div className="hp-stay-head">
+          <h3 className="hp-stay-name" onClick={openDetails}>{stay.name}</h3>
+  
+          
           <span className="hp-stay-rating">
             <i className="fa-solid fa-star"></i> {stay.rating.toFixed(1)} <small>({stay.reviewsCount})</small>
           </span>
         </div>
-        <h3 className="hp-stay-name" onClick={openDetails}>{stay.name}</h3>
+
         <p className="hp-stay-loc"><i className="fa-solid fa-location-dot"></i> {stay.location}</p>
         <div className="hp-stay-actions">
           <button type="button" className="hp-btn-dark" onClick={openDetails}>
@@ -126,6 +128,9 @@ const CuratedStays = ({ filter, onFilterChange, onMapView, destinationFilter, on
 
     return [...list].sort(sorters[sort]);
   }, [liveStays, filter, sort, wishlist, destinationFilter]);
+
+  // Show a curated limit of 20 villas on the Home Screen; remaining available on Explore Stays
+  const displayedStays = useMemo(() => visible.slice(0, 20), [visible]);
 
   const toggleSave = (id) => {
     setWishlist((prev) => {
@@ -213,7 +218,7 @@ const CuratedStays = ({ filter, onFilterChange, onMapView, destinationFilter, on
           </div>
         ) : (
           <div className="hp-stay-grid" key={`${filter}-${sort}-${destinationFilter}`}>
-            {visible.map((stay, i) => (
+            {displayedStays.map((stay, i) => (
               <StayCard
                 key={stay.id}
                 stay={stay}
@@ -227,8 +232,13 @@ const CuratedStays = ({ filter, onFilterChange, onMapView, destinationFilter, on
         )}
 
         <div className="hp-stays-more hp-reveal">
-          <Link to="/explore" className="hp-btn-outline">
-            View All Stays <i className="fa-solid fa-arrow-right"></i>
+          {visible.length > 20 && (
+            <div className="hp-stays-count-note">
+              Showing <strong>{displayedStays.length}</strong> of <strong>{visible.length}</strong> luxury stays
+            </div>
+          )}
+          <Link to={destinationFilter ? `/explore?search=${encodeURIComponent(destinationFilter)}` : '/explore'} className="hp-btn-view-all">
+            <span>View All {visible.length > 20 ? `${visible.length} Stays` : 'Stays'}</span> <i className="fa-solid fa-arrow-right"></i>
           </Link>
         </div>
       </div>

@@ -402,7 +402,7 @@ export default function PropertyPage() {
                     <h3>Entire {String(property.type || 'villa').toLowerCase()}</h3>
                     <p>{icon('users')} Up to {unit.capacity} guests <span>{icon('house')} Private stay</span></p>
                     <div className="bf-teaser-bottom">
-                      <strong>Tariff on Request<small> whole private villa</small></strong>
+                      <strong>Entire Private Villa<small> 100% Privacy</small></strong>
                       <button
                         type="button"
                         className="bf-primary"
