@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { adminApi, query } from './api';
 import { clearAdminSession } from '../../session';
 import { compactRupees, rupees, SEVERITY, relativeTime } from './config';
-import { Icon, MetricCard, Alert, StatusBadge, EmptyState, Drawer } from './ui';
+import { Icon, MetricCard, Alert, StatusBadge, EmptyState, Drawer, ConfirmDialog } from './ui';
 import OwnersSection from './OwnersSection';
 import PartnerRequests from './PartnerRequests';
 import PropertiesSection from './PropertiesSection';
@@ -11,6 +11,7 @@ import EnquiriesSection from './EnquiriesSection';
 import CustomersSection from './CustomersSection';
 import AuditSection from './AuditSection';
 import TeamSection from './TeamSection';
+import PluginsSection from './PluginsSection';
 import './Console.css';
 
 const NAV = [
@@ -22,14 +23,18 @@ const NAV = [
 
   { id: 'customers', label: 'Customers', icon: 'fa-users', perm: 'customers.view' },
   { id: 'audit', label: 'Audit Log', icon: 'fa-clock-rotate-left', perm: 'audit.view' },
-  { id: 'team', label: 'Team & Access', icon: 'fa-user-shield', perm: 'team.manage' }
+  { id: 'team', label: 'Team & Access', icon: 'fa-user-shield', perm: 'team.manage' },
+  { id: 'plugins', label: 'Plugins', icon: 'fa-plug', perm: 'plugins.manage' }
 ];
 
 export default function AdminConsole() {
   const navigate = useNavigate();
   const [me, setMe] = useState(null);
   const [error, setError] = useState('');
-  const [section, setSection] = useState(() => { const params = new URLSearchParams(window.location.search); return params.get('propertyId') ? 'properties' : ['properties', 'owner-requests'].includes(params.get('section')) ? params.get('section') : 'dashboard'; });
+  const [section, setSection] = useState(() => { const params = new URLSearchParams(window.location.search); return params.get('propertyId') ? 'properties' : ['properties', 'owner-requests', 'plugins'].includes(params.get('section')) ? params.get('section') : 'dashboard'; });
+  const [pluginsDirty, setPluginsDirty] = useState(false);
+  const [leavePlugins, setLeavePlugins] = useState(null);
+  const pendingPluginNavigation = useRef(null);
   const [drawerOpen, setDrawerOpen] = useState(() => window.innerWidth > 900);
   const closeOnMobile = () => { if (window.innerWidth <= 900) setDrawerOpen(false); };
   const [palette, setPalette] = useState(null);
@@ -62,16 +67,24 @@ export default function AdminConsole() {
   if (!me) return <div className="ac-boot"><Icon name="fa-shield-halved" /> Loading admin console…</div>;
 
   const visibleNav = NAV.filter(item => can(item.perm));
-  const go = (type, id) => { setFocus({ type, id, at: Date.now() }); setSection(type === 'owner' ? 'owners' : type === 'property' ? 'properties' : type === 'booking' ? 'bookings' : type === 'customer' ? 'customers' : section); setPalette(null); };
+  const navigateSafely = action => {
+    if (section === 'plugins' && pluginsDirty) { pendingPluginNavigation.current = action; setLeavePlugins(true); return; }
+    action();
+  };
+  const changeSection = next => {
+    if (next === section) return;
+    navigateSafely(() => { setSection(next); closeOnMobile(); });
+  };
+  const go = (type, id) => { setPalette(null); navigateSafely(() => { setFocus({ type, id, at: Date.now() }); setSection(type === 'owner' ? 'owners' : type === 'property' ? 'properties' : type === 'booking' ? 'bookings' : type === 'customer' ? 'customers' : section); }); };
 
-  function signOut() { clearAdminSession(); navigate('/login', { replace: true }); }
+  function signOut() { navigateSafely(() => { clearAdminSession(); navigate('/login', { replace: true }); }); }
 
   return <div className="ac-shell">
     <aside className={`ac-sidebar ${drawerOpen ? 'open' : ''}`}>
       <div className="ac-brand"><strong className="ac-logo">MAHABALESHWAR</strong><button type="button" className="ac-hide-btn" onClick={() => setDrawerOpen(false)} aria-label="Hide sidebar" title="Hide sidebar"><Icon name="fa-angles-left" /></button></div>
       <button type="button" className="ac-search-trigger" onClick={() => { setPalette({ q: '', results: [] }); closeOnMobile(); }}><Icon name="fa-magnifying-glass" /> Search<kbd>⌘K</kbd></button>
       <nav className="ac-nav">
-        {visibleNav.map(item => <button key={item.id} type="button" className={section === item.id ? 'active' : ''} aria-current={section === item.id ? 'page' : undefined} onClick={() => { setSection(item.id); closeOnMobile(); }}>
+        {visibleNav.map(item => <button key={item.id} type="button" className={section === item.id ? 'active' : ''} aria-current={section === item.id ? 'page' : undefined} onClick={() => changeSection(item.id)}>
           <Icon name={item.icon} />{item.label}
         </button>)}
       </nav>
@@ -97,9 +110,12 @@ export default function AdminConsole() {
       {section === 'customers' && can('customers.view') && <CustomersSection can={can} focus={focus?.type === 'customer' ? focus : null} />}
       {section === 'audit' && can('audit.view') && <AuditSection />}
       {section === 'team' && can('team.manage') && <TeamSection meId={me.id} />}
+      {section === 'plugins' && can('plugins.manage') && <PluginsSection onDirtyChange={setPluginsDirty} />}
+      {section === 'plugins' && !can('plugins.manage') && <div className="ac-stack"><Alert>Your admin role does not allow plugin management.</Alert></div>}
     </main>
 
     {palette && <CommandPalette onClose={() => setPalette(null)} onGo={go} />}
+    {leavePlugins && <ConfirmDialog title="Discard unsaved plugin changes?" confirmLabel="Discard changes" onClose={() => { setLeavePlugins(null); pendingPluginNavigation.current = null; }} onConfirm={() => { const action = pendingPluginNavigation.current; pendingPluginNavigation.current = null; setLeavePlugins(null); setPluginsDirty(false); action?.(); }}>Your changes have not been saved to the website.</ConfirmDialog>}
   </div>;
 }
 

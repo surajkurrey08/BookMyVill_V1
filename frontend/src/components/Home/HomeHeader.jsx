@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LoginModal from './LoginModal';
 import BrandLogo from '../Brand/BrandLogo';
-import AiAssistantButton from '../AiAssistant/AiAssistantButton';
 import { OWNER_PORTAL_URL, CARETAKER_PORTAL_URL } from '../../config';
 import { AUTH_EVENT, clearSession, getSessionUser, saveSession } from '../../lib/session';
 
@@ -130,8 +129,6 @@ const HomeHeader = ({ onOpenFavourites }) => {
               Log In
             </button>
           )}
-
-          <AiAssistantButton />
 
           {onOpenFavourites && (
             <button

@@ -159,6 +159,21 @@ Benefit panels contain an icon medallion, title and description. Process steps a
 
 Pre-existing villa assets are reused without image modification. Their origins and the composition contract are recorded in `.impeccable/surfaces/join-us.md`. Partner content has no form fields; the shared header provides its existing login modal, which is outside this scoped token scan.
 
+The shared customer chat uses `components/OmniflowChat/OmniflowChat.css` as its
+presentation adapter. It maps forest, gold, cream, sage and body type directly
+to the shared CSS variables above, and follows the existing `BrandLogo`
+Playfair Display wordmark. Scoped `bmv-chat-*` classes style vendor nodes without
+changing the Omniflow transport, visitor identity or message history. The chat
+layer sits above the shared header and below cookie/login dialogs. Do not
+promote chat-specific geometry into site-wide tokens.
+
+Admin plugin settings reuse the Control Center's `Console.css` surfaces,
+fields, buttons, alerts and confirmation dialog. `PluginsSection.css` supplies
+only the form layout. The backend `SitePlugin` record owns chat enablement,
+URLs and public key; website pages load a public projection at runtime.
+`plugins.manage` guards configuration changes. Saving stays on the form,
+preserves input on error and reports success through the shared Alert.
+
 ## Do's and Don'ts
 
 - **Do** keep Join Us overrides scoped to the route wrapper.

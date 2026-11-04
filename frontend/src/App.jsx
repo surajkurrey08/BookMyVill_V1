@@ -20,7 +20,7 @@ const AboutUs = lazy(() => import('./components/AboutUs/AboutUs'));
 const CaretakerDashboard = lazy(() => import('./components/Caretaker/CaretakerDashboard'));
 const PartnerContactPage = lazy(() => import('./components/JoinUs/PartnerContactPage'));
 const ExploreStaysPage = lazy(() => import('./components/ExploreStays/ExploreStaysPage'));
-const AiAssistant = lazy(() => import('./components/AiAssistant/AiAssistant'));
+import OmniflowChat from './components/OmniflowChat/OmniflowChat';
 import HomePage from './components/Home/HomePage';
 import LoginRoute from './components/Home/LoginRoute';
 import WelcomeLoginPrompt from './components/Home/WelcomeLoginPrompt';
@@ -281,7 +281,8 @@ function App() {
           <Route path="/trips/:id" element={<Suspense fallback={null}><TripPage /></Suspense>} />
         </Routes>
         </Suspense>
-        <Suspense fallback={null}><AiAssistant /></Suspense>
+        {/* Omniflow owns site-wide chat. Legacy AiAssistant source/data are retained. */}
+        <OmniflowChat />
         <CookieConsent />
         <WelcomeLoginPrompt />
       </div>

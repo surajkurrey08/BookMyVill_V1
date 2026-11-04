@@ -623,6 +623,9 @@ const AdminDashboard = () => {
               >
                 Content Control
               </button>
+              <button type="button" className="nav-item" onClick={() => navigate('/console?section=plugins')}>
+                Plugins
+              </button>
             </nav>
 
             <div className="sidebar-footer">

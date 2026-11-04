@@ -20,6 +20,8 @@ All apps talk to the backend only through the **API Gateway on port 2001** (`htt
 
 ## Backend
 
+Customer website chat setup: [Omniflow Web Chat](docs/omniflow-webchat.md).
+
 ```
 backend/
 ├── api-gateway/          public entry, port 2001

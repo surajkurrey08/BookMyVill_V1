@@ -9,7 +9,7 @@ const PERMISSIONS = [
   'bookings.view', 'bookings.note',
   'customers.view', 'customers.manage',
   'audit.view',
-  'team.manage'
+  'team.manage', 'plugins.manage'
 ];
 
 const ROLE_PERMISSIONS = {

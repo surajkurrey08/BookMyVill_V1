@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import BrandLogo from '../Brand/BrandLogo';
-import AiAssistantButton from '../AiAssistant/AiAssistantButton';
 import { OWNER_PORTAL_URL, CARETAKER_PORTAL_URL } from '../../config';
 import { AUTH_EVENT, clearSession, getSessionUser } from '../../lib/session';
 import './Navbar.css';
@@ -345,7 +344,6 @@ const Navbar = () => {
                 {location.pathname === '/join-us' ? 'Log In' : 'Sign In'}
               </Link>
             )}
-            <AiAssistantButton />
           </div>
         </div>
       </header>

@@ -23,6 +23,7 @@ const { validId, validEmail, validPhone, escapeRegex, cleanText, pagination, add
 
 const router = express.Router();
 router.use(adminConsoleAuth);
+router.use('/plugins', require('./adminPlugins'));
 const fail = (res, err) => sendError(res, err, 'Admin console');
 const oid = id => new mongoose.Types.ObjectId(id);
 const PAID = { paymentStatus: 'paid', paymentMode: { $in: ['live', 'manual'] } };

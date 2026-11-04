@@ -23,7 +23,7 @@ const SERVICES = {
   'user-service': {
     port: 2102,
     purpose: 'Admin console, owners, customers, staff accounts, partner applications',
-    mounts: [['/api/admin-console', 'routes/adminConsole'], ['/api/admin', 'routes/admin'], ['/api/partner', 'routes/partner'], ['/api/v1/users', 'routes/adminConsole'], ['/internal/users', 'routes/internal/users']]
+    mounts: [['/api/admin-console', 'routes/adminConsole'], ['/api/admin', 'routes/admin'], ['/api/site-plugins', 'routes/sitePlugins'], ['/api/partner', 'routes/partner'], ['/api/v1/users', 'routes/adminConsole'], ['/internal/users', 'routes/internal/users']]
   },
   'villa-service': {
     port: 2103,

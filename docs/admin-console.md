@@ -163,3 +163,19 @@ RBAC enforcement (403 with the missing permission named), the property state
 machine + audit + public-hiding, owner suspension locking login, owner
 aggregates & 360°, customer actions + booking notes, audit immutability, team
 RBAC with no self-demotion, and permission-scoped search.
+
+## Website plugins
+
+Open **Plugins > Omniflow Web Chat** in the Control Center, or use the Plugins
+shortcut in Classic admin tools. Super Admin can save the frontend/backend
+base URLs, public widget key and enable/disable state. `plugins.manage` can be
+explicitly granted to other admins through Team & Access; other roles do not
+receive it by default. The backend enforces this permission for both reads and
+writes. Updates are audited without retaining key values in audit snapshots.
+
+Settings are stored in MongoDB and served to the website at runtime. Key changes
+need no frontend rebuild; new or refreshed website pages use the new settings.
+The form stays on the page after save, preserves errors/values, and guards
+unsaved changes when switching console sections or leaving the document.
+Connection checks run in the admin browser using public widget endpoints only.
+See [Omniflow Web Chat](omniflow-webchat.md) for setup and verification details.

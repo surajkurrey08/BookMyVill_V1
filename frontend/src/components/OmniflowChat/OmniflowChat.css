@@ -1,0 +1,246 @@
+/* Vendor nodes live under body, outside .hp-root. Map the existing shared
+   tokens here; specificity beats Omniflow's later-injected default stylesheet. */
+.ofw-panel.bmv-chat-panel,
+.ofw-btn.bmv-chat-launcher {
+  --chat-forest: var(--primary-color);
+  --chat-gold: var(--secondary-color);
+  --chat-cream: var(--bg-color);
+  --chat-sage: var(--accent-color);
+  --chat-ink: var(--text-primary);
+  --chat-muted: var(--text-secondary);
+  --chat-line: color-mix(in srgb, var(--chat-gold) 26%, var(--chat-cream));
+  --chat-edge: 24px;
+  --chat-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  /* Above the shared header (1000), below cookies (1900) and login (2000). */
+  --chat-layer: 1850;
+  font-family: var(--font-body);
+  z-index: var(--chat-layer);
+}
+
+.ofw-btn.bmv-chat-launcher {
+  right: max(var(--chat-edge), env(safe-area-inset-right, 0px));
+  bottom: var(--chat-bottom);
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--chat-gold) 75%, white);
+  border-radius: 50%;
+  background: var(--chat-gold);
+  color: var(--chat-forest);
+  box-shadow: 0 8px 26px rgb(15 33 24 / 24%), inset 0 0 0 4px rgb(255 255 255 / 13%);
+  cursor: pointer;
+  transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.bmv-chat-launcher svg { width: 27px; height: 27px; }
+
+@media (hover: hover) {
+  .ofw-btn.bmv-chat-launcher:hover {
+    background: color-mix(in srgb, var(--chat-gold) 80%, white);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgb(15 33 24 / 28%);
+  }
+}
+
+.ofw-btn.bmv-chat-launcher:active { transform: scale(.96); }
+
+.ofw-panel.bmv-chat-panel {
+  right: max(var(--chat-edge), env(safe-area-inset-right, 0px));
+  bottom: calc(var(--chat-bottom) + 74px);
+  width: 360px;
+  max-width: calc(100vw - 2 * var(--chat-edge));
+  height: 490px;
+  max-height: calc(100vh - 120px - env(safe-area-inset-bottom, 0px));
+  max-height: calc(100dvh - 120px - env(safe-area-inset-bottom, 0px));
+  padding: 0;
+  border: 1px solid var(--chat-line);
+  border-radius: 20px;
+  background: var(--chat-cream);
+  color: var(--chat-ink);
+  box-shadow: 0 22px 60px rgb(15 33 24 / 25%), 0 3px 12px rgb(15 33 24 / 10%);
+  isolation: isolate;
+}
+
+.bmv-chat-panel .ofw-head {
+  flex: none;
+  gap: 12px;
+  padding: 20px 18px 18px 22px;
+  border-bottom: 2px solid var(--chat-gold);
+  background: var(--chat-forest);
+  color: var(--chat-cream);
+}
+
+.bmv-chat-panel .bmv-chat-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--chat-gold);
+  /* Same display face and weight as the shared BrandLogo wordmark. */
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -.4px;
+}
+
+.bmv-chat-brand svg { flex: none; width: 32px; height: 18px; }
+.bmv-chat-panel #ofw-title[hidden] { display: none; }
+
+.bmv-chat-panel .ofw-head .bmv-chat-subtitle {
+  margin-top: 5px;
+  color: var(--chat-cream);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: .3px;
+  opacity: 1;
+}
+
+.bmv-chat-panel .ofw-head button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgb(242 236 228 / 25%);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--chat-cream);
+  font-size: 25px;
+  line-height: 1;
+}
+
+.bmv-chat-panel .ofw-head button:hover { background: rgb(242 236 228 / 12%); }
+.bmv-chat-panel .ofw-head button:active { background: rgb(242 236 228 / 20%); }
+
+.bmv-chat-panel .ofw-body {
+  min-height: 0;
+  padding: 18px 16px;
+  background: var(--chat-cream);
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  /* Override the site's legacy hidden-scrollbar rule only inside chat. */
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--chat-sage) var(--chat-cream) !important;
+}
+
+.bmv-chat-panel .ofw-body::-webkit-scrollbar {
+  display: block !important;
+  width: 5px !important;
+}
+
+.bmv-chat-panel .ofw-body::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: var(--chat-sage) !important;
+}
+
+.bmv-chat-panel .ofw-msg {
+  width: fit-content;
+  max-width: 86%;
+  margin-top: 0;
+  margin-bottom: 12px;
+  padding: 11px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.bmv-chat-panel .ofw-visitor {
+  border: 1px solid var(--chat-forest);
+  border-bottom-right-radius: 4px;
+  background: var(--chat-forest);
+  color: var(--chat-cream);
+}
+
+.bmv-chat-panel .ofw-agent {
+  border: 1px solid var(--chat-line);
+  border-bottom-left-radius: 4px;
+  background: #fff;
+  color: var(--chat-ink);
+}
+
+.bmv-chat-panel .ofw-state {
+  flex: none;
+  padding: 6px 16px;
+  background: var(--chat-cream);
+  color: var(--chat-muted);
+  font-size: 12px;
+}
+
+.bmv-chat-panel .ofw-state:empty { display: none; }
+.bmv-chat-panel .ofw-state.ofw-err { color: #923a33; }
+
+.bmv-chat-panel .ofw-foot {
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+  border-top: 1px solid var(--chat-line);
+  background: color-mix(in srgb, var(--chat-cream) 40%, white);
+}
+
+.bmv-chat-panel .ofw-foot input {
+  min-width: 0;
+  min-height: 46px;
+  padding: 11px 13px;
+  border: 1px solid var(--chat-line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--chat-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.bmv-chat-panel .ofw-foot input::placeholder { color: var(--chat-muted); opacity: 1; }
+
+.bmv-chat-panel .ofw-foot button {
+  flex: none;
+  min-height: 46px;
+  padding: 0 17px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--chat-gold);
+  color: var(--chat-forest);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.bmv-chat-panel .ofw-foot button:hover:not(:disabled) { background: color-mix(in srgb, var(--chat-gold) 80%, white); }
+.bmv-chat-panel .ofw-foot button:active:not(:disabled) { transform: scale(.97); }
+.bmv-chat-panel .ofw-foot button:disabled { opacity: .5; cursor: wait; }
+
+.ofw-btn.bmv-chat-launcher:focus-visible,
+.bmv-chat-panel button:focus-visible,
+.bmv-chat-panel .ofw-foot input:focus-visible {
+  outline: 3px solid var(--chat-sage);
+  outline-offset: 3px;
+}
+
+.bmv-chat-panel .ofw-head button:focus-visible { outline-color: var(--chat-gold); }
+.bmv-chat-panel .ofw-foot input:focus-visible { outline-offset: 1px; }
+
+@media (max-width: 480px) {
+  .ofw-panel.bmv-chat-panel,
+  .ofw-btn.bmv-chat-launcher { --chat-edge: 16px; --chat-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .ofw-panel.bmv-chat-panel { width: 360px; border-radius: 18px; }
+  .bmv-chat-panel .ofw-head { padding: 16px; }
+  .bmv-chat-panel .bmv-chat-brand { font-size: 22px; }
+  .bmv-chat-panel .ofw-foot { padding: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ofw-btn.bmv-chat-launcher,
+  .bmv-chat-panel button { transition: none; }
+}
+
+@media (forced-colors: active) {
+  .ofw-btn.bmv-chat-launcher,
+  .bmv-chat-panel .ofw-foot button { border: 1px solid ButtonText; }
+  .ofw-panel.bmv-chat-panel,
+  .bmv-chat-panel .ofw-msg { border: 1px solid CanvasText; }
+}
