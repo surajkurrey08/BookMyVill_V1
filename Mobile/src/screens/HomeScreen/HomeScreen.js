@@ -20,6 +20,7 @@ import { useFavorites } from '../../context/FavoritesContext';
 import apiClient from '../../api/client';
 import BrandLogo from '../../components/BrandLogo';
 import { resolveVillaPhoto, getStableVillaFallback } from '../../utils/media';
+import { formatVillaLocation, getVillaSearchableText } from '../../utils/location';
 
 const { width } = Dimensions.get('window');
 const BUNDLED_HERO_IMAGE = require('../../../assets/hero-villa.webp');
@@ -116,15 +117,15 @@ export default function HomeScreen({ navigation }) {
     return CURATED_CATEGORY_STAYS;
   }, [villas, CURATED_CATEGORY_STAYS]);
 
-  // Robust category matcher for Villas, Resorts, Homestays, and Beachfront
+  // Robust category matcher for Villas, Resorts, Homestays, and Scenic Stays
   const matchesCategory = (item, catId) => {
     if (!catId || catId === 'all') return true;
 
     const type = (item.type || '').toLowerCase();
     const name = (item.name || '').toLowerCase();
-    const desc = (item.description || '').toLowerCase();
-    const city = (item.location?.city || item.city || item.location || '').toLowerCase();
-    const allText = `${type} ${name} ${desc} ${city}`;
+    const desc = (item.description || item.listingData?.description || '').toLowerCase();
+    const loc = formatVillaLocation(item).toLowerCase();
+    const allText = `${type} ${name} ${desc} ${loc}`;
 
     if (catId === 'villas') {
       return type.includes('villa') || name.includes('villa') || (!type.includes('resort') && !type.includes('homestay'));
@@ -136,24 +137,24 @@ export default function HomeScreen({ navigation }) {
       return type.includes('homestay') || type.includes('cottage') || name.includes('homestay') || name.includes('cottage') || desc.includes('homestay');
     }
     if (catId === 'beachfront') {
-      return type.includes('beach') || name.includes('beach') || desc.includes('beach') || desc.includes('ocean') || city.includes('goa') || city.includes('alibaug') || city.includes('bali') || city.includes('phuket') || city.includes('beach');
+      return type.includes('beach') || name.includes('beach') || desc.includes('beach') || desc.includes('lake') || loc.includes('lake') || loc.includes('waterfall') || loc.includes('tapola') || loc.includes('alibaug') || loc.includes('beach');
     }
     return true;
   };
 
-  // Filter villas right on Home screen by selected category tab AND search query
+  // Filter villas right on Home screen by selected category tab AND search query (Name, Landmark, City, Amenities)
   const displayList = useMemo(() => {
     return allStays.filter((item) => {
-      // 1. Category tab filter (Villas, Resorts, Homestays, Beachfront)
+      // 1. Category tab filter (Villas, Resorts, Homestays, Scenic Stays)
       if (!matchesCategory(item, activeCategory)) {
         return false;
       }
-      // 2. Search query filter
+      // 2. Exact Landmark / Name / City search filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const name = (item.name || '').toLowerCase();
-        const city = (item.location?.city || item.city || '').toLowerCase();
-        return name.includes(q) || city.includes(q);
+        const terms = q.split(/\s+/).filter(Boolean);
+        const searchable = getVillaSearchableText(item);
+        return terms.every((t) => searchable.includes(t));
       }
       return true;
     });
@@ -381,7 +382,7 @@ export default function HomeScreen({ navigation }) {
                 ? getStableVillaFallback(item._id || item.name, 0)
                 : resolveVillaPhoto(rawPhoto, item._id || item.name, 0);
               const price = item.pricing?.basePrice || item.pricePerNight || item.price || 38000;
-              const location = item.location?.city || item.city || 'Goa, India';
+              const location = formatVillaLocation(item);
               const rating = item.rating ? Number(item.rating).toFixed(1) : '4.9';
               const reviewsCount = item.reviewsCount || 120;
               const isFav = isFavorite(item._id);
@@ -446,10 +447,8 @@ export default function HomeScreen({ navigation }) {
                       </View>
 
                       <View style={styles.cardPriceInline}>
-                        <Text style={styles.cardPriceAmount}>
-                          ₹ {Number(price).toLocaleString('en-IN')}
-                        </Text>
-                        <Text style={styles.cardPerNight}> / night</Text>
+                        <Ionicons name="sparkles" size={11} color={COLORS.goldPrimary} style={{ marginRight: 3 }} />
+                        <Text style={styles.cardPriceAmount}>Enquire</Text>
                       </View>
                     </View>
                   </View>

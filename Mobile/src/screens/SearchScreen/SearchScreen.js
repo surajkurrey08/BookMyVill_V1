@@ -16,6 +16,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import apiClient from '../../api/client';
 import VillaCard from '../../components/VillaCard';
 import BrandLogo from '../../components/BrandLogo';
+import { formatVillaLocation, getVillaSearchableText } from '../../utils/location';
 
 const CATEGORY_TAGS = ['Villas', 'Resorts', 'Homestays', 'Beachfront'];
 const FILTER_TAGS = ['All', ...CATEGORY_TAGS, 'Pool', 'WiFi', 'Beach', 'AC', 'Under ₹20k'];
@@ -86,19 +87,13 @@ export default function SearchScreen({ navigation, route }) {
   useEffect(() => {
     let result = allVillas;
 
-    // Filter by search query (name or location/city)
+    // Filter by search query (name, exact landmark, city, address, or amenities)
     if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase().trim();
+      const terms = q.split(/\s+/).filter(Boolean);
       result = result.filter((villa) => {
-        const searchable = [
-          villa.name,
-          villa.description,
-          villa.location?.city,
-          villa.city,
-          villa.address,
-          ...(Array.isArray(villa.amenities) ? villa.amenities : []),
-        ].join(' ').toLowerCase();
-        return searchable.includes(q);
+        const searchable = getVillaSearchableText(villa);
+        return terms.every((t) => searchable.includes(t));
       });
     }
 
@@ -112,23 +107,31 @@ export default function SearchScreen({ navigation, route }) {
       const categoryTerms = {
         Villas: ['villa'],
         Resorts: ['resort'],
-        Homestays: ['homestay', 'home stay', 'guest house'],
-        Beachfront: ['beachfront', 'beach front', 'beach', 'coastal', 'seaside'],
+        Homestays: ['homestay', 'home stay', 'guest house', 'cottage'],
+        Beachfront: ['beachfront', 'beach front', 'beach', 'coastal', 'seaside', 'lake', 'waterfall', 'tapola', 'lakefront'],
       }[selectedTag];
 
       result = result.filter((villa) => {
         const type = (villa.type || '').toLowerCase();
-        const searchable = [
-          villa.name,
-          villa.description,
-          villa.location?.city,
-          villa.city,
-          villa.address,
-          ...(Array.isArray(villa.amenities) ? villa.amenities : []),
-        ].join(' ').toLowerCase();
+        const searchable = getVillaSearchableText(villa);
 
         if (selectedTag === 'Villas' && !type) return true;
         return categoryTerms.some((term) => type.includes(term) || searchable.includes(term));
+      });
+    } else if (selectedTag === 'Pool') {
+      result = result.filter((villa) => {
+        const searchable = getVillaSearchableText(villa);
+        return searchable.includes('pool');
+      });
+    } else if (selectedTag === 'WiFi') {
+      result = result.filter((villa) => {
+        const searchable = getVillaSearchableText(villa);
+        return searchable.includes('wifi') || searchable.includes('wi-fi');
+      });
+    } else if (selectedTag === 'Beach') {
+      result = result.filter((villa) => {
+        const searchable = getVillaSearchableText(villa);
+        return searchable.includes('beach') || searchable.includes('lake') || searchable.includes('waterfall');
       });
     } else if (selectedTag === 'AC' || selectedTag === 'Air Conditioning') {
       result = result.filter((villa) => {
@@ -138,8 +141,8 @@ export default function SearchScreen({ navigation, route }) {
       });
     } else if (selectedTag !== 'All') {
       result = result.filter((villa) => {
-        const desc = `${villa.name || ''} ${villa.description || ''} ${(villa.amenities || []).join(' ')}`.toLowerCase();
-        return desc.includes(selectedTag.toLowerCase());
+        const searchable = getVillaSearchableText(villa);
+        return searchable.includes(selectedTag.toLowerCase());
       });
     }
 

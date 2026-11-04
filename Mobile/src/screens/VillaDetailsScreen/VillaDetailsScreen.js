@@ -1,13 +1,14 @@
 import { useAppTheme } from '../../context/ThemeContext';
 import React, { useState, useMemo } from 'react';
 import { 
-  View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Share, Alert 
+  View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Share, Alert, Linking 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFavorites } from '../../context/FavoritesContext';
 import { resolveVillaPhoto, getStableVillaFallback, LUXURY_VILLA_PHOTOS } from '../../utils/media';
+import { formatVillaLocation } from '../../utils/location';
 
 const { width } = Dimensions.get('window');
 
@@ -50,9 +51,7 @@ export default function VillaDetailScreen({ route, navigation }) {
   const isLiked = isFavorite(villa._id || villa.id);
 
   const price = villa.pricing?.basePrice || villa.pricePerNight || villa.price || 8000;
-  const location = (typeof villa.location === 'string' && villa.location.trim())
-    ? villa.location.trim()
-    : (villa.location?.city || villa.city || 'Maharashtra, India');
+  const location = formatVillaLocation(villa);
   const description = villa.listingData?.description || villa.description || 'A stunning luxury villa with panoramic views, modern architectural design, and world-class amenities. Perfect for family getaways or luxury escapes.';
   const bedrooms = villa.listingData?.bedrooms || villa.details?.bedrooms || villa.bedrooms || 4;
   const guestCapacity = villa.listingData?.maxGuests || villa.details?.guestCapacity || villa.maxGuests || 8;
@@ -89,6 +88,15 @@ export default function VillaDetailScreen({ route, navigation }) {
   const showReviewSummary = () => {
     const countText = reviewCount ? `Based on ${reviewCount} guest reviews.` : 'Guest reviews will appear here as guests share their stays.';
     Alert.alert('Guest reviews', `${rating} out of 5\n${countText}`);
+  };
+
+  const handleQuickWhatsApp = () => {
+    const villaName = villa?.name || 'Luxury Villa';
+    const loc = location || 'Maharashtra';
+    const text = encodeURIComponent(`Hi BookMyVilla Concierge, I'm interested in viewing availability and booking ${villaName} in ${loc}. Please share availability and booking details.`);
+    Linking.openURL(`https://wa.me/919876543210?text=${text}`).catch(() => {
+      Alert.alert('Concierge Helpline', 'Please call or WhatsApp our team at +91 98765 43210');
+    });
   };
 
   // Format title so it never repeats "Villa Villa"
@@ -315,23 +323,33 @@ export default function VillaDetailScreen({ route, navigation }) {
 
       {/* Floating Bottom Booking Bar */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 14) }]}>
-        <View>
-          <Text style={styles.pricePerNight}>
-            <Text style={styles.priceAmount}>₹ {price.toLocaleString()}</Text> / night
-          </Text>
-          <Text style={styles.taxLabel}>Includes taxes & fees</Text>
+        <View style={{ flex: 1, marginRight: 10 }}>
+          <Text style={styles.priceAmount}>Direct Booking</Text>
+          <Text style={styles.taxLabel} numberOfLines={1}>Verified villa reservation</Text>
         </View>
 
-        <TouchableOpacity 
-          style={styles.reserveBtn} 
-          activeOpacity={0.88}
-          onPress={() => {
-            navigation.navigate('StayDetails', { villa });
-          }}
-        >
-          <Text style={styles.reserveBtnText}>Reserve Now</Text>
-          <Ionicons name="arrow-forward" size={18} color={COLORS.actionText} style={{ marginLeft: 6 }} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity 
+            style={styles.whatsappQuickBtn} 
+            activeOpacity={0.85}
+            onPress={handleQuickWhatsApp}
+            accessibilityRole="button"
+            accessibilityLabel="Instant WhatsApp chat"
+          >
+            <Ionicons name="logo-whatsapp" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.reserveBtn} 
+            activeOpacity={0.88}
+            onPress={() => {
+              navigation.navigate('StayDetails', { villa });
+            }}
+          >
+            <Text style={styles.reserveBtnText}>Enquire Now</Text>
+            <Ionicons name="arrow-forward" size={16} color={COLORS.actionText} style={{ marginLeft: 4 }} />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -536,6 +554,20 @@ const createStyles = (COLORS, mode = 'light') => StyleSheet.create({
   pricePerNight: { fontSize: 12, color: COLORS.textMuted },
   priceAmount: { fontSize: 20, fontWeight: 'bold', color: COLORS.goldPrimary },
   taxLabel: { fontSize: 11, color: COLORS.textMuted, marginTop: 2 },
+  whatsappQuickBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#25D366',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
   reserveBtn: {
     backgroundColor: COLORS.goldPrimary,
     flexDirection: 'row',

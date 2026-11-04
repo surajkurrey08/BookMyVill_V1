@@ -4,6 +4,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, Share } from 'react-na
 import { Ionicons } from '@expo/vector-icons';
 import { useFavorites } from '../context/FavoritesContext';
 import { resolveVillaPhoto, getStableVillaFallback } from '../utils/media';
+import { formatVillaLocation } from '../utils/location';
 
 export default function VillaCard({ villa, onPress }) {
   const { colors: COLORS, mode } = useAppTheme();
@@ -22,9 +23,7 @@ export default function VillaCard({ villa, onPress }) {
     : resolveVillaPhoto(rawPhoto, villaId || villa.name, 0);
 
   const price = villa.pricing?.basePrice || villa.pricePerNight || villa.price || 38500;
-  const location = (typeof villa.location === 'string' && villa.location.trim()) 
-    ? villa.location.trim() 
-    : (villa.location?.city || villa.city || villa.address || 'Maharashtra, India');
+  const location = formatVillaLocation(villa);
   const rating = villa.rating ? Number(villa.rating).toFixed(1) : '4.9';
   const reviewsCount = villa.reviewsCount || villa.reviews?.length || 128;
 
@@ -145,18 +144,16 @@ export default function VillaCard({ villa, onPress }) {
         {/* Divider */}
         <View style={styles.divider} />
 
-        {/* Footer Pricing & CTA */}
+        {/* Footer CTA */}
         <View style={styles.footerRow}>
-          <View>
-            <Text style={styles.pricePrefix}>CUSTOM TARIFF</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-              <Text style={styles.priceAmount}>On Request</Text>
-            </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="shield-checkmark" size={14} color={COLORS.goldPrimary} style={{ marginRight: 5 }} />
+            <Text style={styles.verifiedText}>Verified Stay</Text>
           </View>
 
           <View style={styles.reservePill}>
-            <Text style={styles.reservePillText}>Enquire</Text>
-            <Ionicons name="arrow-forward" size={12} color={COLORS.actionText} />
+            <Text style={styles.reservePillText}>Enquire Now</Text>
+            <Ionicons name="arrow-forward" size={12} color={COLORS.actionText} style={{ marginLeft: 4 }} />
           </View>
         </View>
       </View>
@@ -344,6 +341,12 @@ const createStyles = (COLORS, mode) => StyleSheet.create({
     fontWeight: '500',
   },
 
+  verifiedText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.goldPrimary,
+    letterSpacing: 0.3,
+  },
   reservePill: {
     flexDirection: 'row',
     alignItems: 'center',
